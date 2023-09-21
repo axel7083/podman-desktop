@@ -286,8 +286,7 @@ function initExposure(): void {
     },
   );
 
-  let onDataCallbacksPullImageId = 0;
-  const onDataCallbacksPullImage = new Map<number, (event: PullEvent) => void>();
+  const onDataCallbacksPullImage = new Map<string, (event: PullEvent) => void>();
   contextBridge.exposeInMainWorld(
     'pullImage',
     async (
@@ -295,19 +294,21 @@ function initExposure(): void {
       imageName: string,
       callback: (event: PullEvent) => void,
     ): Promise<void> => {
-      onDataCallbacksPullImageId++;
-      onDataCallbacksPullImage.set(onDataCallbacksPullImageId, callback);
-      return ipcInvoke(
-        'container-provider-registry:pullImage',
-        providerContainerConnectionInfo,
-        imageName,
-        onDataCallbacksPullImageId,
-      );
+      onDataCallbacksPullImage.set(imageName, callback);
+      return ipcInvoke('container-provider-registry:pullImage', providerContainerConnectionInfo, imageName);
     },
   );
+
+  contextBridge.exposeInMainWorld(
+    'setPullImageCallback',
+    async (imageName: string, callback: (event: PullEvent) => void): Promise<void> => {
+      onDataCallbacksPullImage.set(imageName, callback);
+    },
+  );
+
   ipcRenderer.on(
     'container-provider-registry:pullImage-onData',
-    (_, onDataCallbacksPullImageId: number, event: PullEvent) => {
+    (_, onDataCallbacksPullImageId: string, event: PullEvent) => {
       // grab callback from the map
       const callback = onDataCallbacksPullImage.get(onDataCallbacksPullImageId);
       if (callback) {

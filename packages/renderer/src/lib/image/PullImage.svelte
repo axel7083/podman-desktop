@@ -1,6 +1,6 @@
 <script lang="ts">
 import { onMount, tick } from 'svelte';
-import { router } from 'tinro';
+import { router, meta } from 'tinro';
 import type { ProviderContainerConnectionInfo } from '../../../../main/src/plugin/api/provider-info';
 import type { PullEvent } from '../../../../main/src/plugin/api/pull-event';
 
@@ -12,6 +12,7 @@ import TerminalWindow from '../ui/TerminalWindow.svelte';
 import type { Terminal } from 'xterm';
 import Button from '../ui/Button.svelte';
 import { faArrowCircleDown, faCog } from '@fortawesome/free-solid-svg-icons';
+import { createTask } from '/@/stores/tasks';
 
 let logsPull: Terminal;
 let pullError = '';
@@ -30,6 +31,7 @@ const lineNumberPerId = new Map<string, number>();
 let lineIndex = 0;
 
 function callback(event: PullEvent) {
+  console.log('PullImage callback');
   let lineIndexToWrite;
   if (event.status && event.id) {
     const lineNumber = lineNumberPerId.get(event.id);
@@ -91,7 +93,15 @@ async function pullImage() {
 
   pullInProgress = true;
   try {
-    await window.pullImage(selectedProviderConnection, imageToPull.trim(), callback);
+    console.log('window.pullImage');
+
+    const trimed = imageToPull.trim();
+    const task = createTask(`Pulling ${imageToPull}`);
+    task.gotoTask = () => {
+      router.goto(`/images/pull?pullingTask=${encodeURI(trimed)}`);
+    };
+
+    await window.pullImage(selectedProviderConnection, trimed, callback);
     pullInProgress = false;
     pullFinished = true;
   } catch (error: any) {
@@ -109,6 +119,13 @@ async function gotoManageRegistries() {
   router.goto('/preferences/registries');
 }
 
+const route = meta();
+$: {
+  if (route?.query?.pullingTask) {
+    console.log('getting pulling', route.query.pullingTask);
+    window.setPullImageCallback(route.query.pullingTask, callback);
+  }
+}
 onMount(() => {
   if (!selectedProviderConnection) {
     selectedProviderConnection = providerConnections.length > 0 ? providerConnections[0] : undefined;

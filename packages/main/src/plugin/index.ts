@@ -984,10 +984,9 @@ export class PluginSystem {
         _listener,
         providerContainerConnectionInfo: ProviderContainerConnectionInfo,
         imageName: string,
-        callbackId: number,
       ): Promise<void> => {
         return containerProviderRegistry.pullImage(providerContainerConnectionInfo, imageName, (event: PullEvent) => {
-          this.getWebContentsSender().send('container-provider-registry:pullImage-onData', callbackId, event);
+          this.getWebContentsSender().send('container-provider-registry:pullImage-onData', imageName, event);
         });
       },
     );
