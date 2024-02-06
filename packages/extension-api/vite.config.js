@@ -44,4 +44,10 @@ export default defineConfig({
     emptyOutDir: true,
     reportCompressedSize: false,
   },
+  test: {
+    coverage: {
+      provider: 'custom',
+      customProviderModule: 'docs-coverage-provider'
+    },
+  },
 });

@@ -17,5 +17,8 @@
     "watch": "",
     "publish:next": "yarn publish  --registry=https://registry.npmjs.org/ --no-git-tag-version --new-version 0.0.1-\"$(date +%s)\""
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "typedoc": "^0.25.7",
+    "vitest": "^1.2.2"
+  }
 }

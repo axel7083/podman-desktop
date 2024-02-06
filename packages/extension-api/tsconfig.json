@@ -16,5 +16,5 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*.d.ts"]
+  "include": ["src/**/*.d.ts", "docs-coverage-provider.ts"]
 }
