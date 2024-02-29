@@ -9,7 +9,9 @@
     "test": "vitest run --coverage --passWithNoTests",
     "test:watch": "vitest watch --coverage --passWithNoTests",
     "svelte:check": "svelte-check --tsconfig ./tsconfig.json",
-    "publish:next": "yarn publish  --registry=https://registry.npmjs.org/ --no-git-tag-version --new-version 0.0.1-\"$(date +%s)\""
+    "publish:next": "yarn publish  --registry=https://registry.npmjs.org/ --no-git-tag-version --new-version 0.0.1-\"$(date +%s)\"",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "files": [
     "dist",
@@ -33,6 +35,13 @@
     "svelte-fa": "^4.0.2"
   },
   "devDependencies": {
+    "@storybook/addon-essentials": "^7.6.17",
+    "@storybook/addon-interactions": "^7.6.17",
+    "@storybook/addon-links": "^7.6.17",
+    "@storybook/blocks": "^7.6.17",
+    "@storybook/svelte": "^7.6.17",
+    "@storybook/svelte-vite": "^7.6.17",
+    "@storybook/test": "^7.6.17",
     "@sveltejs/package": "^2.2.6",
     "@sveltejs/vite-plugin-svelte": "3.0.2",
     "@testing-library/dom": "^9.3.4",
@@ -46,6 +55,9 @@
     "jsdom": "^24.0.0",
     "postcss": "^8.4.35",
     "postcss-load-config": "^5.0.3",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "storybook": "^7.6.17",
     "svelte": "4.2.12",
     "svelte-check": "^3.6.6",
     "svelte-eslint-parser": "^0.33.1",
