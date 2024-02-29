@@ -39,7 +39,7 @@ export default defineConfig({
   },
   plugins: [svelte({ hot: !process.env.VITEST })],
   test: {
-    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}', '.storybook/**/*.{ts}'],
     globals: true,
     environment: 'jsdom',
     alias: [
