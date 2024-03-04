@@ -102,7 +102,8 @@
     "website:dev": "cd website && yarn run docusaurus start",
     "website:screenshots": "cd website-argos && yarn run screenshot",
     "prepare": "husky install",
-    "postinstall": "playwright install"
+    "postinstall": "playwright install",
+    "storybook:dev": "cd packages/storybook && yarn run dev"
   },
   "lint-staged": {
     "*.{js,ts,tsx,svelte}": [

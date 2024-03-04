@@ -1,5 +1,5 @@
 <script lang="ts">
-import './button.css';
+  import 'tailwindcss/tailwind.css'
 
 /**
  * Is this the principal call to action on the page?
@@ -24,6 +24,7 @@ $: mode = primary ? 'storybook-button--primary' : 'storybook-button--secondary';
 $: style = backgroundColor ? `background-color: ${backgroundColor}` : '';
 </script>
 
+<h2 class='bg-purple-500'>Hello</h2>
 <button
   type="button"
   class="{['storybook-button', `storybook-button--${size}`, mode].join(' ')}"
