@@ -25,6 +25,7 @@ module.exports = {
     'packages/renderer/index.html',
     'packages/renderer/src/**/*.{svelte,ts,css}',
     'packages/ui/src/**/*.{svelte,ts,css}',
+    'packages/storybook/src/**/*.{svelte,ts,css}',
   ],
   darkMode: 'class',
   theme: {
