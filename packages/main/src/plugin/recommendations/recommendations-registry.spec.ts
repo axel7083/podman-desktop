@@ -19,6 +19,7 @@
 import { beforeEach, expect, test, vi } from 'vitest';
 
 import type { ConfigurationRegistry } from '/@/plugin/configuration-registry.js';
+import type { Featured } from '/@/plugin/featured/featured.js';
 
 import { RecommendationsRegistry } from './recommendations-registry.js';
 
@@ -30,8 +31,12 @@ const configurationRegistryMock = {
   registerConfigurations: registerConfigurationsMock,
 } as unknown as ConfigurationRegistry;
 
+const featuredMock = {
+  getFeaturedExtensions: vi.fn(),
+} as unknown as Featured;
+
 beforeEach(() => {
-  recommendationsRegistry = new RecommendationsRegistry(configurationRegistryMock);
+  recommendationsRegistry = new RecommendationsRegistry(configurationRegistryMock, featuredMock);
 });
 test('should register a configuration', async () => {
   // register configuration
