@@ -28,6 +28,7 @@ const windowEvents = [
   'extension-stopped',
   'extension-removed',
   'extensions-started',
+  'configuration-changed', // Required to capture the ignoreRecommendations preference change
 ];
 const windowListeners = ['system-ready'];
 

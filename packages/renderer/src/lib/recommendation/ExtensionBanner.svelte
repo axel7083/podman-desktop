@@ -1,31 +1,31 @@
 <script lang="ts">
+import { onMount } from 'svelte';
+
 import FeaturedExtension from '/@/lib/featured/FeaturedExtension.svelte';
 
 import type { ExtensionBanner } from '../../../../main/src/plugin/recommendations/recommendations-api';
 
 export let banner: ExtensionBanner;
 
-const hasBackground = (): boolean => {
-  return !!banner.background && (!!banner.background.image || !!banner.background.gradient);
-};
+let style: string | undefined = undefined;
+let hasBackground: boolean = !!banner.background && (!!banner.background.image || !!banner.background.gradient);
 
-const style = (): string | undefined => {
+onMount(() => {
   if (banner.background?.gradient) {
-    return `background: linear-gradient(${banner.background.gradient.start}, ${banner.background.gradient.end});`;
+    style = `background: linear-gradient(${banner.background.gradient.start}, ${banner.background.gradient.end});`;
+  } else if (banner.background?.image) {
+    style = `background-image: url("${banner.background.image}");`;
+  } else {
+    style = undefined;
   }
-
-  if (banner.background?.image) {
-    return `background-image: url("${banner.background.image}")`;
-  }
-
-  return undefined;
-};
+});
 </script>
 
 <div
-  style="{style()}"
-  class:bg-charcoal-800="{hasBackground()}"
-  class="bg-charcoal-800 max-h-[175px] px-5 pt-5 rounded-lg grid grid-cols-[20px_8fr_7fr] gap-4">
+  style="{style}"
+  aria-label="Recommended extension"
+  class:bg-charcoal-800="{!hasBackground}"
+  class="bg-charcoal-800 max-h-[180px] px-5 pt-5 rounded-lg grid grid-cols-[20px_8fr_7fr] gap-4 overflow-hidden">
   <!-- icon column -->
   <div>
     <img class="w-4 h-4' object-contain mt-1" alt="banner icon" src="{banner.icon}" />
@@ -37,7 +37,7 @@ const style = (): string | undefined => {
 
     <div class="grid grid-cols-[2fr_1fr]">
       <span class="text-base">{banner.description}</span>
-      <img class="w-24 h-24 object-contain" alt="banner thumbnail" src="{banner.thumbnail}" />
+      <img class="min-w-24 max-w-32 min-h-24 max-h-32 object-contain" alt="banner thumbnail" src="{banner.thumbnail}" />
     </div>
   </div>
 

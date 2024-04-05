@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { IConfigurationNode, IConfigurationRegistry } from '/@/plugin/configuration-registry.js';
+import type { ConfigurationRegistry, IConfigurationNode } from '/@/plugin/configuration-registry.js';
 import type { Featured } from '/@/plugin/featured/featured.js';
 import type { FeaturedExtension } from '/@/plugin/featured/featured-api.js';
 import type { ExtensionBanner } from '/@/plugin/recommendations/recommendations-api.js';
@@ -26,15 +26,24 @@ import { RecommendationsSettings } from './recommendations-settings.js';
 
 export class RecommendationsRegistry {
   constructor(
-    private configurationRegistry: IConfigurationRegistry,
+    private configurationRegistry: ConfigurationRegistry,
     private featured: Featured,
   ) {}
+
+  isRecommendationDisabled(): boolean {
+    return this.configurationRegistry
+      .getConfiguration(RecommendationsSettings.SectionName)
+      .get<boolean>(RecommendationsSettings.IgnoreRecommendations, false);
+  }
 
   /**
    * Return the recommended extension banners which are not installed.
    * @param limit the maximum number of extension banners returned. Default 1, use -1 for no limit
    */
-  async getExtensionBanners(limit = -1): Promise<ExtensionBanner[]> {
+  async getExtensionBanners(limit = 1): Promise<ExtensionBanner[]> {
+    // Do not recommend any extension when user selected the ignore preference
+    if (this.isRecommendationDisabled()) return [];
+
     const featuredExtensions: Record<string, FeaturedExtension> = Object.fromEntries(
       (await this.featured.getFeaturedExtensions(-1)).map(featured => [featured.id, featured]),
     );
@@ -68,7 +77,7 @@ export class RecommendationsRegistry {
           description: 'When enabled, the notifications for extension recommendations will not be shown.',
           type: 'boolean',
           default: false,
-          hidden: true,
+          hidden: false,
         },
       },
     };
