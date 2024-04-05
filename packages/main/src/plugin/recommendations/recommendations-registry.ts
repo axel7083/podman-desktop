@@ -21,7 +21,7 @@ import type { Featured } from '/@/plugin/featured/featured.js';
 import type { FeaturedExtension } from '/@/plugin/featured/featured-api.js';
 import type { ExtensionBanner } from '/@/plugin/recommendations/recommendations-api.js';
 
-import { default as recommendations } from './recommendations.json';
+import { default as recommendations } from '../../../../../recommendations.json';
 import { RecommendationsSettings } from './recommendations-settings.js';
 
 export class RecommendationsRegistry {
