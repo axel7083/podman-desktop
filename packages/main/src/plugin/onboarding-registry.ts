@@ -19,6 +19,8 @@
 
 import * as path from 'node:path';
 
+import type { ApiSenderType } from '/@/plugin/api.js';
+
 import { getBase64Image } from '../util.js';
 import type { Onboarding, OnboardingInfo, OnboardingStatus } from './api/onboarding.js';
 import type { ConfigurationRegistry } from './configuration-registry.js';
@@ -32,7 +34,18 @@ export class OnboardingRegistry {
   constructor(
     private configurationRegistry: ConfigurationRegistry,
     private context: Context,
+    private apiSender: ApiSenderType,
   ) {}
+
+  init(): void {
+    this.apiSender.receive('onboarding-context-updated', data => {
+      if (!!data && typeof data === 'object' && 'extensionId' in data && typeof data.extensionId === 'string') {
+        this.resetOnboarding([data.extensionId]);
+      } else {
+        console.warn('received malformed data for event "onboarding-context-updated"');
+      }
+    });
+  }
 
   registerOnboarding(extension: AnalyzedExtension, onboarding: Onboarding): Disposable {
     const onInfo = this.createOnboardingInfo(extension, onboarding);
@@ -120,6 +133,7 @@ export class OnboardingRegistry {
    * @returns n/a
    */
   resetOnboarding(extensions: string[]): void {
+    console.log('resetOnboarding', extensions);
     if (extensions.length === 0) {
       return;
     }
@@ -148,6 +162,7 @@ export class OnboardingRegistry {
         }
       }
     });
+    this.apiSender.send('onboarding-updated');
   }
 
   /**

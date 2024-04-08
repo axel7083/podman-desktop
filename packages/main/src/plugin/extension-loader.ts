@@ -1155,10 +1155,18 @@ export class ExtensionLoader {
     const contextAPI: typeof containerDesktopAPI.context = {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setValue: (key: string, value: any, scope?: 'onboarding'): void => {
-        if (scope === 'onboarding') {
+        const onboarding: boolean = scope === 'onboarding';
+        if (onboarding) {
           key = `${extensionInfo.id}.${scope}.${key}`;
         }
-        this.context.setValue(key, value);
+
+        const changed: boolean = this.context.setValue(key, value);
+
+        if (onboarding && changed) {
+          this.apiSender.send('onboarding-context-updated', {
+            extensionId: extensionInfo.id,
+          });
+        }
       },
     };
 
