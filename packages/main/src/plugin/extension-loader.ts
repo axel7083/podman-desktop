@@ -1423,6 +1423,16 @@ export class ExtensionLoader {
       console.log(`Activating extension ${extension.id} failed error:${err}`);
       this.extensionState.set(extension.id, 'failed');
       this.extensionStateErrors.set(extension.id, err);
+
+      // cleaning subscriptions registered
+      subscriptions.forEach(subscription => {
+        try {
+          subscription.dispose();
+        } catch (err: unknown) {
+          console.error(`Something went wrong while trying to cleanup extension ${extension.id} subscriptions`);
+        }
+      });
+
       // Storing error in the telemetry options
       telemetryOptions['error'] = err;
     } finally {

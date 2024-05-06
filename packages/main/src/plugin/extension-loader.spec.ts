@@ -23,6 +23,7 @@ import { readFile } from 'node:fs/promises';
 import * as path from 'node:path';
 
 import type * as containerDesktopAPI from '@podman-desktop/api';
+import type extensionApi from '@podman-desktop/api';
 import { app } from 'electron';
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
@@ -1854,4 +1855,36 @@ describe('extensionContext', async () => {
     await extensionContext?.secrets.delete('key');
     expect(deleteMock).toBeCalledWith('key');
   });
+});
+
+test('Verify extension error leads to potential subscriptions to be disposed', async () => {
+  const id = 'extension.id';
+  const disposableMock: extensionApi.Disposable = {
+    dispose: vi.fn(),
+  };
+
+  configurationRegistryGetConfigurationMock.mockReturnValue({ get: vi.fn().mockReturnValue(1) });
+
+  await extensionLoader.activateExtension(
+    {
+      id: id,
+      name: 'id',
+      path: 'dummy',
+      api: {} as typeof containerDesktopAPI,
+      mainPath: '',
+      removable: false,
+      manifest: {},
+      subscriptions: [],
+      readme: '',
+      dispose: vi.fn(),
+    },
+    {
+      activate: (extensionContext: extensionApi.ExtensionContext) => {
+        extensionContext.subscriptions.push(disposableMock);
+        throw Error('Failed');
+      },
+    },
+  );
+  expect(extensionLoader.getExtensionState().get(id)).toBe('failed');
+  expect(disposableMock.dispose).toHaveBeenCalledOnce();
 });
