@@ -686,34 +686,33 @@ function setStoppedFilter() {
   </div>
 </NavPage>
 
-{#if openChoiceModal}
-  <Modal
-    on:close="{() => {
-      openChoiceModal = false;
-    }}">
-    <div
-      role="presentation"
-      class="inline-block w-full overflow-hidden text-left transition-all transform bg-charcoal-600 z-50 rounded-xl shadow-xl shadow-charcoal-900"
-      on:keydown="{keydownChoice}">
-      <div class="flex items-center justify-between bg-black px-5 py-4 border-b-2 border-violet-700">
-        <h1 class="text-xl font-bold">Create a new container</h1>
+<Modal
+  open="{openChoiceModal}"
+  on:close="{() => {
+    openChoiceModal = false;
+  }}">
+  <div
+    role="presentation"
+    class="inline-block w-full overflow-hidden text-left transition-all transform bg-charcoal-600 z-50 rounded-xl shadow-xl shadow-charcoal-900"
+    on:keydown="{keydownChoice}">
+    <div class="flex items-center justify-between bg-black px-5 py-4 border-b-2 border-violet-700">
+      <h1 class="text-xl font-bold">Create a new container</h1>
 
-        <button class="hover:text-gray-300 px-2 py-1" on:click="{() => toggleCreateContainer()}">
-          <i class="fas fa-times" aria-hidden="true"></i>
-        </button>
-      </div>
-      <div class="bg-charcoal-600 p-5 h-full flex flex-col justify-items-center">
-        <span class="pb-3">Choose the following:</span>
-        <ul class="list-disc ml-8 space-y-2">
-          <li>Create a container from a Containerfile</li>
-          <li>Create a container from an existing image stored in the local registry</li>
-        </ul>
+      <button class="hover:text-gray-300 px-2 py-1" on:click="{() => toggleCreateContainer()}">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="bg-charcoal-600 p-5 h-full flex flex-col justify-items-center">
+      <span class="pb-3">Choose the following:</span>
+      <ul class="list-disc ml-8 space-y-2">
+        <li>Create a container from a Containerfile</li>
+        <li>Create a container from an existing image stored in the local registry</li>
+      </ul>
 
-        <div class="pt-5 grid grid-cols-2 gap-10 place-content-center w-full">
-          <Button type="primary" on:click="{() => fromDockerfile()}">Containerfile or Dockerfile</Button>
-          <Button type="secondary" on:click="{() => fromExistingImage()}">Existing image</Button>
-        </div>
+      <div class="pt-5 grid grid-cols-2 gap-10 place-content-center w-full">
+        <Button type="primary" on:click="{() => fromDockerfile()}">Containerfile or Dockerfile</Button>
+        <Button type="secondary" on:click="{() => fromExistingImage()}">Existing image</Button>
       </div>
     </div>
-  </Modal>
-{/if}
+  </div>
+</Modal>

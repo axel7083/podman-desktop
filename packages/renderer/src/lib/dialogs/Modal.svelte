@@ -8,8 +8,12 @@ const close = () => dispatch('close');
 
 let modal: HTMLDivElement;
 export let name = '';
+export let open: boolean = true;
 
 const handle_keydown = (e: any) => {
+  // ignore input when closed
+  if (!open) return;
+
   if (e.key === 'Escape') {
     close();
     return;
@@ -31,12 +35,16 @@ if (previously_focused) {
 
 <svelte:window on:keydown="{handle_keydown}" />
 
-<button class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-60 bg-blend-multiply z-40" on:click="{close}"
-></button>
+<button
+  class:hidden="{!open}"
+  aria-label="close"
+  class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-60 bg-blend-multiply z-40"
+  on:click="{close}"></button>
 
 <div
   class="absolute top-1/2 left-1/2 z-50 rounded translate-x-[-50%] translate-y-[-50%] overflow-auto w-[calc(200vw-4em)] max-w-[42em] max-h-[calc(100vh-4em)]"
   role="dialog"
+  class:hidden="{!open}"
   aria-label="{name}"
   aria-modal="true"
   bind:this="{modal}">
