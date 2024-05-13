@@ -436,7 +436,8 @@ export class PluginSystem {
 
     const exec = new Exec(proxy);
 
-    const commandRegistry = new CommandRegistry(apiSender, telemetry);
+    const inputQuickPickRegistry = new InputQuickPickRegistry(apiSender);
+    const commandRegistry = new CommandRegistry(apiSender, telemetry, inputQuickPickRegistry);
     const taskManager = new TaskManager(apiSender, statusBarRegistry, commandRegistry);
     taskManager.init();
 
@@ -457,7 +458,6 @@ export class PluginSystem {
     const cancellationTokenRegistry = new CancellationTokenRegistry();
     const providerRegistry = new ProviderRegistry(apiSender, containerProviderRegistry, telemetry);
     const trayMenuRegistry = new TrayMenuRegistry(this.trayMenu, commandRegistry, providerRegistry, telemetry);
-    const inputQuickPickRegistry = new InputQuickPickRegistry(apiSender);
     const fileSystemMonitoring = new FilesystemMonitoring();
     const customPickRegistry = new CustomPickRegistry(apiSender);
     const onboardingRegistry = new OnboardingRegistry(configurationRegistry, context);
@@ -1234,6 +1234,10 @@ export class PluginSystem {
         return commandRegistry.executeCommand(command, ...args);
       },
     );
+
+    this.ipcHandle('command-registry:showCommandPalette', async (_): Promise<unknown> => {
+      return commandRegistry.showCommandPalette();
+    });
 
     this.ipcHandle('clipboard:writeText', async (_, text: string, type?: 'selection' | 'clipboard'): Promise<void> => {
       return clipboard.writeText(text, type);
