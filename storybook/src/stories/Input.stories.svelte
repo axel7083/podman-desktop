@@ -13,4 +13,41 @@ export const meta = {
   <Input {...args} />
 </Template>
 
-<Story name="Default"></Story>
+<Story
+  name="Default"
+  args="{{
+    id: 'default-input',
+    placeholder: 'Default input',
+  }}"></Story>
+
+<Story
+  name="Clearable"
+  args="{{
+    id: 'clearable-input',
+    placeholder: 'clearable input',
+    clearable: true,
+  }}"></Story>
+
+<Story
+  name="Required"
+  args="{{
+    id: 'required-input',
+    placeholder: 'required input',
+    required: true,
+  }}"></Story>
+
+<Story
+  name="Error"
+  args="{{
+    id: 'error-input',
+    error: 'invalid input',
+    showError: true,
+  }}"></Story>
+
+<Story
+  name="Disabled"
+  args="{{
+    id: 'disabled-input',
+    placeholder: 'disabled input',
+    disabled: true,
+  }}"></Story>
