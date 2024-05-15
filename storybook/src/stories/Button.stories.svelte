@@ -62,7 +62,7 @@ export const meta = {
   name="Loading"
   args="{{
     type: 'primary',
-    content: 'disabled',
+    content: 'loading',
     inProgress: true,
     icon: faBell,
   }}" />
