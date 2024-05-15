@@ -9,6 +9,7 @@ const close = (): boolean => dispatch('close');
 let modal: HTMLDivElement;
 export let name = '';
 export let top: boolean = false;
+export let open: boolean = true;
 
 const handle_keydown = (e: KeyboardEvent): void => {
   if (e.key === 'Escape') {
@@ -32,7 +33,7 @@ if (previously_focused) {
 
 <svelte:window on:keydown="{handle_keydown}" />
 
-<div class:items-center="{!top}" class="absolute w-full h-full flex justify-center">
+<div class:hidden="{!open}" class:items-center="{!top}" class="absolute w-full h-full flex justify-center">
   <button
     aria-label="close"
     class="fixed top-0 left-0 w-full h-full bg-black bg-opacity-60 bg-blend-multiply z-40"

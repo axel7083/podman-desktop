@@ -288,90 +288,88 @@ function handleMousedown(e: MouseEvent) {
 
 <svelte:window on:keydown="{handleKeydown}" on:mousedown="{handleMousedown}" />
 
-{#if display}
-  <Modal on:close="{onClose}" name="{title}" top>
-    <div class="flex justify-center items-center mt-1">
-      <div
-        bind:this="{outerDiv}"
-        class="bg-charcoal-800 w-[700px] {mode === 'InputBox'
-          ? 'h-fit'
-          : ''} shadow-sm p-2 rounded shadow-zinc-700 text-sm">
-        {#if title}
-          <div
-            aria-label="title"
-            class="w-full bg-charcoal-600 rounded-sm text-center max-w-[700px] truncate cursor-default">
-            {title}
-          </div>
-        {/if}
-        <div class="w-full flex flex-row">
-          {#if multiline}
-            <textarea
-              bind:this="{inputElement}"
-              on:input="{event => onInputChange(event)}"
-              bind:value="{inputValue}"
-              class="px-1 w-full h-20 text-gray-400 bg-zinc-700 border {validationError
-                ? 'border-red-700'
-                : 'border-charcoal-600'} focus:outline-none"
-              placeholder="{placeHolder}"></textarea>
-          {:else}
-            <input
-              bind:this="{inputElement}"
-              on:input="{event => onInputChange(event)}"
-              type="text"
-              bind:value="{inputValue}"
-              class="px-1 w-full text-gray-400 bg-zinc-700 border {validationError
-                ? 'border-red-700'
-                : 'border-charcoal-600'} focus:outline-none"
-              placeholder="{placeHolder}" />
-          {/if}
-          {#if quickPickCanPickMany}
-            <Button on:click="{() => validateQuickPick()}" class="px-1">OK</Button>
-          {/if}
+<Modal display="{display}" on:close="{onClose}" name="{title}" top>
+  <div class="flex justify-center items-center mt-1">
+    <div
+      bind:this="{outerDiv}"
+      class="bg-charcoal-800 w-[700px] {mode === 'InputBox'
+        ? 'h-fit'
+        : ''} shadow-sm p-2 rounded shadow-zinc-700 text-sm">
+      {#if title}
+        <div
+          aria-label="title"
+          class="w-full bg-charcoal-600 rounded-sm text-center max-w-[700px] truncate cursor-default">
+          {title}
         </div>
-
-        {#if mode === 'InputBox'}
-          {#if validationError}
-            <div class="text-gray-400 border border-red-700 relative w-full bg-red-700 px-1">{validationError}</div>
-          {:else}
-            <div class="relative text-gray-400 pt-2 px-1 h-7 overflow-y-auto">{prompt}</div>
-            {#if markdownDescription && markdownDescription.length > 0}
-              <div class="relative text-gray-400 pt-2 px-1 h-fit overflow-y-auto">
-                <Markdown>{markdownDescription}</Markdown>
-              </div>
-            {/if}
-          {/if}
-        {:else if mode === 'QuickPick'}
-          {#each quickPickFilteredItems as item, i}
-            <div
-              class="flex w-full flex-row {i === quickPickSelectedFilteredIndex
-                ? 'bg-purple-500'
-                : 'hover:bg-charcoal-600'} ">
-              {#if quickPickCanPickMany}
-                <Checkbox class="mx-1 my-auto" bind:checked="{item.checkbox}" />
-              {/if}
-              <button
-                on:click="{() => clickQuickPickItem(item, i)}"
-                class="text-gray-400 text-left relative my-1 w-full {i === quickPickSelectedFilteredIndex
-                  ? 'bg-purple-500'
-                  : ''} px-1">
-                <div class="flex flex-col w-full">
-                  <!-- first row is Value + optional description-->
-                  <div class="flex flex-row w-full max-w-[700px] truncate">
-                    <div class="font-bold">{item.value}</div>
-                    {#if item.description}
-                      <div class="text-gray-400 text-xs ml-2">{item.description}</div>
-                    {/if}
-                  </div>
-                  <!-- second row is optional detail -->
-                  {#if item.detail}
-                    <div class="w-full max-w-[700px] truncate text-gray-400 text-xs">{item.detail}</div>
-                  {/if}
-                </div>
-              </button>
-            </div>
-          {/each}
+      {/if}
+      <div class="w-full flex flex-row">
+        {#if multiline}
+          <textarea
+            bind:this="{inputElement}"
+            on:input="{event => onInputChange(event)}"
+            bind:value="{inputValue}"
+            class="px-1 w-full h-20 text-gray-400 bg-zinc-700 border {validationError
+              ? 'border-red-700'
+              : 'border-charcoal-600'} focus:outline-none"
+            placeholder="{placeHolder}"></textarea>
+        {:else}
+          <input
+            bind:this="{inputElement}"
+            on:input="{event => onInputChange(event)}"
+            type="text"
+            bind:value="{inputValue}"
+            class="px-1 w-full text-gray-400 bg-zinc-700 border {validationError
+              ? 'border-red-700'
+              : 'border-charcoal-600'} focus:outline-none"
+            placeholder="{placeHolder}" />
+        {/if}
+        {#if quickPickCanPickMany}
+          <Button on:click="{() => validateQuickPick()}" class="px-1">OK</Button>
         {/if}
       </div>
+
+      {#if mode === 'InputBox'}
+        {#if validationError}
+          <div class="text-gray-400 border border-red-700 relative w-full bg-red-700 px-1">{validationError}</div>
+        {:else}
+          <div class="relative text-gray-400 pt-2 px-1 h-7 overflow-y-auto">{prompt}</div>
+          {#if markdownDescription && markdownDescription.length > 0}
+            <div class="relative text-gray-400 pt-2 px-1 h-fit overflow-y-auto">
+              <Markdown>{markdownDescription}</Markdown>
+            </div>
+          {/if}
+        {/if}
+      {:else if mode === 'QuickPick'}
+        {#each quickPickFilteredItems as item, i}
+          <div
+            class="flex w-full flex-row {i === quickPickSelectedFilteredIndex
+              ? 'bg-purple-500'
+              : 'hover:bg-charcoal-600'} ">
+            {#if quickPickCanPickMany}
+              <Checkbox class="mx-1 my-auto" bind:checked="{item.checkbox}" />
+            {/if}
+            <button
+              on:click="{() => clickQuickPickItem(item, i)}"
+              class="text-gray-400 text-left relative my-1 w-full {i === quickPickSelectedFilteredIndex
+                ? 'bg-purple-500'
+                : ''} px-1">
+              <div class="flex flex-col w-full">
+                <!-- first row is Value + optional description-->
+                <div class="flex flex-row w-full max-w-[700px] truncate">
+                  <div class="font-bold">{item.value}</div>
+                  {#if item.description}
+                    <div class="text-gray-400 text-xs ml-2">{item.description}</div>
+                  {/if}
+                </div>
+                <!-- second row is optional detail -->
+                {#if item.detail}
+                  <div class="w-full max-w-[700px] truncate text-gray-400 text-xs">{item.detail}</div>
+                {/if}
+              </div>
+            </button>
+          </div>
+        {/each}
+      {/if}
     </div>
-  </Modal>
-{/if}
+  </div>
+</Modal>

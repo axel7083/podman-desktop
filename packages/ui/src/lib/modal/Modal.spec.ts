@@ -28,6 +28,8 @@ test('modal should be visible', async () => {
   render(Modal);
 
   const bg = screen.getByLabelText('close');
+  expect((bg.parentNode as HTMLElement).classList).not.toContain('hidden');
+
   expect(bg).toBeDefined();
   const dialog = screen.getByRole('dialog');
   expect(dialog).toBeDefined();
@@ -67,4 +69,13 @@ describe('translation-y', () => {
     const dialog = screen.getByRole('dialog');
     expect(dialog.classList).not.toContain('translate-y-[-20%]');
   });
+});
+
+test('open false property should make the modal be hidden', async () => {
+  render(Modal, {
+    open: false,
+  });
+
+  const bg = screen.getByLabelText('close');
+  expect((bg.parentNode as HTMLElement).classList).toContain('hidden');
 });
