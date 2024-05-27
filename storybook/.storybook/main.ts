@@ -1,5 +1,4 @@
 import type { StorybookConfig } from '@storybook/svelte-vite';
-import sveltePreprocess from 'svelte-preprocess';
 import { join, dirname } from 'path';
 
 /**
@@ -18,7 +17,11 @@ const config: StorybookConfig = {
     getAbsolutePath('@storybook/addon-interactions'),
     // Do not use getAbsolutePath
     '@storybook/addon-svelte-csf',
+    'storybook-dark-mode',
   ],
+  typescript: {
+    check: true,
+  },
   framework: {
     name: getAbsolutePath('@storybook/svelte-vite'),
     options: {},
