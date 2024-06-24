@@ -24,7 +24,13 @@ import type { NotificationTask, StatefulTask, Task } from '/@api/task';
 export interface StatefulTaskUI extends StatefulTask {
   age: string;
   progress?: number;
+  /**
+   * @deprecated
+   */
   hasGotoTask: boolean;
+  /**
+   * @deprecated
+   */
   gotoTask?: () => void;
 }
 
@@ -39,7 +45,7 @@ export class TaskManager {
         status: task.status,
         hasGotoTask: false,
         age: `${humanizeDuration(new Date().getTime() - task.started, { round: true, largest: 1 })} ago`,
-        action: task.action,
+        rendererAction: task.rendererAction,
         error: task.error,
       };
 
