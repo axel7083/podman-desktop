@@ -62,6 +62,16 @@ function getActionIcon(): IconDefinition {
   return faXmark;
 }
 
+function getActionTooltip(): string {
+  switch (cliToolStatus.status) {
+    case 'toUpdate':
+      return `Update to v${cliTool.update?.version}`;
+    case 'toInstall':
+      return `Install v${cliTool.install?.version}`;
+  }
+  return '';
+}
+
 async function install(cliTool: CliToolInfo) {
   if (!cliTool.install) return;
 
@@ -125,7 +135,7 @@ function getLoggerHandler(_cliToolId: string): ConnectionCallback {
             class="my-auto ml-3 break-words text-[var(--pd-invert-content-header-text)]"
             aria-label="cli-name">{cliTool.name}</span>
         </div>
-        {#if cliTool.binary && cliToolStatus}
+        {#if cliTool.binary || cliTool.install || cliTool.update}
           <div class="p-0.5 rounded-lg bg-[var(--pd-invert-content-bg)] w-fit">
             <LoadingIconButton
               action="{cliToolStatus.action ?? 'unknown'}"
@@ -141,7 +151,7 @@ function getLoggerHandler(_cliToolId: string): ConnectionCallback {
               leftPosition="left-[0.4rem]"
               state="{cliToolStatus}"
               color="primary"
-              tooltip="todo" />
+              tooltip="{getActionTooltip()}" />
           </div>
         {/if}
       </div>
@@ -160,13 +170,13 @@ function getLoggerHandler(_cliToolId: string): ConnectionCallback {
         <div class="text-[var(--pd-invert-content-card-text)]">
           <Markdown markdown="{cliTool.description}" />
         </div>
-        {#if cliTool.binary}
+        {#if cliTool.binary || cliTool.install}
           <div
             class="flex flex-row justify-between align-center bg-[var(--pd-invert-content-bg)] p-2 rounded-lg min-w-[320px] w-fit">
             <div
               class="flex text-[var(--pd-invert-content-card-text)] font-bold text-xs items-center"
               aria-label="cli-version">
-              {cliTool.name} v{cliTool.binary.version}
+              {cliTool.name} {cliTool.binary?cliTool.binary.version:''}
             </div>
             {#if cliTool.update}
               <Button
@@ -182,6 +192,21 @@ function getLoggerHandler(_cliToolId: string): ConnectionCallback {
                 disabled="{!cliTool.update}"
                 aria-label="Update available">
                 Update available
+              </Button>
+              {:else if cliTool.install}
+              <Button
+                type="link"
+                class="underline"
+                padding="p-0"
+                on:click="{() => {
+                  if (cliTool.install) {
+                    install(cliTool);
+                  }
+                }}"
+                title="{`${cliTool.displayName} v${cliTool.install.version} will be installed`}"
+                disabled="{!cliTool.install}"
+                aria-label="Install">
+                Install
               </Button>
             {/if}
           </div>
