@@ -26,6 +26,7 @@ on:
       - 'package.json'
       - 'yarn.lock'
       - 'website/**'
+      - 'storybook/**'
       - 'packages/extension-api/src/**'
 
 env:

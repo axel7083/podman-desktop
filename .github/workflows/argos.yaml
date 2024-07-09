@@ -25,6 +25,7 @@ on:
     paths:
       - 'package.json'
       - 'yarn.lock'
+      - 'storybook/**'
       - 'website/**'
       - 'website-argos/**'
   pull_request:
