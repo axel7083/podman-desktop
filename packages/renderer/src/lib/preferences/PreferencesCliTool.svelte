@@ -1,5 +1,11 @@
 <script lang="ts">
-import { faCircleArrowUp, faCircleXmark } from '@fortawesome/free-solid-svg-icons';
+import {
+  faCircleArrowDown,
+  faCircleArrowUp,
+  faCircleXmark,
+  faXmark,
+  type IconDefinition,
+} from '@fortawesome/free-solid-svg-icons';
 import { Button } from '@podman-desktop/ui-svelte';
 import Fa from 'svelte-fa';
 
@@ -14,20 +20,60 @@ export let cliTool: CliToolInfo;
 let showError = false;
 let cliToolStatus: ILoadingStatus = {
   inProgress: false,
-  status: cliTool.newVersion ? 'toUpdate' : 'unknown',
+  status: getStatus(cliTool),
   action: 'update',
 };
 
+function getStatus(cliTool: CliToolInfo): string {
+  if (!cliTool.binary && cliTool.install) return 'toInstall';
+  if (cliTool.update) return 'toUpdate';
+  return 'unknown';
+}
+
 async function update(cliTool: CliToolInfo) {
+  if (!cliTool.update) return;
+
   try {
     cliToolStatus.inProgress = true;
     cliToolStatus = cliToolStatus;
     const loggerHandlerKey = startTask(
-      `Update ${cliTool.name} to v${cliTool.newVersion}`,
+      `Update ${cliTool.name} to v${cliTool.update.version}`,
       '/preferences/cli-tools',
       getLoggerHandler(cliTool.id),
     );
     await window.updateCliTool(cliTool.id, loggerHandlerKey, eventCollect);
+    showError = false;
+    cliToolStatus.status = 'unknown';
+  } catch (e) {
+    showError = true;
+  } finally {
+    cliToolStatus.inProgress = false;
+    cliToolStatus = cliToolStatus;
+  }
+}
+
+function getActionIcon(): IconDefinition {
+  switch (cliToolStatus.status) {
+    case 'toUpdate':
+      return faCircleArrowUp;
+    case 'toInstall':
+      return faCircleArrowDown;
+  }
+  return faXmark;
+}
+
+async function install(cliTool: CliToolInfo) {
+  if (!cliTool.install) return;
+
+  try {
+    cliToolStatus.inProgress = true;
+    cliToolStatus = cliToolStatus;
+    const loggerHandlerKey = startTask(
+      `Installing ${cliTool.name} v${cliTool.install.version}`,
+      '/preferences/cli-tools',
+      getLoggerHandler(cliTool.id),
+    );
+    await window.installCliTool(cliTool.id, loggerHandlerKey, eventCollect);
     showError = false;
     cliToolStatus.status = 'unknown';
   } catch (e) {
@@ -79,20 +125,23 @@ function getLoggerHandler(_cliToolId: string): ConnectionCallback {
             class="my-auto ml-3 break-words text-[var(--pd-invert-content-header-text)]"
             aria-label="cli-name">{cliTool.name}</span>
         </div>
-        {#if cliTool.version && cliToolStatus}
+        {#if cliTool.binary && cliToolStatus}
           <div class="p-0.5 rounded-lg bg-[var(--pd-invert-content-bg)] w-fit">
             <LoadingIconButton
-              action="update"
+              action="{cliToolStatus.action ?? 'unknown'}"
               clickAction="{() => {
-                if (cliTool.newVersion) {
-                  update(cliTool);
+                switch (cliToolStatus.status) {
+                  case 'toInstall':
+                    return install(cliTool);
+                  case 'toUpdate':
+                    return update(cliTool);
                 }
               }}"
-              icon="{faCircleArrowUp}"
+              icon="{getActionIcon()}"
               leftPosition="left-[0.4rem]"
               state="{cliToolStatus}"
               color="primary"
-              tooltip="{!cliTool.newVersion ? 'No updates' : `Update to v${cliTool.newVersion}`}" />
+              tooltip="todo" />
           </div>
         {/if}
       </div>
@@ -111,26 +160,26 @@ function getLoggerHandler(_cliToolId: string): ConnectionCallback {
         <div class="text-[var(--pd-invert-content-card-text)]">
           <Markdown markdown="{cliTool.description}" />
         </div>
-        {#if cliTool.version}
+        {#if cliTool.binary}
           <div
             class="flex flex-row justify-between align-center bg-[var(--pd-invert-content-bg)] p-2 rounded-lg min-w-[320px] w-fit">
             <div
               class="flex text-[var(--pd-invert-content-card-text)] font-bold text-xs items-center"
               aria-label="cli-version">
-              {cliTool.name} v{cliTool.version}
+              {cliTool.name} v{cliTool.binary.version}
             </div>
-            {#if cliTool.newVersion}
+            {#if cliTool.update}
               <Button
                 type="link"
                 class="underline"
                 padding="p-0"
                 on:click="{() => {
-                  if (cliTool.newVersion) {
+                  if (cliTool.update) {
                     update(cliTool);
                   }
                 }}"
-                title="{`${cliTool.displayName} will be updated to v${cliTool.newVersion}`}"
-                disabled="{!cliTool.newVersion}"
+                title="{`${cliTool.displayName} will be updated to v${cliTool.update.version}`}"
+                disabled="{!cliTool.update}"
                 aria-label="Update available">
                 Update available
               </Button>

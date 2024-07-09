@@ -32,7 +32,14 @@ export interface CliToolInfo {
   state: CliToolState;
   images?: ProviderImages;
   extensionInfo: CliToolExtensionInfo;
-  version?: string;
-  path?: string;
-  newVersion?: string;
+  binary?: {
+    version: string;
+    path: string;
+  };
+  install?: {
+    version: string;
+  };
+  update?: {
+    version: string;
+  };
 }

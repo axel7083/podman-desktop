@@ -1233,6 +1233,21 @@ export class PluginSystem {
       },
     );
 
+    this.ipcHandle(
+      'cli-tool-registry:installCliTool',
+      async (_listener, id: string, loggerId: string): Promise<void> => {
+        const logger = this.getLogHandler('provider-registry:updateCliTool-onData', loggerId);
+        try {
+          await cliToolRegistry.installCliTool(id, logger);
+        } catch (error) {
+          logger.error(error);
+          throw error;
+        } finally {
+          logger.onEnd();
+        }
+      },
+    );
+
     this.ipcHandle('menu-registry:getContributedMenus', async (_, context: string): Promise<Menu[]> => {
       return menuRegistry.getContributedMenus(context);
     });

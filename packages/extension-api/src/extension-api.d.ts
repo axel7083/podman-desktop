@@ -4287,15 +4287,17 @@ declare module '@podman-desktop/api' {
     markdownDescription: string;
     images: ProviderImages;
 
-    /**
-     * Within your extension, it is reccommended to implement your own functionality to check the current
-     * version number of the CLI tool. For example, parsing the information from the CLI tool's `--version` flag.
-     * Passing in path will also help to show where the CLI tool is expected to be installed.
-     * This is usually the ~/.local/share/containers/podman-desktop/extensions-storage directory.
-     * Note: The expected value should not include 'v'.
-     */
-    version: string;
-    path: string;
+    binary?: {
+      /**
+       * Within your extension, it is reccommended to implement your own functionality to check the current
+       * version number of the CLI tool. For example, parsing the information from the CLI tool's `--version` flag.
+       * Passing in path will also help to show where the CLI tool is expected to be installed.
+       * This is usually the ~/.local/share/containers/podman-desktop/extensions-storage directory.
+       * Note: The expected value should not include 'v'.
+       */
+      version: string;
+      path: string;
+    };
   }
 
   /**
@@ -4306,12 +4308,17 @@ declare module '@podman-desktop/api' {
     displayName?: string;
     markdownDescription?: string;
     images?: ProviderImages;
-    path?: string;
+    path: string;
   }
 
   export interface CliToolUpdate {
     version: string;
     doUpdate: (logger: Logger) => Promise<void>;
+  }
+
+  export interface CliToolInstall {
+    version: string;
+    doInstall: (logger: Logger) => Promise<void>;
   }
 
   export type CliToolState = 'registered';
@@ -4333,6 +4340,8 @@ declare module '@podman-desktop/api' {
 
     // register cli update flow
     registerUpdate(update: CliToolUpdate): Disposable;
+    // register cli install flow
+    registerInstall(install: CliToolInstall): Disposable;
   }
 
   /**

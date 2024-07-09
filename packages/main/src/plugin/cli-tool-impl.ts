@@ -18,6 +18,7 @@
 
 import type {
   CliTool,
+  CliToolInstall,
   CliToolOptions,
   CliToolState,
   CliToolUpdate,
@@ -66,12 +67,12 @@ export class CliToolImpl implements CliTool, Disposable {
     return this._options.markdownDescription;
   }
 
-  get version(): string {
-    return this._options.version;
+  get version(): string | undefined {
+    return this._options.binary?.version;
   }
 
-  get path(): string {
-    return this._options.path;
+  get path(): string | undefined {
+    return this._options.binary?.path;
   }
 
   get images(): ProviderImages {
@@ -88,13 +89,19 @@ export class CliToolImpl implements CliTool, Disposable {
       displayName: options.displayName ?? this._options.displayName,
       images: options.images ?? this._options.images,
       markdownDescription: options.markdownDescription ?? this._options.markdownDescription,
-      path: options.path ?? this._options.path,
-      version: options.version,
+      binary: {
+        path: options.path,
+        version: options.version,
+      },
     };
     this._onDidUpdateVersion.fire(options.version);
   }
 
   registerUpdate(update: CliToolUpdate): Disposable {
     return this.registry.registerUpdate(this, update);
+  }
+
+  registerInstall(install: CliToolInstall): Disposable {
+    return this.registry.registerInstall(this, install);
   }
 }
