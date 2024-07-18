@@ -11,12 +11,12 @@ import Fa from 'svelte-fa';
 
 import ProgressBar from '/@/lib/task-manager/ProgressBar.svelte';
 import { isNotificationTask, isStatefulTask, removeTask } from '/@/stores/tasks';
-import type { NotificationTask, Task } from '/@api/task';
+import type { NotificationTask, TaskInfo } from '/packages/api/src/taskInfo';
 
 import Markdown from '../markdown/Markdown.svelte';
 import { type StatefulTaskUI, TaskManager } from './task-manager';
 
-export let task: Task;
+export let task: TaskInfo;
 
 const taskManager = new TaskManager();
 

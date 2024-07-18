@@ -21,7 +21,7 @@ import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/svelte';
 import { expect, test } from 'vitest';
 
-import type { StatefulTask } from '/@api/task';
+import type { StatefulTask } from '/packages/api/src/taskInfo';
 
 import TaskManagerItem from './TaskManagerItem.svelte';
 

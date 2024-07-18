@@ -21,7 +21,7 @@ import { router } from 'tinro';
 
 import { operationConnectionsInfo } from '/@/stores/operation-connections';
 import { createTask, isStatefulTask, removeTask } from '/@/stores/tasks';
-import type { Task } from '/@api/task';
+import type { TaskInfo } from '/packages/api/src/taskInfo';
 
 export interface ConnectionCallback extends LoggerType {
   // when build is finished, this function is called
@@ -60,7 +60,7 @@ export interface TaskHold {
 const taskLogCallbacks = new Map<symbol, ConnectionCallback>();
 const taskLogOnHolds = new Map<symbol, TaskHold>();
 const taskLogReplays = new Map<symbol, TaskReplay>();
-const allTasks = new Map<symbol, Task>();
+const allTasks = new Map<symbol, TaskInfo>();
 
 export function startTask(name: string, goToUrl: string, createCallback: ConnectionCallback): symbol {
   const key = getKey();

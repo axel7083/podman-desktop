@@ -16,6 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import type { Task } from '@podman-desktop/api';
 import { app } from 'electron';
 import {
   autoUpdater,
@@ -32,9 +33,8 @@ import type { MessageBox } from '/@/plugin/message-box.js';
 import type { StatusBarRegistry } from '/@/plugin/statusbar/statusbar-registry.js';
 import { Disposable } from '/@/plugin/types/disposable.js';
 import { isLinux } from '/@/util.js';
-import type { StatefulTask } from '/@api/task.js';
 
-import type { TaskManager } from './task-manager.js';
+import type { TaskManager } from './tasks/task-manager.js';
 
 /**
  * Represents an updater utility for Podman Desktop.
@@ -47,7 +47,7 @@ export class Updater {
   #updateAlreadyDownloaded: boolean;
   #updateCheckResult: UpdateCheckResult | undefined;
 
-  #downloadTask: StatefulTask | undefined;
+  #downloadTask: Task | undefined;
 
   constructor(
     private messageBox: MessageBox,

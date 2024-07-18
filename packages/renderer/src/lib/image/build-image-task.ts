@@ -20,7 +20,7 @@ import { router } from 'tinro';
 
 import { type BuildImageInfo, buildImagesInfo } from '/@/stores/build-images';
 import { createTask, isStatefulTask, removeTask } from '/@/stores/tasks';
-import type { Task } from '/@api/task';
+import type { TaskInfo } from '/packages/api/src/taskInfo';
 
 export interface BuildImageCallback {
   // callback on stream
@@ -57,7 +57,7 @@ export interface BuildHold {
 const buildCallbacks = new Map<symbol, BuildImageCallback>();
 const buildOnHolds = new Map<symbol, BuildHold>();
 const buildReplays = new Map<symbol, BuildReplay>();
-const allTasks = new Map<symbol, Task>();
+const allTasks = new Map<symbol, TaskInfo>();
 
 // new build is occuring, needs to compute a new key and prepare replay data
 export function startBuild(imageName: string, buildImageCallback: BuildImageCallback): BuildImageInfo {

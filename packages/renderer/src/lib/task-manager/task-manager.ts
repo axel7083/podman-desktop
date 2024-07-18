@@ -19,7 +19,7 @@
 import humanizeDuration from 'humanize-duration';
 
 import { isStatefulTask } from '/@/stores/tasks';
-import type { NotificationTask, StatefulTask, Task } from '/@api/task';
+import type { NotificationTask, StatefulTask, TaskInfo } from '/packages/api/src/taskInfo';
 
 export interface StatefulTaskUI extends StatefulTask {
   age: string;
@@ -27,7 +27,7 @@ export interface StatefulTaskUI extends StatefulTask {
 }
 
 export class TaskManager {
-  toTaskUi(task: Task): StatefulTaskUI | NotificationTask {
+  toTaskUi(task: TaskInfo): StatefulTaskUI | NotificationTask {
     if (isStatefulTask(task)) {
       const taskUI: StatefulTaskUI = {
         id: task.id,

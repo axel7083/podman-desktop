@@ -21,7 +21,7 @@
 import { get } from 'svelte/store';
 import { expect, test } from 'vitest';
 
-import type { NotificationTask, StatefulTask } from '/@api/task';
+import type { NotificationTask, StatefulTask } from '/packages/api/src/taskInfo';
 
 import { clearNotifications, isNotificationTask, isStatefulTask, tasksInfo } from './tasks';
 

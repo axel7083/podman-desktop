@@ -16,20 +16,19 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { NotificationInfo } from '/@api/notification.js';
-import type { NotificationTask, StatefulTask, Task } from '/@api/task.js';
+import type { Task } from '@podman-desktop/api';
 
-import type { ApiSenderType } from './api.js';
-import type { CommandRegistry } from './command-registry.js';
-import type { StatusBarRegistry } from './statusbar/statusbar-registry.js';
+import { TaskImpl } from '/@/plugin/tasks/task-impl.js';
+import type { TaskInfo } from '/@api/taskInfo.js';
 
-/**
- * Contribution manager to provide the list of external OCI contributions
- */
+import type { ApiSenderType } from '../api.js';
+import type { CommandRegistry } from '../command-registry.js';
+import type { StatusBarRegistry } from '../statusbar/statusbar-registry.js';
+
 export class TaskManager {
   private taskId = 0;
 
-  private tasks = new Map<string, Task>();
+  private tasks = new Map<string, TaskImpl>();
 
   constructor(
     private apiSender: ApiSenderType,
@@ -62,48 +61,54 @@ export class TaskManager {
     );
   }
 
-  public createTask(title: string | undefined): StatefulTask {
+  public createTask(title: string | undefined): Task {
     this.taskId++;
-    const task: StatefulTask = {
-      id: `main-${this.taskId}`,
-      name: title ? title : `Task ${this.taskId}`,
-      started: new Date().getTime(),
-      state: 'running',
-      status: 'in-progress',
-    };
+
+    const task = new TaskImpl(`main-${this.taskId}`, title ? title : `Task ${this.taskId}`);
     this.tasks.set(task.id, task);
-    this.apiSender.send('task-created', task);
+
+    task.onUpdate(this.updateTask.bind(this));
+
+    // notify renderer
+    this.apiSender.send('task-created', this.toTaskInfo(task));
     this.setStatusBarEntry(true);
     return task;
   }
 
-  public createNotificationTask(notificationInfo: NotificationInfo): NotificationTask {
-    this.taskId++;
-    const task: NotificationTask = {
-      id: `main-${this.taskId}`,
-      name: notificationInfo.title,
-      started: new Date().getTime(),
-      description: notificationInfo.body ?? '',
-      markdownActions: notificationInfo.markdownActions,
-    };
-    this.tasks.set(task.id, task);
-    this.apiSender.send('task-created', task);
-    this.setStatusBarEntry(true);
-    return task;
+  public clearTasks(): void {
+    Array.from(this.tasks.values()).forEach(task => {
+      if (task.state !== 'loading') {
+        this.removeTask(task);
+      }
+    });
   }
 
-  public updateTask(task: Task): void {
-    this.apiSender.send('task-updated', task);
-    if (this.isStatefulTask(task) && task.state === 'completed') {
+  /**
+   * Utility method to serialize a Task (extension&main) to a TaskInfo (renderer)
+   * @param task
+   * @protected
+   */
+  protected toTaskInfo(task: Task): TaskInfo {
+    return {
+      id: task.id,
+      name: task.name,
+      started: task.started,
+      state: task.state,
+      error: task.error,
+      action: task.action?.name,
+    };
+  }
+
+  protected removeTask(task: Task): void {
+    const taskImpl = this.tasks.get(task.id);
+    if (taskImpl) {
       this.tasks.delete(task.id);
+      taskImpl.dispose();
     }
+    this.apiSender.send('task-removed', this.toTaskInfo(task));
   }
 
-  isStatefulTask(task: Task): task is StatefulTask {
-    return 'state' in task;
-  }
-
-  isNotificationTask(task: Task): task is NotificationTask {
-    return 'description' in task;
+  protected updateTask(task: Task): void {
+    this.apiSender.send('task-updated', this.toTaskInfo(task));
   }
 }

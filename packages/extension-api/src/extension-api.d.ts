@@ -2077,6 +2077,24 @@ declare module '@podman-desktop/api' {
     export function listWebviews(): Promise<WebviewInfo[]>;
   }
 
+  export type TaskState = 'loading' | 'success' | 'error';
+
+  export interface TaskAction {
+    name: string;
+    execute: (task: Task) => void;
+  }
+
+  export interface Task {
+    readonly id: string;
+    readonly name: string;
+    readonly started: number;
+    state: TaskState;
+    error?: string;
+    progress?: number;
+    action?: TaskAction;
+    readonly onUpdate: Event<Task>;
+  }
+
   export namespace kubernetes {
     // Path to the configuration file
     export function getKubeconfig(): Uri;
