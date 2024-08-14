@@ -13,6 +13,12 @@ let editorContent: string;
 let inProgress = false;
 let changesDetected = false;
 
+let statusIndex: number | undefined = content.split('\n').findIndex(line => line.startsWith('status:'));
+
+$: if (originalContent !== content) {
+  statusIndex = undefined;
+}
+
 // Reactive statement to update originalContent only if it's blank and content is not
 // as sometimes content is blank until it's "loaded". This does not work with onMount,
 // so we use the reactive statement
@@ -101,5 +107,10 @@ async function applyToCluster() {
     The reasoning is that MonacoEditor is complex and uses it's own rendering components
     and does not allow a way to reactively update the content externally. So we just re-render with the original content -->
 {#key key}
-  <MonacoEditor content={content} language="yaml" readOnly={false} on:contentChange={handleContentChange} />
+  <MonacoEditor
+    foldLines={statusIndex ? [statusIndex] : []}
+    content={content}
+    language="yaml"
+    readOnly={false}
+    on:contentChange={handleContentChange} />
 {/key}

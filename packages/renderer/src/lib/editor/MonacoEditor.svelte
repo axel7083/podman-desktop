@@ -14,6 +14,7 @@ let Monaco;
 export let content = '';
 export let language = 'json';
 export let readOnly = true;
+export let foldLines: number[] = [];
 
 const dispatch = createEventDispatcher<{ contentChange: string }>();
 
@@ -59,6 +60,8 @@ onMount(async () => {
     automaticLayout: true,
     scrollBeyondLastLine: false,
   });
+
+  editor.trigger(undefined, 'editor.fold', { selectionLines: foldLines });
 
   editor.onDidChangeModelContent(() => {
     // Emit the content change so we can use it in the parent component
