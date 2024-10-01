@@ -2419,6 +2419,10 @@ export class PluginSystem {
       return kubernetesClient.getCurrentContextGeneralState();
     });
 
+    this.ipcHandle('kubernetes-client:restartCurrentContext', async (): Promise<void[]> => {
+      return kubernetesClient.restartCurrentContext();
+    });
+
     this.ipcHandle(
       'kubernetes-client:registerGetCurrentContextResources',
       async (_listener, resourceName: ResourceName): Promise<KubernetesObject[]> => {

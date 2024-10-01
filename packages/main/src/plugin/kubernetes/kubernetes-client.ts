@@ -1363,6 +1363,10 @@ export class KubernetesClient {
     return this.contextsState.getCurrentContextGeneralState();
   }
 
+  public restartCurrentContext(): Promise<void[]> {
+    return this.contextsState.restartCurrentContext();
+  }
+
   public registerGetCurrentContextResources(resourceName: ResourceName): KubernetesObject[] {
     return this.contextsState.registerGetCurrentContextResources(resourceName);
   }

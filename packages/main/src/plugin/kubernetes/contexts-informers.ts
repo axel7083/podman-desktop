@@ -35,6 +35,13 @@ export class ContextsInformers {
     return !!informers?.get(resourceName);
   }
 
+  restart(context: string): Promise<void[]> {
+    const informers = this.informers.get(context);
+    if (!informers) throw new Error(`cannot restart informers for context ${context}: informer not found`);
+
+    return Promise.all(informers.values().map(informer => informer.stop().then(() => informer.start())));
+  }
+
   setInformers(name: string, informers: ContextInternalState | undefined): void {
     if (informers) {
       this.informers.set(name, informers);

@@ -4,6 +4,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 
 import { router } from 'tinro';
 
+import KubernetesConnectionErrorPage from '/@/lib/kube/KubernetesConnectionErrorPage.svelte';
 import { handleNavigation } from '/@/navigation';
 import { NO_CURRENT_CONTEXT_ERROR } from '/@api/kubernetes-contexts-states';
 import type { NavigationRequest } from '/@api/navigation-request';
@@ -227,9 +228,13 @@ window.events?.receive('navigate', (navigationRequest: unknown) => {
         <Route path="/volumes/:name/:engineId/*" breadcrumb="Volume Details" let:meta navigationHint="details">
           <VolumeDetails volumeName={decodeURI(meta.params.name)} engineId={decodeURI(meta.params.engineId)} />
         </Route>
-        {#if $kubernetesCurrentContextState.error === NO_CURRENT_CONTEXT_ERROR}
+        {#if $kubernetesCurrentContextState.error !== undefined}
           <Route path="/kubernetes/*" breadcrumb="Kubernetes" navigationHint="root">
-            <KubernetesEmptyPage />
+            {#if $kubernetesCurrentContextState.error === NO_CURRENT_CONTEXT_ERROR}
+              <KubernetesEmptyPage />
+            {:else}
+              <KubernetesConnectionErrorPage contextState={$kubernetesCurrentContextState} />
+            {/if}
           </Route>
         {:else}
           <Route path="/kubernetes/nodes" breadcrumb="Nodes" navigationHint="root">

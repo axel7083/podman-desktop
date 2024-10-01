@@ -17,7 +17,6 @@
  ***********************************************************************/
 
 import KubeIcon from '/@/lib/images/KubeIcon.svelte';
-import { NO_CURRENT_CONTEXT_ERROR } from '/@api/kubernetes-contexts-states';
 
 import { kubernetesCurrentContextState } from '../kubernetes-contexts-state';
 import { createNavigationKubernetesConfigMapSecretsEntry } from './kubernetes/navigation-registry-k8s-configmap-secrets.svelte';
@@ -46,7 +45,7 @@ export function createNavigationKubernetesGroup(): NavigationRegistryEntry {
   kubernetesNavigationGroupItems = newItems;
 
   kubernetesCurrentContextState.subscribe(value => {
-    context = value.error !== NO_CURRENT_CONTEXT_ERROR;
+    context = !value.error;
   });
 
   const mainGroupEntry: NavigationRegistryEntry = {

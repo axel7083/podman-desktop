@@ -931,6 +931,10 @@ export class ContextsManager {
     return this.states.getCurrentContextGeneralState(this.kubeConfig.currentContext);
   }
 
+  public restartCurrentContext(): Promise<void[]> {
+    return this.informers.restart(this.kubeConfig.currentContext);
+  }
+
   public registerGetCurrentContextResources(resourceName: ResourceName): KubernetesObject[] {
     if (isSecondaryResourceName(resourceName)) {
       this.secondaryWatchers.subscribe(resourceName);
