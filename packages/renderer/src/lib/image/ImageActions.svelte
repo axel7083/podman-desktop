@@ -1,5 +1,13 @@
 <script lang="ts">
-import { faArrowUp, faDownload, faEdit, faLayerGroup, faPlay, faTrash } from '@fortawesome/free-solid-svg-icons';
+import {
+  faArrowDown,
+  faArrowUp,
+  faDownload,
+  faEdit,
+  faLayerGroup,
+  faPlay,
+  faTrash,
+} from '@fortawesome/free-solid-svg-icons';
 import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 import type { Unsubscriber } from 'svelte/store';
 import { router } from 'tinro';
@@ -20,6 +28,7 @@ import type { ImageInfoUI } from './ImageInfoUI';
 
 export let onPushImage: (imageInfo: ImageInfoUI) => void;
 export let onRenameImage: (imageInfo: ImageInfoUI) => void;
+export let onUpdateImage: (imageInfo: ImageInfoUI) => void;
 export let image: ImageInfoUI;
 export let dropdownMenu = false;
 export let detailed = false;
@@ -81,6 +90,10 @@ async function pushImage(imageInfo: ImageInfoUI): Promise<void> {
   onPushImage(imageInfo);
 }
 
+async function updateImage(imageInfo: ImageInfoUI): Promise<void> {
+  onUpdateImage(imageInfo);
+}
+
 async function showLayersImage(): Promise<void> {
   router.goto(`/images/${image.id}/${image.engineId}/${image.base64RepoTag}/history`);
 }
@@ -120,6 +133,15 @@ function saveImage() {
     menu={dropdownMenu}
     detailed={detailed}
     icon={faArrowUp} />
+
+  {#if !image.name.startsWith('localhost') && image.name !== '<none>'  && !image.name.endsWith('sha256')}
+    <ListItemButtonIcon
+      title="Update Image"
+      onClick={updateImage.bind(undefined, image)}
+      menu={dropdownMenu}
+      detailed={detailed}
+      icon={faArrowDown} />
+  {/if}
 
   <ListItemButtonIcon
     title="Edit Image"

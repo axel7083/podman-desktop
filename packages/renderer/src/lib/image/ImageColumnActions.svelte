@@ -1,4 +1,6 @@
 <script lang="ts">
+import { router } from 'tinro';
+
 import ImageActions from './ImageActions.svelte';
 import type { ImageInfoUI } from './ImageInfoUI';
 import ManifestActions from './ManifestActions.svelte';
@@ -29,6 +31,11 @@ function handlePushManifestModal(imageInfo: ImageInfoUI) {
   pushManifestModal = true;
 }
 
+function handleUpdateImage(imageInfo: ImageInfoUI): void {
+  const imageName = encodeURI(`${imageInfo.name}:${imageInfo.tag}`);
+  router.goto(`/images/pull?imageName=${imageName}`);
+}
+
 function closeModals() {
   pushImageModal = false;
   renameImageModal = false;
@@ -53,6 +60,7 @@ function closeModals() {
     image={object}
     onPushImage={handlePushImageModal}
     onRenameImage={handleRenameImageModal}
+    onUpdateImage={handleUpdateImage}
     dropdownMenu={true}
     on:update />
 

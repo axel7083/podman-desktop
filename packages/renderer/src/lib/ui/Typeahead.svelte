@@ -11,6 +11,7 @@ export let disabled: boolean = false;
 export let initialFocus: boolean = false;
 export let id: string | undefined = undefined;
 export let name: string | undefined = undefined;
+export let defaultValue: string | undefined = undefined;
 
 export let searchFunction: SearchFunction = async (_s: string) => [];
 export let onChange = function (_s: string) {};
@@ -19,13 +20,13 @@ export let onEnter = function () {};
 let input: HTMLInputElement;
 let list: HTMLDivElement;
 let scrollElements: HTMLElement[] = [];
-let value: string;
+let value: string | undefined = defaultValue;
 let items: string[] = [];
 let inputDelayTimeout: NodeJS.Timeout;
 let opened: boolean = false;
 let highlightIndex: number = -1;
 let pageStep = 10;
-let userValue: string = '';
+let userValue: string | undefined = '';
 let loading: boolean = false;
 
 function onItemSelected(s: string): void {
@@ -37,6 +38,8 @@ function onItemSelected(s: string): void {
 }
 
 function onInput(): void {
+  if (!value) return;
+
   userValue = value;
   onChange(value);
   clearTimeout(inputDelayTimeout);
@@ -139,6 +142,8 @@ function makeVisible(): void {
 }
 
 function processInput(): void {
+  if (!value) return;
+
   loading = true;
   searchFunction(value)
     .then(result => {

@@ -186,8 +186,8 @@ window.events?.receive('navigate', (navigationRequest: unknown) => {
         <Route path="/images/build" breadcrumb="Build an Image">
           <BuildImageFromContainerfile />
         </Route>
-        <Route path="/images/pull" breadcrumb="Pull an Image">
-          <PullImage />
+        <Route path="/images/pull" breadcrumb="Pull an Image" let:meta>
+          <PullImage imageName={meta.query.imageName} />
         </Route>
         <Route path="/images/import" breadcrumb="Import Containers">
           <ImportContainersImages />
