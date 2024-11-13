@@ -45,10 +45,8 @@ import {
 import type { FileSystemWatcher } from '@podman-desktop/api';
 import { beforeAll, beforeEach, describe, expect, type Mock, test, vi } from 'vitest';
 
-import type {
-  KubernetesPortForwardService,
-  KubernetesPortForwardServiceProvider,
-} from '/@/plugin/kubernetes/kubernetes-port-forward-service.js';
+import type { KubernetesPortForwardService } from '/@/plugin/kubernetes/kubernetes-port-forward-service.js';
+import { KubernetesPortForwardServiceProvider } from '/@/plugin/kubernetes/kubernetes-port-forward-service.js';
 import { type ForwardConfig, type ForwardOptions, WorkloadKind } from '/@api/kubernetes-port-forward-model.js';
 import type { V1Route } from '/@api/openshift-types.js';
 
@@ -270,16 +268,17 @@ const apiSender: ApiSenderType = {
   receive: vi.fn(),
 };
 
-const mocks = vi.hoisted(() => ({
-  getServiceMock: vi.fn(),
-}));
-
-vi.mock('/@/plugin/kubernetes/kubernetes-port-forward-service', () => ({
-  KubernetesPortForwardService: vi.fn(),
-  KubernetesPortForwardServiceProvider: vi.fn().mockReturnValue({
-    getService: mocks.getServiceMock,
-  } as unknown as KubernetesPortForwardServiceProvider),
-}));
+vi.mock('/@/plugin/kubernetes/kubernetes-port-forward-service', async () => {
+  const singletonGetServiceMock = vi.fn();
+  return {
+    KubernetesPortForwardService: vi.fn(),
+    KubernetesPortForwardServiceProvider: vi.fn().mockImplementation(() => {
+      return {
+        getService: singletonGetServiceMock,
+      };
+    }),
+  };
+});
 
 const execMock = vi.fn();
 beforeAll(() => {
@@ -2580,8 +2579,9 @@ describe('port forward', () => {
   };
 
   beforeEach(() => {
-    vi.resetAllMocks();
-    mocks.getServiceMock.mockReturnValue(serviceMock);
+    vi.clearAllMocks();
+    const providerInstance = new KubernetesPortForwardServiceProvider();
+    vi.mocked(providerInstance.getService).mockReturnValue(serviceMock);
   });
 
   test('expect forward to be returned', async () => {
