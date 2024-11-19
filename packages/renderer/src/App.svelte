@@ -75,6 +75,7 @@ import { lastSubmenuPages } from './stores/breadcrumb';
 import { kubernetesCurrentContextState } from './stores/kubernetes-contexts-state';
 import { navigationRegistry } from './stores/navigation/navigation-registry';
 import SubmenuNavigation from './SubmenuNavigation.svelte';
+import AppNavigation2 from '/@/AppNavigation2.svelte';
 
 router.mode.memory();
 
@@ -113,15 +114,17 @@ window.events?.receive('navigate', (navigationRequest: unknown) => {
 
     <WelcomePage />
 
-    <div class="flex flex-row w-full h-full overflow-hidden">
+    <div class="grid grid-cols-[75px_170px_1fr] h-full overflow-hidden">
       <QuickPickInput />
       <CustomPick />
       <CommandPalette />
       <MessageBox />
-      <AppNavigation meta={meta} exitSettingsCallback={() => router.goto(nonSettingsPage)} />
+      <!-- <AppNavigation meta={meta} exitSettingsCallback={() => router.goto(nonSettingsPage)} /> -->
+      <AppNavigation2/>
       {#if meta.url.startsWith('/preferences')}
         <PreferencesNavigation meta={meta} />
       {/if}
+
       {#each $navigationRegistry.filter(item => item.type === 'submenu') as navigationRegistryItem}
         {#if meta.url.startsWith(navigationRegistryItem.link) && navigationRegistryItem.items?.length}
           <SubmenuNavigation meta={meta} title={navigationRegistryItem.tooltip} link={navigationRegistryItem.link} items={navigationRegistryItem.items} />
@@ -139,6 +142,32 @@ window.events?.receive('navigate', (navigationRequest: unknown) => {
         <Route path="/" breadcrumb="Dashboard Page">
           <DashboardPage />
         </Route>
+
+        <!-- dedicated engine sub navigation -->
+        <Route path="/container-engine/*" let:meta>
+          <Route path="/" breadcrumb="Containers" navigationHint="root">
+            <span>Engine Dashboard here</span>
+          </Route>
+          <!-- container engine containers -->
+          <Route path="/containers" breadcrumb="Containers" navigationHint="root">
+            <ContainerList searchTerm={meta.query.filter || ''} />
+          </Route>
+
+          <!-- images engine -->
+          <Route path="/images" breadcrumb="Images" navigationHint="root">
+            <ImagesList />
+          </Route>
+
+          <!-- volume's engine -->
+          <Route path="/volumes" breadcrumb="Volumes" navigationHint="root">
+            <VolumesList />
+          </Route>
+
+          <Route path="/pods" breadcrumb="Pods" navigationHint="root">
+            <PodsList />
+          </Route>
+        </Route>
+
         <Route path="/containers" breadcrumb="Containers" navigationHint="root">
           <ContainerList searchTerm={meta.query.filter || ''} />
         </Route>
@@ -157,9 +186,7 @@ window.events?.receive('navigate', (navigationRequest: unknown) => {
         <Route path="/image/run/*" breadcrumb="Run Image">
           <RunImage />
         </Route>
-        <Route path="/images" breadcrumb="Images" navigationHint="root">
-          <ImagesList />
-        </Route>
+
         <Route path="/images/:id/:engineId" breadcrumb="Images" let:meta navigationHint="root">
           <ImagesList searchTerm={meta.params.id} imageEngineId={meta.params.engineId} />
         </Route>
@@ -198,9 +225,6 @@ window.events?.receive('navigate', (navigationRequest: unknown) => {
         <Route path="/images/load" breadcrumb="Load Images">
           <LoadImages />
         </Route>
-        <Route path="/pods" breadcrumb="Pods" navigationHint="root">
-          <PodsList />
-        </Route>
         <Route path="/deploy-to-kube/:resourceId/:engineId/*" breadcrumb="Deploy to Kubernetes" let:meta>
           <DeployPodToKube
             resourceId={decodeURI(meta.params.resourceId)}
@@ -226,9 +250,7 @@ window.events?.receive('navigate', (navigationRequest: unknown) => {
         <Route path="/pod-create-from-containers" breadcrumb="Create Pod">
           <PodCreateFromContainers />
         </Route>
-        <Route path="/volumes" breadcrumb="Volumes" navigationHint="root">
-          <VolumesList />
-        </Route>
+
         <Route path="/volumes/create" breadcrumb="Create a Volume">
           <CreateVolume />
         </Route>

@@ -217,7 +217,6 @@ let sizeColumn = new TableColumn<VolumeInfoUI, string>('Size', {
 const columns = [
   statusColumn,
   nameColumn,
-  envColumn,
   ageColumn,
   sizeColumn,
   new TableColumn<VolumeInfoUI>('Actions', { align: 'right', renderer: VolumeColumnActions, overflow: true }),

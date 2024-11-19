@@ -44,6 +44,7 @@ export interface NavigationRegistryEntry {
   enabled?: boolean;
   items?: NavigationRegistryEntry[];
   hidden?: boolean;
+  separator?: boolean;
 }
 
 interface DisplayItem {

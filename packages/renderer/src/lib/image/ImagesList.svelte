@@ -302,7 +302,6 @@ let sizeColumn = new TableColumn<ImageInfoUI, string>('Size', {
 const columns = [
   statusColumn,
   nameColumn,
-  envColumn,
   ageColumn,
   sizeColumn,
   new TableColumn<ImageInfoUI>('Actions', {

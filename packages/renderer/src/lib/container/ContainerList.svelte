@@ -352,7 +352,6 @@ let ageColumn = new TableColumn<ContainerInfoUI | ContainerGroupInfoUI, Date | u
 const columns = [
   statusColumn,
   nameColumn,
-  envColumn,
   imageColumn,
   ageColumn,
   new TableColumn<ContainerInfoUI | ContainerGroupInfoUI>('Actions', {

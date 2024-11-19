@@ -30,8 +30,19 @@ if (!pages[title]) {
   </div>
   <div class="h-full overflow-hidden hover:overflow-y-auto" style="margin-bottom:auto">
     {#each items ?? [] as item}
-      <SettingsNavItem title={item.tooltip} href={item.link} selected={meta.url.startsWith(item.link)} onClick={() => pages[title] = item.link}
-      ></SettingsNavItem>
+      <SettingsNavItem
+        title={item.tooltip}
+        href={item.link}
+        selected={meta.url.startsWith(item.link)}
+        onClick={() => pages[title] = item.link}
+        expanded={item.type === 'submenu'}
+        section={item.type === 'submenu'}
+      />
+      {#if item.type === 'submenu'}
+        {#each (item.items ?? []) as sub (sub.name)}
+          <SettingsNavItem child={true} title={sub.tooltip} href={sub.link} selected={meta.url.startsWith(sub.link)}/>
+        {/each}
+      {/if}
     {/each}
   </div>
 </nav>

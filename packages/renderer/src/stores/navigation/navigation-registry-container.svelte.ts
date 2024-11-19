@@ -20,22 +20,108 @@ import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
 
 import { containersInfos } from '../containers';
 import type { NavigationRegistryEntry } from './navigation-registry';
+import KubeIcon from '/@/lib/images/KubeIcon.svelte';
 
-let count = $state(0);
+let containerNavigationEntry: NavigationRegistryEntry[] = $state([]);
 
 export function createNavigationContainerEntry(): NavigationRegistryEntry {
-  containersInfos.subscribe(containers => {
-    count = containers.length;
-  });
-  const registry: NavigationRegistryEntry = {
-    name: 'Containers',
-    icon: { iconComponent: ContainerIcon },
-    link: '/containers',
-    tooltip: 'Containers',
-    type: 'entry',
-    get counter() {
-      return count;
+  containerNavigationEntry = [
+    {
+      name: 'Containers',
+      icon: { iconComponent: KubeIcon },
+      link: '/container-engine/containers',
+      tooltip: 'Containers',
+      type: 'entry',
+      get counter() {
+        return 0;
+      },
     },
-  };
-  return registry;
+    {
+      name: 'Images',
+      icon: { iconComponent: KubeIcon },
+      link: '/container-engine/images',
+      tooltip: 'Images',
+      type: 'entry',
+      get counter() {
+        return 0;
+      },
+    },
+    /* kube objects */
+    {
+      name: 'Pods',
+      icon: { iconComponent: KubeIcon },
+      link: '/container-engine/pods',
+      tooltip: 'Pods',
+      type: 'entry',
+      get counter() {
+        return 0;
+      },
+    },
+    {
+      name: 'Volumes',
+      icon: { iconComponent: KubeIcon },
+      link: '/container-engine/volumes',
+      tooltip: 'Volumes',
+      type: 'entry',
+      get counter() {
+        return 0;
+      },
+    },
+    {
+      name: 'Advanced',
+      icon: { iconComponent: KubeIcon },
+      link: '/container-engine/advanced',
+      tooltip: 'Advanced',
+      type: 'submenu',
+      get counter() {
+        return 0;
+      },
+      items: [
+        {
+          name: 'Deployments',
+          icon: { iconComponent: KubeIcon },
+          link: '/container-engine/deployments',
+          tooltip: 'Deployments',
+          type: 'entry',
+          get counter() {
+            return 0;
+          },
+        },
+        {
+          name: 'ConfigMaps',
+          icon: { iconComponent: KubeIcon },
+          link: '/container-engine/configmaps',
+          tooltip: 'ConfigMaps',
+          type: 'entry',
+          get counter() {
+            return 0;
+          },
+        },
+        {
+          name: 'Secrets',
+          icon: { iconComponent: KubeIcon },
+          link: '/container-engine/secrets',
+          tooltip: 'Secrets',
+          type: 'entry',
+          get counter() {
+            return 0;
+          },
+        },
+      ]
+    },
+  ];
+
+  return {
+    name: 'Container Engine',
+    icon: { iconComponent: ContainerIcon },
+    link: '/container-engine',
+    tooltip: 'Container Engine',
+    type: 'submenu',
+    get counter() {
+      return 0;
+    },
+    get items() {
+      return containerNavigationEntry;
+    }
+  }
 }
