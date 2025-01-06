@@ -18,3 +18,22 @@
 
 export const CONFIGURATION_DEFAULT_SCOPE = 'DEFAULT';
 export const CONFIGURATION_ONBOARDING_SCOPE = 'Onboarding';
+
+export type ConfigurationScope =
+  | 'DEFAULT'
+  | 'ContainerConnection'
+  | 'KubernetesConnection'
+  | 'ContainerProviderConnectionFactory'
+  | 'KubernetesProviderConnectionFactory'
+  | 'DockerCompatibility'
+  | 'Onboarding';
+
+export type IConfigurationPropertySchemaType =
+  | 'markdown'
+  | 'string'
+  | 'number'
+  | 'integer'
+  | 'boolean'
+  | 'null'
+  | 'array'
+  | 'object';

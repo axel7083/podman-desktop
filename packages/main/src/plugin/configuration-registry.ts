@@ -21,7 +21,11 @@ import * as path from 'node:path';
 
 import type * as containerDesktopAPI from '@podman-desktop/api';
 
-import { CONFIGURATION_DEFAULT_SCOPE } from '/@api/configuration/constants.js';
+import {
+  CONFIGURATION_DEFAULT_SCOPE,
+  type ConfigurationScope,
+  type IConfigurationPropertySchemaType,
+} from '/@api/configuration/constants.js';
 import type { IExperimentalConfiguration } from '/@api/configuration/models.js';
 import type { NotificationCardOptions } from '/@api/notification.js';
 
@@ -31,16 +35,6 @@ import type { Directories } from './directories.js';
 import type { Event } from './events/emitter.js';
 import { Emitter } from './events/emitter.js';
 import { Disposable } from './types/disposable.js';
-
-export type IConfigurationPropertySchemaType =
-  | 'markdown'
-  | 'string'
-  | 'number'
-  | 'integer'
-  | 'boolean'
-  | 'null'
-  | 'array'
-  | 'object';
 
 export interface IConfigurationChangeEvent {
   key: string;
@@ -76,15 +70,6 @@ export interface IConfigurationPropertySchema {
   when?: string;
   experimental?: IExperimentalConfiguration;
 }
-
-export type ConfigurationScope =
-  | 'DEFAULT'
-  | 'ContainerConnection'
-  | 'KubernetesConnection'
-  | 'ContainerProviderConnectionFactory'
-  | 'KubernetesProviderConnectionFactory'
-  | 'DockerCompatibility'
-  | 'Onboarding';
 
 export interface IConfigurationExtensionInfo {
   id: string;
