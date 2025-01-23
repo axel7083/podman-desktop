@@ -41,7 +41,10 @@ async function toggle(expanded: boolean): Promise<void> {
 
 <div class="flex flex-1 flex-col bg-[var(--pd-content-card-bg)] p-5 rounded-lg">
   <Expandable bind:initialized bind:expanded onclick={toggle}>
-    {#snippet title()}<div class="text-lg font-semibold text-[var(--pd-content-card-header-text)]">Learning Center</div>{/snippet}
+    <!-- eslint-disable-next-line sonarjs/no-unused-vars -->
+    {#snippet title()}
+      <div class="text-lg font-semibold text-[var(--pd-content-card-header-text)]">Learning Center</div>
+    {/snippet}
     <Carousel cards={guides} let:card>
       <GuideCard guide={card as Guide} />
     </Carousel>

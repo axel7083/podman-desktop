@@ -19,7 +19,7 @@
 import '@testing-library/jest-dom/vitest';
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
-import { createRawSnippet } from 'svelte';
+import { createRawSnippet, type Snippet } from 'svelte';
 import { afterEach, expect, test, vi } from 'vitest';
 
 import Expandable from './Expandable.svelte';
@@ -34,15 +34,15 @@ vi.mock('../utils/animations', () => ({
   }),
 }));
 
-const aTitle = createRawSnippet(() => {
+const aTitle: Snippet<[]> = createRawSnippet(() => {
   return {
-    render: () => '<div>Title</div>',
+    render: (): string => '<div>Title</div>',
   };
 });
 
-const someContent = createRawSnippet(() => {
+const someContent: Snippet<[]> = createRawSnippet(() => {
   return {
-    render: () => '<div>Content</div>',
+    render: (): string => '<div>Content</div>',
   };
 });
 

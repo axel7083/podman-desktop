@@ -73,6 +73,7 @@ async function openKubernetesDocumentation(): Promise<void> {
       <!-- Details - collapsible -->
       <div class="flex flex-row w-full px-5 pb-2">
         <Expandable>
+          <!-- eslint-disable-next-line sonarjs/no-unused-vars -->
           {#snippet title()}
             <div class="flex flex-row w-full items-center">
               <div class="text-xl font-bold capitalize text-[var(--pd-content-header)]">Dashboard</div>
@@ -87,7 +88,7 @@ async function openKubernetesDocumentation(): Promise<void> {
           </div>
         </Expandable>
        </div>
-     
+
       <div class="flex w-full h-full overflow-auto">
         <div class="flex min-w-full h-full justify-center">
           <div class="flex flex-col space-y-4 min-w-full overflow-y-auto">
@@ -104,12 +105,15 @@ async function openKubernetesDocumentation(): Promise<void> {
                     <KubernetesDashboardResourceCard type='ConfigMaps & Secrets' Icon={ConfigMapSecretIcon} count={configMapSecretCount} link='/kubernetes/configmapsSecrets'/>
                 </div>
                 <!-- Graphs -->
-                
+
               {/if}
               <!-- Articles and blog posts - collapsible -->
               <div class="flex flex-1 flex-col pt-2">
                 <Expandable>
-                  {#snippet title()}<div class="text-xl">Explore articles and blog posts</div>{/snippet}
+                  <!-- eslint-disable-next-line sonarjs/no-unused-vars -->
+                  {#snippet title()}
+                    <div class="text-xl">Explore articles and blog posts</div>
+                  {/snippet}
                   <div class="grid grid-cols-3 gap-4">
                     <KubernetesDashboardGuideCard title='Deploy and test Kubernetes containers using Podman Desktop' image={deployAndTestKubernetesImage} link='https://developers.redhat.com/articles/2023/06/09/deploy-and-test-kubernetes-containers-using-podman-desktop'/>
                     <KubernetesDashboardGuideCard title='Working with Kubernetes in Podman Desktop' image={workingWithKubernetesImage} link='https://developers.redhat.com/articles/2023/11/06/working-kubernetes-podman-desktop'/>
