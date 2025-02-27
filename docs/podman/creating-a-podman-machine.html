@@ -14,7 +14,7 @@
 
 <link rel="preconnect" href="https://podman-desktop-website.goatcounter.com">
 <script async src="//gc.zgo.at/count.js" data-goatcounter="https://podman-desktop-website.goatcounter.com/count"></script><link rel="stylesheet" href="/assets/css/styles.c70e490e.css">
-<script src="/assets/js/runtime~main.f7b694bc.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.140a8032.js" defer="defer"></script>
 <script src="/assets/js/main.3e213a72.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -62,8 +62,17 @@ Enable to use the rootful connection by default.
 Required to use Kind on Windows.</li>
 <li>Additional settings based on your operating system:<!-- -->
 <ul>
-<li>(On Windows) <strong>User mode networking (traffic relayed by a user process)</strong>: Enable to route the traffic through the network connection from your Windows session. This setting is required to access resources behind your VPN connection.</li>
-<li>(On macOS) <strong>Provider Type</strong>: The default value is <code>Apple HyperVisor</code>. Before switching to <code>GPU enabled (LibKrun)</code>, ensure that you have <a href="/docs/installation/macos-install#using-libkrun-as-machine-provider">configured the machine provider</a> manually.</li>
+<li>(On Windows)<!-- -->
+<ul>
+<li><strong>User mode networking (traffic relayed by a user process)</strong>: Enable to route the traffic through the network connection from your Windows session. This setting is required to access resources behind your VPN connection.</li>
+<li><strong>Provider Type</strong>: The setting is visible only to administrators, and its default value is <code>wsl</code>.</li>
+</ul>
+</li>
+<li>(On macOS)<!-- -->
+<ul>
+<li><strong>Provider Type</strong>: The default value is <code>Apple HyperVisor</code>. Before switching to <code>GPU enabled (LibKrun)</code>, ensure that you have <a href="/docs/installation/macos-install#using-libkrun-as-machine-provider">configured the machine provider</a> manually.</li>
+</ul>
+</li>
 </ul>
 </li>
 <li>Click <strong>Create</strong>.</li>
