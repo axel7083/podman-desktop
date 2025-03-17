@@ -1,11 +1,12 @@
 <script lang="ts">
 import { faArrowCircleDown, faCircleCheck, faCog, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
-import { Button, Checkbox, Dropdown, ErrorMessage, Tooltip } from '@podman-desktop/ui-svelte';
+import { Button, Checkbox, ErrorMessage, Tooltip } from '@podman-desktop/ui-svelte';
 import type { Terminal } from '@xterm/xterm';
 import { onMount, tick } from 'svelte';
 import Fa from 'svelte-fa';
 import { router } from 'tinro';
 
+import ContainerConnectionDropdown from '/@/lib/forms/ContainerConnectionDropdown.svelte';
 import { ImageUtils } from '/@/lib/image/image-utils';
 import RecommendedRegistry from '/@/lib/image/RecommendedRegistry.svelte';
 import ImageIcon from '/@/lib/images/ImageIcon.svelte';
@@ -383,21 +384,17 @@ async function onEnterOperation(): Promise<void> {
       <div class="pt-4">
         <label for="providerChoice" class="block mb-2 font-semibold text-[var(--pd-content-card-header-text)]"
           >Container Engine</label>
-        <Dropdown
+        <ContainerConnectionDropdown
           id="providerChoice"
           name="providerChoice"
           bind:value={selectedProviderConnection}
-          options={providerConnections.map(providerConnection => ({
-            label: providerConnection.name,
-            value: providerConnection,
-          }))}>
-        </Dropdown>
+          connections={providerConnections}/>
       </div>
     {/if}
     {#if providerConnections.length === 1}
       <input type="hidden" name="providerChoice" readonly bind:value={selectedProviderConnection} />
     {/if}
-  
+
     <footer>
       <div class="w-full flex flex-col justify-end gap-3 my-3">
         <div class="flex flex-row">
