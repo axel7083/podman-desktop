@@ -18,6 +18,7 @@ import WarningMessage from '/@/lib/ui/WarningMessage.svelte';
 import { lastPage } from '/@/stores/breadcrumb';
 import { providerInfos } from '/@/stores/providers';
 import { runImageInfo } from '/@/stores/run-image-store';
+import type { ImageInfo } from '/@api/image-info';
 import type { ImageSearchOptions } from '/@api/image-registry';
 import type { ProviderContainerConnectionInfo } from '/@api/provider-info';
 import type { PullEvent } from '/@api/pull-event';
@@ -223,7 +224,9 @@ async function searchImages(value: string): Promise<string[]> {
 }
 
 async function searchLocalImages(value: string): Promise<string[]> {
-  const listImages = await window.listImages();
+  const listImages: ImageInfo[] = await window.listImages({
+    provider: $state.snapshot(selectedProviderConnection),
+  });
   const localImagesNames = listImages.map(image => {
     if (image.RepoTags) {
       return image.RepoTags;
@@ -278,7 +281,11 @@ async function buildContainerFromImage(): Promise<void> {
     let [registry, imageName] = imageToPull.split('/');
     dockerLibraryImage = `${registry}/library/${imageName}`;
   }
-  const localImages = (await window.listImages()).filter(
+  const localImages = (
+    await window.listImages({
+      provider: $state.snapshot(selectedProviderConnection),
+    })
+  ).filter(
     image =>
       (
         image.RepoTags?.filter(repoTag =>
@@ -333,6 +340,14 @@ async function onEnterOperation(): Promise<void> {
     await pullImageAndRun();
   }
 }
+
+function onContainerConnectionChange(): void {
+  console.log('onContainerConnectionChange');
+  // reset values
+  values = [];
+  matchingLocalImages = [];
+  imageToPull = '';
+}
 </script>
 
 <EngineFormPage title="Select an image">
@@ -344,23 +359,25 @@ async function onEnterOperation(): Promise<void> {
   </svelte:fragment>
   <div slot="content" class="space-y-2 flex flex-col">
     <div class="flex flex-col">
-      <Typeahead
-        id="imageName"
-        name="imageName"
-        placeholder="Select or enter an image to run"
-        onInputChange={searchFunction}
-        resultItems={values}
-        compare={sortResults}
-        onChange={async (s: string): Promise<void> => {
+      {#key selectedProviderConnection}
+        <Typeahead
+          id="imageName"
+          name="imageName"
+          placeholder="Select or enter an image to run"
+          onInputChange={searchFunction}
+          resultItems={values}
+          compare={sortResults}
+          onChange={async (s: string): Promise<void> => {
           validateImageName(s);
           await resolveShortname();
           await searchLatestTag();
         }}
-        onEnter={onEnterOperation}
-        disabled={pullFinished || pullInProgress}
-        error={!isValidName}
-        required
-        initialFocus />
+          onEnter={onEnterOperation}
+          disabled={pullFinished || pullInProgress}
+          error={!isValidName}
+          required
+          initialFocus />
+      {/key}
       {#if selectedProviderConnection?.type === 'podman' && podmanFQN && !matchingLocalImages.includes(podmanFQN)}
         <div class="absolute mt-2 ml-[-18px] self-start">
           <Tooltip tip="Shortname images will be pulled from Docker Hub" topRight>
@@ -387,8 +404,10 @@ async function onEnterOperation(): Promise<void> {
         <ContainerConnectionDropdown
           id="providerChoice"
           name="providerChoice"
+          onchange={onContainerConnectionChange}
           bind:value={selectedProviderConnection}
-          connections={providerConnections}/>
+          connections={providerConnections}
+          disabled={pullFinished || pullInProgress}/>
       </div>
     {/if}
     {#if providerConnections.length === 1}
