@@ -2,12 +2,62 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://podman-desktop.io/blog</id>
     <title>Podman Desktop Blog</title>
-    <updated>2025-03-05T00:00:00.000Z</updated>
+    <updated>2025-03-06T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://podman-desktop.io/blog"/>
     <subtitle>Podman Desktop Blog</subtitle>
     <icon>https://podman-desktop.io/img/favicon.ico</icon>
     <rights>Copyright © 2025 Podman Desktop</rights>
+    <entry>
+        <title type="html"><![CDATA[Configure a mirror registry]]></title>
+        <id>https://podman-desktop.io/blog/2025/03/06/mirror-registry-configuration-blog</id>
+        <link href="https://podman-desktop.io/blog/2025/03/06/mirror-registry-configuration-blog"/>
+        <updated>2025-03-06T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[Covers the end-to-end workflow to configure a mirror registry]]></summary>
+        <content type="html"><![CDATA[<p>Lower rate limits imposed on the Docker Hub End-User License Agreement (EULA) made it difficult for community members to access the <code>docker.io</code> images frequently. A simple solution to this problem is to configure a mirror for the <code>docker.io</code> registry in the <code>registries.conf</code> file. This way, they can access the Docker resources whenever needed.</p>
+<p>With the Podman Desktop UI, you can add registry locations and configure their mirrors easily. Configuring a mirror redirects a registry to another location, enabling you to use its content. For example, if you have configured <code>ghcr.io</code> as a mirror for <code>docker.io</code> and try to pull a resource, Podman pulls the resource from <code>ghcr.io</code> instead of <code>docker.io</code>.</p>
+<p>The blog covers how to configure a mirror for the <code>docker.io</code> registry.</p>
+<h2 class="anchor anchorWithStickyNavbar_JmGV" id="prerequisites">Prerequisites<a href="https://podman-desktop.io/blog/2025/03/06/mirror-registry-configuration-blog#prerequisites" class="hash-link" aria-label="Direct link to Prerequisites" title="Direct link to Prerequisites">​</a></h2>
+<ul>
+<li>Upgrade to the latest version of Podman.</li>
+<li><a href="https://podman-desktop.io/docs/podman/creating-a-podman-machine">Recreate your Podman machine</a>. Otherwise, you get a notification when you set up your registry configuration:
+<img decoding="async" loading="lazy" alt="notification to mount the registry file" src="https://podman-desktop.io/assets/images/notification-a15957ae6fc7b2e920fc52d6d2eb58fa.png" width="1146" height="484" class="img_SS3x"></li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_JmGV" id="configuring-a-mirror-for-dockerio">Configuring: A mirror for <code>docker.io</code><a href="https://podman-desktop.io/blog/2025/03/06/mirror-registry-configuration-blog#configuring-a-mirror-for-dockerio" class="hash-link" aria-label="Direct link to configuring-a-mirror-for-dockerio" title="Direct link to configuring-a-mirror-for-dockerio">​</a></h2>
+<ol>
+<li>Go to the <strong>Settings &gt; Resources</strong> page.</li>
+<li>Select <strong>More Options &gt; Setup registry configuration</strong> in the Podman tile. A command palette opens.
+<img decoding="async" loading="lazy" alt="Set up registry configuration" src="https://podman-desktop.io/assets/images/setting-up-registry-configuration-d95cf5cee047a884675fb1511e32fd38.png" width="1376" height="696" class="img_SS3x"></li>
+<li>Set up your registry configuration:</li>
+<li>Select the <strong>Add registry configuration</strong> option from the command palette.
+<img decoding="async" loading="lazy" alt="adding registry configuration" src="https://podman-desktop.io/assets/images/add-registry-configuration-cc999a5d1c04137bea76c5abb2fcef54.png" width="1214" height="310" class="img_SS3x"></li>
+<li>Type the location of the registry, such as <code>docker.io</code>, and press the <code>Enter</code> key. The <code>docker.io</code> registry is added to the palette.
+<img decoding="async" loading="lazy" alt="docker.io registry added" src="https://podman-desktop.io/assets/images/docker-option-added-831479ad916c8d9e481fa92a24507866.png" width="1202" height="352" class="img_SS3x"></li>
+<li>Select <code>docker.io</code> from the command palette.</li>
+<li>Type the location where you want to mirror the registry, such as <code>ghcr.io</code>, and press the <code>Enter</code> key. The entry for the <code>docker.io</code> registry shows the location where it is mirrored.
+<img decoding="async" loading="lazy" alt="mirrored registry location" src="https://podman-desktop.io/assets/images/mirrored-registry-3364b6ef4e14385b649d6cf22574371c.png" width="1200" height="350" class="img_SS3x"></li>
+<li>Select the <code>End configuring registries</code> option to end registry configuration.
+<img decoding="async" loading="lazy" alt="ending registry configuration" src="https://podman-desktop.io/assets/images/end-configuring-registries-020a2c4b9bc1e626570820d853fe24c5.png" width="1196" height="350" class="img_SS3x"></li>
+</ol>
+<h2 class="anchor anchorWithStickyNavbar_JmGV" id="verifying-the-mirror">Verifying: the mirror<a href="https://podman-desktop.io/blog/2025/03/06/mirror-registry-configuration-blog#verifying-the-mirror" class="hash-link" aria-label="Direct link to Verifying: the mirror" title="Direct link to Verifying: the mirror">​</a></h2>
+<p>There is no direct way to verify the mirror configuration from the UI. But, you can use the CLI for verification.</p>
+<ol>
+<li>Start an interactive session with the default Podman machine:</li>
+</ol>
+<div class="language-sh codeBlockContainer_mQmQ theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282A36"><div class="codeBlockContent_D5yF"><pre tabindex="0" class="prism-code language-sh codeBlock_RMoD thin-scrollbar" style="color:#F8F8F2;background-color:#282A36"><code class="codeBlockLines_AclH"><span class="token-line" style="color:#F8F8F2"><span class="token plain">$ </span><span class="token function" style="color:rgb(80, 250, 123)">podman</span><span class="token plain"> machine </span><span class="token function" style="color:rgb(80, 250, 123)">ssh</span><span class="token plain"> </span><span class="token operator">&lt;</span><span class="token plain">machine_name</span><span class="token operator">&gt;</span><br></span></code></pre><div class="buttonGroup_aaMX"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_z5j7" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_FoOz"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_L0B6"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+<ol start="2">
+<li>Pull an invalid image from <code>docker.io</code>.</li>
+</ol>
+<div class="language-sh codeBlockContainer_mQmQ theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282A36"><div class="codeBlockContent_D5yF"><pre tabindex="0" class="prism-code language-sh codeBlock_RMoD thin-scrollbar" style="color:#F8F8F2;background-color:#282A36"><code class="codeBlockLines_AclH"><span class="token-line" style="color:#F8F8F2"><span class="token plain">$ </span><span class="token function" style="color:rgb(80, 250, 123)">podman</span><span class="token plain"> pull docker.io/invalid</span><br></span></code></pre><div class="buttonGroup_aaMX"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_z5j7" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_FoOz"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_L0B6"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+<p>An error message appears in the terminal indicating a failure to pull the image from the mirror. You receive the error message: <code>Mirrors have also failed</code>.</p>]]></content>
+        <author>
+            <name>Shipra Singh</name>
+            <uri>https://github.com/shipsing</uri>
+        </author>
+        <category label="podman-desktop" term="podman-desktop"/>
+        <category label="podman" term="podman"/>
+        <category label="configure-a-mirror-registry" term="configure-a-mirror-registry"/>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Podman Desktop 1.17 Release]]></title>
         <id>https://podman-desktop.io/blog/podman-desktop-release-1.17</id>
@@ -1436,7 +1486,7 @@ release we received pull requests from the following people:</p>
 <li>chore: change the order of elements on the dashboard page by @gastoner in <a href="https://github.com/containers/podman-desktop/pull/8381" target="_blank" rel="noopener noreferrer">#8381</a></li>
 <li>fix: next version check by @SoniaSandler in <a href="https://github.com/containers/podman-desktop/pull/9595" target="_blank" rel="noopener noreferrer">#9595</a></li>
 </ul>
-<h3 class="anchor anchorWithStickyNavbar_JmGV" id="documentation-">documentation 📖<a href="https://podman-desktop.io/blog/podman-desktop-release-1.14#documentation-" class="hash-link" aria-label="Direct link to documentation 📖" title="Direct link to documentation 📖">​</a></h3>
+<h3 class="anchor anchorWithStickyNavbar_JmGV" id="documentation-">documentation 📖<a href="https://podman-desktop.io/blog/podman-desktop-release-1.14#documentation-" class="hash-link" aria-label="Direct link to documentation ��📖" title="Direct link to documentation 📖">​</a></h3>
 <ul>
 <li>docs: add kind video by @cdrage in <a href="https://github.com/containers/podman-desktop/pull/9444" target="_blank" rel="noopener noreferrer">#9444</a></li>
 <li>docs: add minikube video by @cdrage in <a href="https://github.com/containers/podman-desktop/pull/9391" target="_blank" rel="noopener noreferrer">#9391</a></li>
@@ -2304,6 +2354,8 @@ Otherwise, you do not see the option.</p></div></div>
 <li>From the <strong>Select target environments</strong> option, select <strong>WSL - Windows Subsystem for Linux (</strong><code>.tar.gz</code><strong>)</strong>.</li>
 <li>Click <strong>Next</strong>.</li>
 </ul>
+<div class="theme-admonition theme-admonition-warning admonition_WCGJ alert alert--warning"><div class="admonitionHeading_GCBg"><span class="admonitionIcon_L39b"><svg viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8.893 1.5c-.183-.31-.52-.5-.887-.5s-.703.19-.886.5L.138 13.499a.98.98 0 0 0 0 1.001c.193.31.53.501.886.501h13.964c.367 0 .704-.19.877-.5a1.03 1.03 0 0 0 .01-1.002L8.893 1.5zm.133 11.497H6.987v-2.003h2.039v2.003zm0-3.004H6.987V5.987h2.039v4.006z"></path></svg></span>warning</div><div class="admonitionContent_pbrs"><p>Although the RHEL 10 (Beta) option is available in the <strong>Release</strong>, please note that it is incompatible with
+At the time of writing, the WSL kernel does not support nftables.</p></div></div>
 <p>On the <strong>Register</strong> page, select <strong>Automatically register and enable advanced capabilities.</strong></p>
 <ul>
 <li>From the dropdown menu, choose an activation key to use for the image. See <a href="https://access.redhat.com/documentation/en-us/subscription_central/2023/html/getting_started_with_activation_keys_on_the_hybrid_cloud_console/assembly-creating-managing-activation-keys#proc-creating-act-keys-console_" target="_blank" rel="noopener noreferrer">Creating an activation key</a>.</li>
@@ -3003,29 +3055,5 @@ more capabilites and even better integration into 🦭 Podman Desktop:</p>
         <category label="onboarding" term="onboarding"/>
         <category label="extensions" term="extensions"/>
         <category label="settings" term="settings"/>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Podman Desktop Wins 2024 DEVIES Award]]></title>
-        <id>https://podman-desktop.io/blog/podman-desktop-wins-devies-award</id>
-        <link href="https://podman-desktop.io/blog/podman-desktop-wins-devies-award"/>
-        <updated>2024-02-20T00:00:00.000Z</updated>
-        <summary type="html"><![CDATA[Podman Desktop has been awarded the 2024 DEVIES Award for Best Innovation in Containers & Kubernetes.]]></summary>
-        <content type="html"><![CDATA[<p>We’re honored to announce that <a href="https://podman-desktop.io/" target="_blank" rel="noopener noreferrer">Podman Desktop</a> has been recognized with the prestigious <a href="https://www.developerweek.com/awards/" target="_blank" rel="noopener noreferrer"><strong>2024 DEVIES Award</strong></a> in the category of <strong>Containers &amp; Kubernetes</strong>. This award is a testimony to the effectiveness of the Podman Desktop team and greater open-source community's efforts to help developers. Podman Desktop increases developer container workflow efficiency as well as provides <a href="https://developers.redhat.com/articles/2023/11/06/working-kubernetes-podman-desktop" target="_blank" rel="noopener noreferrer">an easy transition of applications from containers to Kubernetes</a>, the leading open-source container orchestration platform.</p>
-<p>“While Podman Desktop only went into general availability last year, the community response has been very impressive and incredibly gratifying. We are extremely proud to receive this outstanding recognition which celebrates passion, commitment and innovation for shaping the future of container development backed by the vibrant open-source standards that Red Hat supports. ” said <a href="https://twitter.com/stevanlm" target="_blank" rel="noopener noreferrer">Stévan Le Meur</a>, <em>Product Manager</em> on the Podman Desktop team.</p>
-<p><img decoding="async" loading="lazy" alt="hero" src="https://podman-desktop.io/assets/images/devies-celebration-06a75ad4e98b1b3842b465dd523065eb.png" width="1920" height="1080" class="img_SS3x"></p>
-<h2 class="anchor anchorWithStickyNavbar_JmGV" id="what-are-the-devies-awards">What are the DEVIES awards?<a href="https://podman-desktop.io/blog/podman-desktop-wins-devies-award#what-are-the-devies-awards" class="hash-link" aria-label="Direct link to What are the DEVIES awards?" title="Direct link to What are the DEVIES awards?">​</a></h2>
-<p>The DEVIES Awards, presented by <a href="https://www.developerweek.com/" target="_blank" rel="noopener noreferrer">DeveloperWeek</a>, recognize the most innovative and impactful tools, platforms, and technologies in the software development community. Podman Desktop's win as the <em>best innovation in Containers &amp; Kubernetes</em> highlights its significant impact on the industry and its role in revolutionizing the way developers build, ship, and run their applications. DEVIES Award winners are selected from hundreds of nominees by the independent, industry-leading DevNetwork Advisory Board.</p>
-<h2 class="anchor anchorWithStickyNavbar_JmGV" id="join-us-in-celebrating-">Join us in celebrating! <a href="https://podman-desktop.io/blog/podman-desktop-wins-devies-award#join-us-in-celebrating-" class="hash-link" aria-label="Direct link to Join us in celebrating! " title="Direct link to Join us in celebrating! ">​</a></h2>
-<p>We’re excited to be receiving this award on stage at DeveloperWeek 2024, happening on February 21-23, 2024, in Oakland, CA and February 27-29, 2024 (Virtually). In addition, Red Hat developer advocate <a href="https://github.com/cedricclyburn" target="_blank" rel="noopener noreferrer">Cedric Clyburn</a> will be presenting a session on Podman Desktop, titled “<a href="https://sched.co/1XZ7k" target="_blank" rel="noopener noreferrer">Going from Containers, to Pods, to Kubernetes – Help for Your Developer Environments!</a>”, with a full presentation on <a href="https://podman.io/" target="_blank" rel="noopener noreferrer">Podman</a>, a demonstration of the Podman Desktop experience, and a multi-tier application going from containers, to pods, to finally Kubernetes!</p>
-<p>Finally, it would be seal-y to not include and acknowledge that this award was earned by the <a href="https://github.com/containers/podman-desktop/graphs/contributors" target="_blank" rel="noopener noreferrer">entire Podman Desktop community of contributors</a>! We also thank the DevNetwork Advisory Board and DeveloperWeek for this honorable award, and for the opportunity to share Podman Desktop's innovations with the greater developer community.</p>]]></content>
-        <author>
-            <name>Cedric Clyburn</name>
-            <uri>https://github.com/cedricclyburn</uri>
-        </author>
-        <category label="podman-desktop" term="podman-desktop"/>
-        <category label="podman" term="podman"/>
-        <category label="award" term="award"/>
-        <category label="containers" term="containers"/>
-        <category label="kubernetes" term="kubernetes"/>
     </entry>
 </feed>
