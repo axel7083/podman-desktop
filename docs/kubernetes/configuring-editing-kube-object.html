@@ -13,8 +13,8 @@
 <link rel="search" type="application/opensearchdescription+xml" title="Podman Desktop" href="/opensearch.xml">
 
 <link rel="preconnect" href="https://podman-desktop-website.goatcounter.com">
-<script async src="//gc.zgo.at/count.js" data-goatcounter="https://podman-desktop-website.goatcounter.com/count"></script><link rel="stylesheet" href="/assets/css/styles.4e28e39a.css">
-<script src="/assets/js/runtime~main.4d6edbd2.js" defer="defer"></script>
+<script async src="//gc.zgo.at/count.js" data-goatcounter="https://podman-desktop-website.goatcounter.com/count"></script><link rel="stylesheet" href="/assets/css/styles.4783dbb1.css">
+<script src="/assets/js/runtime~main.6c4f959a.js" defer="defer"></script>
 <script src="/assets/js/main.3d5cf59f.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -26,11 +26,13 @@
 <ul>
 <li><code>Node</code>: Use this object to set up a node on which the necessary pods can run within a kubernetes cluster.</li>
 <li><code>Deployment</code>: Use this object to create necessary pods for execution and scale the number of pods.</li>
+<li><code>Pod</code>: Use this object to create a set of one or more containers with shared storage and network resources.</li>
 <li><code>Service</code>: Use this object to expose your application to users and define policies for application access.</li>
 <li><code>Ingress</code>: Use this object to define routing rules and manage user access to the services running in a Kubernetes cluster.</li>
 <li><code>PersistentVolumeClaim</code>: Use this object to request <code>PersistentVolume</code> resources for storage and define volume access modes within your Kubernetes cluster.</li>
-<li><code>ConfigMap</code>: Use this object to to define non-sensitive configuration data for initializing or executing your application.</li>
+<li><code>ConfigMap</code>: Use this object to define non-sensitive configuration data for initializing or executing your application.</li>
 <li><code>Secret</code>: Use this object to store and manage sensitive data, such as passwords, OAuth tokens, and SSH keys for your application.</li>
+<li><code>CronJob</code>: Use this object to run a job, such as backup and report generation periodically on a given schedule.</li>
 </ul>
 </li>
 <li>View and analyze real-time information about the connection status of the resources configured within the cluster.</li>
@@ -53,7 +55,7 @@
 </li>
 <li>
 <p>Click one of the options to open the object page.</p>
-<p><img decoding="async" loading="lazy" alt="kube objects" src="/assets/images/kube-objects-140ec1f152d01b7de37f507c034f1880.png" width="239" height="440" class="img_SS3x"></p>
+<p><img decoding="async" loading="lazy" alt="kube objects" src="/assets/images/kube-objects-82e905adca3f1c87a160e014415d12cb.png" width="150" height="337" class="img_SS3x"></p>
 </li>
 <li>
 <p>Click the <strong>Apply YAML</strong> button and select an object configuration file. A confirmation notification opens.
@@ -77,7 +79,7 @@
 <li>
 <p>View the created object:</p>
 <ul>
-<li>View the <code>Pod</code> object on the <strong>Pods</strong> component page.</li>
+<li>View the <code>Pod</code> object on the <strong>Kubernetes &gt; Pods</strong> object page.</li>
 <li>View the other Kubernetes objects on the related object page. For example, if you have created a <code>Node</code> object, you can view it on the <strong>Kubernetes &gt; Nodes</strong> page.</li>
 </ul>
 </li>
