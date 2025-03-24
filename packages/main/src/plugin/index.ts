@@ -63,6 +63,7 @@ import type { ExtensionBanner, RecommendedRegistry } from '/@/plugin/recommendat
 import { TaskManager } from '/@/plugin/tasks/task-manager.js';
 import { Uri } from '/@/plugin/types/uri.js';
 import { Updater } from '/@/plugin/updater.js';
+import { TaskConnectionUtils } from '/@/plugin/util/task-connection-utils.js';
 import type { CliToolInfo } from '/@api/cli-tool-info.js';
 import type { ColorInfo } from '/@api/color-info.js';
 import type { CommandInfo } from '/@api/command-info.js';
@@ -2320,46 +2321,11 @@ export class PluginSystem {
       },
     );
 
-    const withTaskConnection = async (options: {
-      loggerId: string;
-      tokenId: number | undefined;
-      title: string;
-      navigateToTask: () => Promise<void>;
-      execute: (logger: LoggerWithEnd, token: containerDesktopAPI.CancellationToken | undefined) => Promise<void>;
-      executeErrorMsg: (err: unknown) => string;
-    }): Promise<void> => {
-      const logger = this.getLogHandler('provider-registry:taskConnection-onData', options.loggerId);
-      let token;
-      if (options.tokenId) {
-        const tokenSource = cancellationTokenRegistry.getCancellationTokenSource(options.tokenId);
-        token = tokenSource?.token;
-      }
-
-      const task = taskManager.createTask({
-        title: options.title,
-        action: {
-          name: 'Open task',
-          execute: () => {
-            options.navigateToTask().catch((err: unknown) => console.error(err));
-          },
-        },
-      });
-
-      return options
-        .execute(logger, token)
-        .then(result => {
-          task.status = 'success';
-          return result;
-        })
-        .catch((err: unknown) => {
-          task.error = options.executeErrorMsg(err);
-          logger.error(err);
-          throw err;
-        })
-        .finally(() => {
-          logger.onEnd();
-        });
-    };
+    const taskConnectionUtils = new TaskConnectionUtils({
+      getLogHandler: this.getLogHandler.bind(this),
+      cancellationTokenRegistry,
+      taskManager,
+    });
 
     this.ipcHandle(
       'provider-registry:createContainerProviderConnection',
@@ -2372,7 +2338,7 @@ export class PluginSystem {
         taskId: number | undefined,
       ): Promise<void> => {
         const providerName = providerRegistry.getProviderInfo(internalProviderId)?.name;
-        return withTaskConnection({
+        return taskConnectionUtils.withTask({
           loggerId,
           tokenId,
           title: `Creating ${providerName ?? 'Container'} provider`,
@@ -2406,7 +2372,7 @@ export class PluginSystem {
         taskId: number | undefined,
       ): Promise<void> => {
         const providerName = providerRegistry.getProviderInfo(internalProviderId)?.name;
-        return withTaskConnection({
+        return taskConnectionUtils.withTask({
           loggerId,
           tokenId,
           title: `Creating ${providerName ?? 'Kubernetes'} provider`,
