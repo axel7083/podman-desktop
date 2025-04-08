@@ -18,6 +18,7 @@
 
 import { join } from 'path';
 import { builtinModules } from 'module';
+import path from 'node:path';
 
 const PACKAGE_ROOT = __dirname;
 
@@ -57,6 +58,14 @@ const config = {
     },
     emptyOutDir: true,
     reportCompressedSize: false,
+  },
+  test: {
+    globals: true,
+    environment: 'node',
+    include: ['src/**/*.{test,spec}.?(c|m)[jt]s?(x)'],
+    alias: {
+      '@podman-desktop/api': path.resolve(PACKAGE_ROOT, '../../../../', '__mocks__/@podman-desktop/api.js'),
+    },
   },
 };
 
