@@ -19,10 +19,8 @@
 import { chrome } from '../../.electron-vendors.cache.json';
 import { join } from 'path';
 import { builtinModules } from 'module';
-import { coverageConfig } from '../../vitest-shared-extensions.config';
 
 const PACKAGE_ROOT = __dirname;
-const PACKAGE_NAME = 'api';
 
 /**
  * @type {import('vite').UserConfig}
@@ -55,9 +53,6 @@ const config = {
     },
     emptyOutDir: true,
     reportCompressedSize: false,
-  },
-  test: {
-    ...coverageConfig(PACKAGE_ROOT, PACKAGE_NAME),
   },
 };
 

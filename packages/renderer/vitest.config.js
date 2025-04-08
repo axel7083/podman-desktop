@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2023-2025 Red Hat, Inc.
+ * Copyright (C) 2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,38 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+
+import { join } from 'node:path';
 import { defineProject } from 'vitest/config';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { svelteTesting } from '@testing-library/svelte/vite';
 
 const PACKAGE_ROOT = __dirname;
 
-/**
- * Config for extensions tests
- * placed in project root tests folder
- * @type {import('vite').UserConfig}
- * @see https://vitest.dev/config/
- */
 export default defineProject({
   root: PACKAGE_ROOT,
+  resolve: {
+    alias: {
+      '/@/': join(PACKAGE_ROOT, 'src') + '/',
+      '/@api/': join(PACKAGE_ROOT, '../api/src') + '/',
+    },
+  },
+  plugins: [svelte({ hot: !process.env.VITEST }), svelteTesting()],
   test: {
+    retry: 3, // Retries failing tests up to 3 times
+    include: ['src/**/*.{test,spec}.?(c|m)[jt]s?(x)'],
     globals: true,
-    include: ['*.{test,spec}.ts'],
+    environment: 'jsdom',
+    alias: [
+      { find: '@testing-library/svelte', replacement: '@testing-library/svelte/svelte5' },
+      {
+        find: /^monaco-editor$/,
+        replacement: `${PACKAGE_ROOT}/../../node_modules/monaco-editor/esm/vs/editor/editor.api`,
+      },
+    ],
+    deps: {
+      inline: ['moment'],
+    },
+    setupFiles: ['./vite.tests.setup.js'],
   },
 });

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2023-2025 Red Hat, Inc.
+ * Copyright (C) 2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,20 +15,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+
 import { defineProject } from 'vitest/config';
+import { join } from 'node:path';
 
 const PACKAGE_ROOT = __dirname;
 
-/**
- * Config for extensions tests
- * placed in project root tests folder
- * @type {import('vite').UserConfig}
- * @see https://vitest.dev/config/
- */
 export default defineProject({
   root: PACKAGE_ROOT,
   test: {
     globals: true,
-    include: ['*.{test,spec}.ts'],
+    environment: 'node',
+    include: ['src/**/*.{test,spec}.?(c|m)[jt]s?(x)'],
+    alias: {
+      '/@/': join(PACKAGE_ROOT, 'src') + '/',
+    },
   },
 });
