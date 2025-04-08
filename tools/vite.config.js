@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { builtinModules } from 'module';
 
 const PACKAGE_ROOT = __dirname;
@@ -40,14 +40,13 @@ const config = {
     outDir: 'dist',
     assetsDir: '.',
     minify: process.env.MODE === 'production' ? 'esbuild' : false,
-    lib: {
-      entry: 'src/release-notes-generator.ts',
-      formats: ['cjs'],
-    },
     rollupOptions: {
       external: [...builtinModules.flatMap(p => [p, `node:${p}`])],
       output: {
         entryFileNames: '[name].cjs',
+      },
+      input: {
+        'release-notes-generator': resolve(PACKAGE_ROOT, 'src', 'release-notes-generator', 'index.ts'),
       },
     },
     emptyOutDir: true,
