@@ -2,12 +2,101 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://podman-desktop.io/blog</id>
     <title>Podman Desktop Blog</title>
-    <updated>2025-04-14T00:00:00.000Z</updated>
+    <updated>2025-05-05T00:00:00.000Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://podman-desktop.io/blog"/>
     <subtitle>Podman Desktop Blog</subtitle>
     <icon>https://podman-desktop.io/img/favicon.ico</icon>
     <rights>Copyright © 2025 Podman Desktop</rights>
+    <entry>
+        <title type="html"><![CDATA[Supercharge Your Container Development in VS Code with Podman and Podman Desktop]]></title>
+        <id>https://podman-desktop.io/blog/2025/05/05/vs-code-with-podman-desktop</id>
+        <link href="https://podman-desktop.io/blog/2025/05/05/vs-code-with-podman-desktop"/>
+        <updated>2025-05-05T00:00:00.000Z</updated>
+        <summary type="html"><![CDATA[How to develop apps with VS Code and Podman Desktop]]></summary>
+        <content type="html"><![CDATA[<p>Developing containerized applications can sometimes feel complex, but with the right tools, it can be a smooth and efficient process. In this blog post, we'll explore how to leverage the power of Visual Studio Code (VS Code) together with Podman and Podman Desktop to streamline your container development workflow. We'll cover setting up and using two VS Code extensions that integrate with Podman.</p>
+<h2 class="anchor anchorWithStickyNavbar_JmGV" id="vs-code-your-ide-for-container-development">VS Code: Your IDE for Container Development<a href="https://podman-desktop.io/blog/2025/05/05/vs-code-with-podman-desktop#vs-code-your-ide-for-container-development" class="hash-link" aria-label="Direct link to VS Code: Your IDE for Container Development" title="Direct link to VS Code: Your IDE for Container Development">​</a></h2>
+<p>VS Code is a popular and versatile code editor that can be extended to enhance its functionality. For container development, several excellent extensions integrate seamlessly with Podman.</p>
+<h2 class="anchor anchorWithStickyNavbar_JmGV" id="prerequisites">Prerequisites<a href="https://podman-desktop.io/blog/2025/05/05/vs-code-with-podman-desktop#prerequisites" class="hash-link" aria-label="Direct link to Prerequisites" title="Direct link to Prerequisites">​</a></h2>
+<p>Before we begin, ensure you have the following installed:</p>
+<ul>
+<li><strong>Podman:</strong> Follow the installation instructions on the <a href="https://podman.io/" target="_blank" rel="noopener noreferrer">official website</a>.</li>
+<li><strong>Podman Desktop:</strong> Download and install Podman Desktop from the <a href="https://podman-desktop.io/downloads" target="_blank" rel="noopener noreferrer">official website</a>.</li>
+<li><strong>Visual Studio Code:</strong> Download and install VS Code from the <a href="https://code.visualstudio.com/download" target="_blank" rel="noopener noreferrer">official website</a>.</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_JmGV" id="vs-code-extensions"><strong>VS Code Extensions</strong><a href="https://podman-desktop.io/blog/2025/05/05/vs-code-with-podman-desktop#vs-code-extensions" class="hash-link" aria-label="Direct link to vs-code-extensions" title="Direct link to vs-code-extensions">​</a></h2>
+<p>To integrate VS Code with Podman, we have 2 extensions as options:</p>
+<ol>
+<li><a href="https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-containers" target="_blank" rel="noopener noreferrer"><strong>Microsoft’s Container Tools extension</strong></a><strong>:</strong> The "Container Tools" extension provides excellent support for container-related tasks, including building images, managing containers, and working with Containerfiles and Dockerfiles. Microsoft <a href="https://techcommunity.microsoft.com/blog/AppsonAzureBlog/major-updates-to-vs-code-docker-introducing-container-tools/4400609" target="_blank" rel="noopener noreferrer">recently announced</a> that they will be evolving the Docker extension into the Container Tools extension to support other tools like Podman!</li>
+<li><a href="https://marketplace.visualstudio.com/items/?itemName=dreamcatcher45.podmanager" target="_blank" rel="noopener noreferrer"><strong>Pod Manager</strong></a>: This extension was created by one of the members of our community and is completely open source. It is designed to help you manage Podman containers, images, volumes, and networks directly from the VS Code interface.</li>
+</ol>
+<p>While it's unlikely that you would use both extensions simultaneously, comparing them will help you understand the strengths and weaknesses of each, ultimately making it easier to select the one that best fits your needs. So for this blog post, we'll install them one by one.</p>
+<h3 class="anchor anchorWithStickyNavbar_JmGV" id="option-1-microsofts-container-tools-extension">Option 1: Microsoft’s Container Tools extension<a href="https://podman-desktop.io/blog/2025/05/05/vs-code-with-podman-desktop#option-1-microsofts-container-tools-extension" class="hash-link" aria-label="Direct link to Option 1: Microsoft’s Container Tools extension" title="Direct link to Option 1: Microsoft’s Container Tools extension">​</a></h3>
+<p>To install the extension:</p>
+<ol>
+<li>Open VS Code.</li>
+<li>Click on the Extensions icon in the Activity Bar (or press <code>Ctrl+Shift+X</code> or <code>Cmd+Shift+X</code>).</li>
+<li>Search for "Container Tools" and install the extension by Microsoft.</li>
+</ol>
+<h4 class="anchor anchorWithStickyNavbar_JmGV" id="configuring-vs-code-for-podman">Configuring VS Code for Podman<a href="https://podman-desktop.io/blog/2025/05/05/vs-code-with-podman-desktop#configuring-vs-code-for-podman" class="hash-link" aria-label="Direct link to Configuring VS Code for Podman" title="Direct link to Configuring VS Code for Podman">​</a></h4>
+<p>The Container Tools extension usually automatically detects Podman if Docker isn't running, by looking at the <code>DOCKER_HOST</code> environment variable. In Podman Desktop navigate to Settings &gt; Docker Compatibility &gt; Third-Party Tool Compatibility and make sure the option is enabled. Learn more about the <a href="https://podman-desktop.io/docs/migrating-from-docker/managing-docker-compatibility" target="_blank" rel="noopener noreferrer">Docker Compatibility in our documentation</a>.</p>
+<p><img decoding="async" loading="lazy" alt="enabling docker compatibility in the settings" src="https://podman-desktop.io/assets/images/docker-compatibility-2a38bdd29669787699a3b65180e7a5a3.png" width="1158" height="877" class="img_SS3x"></p>
+<h3 class="anchor anchorWithStickyNavbar_JmGV" id="option-2-pod-manager">Option 2: Pod Manager<a href="https://podman-desktop.io/blog/2025/05/05/vs-code-with-podman-desktop#option-2-pod-manager" class="hash-link" aria-label="Direct link to Option 2: Pod Manager" title="Direct link to Option 2: Pod Manager">​</a></h3>
+<p>To install the extension:</p>
+<ol>
+<li>Open VS Code.</li>
+<li>Click on the Extensions icon in the Activity Bar (or press <code>Ctrl+Shift+X</code> or <code>Cmd+Shift+X</code>).</li>
+<li>Search for "Pod Manager" and install the extension by dreamcatcher45.</li>
+</ol>
+<h2 class="anchor anchorWithStickyNavbar_JmGV" id="using-the-vs-code-extensions">Using the VS Code Extensions<a href="https://podman-desktop.io/blog/2025/05/05/vs-code-with-podman-desktop#using-the-vs-code-extensions" class="hash-link" aria-label="Direct link to Using the VS Code Extensions" title="Direct link to Using the VS Code Extensions">​</a></h2>
+<p>Now that we have the extensions installed and configured, let's see how to use them.</p>
+<h3 class="anchor anchorWithStickyNavbar_JmGV" id="working-with-containerfiles-and-dockerfiles">Working with Containerfiles and Dockerfiles<a href="https://podman-desktop.io/blog/2025/05/05/vs-code-with-podman-desktop#working-with-containerfiles-and-dockerfiles" class="hash-link" aria-label="Direct link to Working with Containerfiles and Dockerfiles" title="Direct link to Working with Containerfiles and Dockerfiles">​</a></h3>
+<p>Both extensions provide syntax highlighting, code completion, and linting for Containerfiles and Dockerfiles. Open a Containerfile in VS Code, and you'll immediately benefit from these features.</p>
+<p>You can also build images directly from VS Code:</p>
+<ol>
+<li>Right-click on the Containerfile in the Explorer view.</li>
+<li>Select "Build Image".</li>
+<li>VS Code will prompt you for an image name and tag.</li>
+<li>The extension will then build the image using Podman.</li>
+<li>After that you will see the built image in the sidebar.</li>
+</ol>
+<p>If you are using the CLI commands to build images, you will also see them here.</p>
+<p><img decoding="async" loading="lazy" alt="building a Containerfile in vs code using the microsoft extension" src="https://podman-desktop.io/assets/images/build-image-04e4423d037ee472e0c36e839faeede0.png" width="1240" height="839" class="img_SS3x"></p>
+<h3 class="anchor anchorWithStickyNavbar_JmGV" id="managing-containers">Managing Containers<a href="https://podman-desktop.io/blog/2025/05/05/vs-code-with-podman-desktop#managing-containers" class="hash-link" aria-label="Direct link to Managing Containers" title="Direct link to Managing Containers">​</a></h3>
+<p>The extensions also allow you to manage containers directly from VS Code. You can start, stop, restart, and remove containers, as well as view their logs and inspect their configuration.</p>
+<p>To view the container logs:</p>
+<ol>
+<li>Click on the Container icon in the Activity Bar.</li>
+<li>You'll see a list of your containers, images, and networks.</li>
+<li>Right-click on a container to perform actions.</li>
+</ol>
+<p><img decoding="async" loading="lazy" alt="using Container Tools extension to view the logs of the container" src="https://podman-desktop.io/assets/images/view-logs-6a65fac970eda5cbfb42994409776fca.png" width="1313" height="824" class="img_SS3x"></p>
+<p>Similarly using the Pod manager extension we can visually inspect containers, images, and volumes.</p>
+<ol>
+<li>Click on the Pod manager icon in the Activity Bar.</li>
+<li>You'll see a list of your containers, images, and networks.</li>
+</ol>
+<p><img decoding="async" loading="lazy" alt="using podmanager to view all the running containers, images and volumes" src="https://podman-desktop.io/assets/images/podmanager-550a0e854a09a434e319967ae9e32016.png" width="1314" height="836" class="img_SS3x"></p>
+<p>and manage the container lifecycle.</p>
+<p><img decoding="async" loading="lazy" alt="using podmanager to manage the lifecycle of the container" src="https://podman-desktop.io/assets/images/interact-with-container-702c2db1805e3f359176e24bec8d0cf5.png" width="1317" height="825" class="img_SS3x"></p>
+<p>and of course troubleshoot issues with a visual interface.</p>
+<p><img decoding="async" loading="lazy" alt="using podmanager to enter the container" src="https://podman-desktop.io/assets/images/podmanager-details-29cb303f118f1f0eb985bfa4522f80b7.png" width="1318" height="835" class="img_SS3x"></p>
+<h2 class="anchor anchorWithStickyNavbar_JmGV" id="conclusion">Conclusion<a href="https://podman-desktop.io/blog/2025/05/05/vs-code-with-podman-desktop#conclusion" class="hash-link" aria-label="Direct link to Conclusion" title="Direct link to Conclusion">​</a></h2>
+<p>In comparison, both extensions provide a nearly identical set of features, so it is really up to you which UI you prefer. Personally I will stick with the Pod Manager because the logo is a seal 🦭. Remember if you encounter any issues using these tools or with Podman Desktop let us know by <a href="https://github.com/podman-desktop/podman-desktop/discussions" target="_blank" rel="noopener noreferrer">starting a discussion</a> or <a href="https://github.com/podman-desktop/podman-desktop/issues" target="_blank" rel="noopener noreferrer">creating an issue</a>.</p>
+<p>By combining the power of VS Code, Podman, and Podman Desktop, you can create a streamlined and efficient container development workflow. The VS Code extensions provide excellent integration with Podman, allowing you to manage containers, build images, and work with Containerfiles directly from your code editor. We are excited to see that Microsoft is embracing Podman and building support into their ecosystem. Podman Desktop complements this with a visual interface for managing your container environment and will help to move from your development environment to a production Kubernetes environment. Embrace these tools and elevate your container development experience!</p>]]></content>
+        <author>
+            <name>Matt Demyttenaere</name>
+            <uri>https://github.com/firewall</uri>
+        </author>
+        <category label="podman-desktop" term="podman-desktop"/>
+        <category label="podman" term="podman"/>
+        <category label="vscode" term="vscode"/>
+        <category label="docker" term="docker"/>
+        <category label="extension" term="extension"/>
+        <category label="development" term="development"/>
+        <category label="container" term="container"/>
+        <category label="tools" term="tools"/>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Podman Desktop 1.18 Release]]></title>
         <id>https://podman-desktop.io/blog/podman-desktop-release-1.18</id>
@@ -3022,165 +3111,6 @@ more capabilites and even better integration into 🦭 Podman Desktop:</p>
         <author>
             <name>Tim deBoer</name>
             <uri>https://github.com/deboer-tim</uri>
-        </author>
-        <category label="podman-desktop" term="podman-desktop"/>
-        <category label="release" term="release"/>
-        <category label="podman" term="podman"/>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Podman Desktop 1.9 Release]]></title>
-        <id>https://podman-desktop.io/blog/podman-desktop-release-1.9</id>
-        <link href="https://podman-desktop.io/blog/podman-desktop-release-1.9"/>
-        <updated>2024-04-05T00:00:00.000Z</updated>
-        <summary type="html"><![CDATA[Podman Desktop 1.9 has been released!]]></summary>
-        <content type="html"><![CDATA[<p>Podman Desktop 1.9 Release! 🎉</p>
-<p><img decoding="async" loading="lazy" alt="Podman-desktop-1-9-hero" src="https://podman-desktop.io/assets/images/juggling-bfd34fcfc3b63b29752c5f16a53e36ad.png" width="1920" height="1080" class="img_SS3x"></p>
-<p>This release introduces: 🦭 a splash of innovation, a wave of excitement, and an ocean of possibilities!</p>
-<ul>
-<li><strong>Podman 5!</strong> <a href="https://github.com/containers/podman/releases/tag/v5.0.1" target="_blank" rel="noopener noreferrer">Podman 5.0.1</a> for new users (and as an experimental upgrade for 4.x users).</li>
-<li><strong>Podman 4.9.4</strong>: <a href="https://github.com/containers/podman/releases/tag/v4.9.4" target="_blank" rel="noopener noreferrer">Podman 4.9.4</a> is now included in both Windows and macOS installers.</li>
-<li><strong>Backup/Restore Images</strong>: Save images or containers to tar archives and restore them.</li>
-<li><strong>Kubernetes Pods Terminal</strong>: Connect to a terminal within Kubernetes pods.</li>
-<li><strong>Extension API Improvements</strong>: Additional updates to the extension API used by 🦭 Podman Desktop's extensions.</li>
-</ul>
-<p>Podman Desktop 1.9 is now available. <a href="https://podman-desktop.io/downloads">Click here to download it</a>!</p>
-<hr>
-<h2 class="anchor anchorWithStickyNavbar_JmGV" id="release-details">Release Details<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#release-details" class="hash-link" aria-label="Direct link to Release Details" title="Direct link to Release Details">​</a></h2>
-<h3 class="anchor anchorWithStickyNavbar_JmGV" id="podman-v5-501">Podman v5 (5.0.1)<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#podman-v5-501" class="hash-link" aria-label="Direct link to Podman v5 (5.0.1)" title="Direct link to Podman v5 (5.0.1)">​</a></h3>
-<p>Podman version 5 is out! <a href="https://blog.podman.io/2024/03/podman-5-0-has-been-released/" target="_blank" rel="noopener noreferrer">see blog post introducing Podman v5</a></p>
-<p>On macOS there are performance enhancements as Apple Hypervisor is used instead of QEMU for the Podman machine. Also expect better performance on the file sharing.</p>
-<p>That said, Podman machine version 5 is introducing changes that are not compliant with podman machine version 4.</p>
-<p>This is why we're rolling out Podman version 5 by default only to new users to improve the migration from Podman Desktop side.</p>
-<p>For Podman version 4 users, Podman version 5 is accessible using an <a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#enabling-experimental-flag">experimental flag</a>.</p>
-<p>Moving to Podman v5 implies to optionally save images and then delete previous machines and create a new one.</p>
-<h4 class="anchor anchorWithStickyNavbar_JmGV" id="important-steps-before-updating">Important steps before updating<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#important-steps-before-updating" class="hash-link" aria-label="Direct link to Important steps before updating" title="Direct link to Important steps before updating">​</a></h4>
-<p>Prioritize data backup by using the save feature in the <code>Image Lists</code> section. This feature allows you to back up your images and restore them once you have a new Podman machine.</p>
-<p>When prompted to update, confirm to remove all existing data from your machines.</p>
-<p>For more details on the save/load feature, refer to <a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#saveload-images-or-exportimport-containers">the save/load images section of the release notes</a>.</p>
-<p><img decoding="async" loading="lazy" alt="v5 update" src="https://podman-desktop.io/assets/images/podman-update-to-v5-548970ff48d59050db20e1175545ec7e.png" width="1162" height="812" class="img_SS3x"></p>
-<h4 class="anchor anchorWithStickyNavbar_JmGV" id="enabling-experimental-flag">Enabling experimental flag<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#enabling-experimental-flag" class="hash-link" aria-label="Direct link to Enabling experimental flag" title="Direct link to Enabling experimental flag">​</a></h4>
-<p>Are you using Podman 4.x but eager to migrate? Enable the Podman <code>v5</code> experimental flag in <code>Settings &gt; Preferences &gt; Extension: Podman</code>.</p>
-<p>This will make the Upgrade option available on the Dashboard.</p>
-<p><img decoding="async" loading="lazy" alt="v5 experimental flag" src="https://podman-desktop.io/assets/images/experimental-podman-5-81162b712a077c2982545eff3d8322ed.png" width="1162" height="812" class="img_SS3x"></p>
-<h4 class="anchor anchorWithStickyNavbar_JmGV" id="onboarding-notification-for-podman-version-5">Onboarding notification for Podman version 5<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#onboarding-notification-for-podman-version-5" class="hash-link" aria-label="Direct link to Onboarding notification for Podman version 5" title="Direct link to Onboarding notification for Podman version 5">​</a></h4>
-<p>If you have previously installed Podman version 5 and Podman Desktop detects some invalid Podman machines, you'll see a notification on the dashboard to clean up old machines.</p>
-<p><img decoding="async" loading="lazy" alt="Onboarding Notification" src="https://podman-desktop.io/assets/images/podman-require-onboarding-1-7ed39cd39558bd7712fad0e81ea9f3f4.png" width="1162" height="812" class="img_SS3x"></p>
-<p><img decoding="async" loading="lazy" alt="Remove previous Podman machines" src="https://podman-desktop.io/assets/images/podman-require-onboarding-2-3e5a951f6515771d8eabf33bf1ce20cc.png" width="1162" height="812" class="img_SS3x"></p>
-<h3 class="anchor anchorWithStickyNavbar_JmGV" id="podman-494">Podman 4.9.4<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#podman-494" class="hash-link" aria-label="Direct link to Podman 4.9.4" title="Direct link to Podman 4.9.4">​</a></h3>
-<p>If you want to stay on Podman v4.x, there is a new update for some bugs including a CVE/security issue.</p>
-<h3 class="anchor anchorWithStickyNavbar_JmGV" id="saveload-images-or-exportimport-containers">Save/Load Images or Export/Import Containers<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#saveload-images-or-exportimport-containers" class="hash-link" aria-label="Direct link to Save/Load Images or Export/Import Containers" title="Direct link to Save/Load Images or Export/Import Containers">​</a></h3>
-<p>Podman 5 is not able to read 4.x machines, so before updating you'll need to backup images that you need to keep. You don't need to backup images that are available on remote registries or transient.</p>
-<h4 class="anchor anchorWithStickyNavbar_JmGV" id="saveload-images">Save/Load Images<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#saveload-images" class="hash-link" aria-label="Direct link to Save/Load Images" title="Direct link to Save/Load Images">​</a></h4>
-<p>🦭 Use Podman Desktop to save images and load them again.</p>
-<p><img decoding="async" loading="lazy" alt="Select images to save" src="https://podman-desktop.io/assets/images/podman-save-1-f7e71a75d3662120071f0dcd3039a9e6.png" width="1162" height="812" class="img_SS3x"></p>
-<p><img decoding="async" loading="lazy" alt="Save images" src="https://podman-desktop.io/assets/images/podman-save-2-9c18fbea6e42323091fd6339a977793b.png" width="1162" height="812" class="img_SS3x"></p>
-<p>Load images using the Load button from the image list.</p>
-<p><img decoding="async" loading="lazy" alt="Select images to load" src="https://podman-desktop.io/assets/images/podman-load-1-eeab5a43b18871d51d6fe6e1d5362f87.png" width="1162" height="812" class="img_SS3x"></p>
-<p><img decoding="async" loading="lazy" alt="Load images" src="https://podman-desktop.io/assets/images/podman-load-2-3f9251fd056a30f32148ac4ea598091c.png" width="1162" height="812" class="img_SS3x"></p>
-<h4 class="anchor anchorWithStickyNavbar_JmGV" id="saveload-containers">Save/Load Containers<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#saveload-containers" class="hash-link" aria-label="Direct link to Save/Load Containers" title="Direct link to Save/Load Containers">​</a></h4>
-<p>🦭 Export filesystem of containers and import them.</p>
-<p><img decoding="async" loading="lazy" alt="Select containers to export" src="https://podman-desktop.io/assets/images/podman-export-1-5e785ba41585359a51a77638b9f9add0.png" width="1162" height="812" class="img_SS3x"></p>
-<p><img decoding="async" loading="lazy" alt="Export containers" src="https://podman-desktop.io/assets/images/podman-export-2-81ba8d0d9a6637e866eb51b4cd40f221.png" width="1162" height="812" class="img_SS3x"></p>
-<p>Import containers using the Load button from the image list.</p>
-<p><img decoding="async" loading="lazy" alt="Select files to import" src="https://podman-desktop.io/assets/images/podman-import-1-184cbdda642b97ff9d07034fe90adaf9.png" width="1162" height="812" class="img_SS3x"></p>
-<p><img decoding="async" loading="lazy" alt="Import images" src="https://podman-desktop.io/assets/images/podman-import-2-c9f14a998823dbbe994da461924aa908.png" width="1162" height="812" class="img_SS3x"></p>
-<p><strong><em>NOTE:</em></strong> Exporting the filesystem of containers only exports the content of the filesystem. Importing will result in a container without any commands, so this might not be what you expect.
-Please prioritize the usage of image saving/loading over container export/import.</p>
-<h3 class="anchor anchorWithStickyNavbar_JmGV" id="terminal-in-kubernetes-pods">Terminal in Kubernetes Pods<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#terminal-in-kubernetes-pods" class="hash-link" aria-label="Direct link to Terminal in Kubernetes Pods" title="Direct link to Terminal in Kubernetes Pods">​</a></h3>
-<p>In the previous release we introduced several new features in Kubernetes, but one notable addition was missing. With the 1.9 release, we're excited to announce that you can now connect to the terminal of a pod.</p>
-<ul>
-<li>Terminal Connectivity: Users can now establish a direct connection to the terminal of a pod, enhancing the management and troubleshooting capabilities within Kubernetes environments.</li>
-<li>Container Toggle: When a pod contains multiple containers, you can easily toggle between them to access the terminal of the desired container.</li>
-</ul>
-<p>How to access to the Terminal:</p>
-<p>Navigate to the pod details in Podman Desktop and select the "Terminal" Tab..</p>
-<p>If the pod contains multiple containers, utilize the toggle feature to select the container whose terminal you wish to connect to.</p>
-<p>Once connected, you can interact with the terminal to perform various tasks such as debugging, log monitoring, or executing commands within the container environment.</p>
-<p><img decoding="async" loading="lazy" alt="Connect Terminal to a Pod" src="https://podman-desktop.io/assets/images/terminal-pod-4f9b2aff1b3352d0cdfbb5e8db4d0195.png" width="1162" height="812" class="img_SS3x"></p>
-<h3 class="anchor anchorWithStickyNavbar_JmGV" id="extension-api-improvements">Extension API Improvements<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#extension-api-improvements" class="hash-link" aria-label="Direct link to Extension API Improvements" title="Direct link to Extension API Improvements">​</a></h3>
-<p>We continued spent a lot of time adding new extension API to give upcoming extensions
-more capabilites and even better integration into 🦭 Podman Desktop:</p>
-<ul>
-<li>feat: add navigateToAuthentication method to navigation API <a href="https://github.com/containers/podman-desktop/pull/6603" target="_blank" rel="noopener noreferrer">6603</a></li>
-<li>feat: add secrets handling to extensionContext in extension api <a href="https://github.com/containers/podman-desktop/pull/6423" target="_blank" rel="noopener noreferrer">6423</a></li>
-<li>feat: add sign in button for auth providers w/ the only auth session request <a href="https://github.com/containers/podman-desktop/pull/6446" target="_blank" rel="noopener noreferrer">6446</a></li>
-<li>feat: support for webview reveal <a href="https://github.com/containers/podman-desktop/pull/6546" target="_blank" rel="noopener noreferrer">6546</a></li>
-</ul>
-<p>Also we published a test framework to test extensions in separate repositories</p>
-<ul>
-<li>feat: publish ui components and test component as part of the release <a href="https://github.com/containers/podman-desktop/pull/6580" target="_blank" rel="noopener noreferrer">6580</a></li>
-</ul>
-<p>More info on <a href="https://github.com/containers/podman-desktop/blob/main/tests/playwright/README.md" target="_blank" rel="noopener noreferrer">https://github.com/containers/podman-desktop/blob/main/tests/playwright/README.md</a></p>
-<hr>
-<h2 class="anchor anchorWithStickyNavbar_JmGV" id="other-notable-enhancements">Other Notable Enhancements<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#other-notable-enhancements" class="hash-link" aria-label="Direct link to Other Notable Enhancements" title="Direct link to Other Notable Enhancements">​</a></h2>
-<p>We've added over 20 features this release, here are some other highlights:</p>
-<ul>
-<li>feat: terminate wsl machines before removing conf files when fixing update <a href="https://github.com/containers/podman-desktop/pull/6596" target="_blank" rel="noopener noreferrer">#6596</a></li>
-<li>feat: update experimental v5 of podman to v5.0.1 <a href="https://github.com/containers/podman-desktop/pull/6589" target="_blank" rel="noopener noreferrer">#6589</a></li>
-<li>feat: detect podman v4 machines not compliant with the new format of v5 <a href="https://github.com/containers/podman-desktop/pull/6570" target="_blank" rel="noopener noreferrer">#6570</a></li>
-<li>feat: detect podman v4 qemu machines after update and delete them <a href="https://github.com/containers/podman-desktop/pull/6565" target="_blank" rel="noopener noreferrer">#6565</a></li>
-<li>feat: update to podman v4.9.4 <a href="https://github.com/containers/podman-desktop/pull/6564" target="_blank" rel="noopener noreferrer">#6564</a></li>
-<li>feat: default to podman v5 for new users <a href="https://github.com/containers/podman-desktop/pull/6548" target="_blank" rel="noopener noreferrer">#6548</a></li>
-<li>feat: import containers images <a href="https://github.com/containers/podman-desktop/pull/6492" target="_blank" rel="noopener noreferrer">#6492</a></li>
-<li>feat: open terminal in the running container <a href="https://github.com/containers/podman-desktop/pull/5975" target="_blank" rel="noopener noreferrer">#5975</a></li>
-<li>feat: add experimental flag to install podman v5 <a href="https://github.com/containers/podman-desktop/pull/6476" target="_blank" rel="noopener noreferrer">#6476</a></li>
-<li>feat: add export container <a href="https://github.com/containers/podman-desktop/pull/6468" target="_blank" rel="noopener noreferrer">#6468</a></li>
-<li>feat: allow to revive a Uri object when passing it frontend - backend <a href="https://github.com/containers/podman-desktop/pull/6462" target="_blank" rel="noopener noreferrer">#6462</a></li>
-<li>feat: add generic action to task <a href="https://github.com/containers/podman-desktop/pull/6453" target="_blank" rel="noopener noreferrer">#6453</a></li>
-<li>feat: add export container logic <a href="https://github.com/containers/podman-desktop/pull/6452" target="_blank" rel="noopener noreferrer">#6452</a></li>
-<li>feat: add bottomLeft and bottomRight options for Tooltip component <a href="https://github.com/containers/podman-desktop/pull/6445" target="_blank" rel="noopener noreferrer">#6445</a></li>
-<li>feat: add a safe storage registry <a href="https://github.com/containers/podman-desktop/pull/6422" target="_blank" rel="noopener noreferrer">#6422</a></li>
-<li>feat: allow to load images <a href="https://github.com/containers/podman-desktop/pull/6540" target="_blank" rel="noopener noreferrer">#6540</a></li>
-<li>feat: ask to wipe all data when migrating from podman v4 to v5 <a href="https://github.com/containers/podman-desktop/pull/6539" target="_blank" rel="noopener noreferrer">#6539</a></li>
-<li>feat: add loadImages logic <a href="https://github.com/containers/podman-desktop/pull/6538" target="_blank" rel="noopener noreferrer">#6538</a></li>
-<li>feat: prompt user to stop any running podman machine before updating <a href="https://github.com/containers/podman-desktop/pull/6533" target="_blank" rel="noopener noreferrer">#6533</a></li>
-<li>feat: allow to save images <a href="https://github.com/containers/podman-desktop/pull/6530" target="_blank" rel="noopener noreferrer">#6530</a></li>
-<li>feat: add saveImages logic <a href="https://github.com/containers/podman-desktop/pull/6520" target="_blank" rel="noopener noreferrer">#6520</a></li>
-</ul>
-<hr>
-<h2 class="anchor anchorWithStickyNavbar_JmGV" id="notable-bug-fixes">Notable Bug Fixes<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#notable-bug-fixes" class="hash-link" aria-label="Direct link to Notable Bug Fixes" title="Direct link to Notable Bug Fixes">​</a></h2>
-<p>We squashed a lot of bugs this release, including the following:</p>
-<ul>
-<li>fix: handle external installation of Podman when checking for updates <a href="https://github.com/containers/podman-desktop/pull/6601" target="_blank" rel="noopener noreferrer">#6601</a></li>
-<li>fix: invalid if clause for !isLinux <a href="https://github.com/containers/podman-desktop/pull/6597" target="_blank" rel="noopener noreferrer">#6597</a></li>
-<li>fix: allow to select files when wanting to import container tar images <a href="https://github.com/containers/podman-desktop/pull/6591" target="_blank" rel="noopener noreferrer">#6591</a></li>
-<li>fix: provides the tag names rather than id when saving images <a href="https://github.com/containers/podman-desktop/pull/6588" target="_blank" rel="noopener noreferrer">#6588</a></li>
-<li>fix: allow to select files when importing tar files <a href="https://github.com/containers/podman-desktop/pull/6584" target="_blank" rel="noopener noreferrer">#6584</a></li>
-<li>fix: inconsistent tab filtering behavior <a href="https://github.com/containers/podman-desktop/pull/6572" target="_blank" rel="noopener noreferrer">#6572</a></li>
-<li>fix: check if updates are available after a new podman machine is added/removed <a href="https://github.com/containers/podman-desktop/pull/6558" target="_blank" rel="noopener noreferrer">#6558</a></li>
-<li>fix: making CancellationTokenSource a class instead of an interface <a href="https://github.com/containers/podman-desktop/pull/6557" target="_blank" rel="noopener noreferrer">#6557</a></li>
-<li>fix: ensure machine list is up-to-date when running onboarding <a href="https://github.com/containers/podman-desktop/pull/6512" target="_blank" rel="noopener noreferrer">#6512</a></li>
-<li>fix: onboarding should be available after reloading an extension <a href="https://github.com/containers/podman-desktop/pull/6510" target="_blank" rel="noopener noreferrer">#6510</a></li>
-<li>fix: support more fa icons <a href="https://github.com/containers/podman-desktop/pull/6499" target="_blank" rel="noopener noreferrer">#6499</a></li>
-<li>fix: update e2e tests to fix CI failures <a href="https://github.com/containers/podman-desktop/pull/6491" target="_blank" rel="noopener noreferrer">#6491</a></li>
-<li>fix: update yarn.lock <a href="https://github.com/containers/podman-desktop/pull/6474" target="_blank" rel="noopener noreferrer">#6474</a></li>
-<li>fix: use expected component in the tests <a href="https://github.com/containers/podman-desktop/pull/6424" target="_blank" rel="noopener noreferrer">#6424</a></li>
-<li>fix: correct layout for openshift routes <a href="https://github.com/containers/podman-desktop/pull/6398" target="_blank" rel="noopener noreferrer">#6398</a></li>
-<li>fix: add playsinline to avoid full screen <a href="https://github.com/containers/podman-desktop/pull/6395" target="_blank" rel="noopener noreferrer">#6395</a></li>
-<li>fix: try to listen on all ipv4 interfaces AND 0.0.0.0 before to declare a port free <a href="https://github.com/containers/podman-desktop/pull/6354" target="_blank" rel="noopener noreferrer">#6354</a></li>
-</ul>
-<hr>
-<h2 class="anchor anchorWithStickyNavbar_JmGV" id="documentation">Documentation<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#documentation" class="hash-link" aria-label="Direct link to Documentation" title="Direct link to Documentation">​</a></h2>
-<p>Along with this new version of 🦭 Podman Desktop the documentation has had the following improvements:</p>
-<ul>
-<li>docs: single page for <em>In a restricted environment</em> <a href="https://github.com/containers/podman-desktop/pull/5756" target="_blank" rel="noopener noreferrer">#5756</a></li>
-<li>docs: updated <em>Installing Podman Desktop and Podman on Windows</em> (compact version) <a href="https://github.com/containers/podman-desktop/pull/5751" target="_blank" rel="noopener noreferrer">#5751</a></li>
-</ul>
-<hr>
-<h2 class="anchor anchorWithStickyNavbar_JmGV" id="community-thank-you">Community Thank You<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#community-thank-you" class="hash-link" aria-label="Direct link to Community Thank You" title="Direct link to Community Thank You">​</a></h2>
-<p>🎉 We’d like to say a big thank you to everyone who helped make 🦭 Podman Desktop even better. In this release we received pull requests from the following people:</p>
-<ul>
-<li><a href="https://github.com/GLEF1X" target="_blank" rel="noopener noreferrer">Hlib Haranin</a> in <a href="https://github.com/containers/podman-desktop/pull/6572" target="_blank" rel="noopener noreferrer">fix: inconsistent tab filtering behavior</a>, <a href="https://github.com/containers/podman-desktop/pull/6574" target="_blank" rel="noopener noreferrer">chore(palette): make command titles capitalization consistent</a>, <a href="https://github.com/containers/podman-desktop/pull/6575" target="_blank" rel="noopener noreferrer">chore(no-engine-screen): add guidance for engine configuration</a>, <a href="https://github.com/containers/podman-desktop/pull/6586" target="_blank" rel="noopener noreferrer">chore(image-list): improve button tooltips</a></li>
-</ul>
-<hr>
-<h2 class="anchor anchorWithStickyNavbar_JmGV" id="final-notes">Final notes<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#final-notes" class="hash-link" aria-label="Direct link to Final notes" title="Direct link to Final notes">​</a></h2>
-<h3 class="anchor anchorWithStickyNavbar_JmGV" id="fixed-issues">Fixed Issues<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#fixed-issues" class="hash-link" aria-label="Direct link to Fixed Issues" title="Direct link to Fixed Issues">​</a></h3>
-<p>The complete list of issues fixed in this release is available <a href="https://github.com/containers/podman-desktop/issues?q=is%3Aclosed+milestone%3A1.9.0" target="_blank" rel="noopener noreferrer">here</a>.</p>
-<h3 class="anchor anchorWithStickyNavbar_JmGV" id="where-to-download">Where to Download<a href="https://podman-desktop.io/blog/podman-desktop-release-1.9#where-to-download" class="hash-link" aria-label="Direct link to Where to Download" title="Direct link to Where to Download">​</a></h3>
-<p>Get the latest release from the <a href="https://podman-desktop.io/downloads">Downloads</a> section of the website and boost your development journey with Podman Desktop. Additionally, visit the <a href="https://github.com/containers/podman-desktop" target="_blank" rel="noopener noreferrer">GitHub repository</a> and see how you can help us make Podman Desktop better.</p>]]></content>
-        <author>
-            <name>Florent Benoit</name>
-            <uri>https://github.com/benoitf</uri>
         </author>
         <category label="podman-desktop" term="podman-desktop"/>
         <category label="release" term="release"/>
