@@ -168,11 +168,10 @@ export class PodmanRemoteConnections {
 
       const sshTunnel = this.createTunnel(host, port, username, privateKey, remotePath, localPath);
 
-      // connect the tunnel
-      sshTunnel.connect();
-
-      //delay before registering the socket
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // connect the client
+      await sshTunnel.connect();
+      // create the tunnel
+      await sshTunnel.createTunnel();
 
       // register the socket
       const connectionDisposable = this.#provider.registerContainerProviderConnection({
