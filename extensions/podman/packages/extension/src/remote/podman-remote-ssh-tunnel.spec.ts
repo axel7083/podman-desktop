@@ -23,7 +23,7 @@ import { join } from 'node:path';
 
 import { Server } from 'ssh2';
 import { generatePrivateKey } from 'sshpk';
-import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
 import { PodmanRemoteSshTunnel } from './podman-remote-ssh-tunnel';
 
@@ -36,13 +36,13 @@ vi.mock('@podman-desktop/api', async () => {
   };
 });
 
-beforeEach(() => {
-  vi.resetAllMocks();
-});
-
 class TestPodmanRemoteSshTunnel extends PodmanRemoteSshTunnel {
-  isListening(): boolean {
+  override isListening(): boolean {
     return super.isListening();
+  }
+
+  override disconnect(): Promise<void> {
+    return super.disconnect();
   }
 }
 
@@ -52,13 +52,22 @@ beforeAll(async () => {
   dummyKey = generatePrivateKey('ed25519').toString('ssh');
 });
 
-test('should be able to connect', async () => {
-  let sshPort = 0;
-  let connected = false;
-  let authenticated = false;
+let sshPort: number;
+let connected: boolean;
+let authenticated: boolean;
+let sshServer: Server;
 
-  // create ssh server
-  const sshServer = new Server(
+// create a npipe/socket server
+// on windows it's an npipe, on macOS a socket file
+let socketOrNpipePathLocal: string;
+let socketOrNpipePathRemote: string;
+
+beforeEach(async () => {
+  vi.resetAllMocks();
+  sshPort = 0;
+  connected = false;
+  authenticated = false;
+  sshServer = new Server(
     {
       hostKeys: [dummyKey],
     },
@@ -72,6 +81,10 @@ test('should be able to connect', async () => {
         .on('ready', () => {
           authenticated = true;
         });
+
+      setTimeout(() => {
+        client.end();
+      }, 500);
     },
   ).listen(0, '127.0.0.1', () => {
     const address: AddressInfo = sshServer.address() as AddressInfo;
@@ -81,10 +94,6 @@ test('should be able to connect', async () => {
   // wait that the server is listening
   await vi.waitFor(() => expect(sshPort).toBeGreaterThan(0));
 
-  // create a npipe/socket server
-  // on windows it's an npipe, on macOS a socket file
-  let socketOrNpipePathLocal: string;
-  let socketOrNpipePathRemote: string;
   if (process.platform === 'win32') {
     socketOrNpipePathLocal = '\\\\.\\pipe\\test-local';
     socketOrNpipePathRemote = '\\\\.\\pipe\\test-remote';
@@ -92,14 +101,20 @@ test('should be able to connect', async () => {
     socketOrNpipePathLocal = join(tmpdir(), 'test-local.sock');
     socketOrNpipePathRemote = join(tmpdir(), 'test-remote.sock');
   }
+});
+
+afterEach(async () => {
+  sshServer.close();
 
   // delete file if exists
   await rm(socketOrNpipePathLocal, { force: true });
   await rm(socketOrNpipePathRemote, { force: true });
+});
 
+test('should be able to connect', async () => {
   let listenReady = false;
 
-  // start a remote server
+  // start a remote server (fake podman socket)
   const npipeServer = createServer(_socket => {}).listen(socketOrNpipePathRemote, () => {
     listenReady = true;
   });
@@ -129,5 +144,32 @@ test('should be able to connect', async () => {
   await vi.waitFor(() => expect(connectedToLocal).toBeTruthy());
 
   client.end();
-  npipeServer.close();
+  await npipeServer[Symbol.asyncDispose]();
+  await podmanRemoteSshTunnel.disconnect();
+});
+
+test('disposing should clear timeout', async () => {
+  const podmanRemoteSshTunnel = new TestPodmanRemoteSshTunnel(
+    'localhost',
+    sshPort,
+    'foo',
+    '',
+    socketOrNpipePathRemote,
+    socketOrNpipePathLocal,
+  );
+
+  podmanRemoteSshTunnel.connect();
+
+  // wait authenticated and connected
+  await podmanRemoteSshTunnel.isConnected();
+
+  // closing the server will trigger a close event
+  sshServer.close();
+
+  await vi.waitFor(() => {
+    expect(podmanRemoteSshTunnel.status()).toStrictEqual('stopped');
+  });
+
+  // cleanup
+  await podmanRemoteSshTunnel.disconnect();
 });

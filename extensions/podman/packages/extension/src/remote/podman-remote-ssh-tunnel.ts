@@ -17,11 +17,11 @@
  ***********************************************************************/
 import * as net from 'node:net';
 
-import type { ProviderConnectionStatus } from '@podman-desktop/api';
+import type { Disposable, ProviderConnectionStatus } from '@podman-desktop/api';
 import type { ConnectConfig } from 'ssh2';
 import { Client } from 'ssh2';
 
-export class PodmanRemoteSshTunnel {
+export class PodmanRemoteSshTunnel implements Disposable {
   #sshConfig: ConnectConfig;
 
   #client: Client | undefined;
@@ -60,7 +60,15 @@ export class PodmanRemoteSshTunnel {
   }
 
   dispose(): void {
-    this.disconnect();
+    this.#listening = false;
+
+    // clear reconnect timeout
+    if (this.#reconnectTimeout) {
+      clearTimeout(this.#reconnectTimeout);
+    }
+
+    // async disconnect (end / close sockets & servers)
+    this.disconnect().catch(console.error);
   }
 
   status(): ProviderConnectionStatus {
@@ -163,11 +171,13 @@ export class PodmanRemoteSshTunnel {
     }
   }
 
-  disconnect(): void {
+  protected async disconnect(): Promise<void> {
     // Set the reconnect flag to false to prevent reconnecting
     this.#reconnect = false;
     this.#client?.end();
-    this.#server?.close();
+
+    // dispose server
+    await this.#server?.[Symbol.asyncDispose]();
   }
 
   isConnected(): Promise<boolean> {
