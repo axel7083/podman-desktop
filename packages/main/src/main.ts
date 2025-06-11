@@ -101,6 +101,24 @@ export class Main {
      * Setup {@link ElectronApp.on} listeners
      */
     this.app.on('window-all-closed', this.onWindowAllClosed.bind(this));
+
+    /**
+     * Setup ready listener
+     */
+    this.app.whenReady().then(this.onReady.bind(this)).catch(console.error);
+  }
+
+  /**
+   * Handles the initialization logic when the application is ready.
+   */
+  protected async onReady(): Promise<void> {
+    if (import.meta.env.PROD) {
+      if (isWindows()) {
+        this.app.setAsDefaultProtocolClient('podman-desktop', process.execPath, process.argv);
+      } else {
+        this.app.setAsDefaultProtocolClient('podman-desktop');
+      }
+    }
   }
 
   /**
