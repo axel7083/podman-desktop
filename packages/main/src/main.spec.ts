@@ -32,12 +32,14 @@ const ELECTRON_APP_MOCK: ElectronApp = {
   name: 'dummy-electron-mock',
   disableHardwareAcceleration: vi.fn(),
   requestSingleInstanceLock: vi.fn(),
+  setAsDefaultProtocolClient: vi.fn(),
   setAppUserModelId: vi.fn(),
   quit: vi.fn(),
   on: vi.fn(),
   commandLine: {
     appendSwitch: vi.fn(),
   },
+  whenReady: vi.fn(),
 } as unknown as ElectronApp;
 
 let PROCESS_EXIT_ORIGINAL: typeof process.exit;
@@ -170,5 +172,29 @@ describe('ElectronApp#on window-all-closed', () => {
     listener();
 
     expect(ELECTRON_APP_MOCK.quit).toHaveBeenCalledOnce();
+  });
+});
+
+describe('onReady', () => {
+  let code: Main;
+  const { promise, resolve } = Promise.withResolvers<void>();
+
+  beforeEach(() => {
+    // mock production
+    vi.stubEnv('PROD', true);
+    vi.mocked(ELECTRON_APP_MOCK.whenReady).mockReturnValue(promise);
+
+    code = new Main(ELECTRON_APP_MOCK);
+    code.main([]);
+  });
+
+  test('when whenReady resolve should set setAsDefaultProtocolClient', async () => {
+    expect(ELECTRON_APP_MOCK.setAsDefaultProtocolClient).not.toHaveBeenCalled();
+
+    resolve();
+
+    await vi.waitFor(() => {
+      expect(ELECTRON_APP_MOCK.setAsDefaultProtocolClient).toHaveBeenCalled();
+    });
   });
 });
