@@ -22,6 +22,7 @@ import { type Writable, writable } from 'svelte/store';
 import type { IconSize } from 'svelte-fa';
 
 import { EventStore } from '/@/stores/event-store';
+import { createNavigationSecretEntry } from '/@/stores/navigation/navigation-registry-secrets.svelte';
 
 import { configurationProperties } from '../configurationProperties';
 import { createNavigationContainerEntry } from './navigation-registry-container.svelte';
@@ -68,6 +69,7 @@ const init = (): void => {
   values.push(createNavigationImageEntry());
   values.push(createNavigationVolumeEntry());
   values.push(createNavigationNetworkEntry());
+  values.push(createNavigationSecretEntry());
   values.push(createNavigationKubernetesGroup());
   values.push(createNavigationExtensionEntry());
   values.push(createNavigationExtensionGroup());

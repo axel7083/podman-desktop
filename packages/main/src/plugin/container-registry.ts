@@ -61,6 +61,7 @@ import type { NetworkInspectInfo } from '/@api/network-info.js';
 import type { LibPodPodInfo, PodCreateOptions, PodInfo, PodInspectInfo } from '/@api/pod-info.js';
 import type { ProviderContainerConnectionInfo } from '/@api/provider-info.js';
 import type { PullEvent } from '/@api/pull-event.js';
+import type { SecretInfo } from '/@api/secret-info.js';
 import type { VolumeInfo, VolumeInspectInfo, VolumeListInfo } from '/@api/volume-info.js';
 
 import { isWindows } from '../util.js';
@@ -446,6 +447,43 @@ export class ContainerProviderRegistry {
       const labels = container.Labels;
       return labels?.[label] === key;
     });
+  }
+
+  async listSecrets(): Promise<Array<SecretInfo>> {
+    const providers: Array<InternalContainerProvider> = Array.from(this.internalProviders.values());
+
+    const all: SecretInfo[][] = await Promise.all(
+      Array.from(providers).map(async provider => {
+        try {
+          if (!provider.api) {
+            return [];
+          }
+          const secrets = await provider.api.listSecrets();
+          return secrets.map(secret => ({
+            engineName: provider.name,
+            engineId: provider.id,
+            engineType: provider.connection.type,
+            Name:
+              !!secret.Spec && 'Name' in secret.Spec && typeof secret.Spec['Name'] === 'string'
+                ? secret.Spec['Name']
+                : undefined,
+            Id: secret.ID,
+            CreatedAt: secret.CreatedAt,
+            UpdatedAt: secret.UpdatedAt,
+            Labels: secret.Spec?.Labels,
+            // https://docs.podman.io/en/latest/_static/api.html#tag/secrets/operation/SecretListLibpod
+            SecretData:
+              'SecretData' in secret && typeof secret['SecretData'] === 'string'
+                ? secret['SecretData']
+                : secret.Spec?.Data,
+          }));
+        } catch (error) {
+          this.notifyConsole(`error in engine ${provider.name} ${error}`);
+          return [];
+        }
+      }),
+    );
+    return all.flat();
   }
 
   async listContainers(): Promise<ContainerInfo[]> {

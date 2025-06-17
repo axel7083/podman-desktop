@@ -6,6 +6,7 @@ import { tablePersistence } from '@podman-desktop/ui-svelte';
 import { router } from 'tinro';
 
 import { parseExtensionListRequest } from '/@/lib/extensions/extension-list';
+import SecretsList from '/@/lib/secrets/SecretsList.svelte';
 import PinActions from '/@/lib/statusbar/PinActions.svelte';
 import { handleNavigation } from '/@/navigation';
 import { kubernetesNoCurrentContext } from '/@/stores/kubernetes-no-current-context';
@@ -259,6 +260,9 @@ tablePersistence.storage = new PodmanDesktopStoragePersist();
         </Route>
         <Route path="/volumes/:name/:engineId/*" breadcrumb="Volume Details" let:meta navigationHint="details">
           <VolumeDetails volumeName={decodeURI(meta.params.name)} engineId={decodeURI(meta.params.engineId)} />
+        </Route>
+        <Route path="/secrets" breadcrumb="Secrets" navigationHint="root">
+          <SecretsList />
         </Route>
         <Route path="/networks" breadcrumb="Networks" navigationHint="root">
           <NetworksList />

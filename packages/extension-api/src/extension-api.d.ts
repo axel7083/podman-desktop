@@ -2614,6 +2614,16 @@ declare module '@podman-desktop/api' {
     Labels?: { [key: string]: string };
   }
 
+  export interface SecretInfo {
+    engineId: string;
+    engineName: string;
+    engineType: 'podman' | 'docker';
+    Id: string;
+    SecretData: string;
+    CreatedAt: string; // datetime
+    UpdatedAt: string; // datetime
+  }
+
   export interface ContainerInfo {
     engineId: string;
     engineName: string;

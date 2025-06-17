@@ -270,6 +270,10 @@ export function initExposure(): void {
     return ipcInvoke('container-provider-registry:listContainers');
   });
 
+  contextBridge.exposeInMainWorld('listSecrets', async (): Promise<ContainerInfo[]> => {
+    return ipcInvoke('container-provider-registry:listSecrets');
+  });
+
   contextBridge.exposeInMainWorld(
     'listSimpleContainersByLabel',
     async (label: string, key: string): Promise<SimpleContainerInfo[]> => {
