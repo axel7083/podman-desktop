@@ -4,6 +4,7 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 
 import { router } from 'tinro';
 
+import SecretsList from '/@/lib/secrets/SecretsList.svelte';
 import PinActions from '/@/lib/statusbar/PinActions.svelte';
 import { handleNavigation } from '/@/navigation';
 import { kubernetesNoCurrentContext } from '/@/stores/kubernetes-no-current-context';
@@ -251,6 +252,9 @@ window.events?.receive('kubernetes-navigation', (args: unknown) => {
         </Route>
         <Route path="/volumes/:name/:engineId/*" breadcrumb="Volume Details" let:meta navigationHint="details">
           <VolumeDetails volumeName={decodeURI(meta.params.name)} engineId={decodeURI(meta.params.engineId)} />
+        </Route>
+        <Route path="/secrets" breadcrumb="Secrets" navigationHint="root">
+          <SecretsList />
         </Route>
         {#if $kubernetesNoCurrentContext}
           <Route path="/kubernetes/*" breadcrumb="Kubernetes" navigationHint="root">

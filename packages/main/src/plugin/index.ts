@@ -115,6 +115,7 @@ import type {
 import type { ProxyState } from '/@api/proxy.js';
 import type { PullEvent } from '/@api/pull-event.js';
 import type { ReleaseNotesInfo } from '/@api/release-notes-info.js';
+import type { SecretInfo } from '/@api/secret-info.js';
 import type { PinOption } from '/@api/status-bar/pin-option.js';
 import type { ViewInfoUI } from '/@api/view-info.js';
 import type { VolumeInspectInfo, VolumeListInfo } from '/@api/volume-info.js';
@@ -759,6 +760,10 @@ export class PluginSystem {
 
     this.ipcHandle('container-provider-registry:listContainers', async (): Promise<ContainerInfo[]> => {
       return containerProviderRegistry.listContainers();
+    });
+
+    this.ipcHandle('container-provider-registry:listSecrets', async (): Promise<Array<SecretInfo>> => {
+      return containerProviderRegistry.listSecrets();
     });
 
     this.ipcHandle(
