@@ -75,6 +75,9 @@ const fakeStandaloneContainer: ContainerInfoUI = {
   groupInfo: {
     name: 'group2',
     type: ContainerGroupInfoTypeUI.STANDALONE,
+    engineId: 'podman',
+    engineName: 'Podman',
+    engineType: 'podman',
   },
   selected: false,
   created: 1234,

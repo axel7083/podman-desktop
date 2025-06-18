@@ -42,7 +42,7 @@ export class ContainerUtils {
     // Safely determine if this is a compose project or not by checking the project label.
     const composeProject = containerInfo.Labels?.['com.docker.compose.project'];
 
-    /* 
+    /*
       When deploying with compose, the container name will be <project>-<service-name>-<container-number> under Names[0].
       This is added to the container name to make it unique.
       HOWEVER, if you specify container_name in the compose file, the container name will be whatever is is set to and
@@ -192,6 +192,7 @@ export class ContainerUtils {
         type: ContainerGroupInfoTypeUI.COMPOSE,
         engineId: containerInfo.engineId,
         engineType: containerInfo.engineType,
+        engineName: containerInfo.engineName,
       };
     }
 
@@ -205,6 +206,7 @@ export class ContainerUtils {
         status: (podInfo.status ?? '').toUpperCase(),
         engineId: containerInfo.engineId,
         engineType: containerInfo.engineType,
+        engineName: containerInfo.engineName,
       };
     }
 
@@ -214,6 +216,8 @@ export class ContainerUtils {
       type: ContainerGroupInfoTypeUI.STANDALONE,
       status: (containerInfo.Status ?? '').toUpperCase(),
       engineType: containerInfo.engineType,
+      engineId: containerInfo.engineId,
+      engineName: containerInfo.engineName,
     };
   }
 
@@ -234,13 +238,14 @@ export class ContainerUtils {
       } else {
         if (!groups.has(group.name)) {
           groups.set(group.name, {
+            engineName: containerInfo.engineName,
+            engineId: containerInfo.engineId,
             selected: false,
             expanded: true,
             name: group.name,
             type: group.type,
             id: group.id,
             status: group.status,
-            engineId: group.engineId,
             engineType: group.engineType,
             allContainersCount: 0,
             containers: [],

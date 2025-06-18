@@ -45,6 +45,9 @@ const container: ContainerInfoUI = {
   groupInfo: {
     name: '',
     type: ContainerGroupInfoTypeUI.STANDALONE,
+    engineId: 'podman',
+    engineName: 'Podman',
+    engineType: 'podman',
   },
   selected: false,
   created: 0,
@@ -61,6 +64,7 @@ const pod: ContainerGroupInfoUI = {
   name: 'my-pod',
   engineType: ContainerGroupInfoTypeUI.PODMAN,
   engineId: 'engineId',
+  engineName: 'Podman',
 };
 
 const compose: ContainerGroupInfoUI = {
@@ -72,6 +76,7 @@ const compose: ContainerGroupInfoUI = {
   name: 'my-compose',
   engineType: ContainerGroupInfoTypeUI.PODMAN,
   engineId: 'engine2',
+  engineName: 'Podman',
 };
 
 test('Expect simple column styling - container', async () => {

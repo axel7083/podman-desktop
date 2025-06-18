@@ -46,6 +46,9 @@ const myContainer: ContainerInfoUI = {
   groupInfo: {
     name: 'foobar',
     type: ContainerGroupInfoTypeUI.STANDALONE,
+    engineId: 'podman',
+    engineName: 'Podman',
+    engineType: 'podman',
   },
   selected: false,
   created: 0,

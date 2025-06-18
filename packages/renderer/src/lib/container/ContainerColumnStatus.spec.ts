@@ -64,6 +64,9 @@ test('Expect simple column styling - pod', async () => {
     allContainersCount: 0,
     containers: [],
     name: '',
+    engineName: 'Podman',
+    engineType: 'podman',
+    engineId: 'podman',
   };
   render(ContainerColumnStatus, { object: pod });
 
@@ -81,6 +84,9 @@ test('Expect simple column styling - compose', async () => {
     allContainersCount: 0,
     containers: [],
     name: '',
+    engineId: 'podman',
+    engineName: 'Podman',
+    engineType: 'podman',
   };
   render(ContainerColumnStatus, { object: compose });
 
