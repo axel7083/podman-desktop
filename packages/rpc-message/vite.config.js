@@ -19,6 +19,7 @@
 import { chrome } from '../../.electron-vendors.cache.json';
 import { join } from 'path';
 import { builtinModules } from 'module';
+import dts from 'vite-plugin-dts';
 
 const PACKAGE_ROOT = __dirname;
 
@@ -33,10 +34,13 @@ const config = {
   resolve: {
     alias: {
       '/@/': join(PACKAGE_ROOT, 'src') + '/',
-      '/@api/': join(PACKAGE_ROOT, '../api/src') + '/',
     },
   },
-  plugins: [],
+  plugins: [
+    dts({
+      exclude: ['@podman-desktop/api'],
+    }),
+  ],
   build: {
     sourcemap: 'inline',
     target: `chrome${chrome}`,

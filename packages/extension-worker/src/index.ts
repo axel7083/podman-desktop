@@ -36,7 +36,8 @@ export function main(): void {
     api?.dispose();
   });
 
-  api = new ApiService('<unknown>');
+  api = new ApiService('<unknown>', parentPort);
+  api.init();
 }
 
 // execute main

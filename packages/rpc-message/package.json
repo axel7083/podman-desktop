@@ -1,0 +1,15 @@
+{
+  "name": "@podman-desktop/rpc-message",
+  "version": "0.0.1",
+  "description": "",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run --coverage --passWithNoTests"
+  },
+  "dependencies": {
+    "vite": "^6.3.5",
+    "vitest": "^3.1.4",
+    "typescript": "^5.8.3"
+  }
+}

@@ -15,7 +15,10 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import type { EventEmitter } from 'node:events';
+
 import type containerDesktopAPI from '@podman-desktop/api';
+import { RpcClient } from '@podman-desktop/rpc-message/src/client/rpc-client';
 
 import {
   InputBoxValidationSeverity,
@@ -29,12 +32,26 @@ import { DisposableImpl } from '/@/utils/disposable-impl';
 import { Emitter } from '/@/utils/emitter-impl';
 import { TelemetryTrustedValue } from '/@/utils/telemetry';
 import { UriImpl } from '/@/utils/uri-impl';
+import { NAVIGATION_API_CHANNEL, NavigationApi } from '/@api/extension-worker/navigation-api';
+import { NavigationProxy } from '/@/proxies/navigation-proxy';
 
 export class ApiService implements containerDesktopAPI.Disposable {
-  constructor(protected version: string) {}
+  readonly #rpcClient: RpcClient;
+  readonly #navigationProxy: NavigationProxy;
+
+  constructor(protected version: string, event: EventEmitter) {
+    this.#rpcClient = new RpcClient(event, 'message', 'message');
+    this.#navigationProxy = new NavigationProxy(
+      this.#rpcClient.getProxy<NavigationApi>(NAVIGATION_API_CHANNEL),
+    );
+  }
 
   dispose(): void {
     console.log('[ApiService] disposing api service');
+  }
+
+  init(): void {
+    this.#rpcClient.init();
   }
 
   build(): typeof containerDesktopAPI {
@@ -62,7 +79,7 @@ export class ApiService implements containerDesktopAPI.Disposable {
       context: {} as unknown as typeof containerDesktopAPI.context,
       cli: {} as unknown as typeof containerDesktopAPI.cli,
       imageChecker: {} as unknown as typeof containerDesktopAPI.imageChecker,
-      navigation: {} as unknown as typeof containerDesktopAPI.navigation,
+      navigation: this.#navigationProxy,
       // classes
       Disposable: DisposableImpl,
       Uri: UriImpl,

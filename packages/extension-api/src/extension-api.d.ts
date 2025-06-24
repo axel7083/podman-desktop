@@ -4865,6 +4865,7 @@ declare module '@podman-desktop/api' {
      * Navigate to Resources page
      */
     export function navigateToResources(): Promise<void>;
+
     /**
      * Navigate to the Edit Provider Container Connection page
      */
