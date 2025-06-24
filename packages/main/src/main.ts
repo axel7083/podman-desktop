@@ -19,6 +19,7 @@ import type { App as ElectronApp, BrowserWindow } from 'electron';
 
 import type { AppPlugin } from '/@/plugin/app-ready/app-plugin.js';
 import { DefaultProtocolClient } from '/@/plugin/app-ready/default-protocol-client.js';
+import { ExtensionWorker } from '/@/plugin/app-ready/extension-worker.js';
 import { SecurityRestrictions } from '/@/security-restrictions.js';
 import { isLinux, isMac, isWindows } from '/@/util.js';
 import type { IDisposable } from '/@api/disposable.js';
@@ -56,7 +57,7 @@ export class Main implements IDisposable {
     this.app = app;
     this.mainWindowDeferred = new Deferred<BrowserWindow>();
     this.protocolLauncher = new ProtocolLauncher(this.mainWindowDeferred);
-    this.#plugins = [new DefaultProtocolClient(this.app)];
+    this.#plugins = [new DefaultProtocolClient(this.app), new ExtensionWorker()];
   }
 
   main(args: string[]): void {
