@@ -363,6 +363,8 @@ const config = {
         storybookStatic: '../storybook/storybook-static',
       },
     ],
+    // plugin used to support dynamic routing
+    './src/plugins/marketplace-plugin.js',
   ],
   presets: [
     [
