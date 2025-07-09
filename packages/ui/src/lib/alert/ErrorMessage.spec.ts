@@ -27,10 +27,10 @@ import ErrorMessage from './ErrorMessage.svelte';
 
 test('Check error message', async () => {
   const error = 'This is an error message';
-  render(ErrorMessage, { error });
+  const { getByRole } = render(ErrorMessage, { error });
 
   // check error message
-  const errorMesssage = screen.getByRole('alert', { name: 'Error Message Content' });
+  const errorMesssage = getByRole('alert', { name: 'Error Message Content' });
   expect(errorMesssage).toBeInTheDocument();
   expect(errorMesssage).toHaveTextContent(error);
 });
