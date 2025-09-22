@@ -155,7 +155,7 @@ const columns = [
 const row = new TableRow<PodInfoUI>({ selectable: (_pod): boolean => true });
 </script>
 
-<NavPage bind:searchTerm={searchTerm} title="pods">
+<NavPage bind:searchTerm={searchTerm} title="Podman pods">
   {#snippet additionalActions()}
     {#if $podsInfos.length > 0}
       <Prune type="pods" engines={enginesList} />

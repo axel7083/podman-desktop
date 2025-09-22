@@ -27,10 +27,10 @@ export function createNavigationPodEntry(): NavigationRegistryEntry {
     count = pods.length;
   });
   const registry: NavigationRegistryEntry = {
-    name: 'Pods',
+    name: 'Podman Pods',
     icon: { iconComponent: PodIcon },
     link: '/pods',
-    tooltip: 'Pods',
+    tooltip: 'Podman Pods',
     type: 'entry',
 
     get counter() {
