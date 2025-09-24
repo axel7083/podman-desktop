@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**********************************************************************
- * Copyright (C) 2022-2024 Red Hat, Inc.
+ * Copyright (C) 2022-2025 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,17 +26,17 @@ import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { readdirSync, existsSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
+import type { InlineConfig, LogLevel, ResolvedServerOptions, WebSocketServer } from 'vite';
+import type { OutputPlugin } from 'rollup';
+import type { ChildProcessWithoutNullStreams } from 'node:child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-/** @type 'production' | 'development'' */
-const mode = (process.env.MODE = process.env.MODE || 'development');
+const mode: string = (process.env.MODE = process.env.MODE || 'development');
 
-/** @type {import('vite').LogLevel} */
-const LOG_LEVEL = 'info';
+const LOG_LEVEL: LogLevel = 'info';
 
-/** @type {import('vite').InlineConfig} */
-const sharedConfig = {
+const sharedConfig: InlineConfig = {
   mode,
   build: {
     watch: {},
@@ -52,10 +52,15 @@ const stderrFilterPatterns = [
   /ExtensionLoadWarning/,
 ];
 
-/**
- * @param {{name: string; configFile: string; writeBundle: import('rollup').OutputPlugin['writeBundle'] }} param0
- */
-const getWatcher = ({ name, configFile, writeBundle }) => {
+const getWatcher = ({
+  name,
+  configFile,
+  writeBundle,
+}: {
+  name: string;
+  configFile: string;
+  writeBundle: OutputPlugin['writeBundle'];
+}) => {
   return build({
     ...sharedConfig,
     configFile,
@@ -67,9 +72,11 @@ const EXTENSION_OPTION = '--extension-folder';
 
 /**
  * Start or restart App when source files are changed
- * @param {{config: {server: import('vite').ResolvedServerOptions}}} ResolvedServerOptions
  */
-const setupMainPackageWatcher = ({ config: { server, extensions } }) => {
+const setupMainPackageWatcher = (
+  { config: { server } }: { config: { server: ResolvedServerOptions } },
+  extensions: Array<string>,
+) => {
   // Create VITE_DEV_SERVER_URL environment variable to pass it to the main process.
   {
     const protocol = server.https ? 'https:' : 'http:';
@@ -83,26 +90,25 @@ const setupMainPackageWatcher = ({ config: { server, extensions } }) => {
     prefix: '[main]',
   });
 
-  /** @type {ChildProcessWithoutNullStreams | null} */
-  let spawnProcess = null;
+  let spawnProcess: ChildProcessWithoutNullStreams | undefined = undefined;
 
   return getWatcher({
     name: 'reload-app-on-main-package-change',
     configFile: 'packages/main/vite.config.js',
     writeBundle() {
-      if (spawnProcess !== null) {
+      if (spawnProcess !== undefined) {
         spawnProcess.off('exit', process.exit);
         spawnProcess.kill('SIGINT');
-        spawnProcess = null;
+        spawnProcess = undefined;
       }
 
-      const extensionArgs = [];
+      const extensionArgs: Array<string> = [];
       extensions.forEach(extension => {
         extensionArgs.push(EXTENSION_OPTION);
         extensionArgs.push(extension);
       });
       spawnProcess = spawn(String(electronPath), ['--remote-debugging-port=9223', '.', ...extensionArgs], {
-        env: { ...process.env, ELECTRON_IS_DEV: 1 },
+        env: { ...process.env, ELECTRON_IS_DEV: '1' },
       });
 
       spawnProcess.stdout.on('data', d => d.toString().trim() && logger.warn(d.toString(), { timestamp: true }));
@@ -125,19 +131,10 @@ const setupUiPackageWatcher = () => {
     prefix: '[ui]',
   });
 
-  /** @type {ChildProcessWithoutNullStreams | null} */
-  let spawnProcess = null;
-
-  if (spawnProcess !== null) {
-    spawnProcess.off('exit', process.exit);
-    spawnProcess.kill('SIGINT');
-    spawnProcess = null;
-  }
-
   const dirname = join(__dirname, '..', 'node_modules', '.bin');
   const exe = 'svelte-package'.concat(process.platform === 'win32' ? '.cmd' : '');
   const newPath = `${process.env.PATH}${delimiter}${dirname}`;
-  spawnProcess = spawn(exe, ['-w'], {
+  const spawnProcess: ChildProcessWithoutNullStreams = spawn(exe, ['-w'], {
     cwd: './packages/ui/',
     env: { PATH: newPath, ...process.env },
     shell: process.platform === 'win32',
@@ -158,9 +155,8 @@ const setupUiPackageWatcher = () => {
 
 /**
  * Start or restart App when source files are changed
- * @param {{ws: import('vite').WebSocketServer}} WebSocketServer
  */
-const setupPreloadPackageWatcher = ({ ws }) =>
+const setupPreloadPackageWatcher = ({ ws }: { ws: WebSocketServer }) =>
   getWatcher({
     name: 'reload-page-on-preload-package-change',
     configFile: 'packages/preload/vite.config.js',
@@ -178,7 +174,7 @@ const setupPreloadPackageWatcher = ({ ws }) =>
     },
   });
 
-const setupPreloadDockerExtensionPackageWatcher = ({ ws }) =>
+const setupPreloadDockerExtensionPackageWatcher = ({ ws }: { ws: WebSocketServer }) =>
   getWatcher({
     name: 'reload-page-on-preload-docker-extension-package-change',
     configFile: 'packages/preload-docker-extension/vite.config.js',
@@ -197,7 +193,7 @@ const setupPreloadDockerExtensionPackageWatcher = ({ ws }) =>
     },
   });
 
-const setupPreloadWebviewPackageWatcher = ({ ws }) =>
+const setupPreloadWebviewPackageWatcher = ({ ws }: { ws: WebSocketServer }) =>
   getWatcher({
     name: 'reload-page-on-preload-webview-package-change',
     configFile: 'packages/preload-webview/vite.config.js',
@@ -218,9 +214,8 @@ const setupPreloadWebviewPackageWatcher = ({ ws }) =>
 
 /**
  * Start or restart App when source files are changed
- * @param {{ws: import('vite').WebSocketServer}} WebSocketServer
  */
-const setupExtensionApiWatcher = name => {
+const setupExtensionApiWatcher = (name: string) => {
   let spawnProcess;
   const folderName = resolve(name);
 
@@ -240,7 +235,7 @@ const setupExtensionApiWatcher = name => {
 
 (async () => {
   try {
-    const extensions = [];
+    const extensions: Array<string> = [];
     for (let index = 0; index < process.argv.length; index++) {
       if (process.argv[index] === EXTENSION_OPTION && index < process.argv.length - 1) {
         extensions.push(resolve(process.argv[++index]));
@@ -249,7 +244,6 @@ const setupExtensionApiWatcher = name => {
     const viteDevServer = await createServer({
       ...sharedConfig,
       configFile: 'packages/renderer/vite.config.js',
-      extensions: extensions,
     });
 
     await viteDevServer.listen();
@@ -265,8 +259,7 @@ const setupExtensionApiWatcher = name => {
       .filter(
         dirent =>
           dirent.isDirectory() &&
-          (existsSync(join(extensionsFolder, dirent.name, 'package.json')) ||
-            existsSync(extensionsFolder, dirent.name, 'packages', 'extension', 'package.json')),
+          (existsSync(join(extensionsFolder, dirent.name, 'package.json')) || existsSync(extensionsFolder)),
       )
       .forEach(dirent => {
         const apiExtPath = join(extensionsFolder, dirent.name, 'packages', 'extension');
@@ -284,7 +277,7 @@ const setupExtensionApiWatcher = name => {
     await setupPreloadDockerExtensionPackageWatcher(viteDevServer);
     await setupPreloadWebviewPackageWatcher(viteDevServer);
     await setupUiPackageWatcher();
-    await setupMainPackageWatcher(viteDevServer);
+    await setupMainPackageWatcher(viteDevServer, extensions);
   } catch (e) {
     console.error(e);
     process.exit(1);
