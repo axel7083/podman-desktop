@@ -19,7 +19,6 @@
 import type { ExtensionDevelopmentFolderInfo } from '/@api/extension-development-folders-info';
 
 export interface SelectableExtensionDevelopmentFolderInfoUI extends ExtensionDevelopmentFolderInfo {
-  selected: boolean;
   name: string;
   extension?: {
     id: string;

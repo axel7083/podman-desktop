@@ -1,17 +1,19 @@
 <script lang="ts">
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import { Button, Table, TableColumn, TableRow, TableSimpleColumn } from '@podman-desktop/ui-svelte';
+import { Button, TableColumn, TableRow, TableSimpleColumn } from '@podman-desktop/ui-svelte';
+import { SvelteSet } from 'svelte/reactivity';
 
 import { withBulkConfirmation } from '/@/lib/actions/BulkActions';
 import type { SelectableExtensionDevelopmentFolderInfoUI } from '/@/lib/extensions/dev-mode/development-folder-info-ui';
 import DevelopmentExtensionTableActionsColumn from '/@/lib/extensions/dev-mode/table/ActionsColumn.svelte';
+import TableSvelte5 from '/@/lib/table/TableSvelte5.svelte';
 
 interface Props {
-  selectedItemsNumber?: number;
+  selected?: SvelteSet<string>;
   extensionFolderUIInfos: SelectableExtensionDevelopmentFolderInfoUI[];
 }
 
-let { extensionFolderUIInfos, selectedItemsNumber = $bindable(0) }: Props = $props();
+let { extensionFolderUIInfos, selected = $bindable(new SvelteSet()) }: Props = $props();
 
 const nameColumn = new TableColumn<SelectableExtensionDevelopmentFolderInfoUI, string>('Name', {
   width: '3fr',
@@ -47,30 +49,46 @@ const row = new TableRow<SelectableExtensionDevelopmentFolderInfoUI>({
 
 function deleteSelectedFolders(): void {}
 let bulkDeleteInProgress = false;
+
+/**
+ * Utility function for the Table to get the key to use for each item
+ */
+function key(folder: SelectableExtensionDevelopmentFolderInfoUI): string {
+  return folder.name;
+}
+
+/**
+ * Utility function for the Table to get the label to display for each item
+ */
+function label(folder: SelectableExtensionDevelopmentFolderInfoUI): string {
+  return folder.name;
+}
 </script>
 
-<Table
+<TableSvelte5
   kind="extensions"
   data={extensionFolderUIInfos}
   {columns}
   {row}
-  bind:selectedItemsNumber
+  bind:selected={selected}
   defaultSortColumn="Name"
-  on:update={(): SelectableExtensionDevelopmentFolderInfoUI[] => (extensionFolderUIInfos = [...extensionFolderUIInfos])}>
-</Table>
+  key={key}
+  label={label}
+>
+</TableSvelte5>
 
 <div class="h-5 px-6 mb-2">
-  {#if selectedItemsNumber > 0}
+  {#if selected.size > 0}
     <Button
       on:click={(): void =>
         withBulkConfirmation(
           deleteSelectedFolders,
-          `Untrack loading extension from ${selectedItemsNumber} folder${selectedItemsNumber > 1 ? 's' : ''}`,
+          `Untrack loading extension from ${selected.size} folder${selected.size > 1 ? 's' : ''}`,
         )}
-      title="Untrack {selectedItemsNumber} selected items"
+      title="Untrack {selected.size} selected items"
       inProgress={bulkDeleteInProgress}
       icon={faTrash} />
-    <span>On {selectedItemsNumber} selected items.</span>
+    <span>On {selected.size} selected items.</span>
   {:else}
     <div>&nbsp;</div>
   {/if}
