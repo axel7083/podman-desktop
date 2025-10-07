@@ -11,7 +11,10 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "allowSyntheticDefaultImports": true,
-    "types": ["node"]
+    "types": ["node"],
+    "paths": {
+      "/@/*": ["./src/*"]
+    }
   },
   "include": ["src", "types/*.d.ts", "scripts"]
 }
