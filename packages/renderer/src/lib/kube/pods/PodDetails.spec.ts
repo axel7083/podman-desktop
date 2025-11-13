@@ -30,8 +30,8 @@ import * as states from '/@/stores/kubernetes-contexts-state';
 import { initListExperimental, initListsNonExperimental, type initListsReturnType } from '../tests-helpers/init-lists';
 import PodDetails from './PodDetails.svelte';
 
-vi.mock('@xterm/xterm');
-vi.mock('@xterm/addon-search');
+vi.mock(import('@xterm/xterm'));
+vi.mock(import('@xterm/addon-search'));
 
 vi.mock('/@/stores/kubernetes-contexts-state');
 

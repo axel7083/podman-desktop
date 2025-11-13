@@ -96,7 +96,8 @@ describe('Test SSH Client', () => {
   });
 
   test('should emit ready event', () => {
-    vi.mocked(client.on).mockImplementation((eventName, fn) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    vi.mocked(client.on).mockImplementation((eventName: string, fn: Function) => {
       if (eventName === 'ready') {
         fn();
       }
@@ -111,7 +112,8 @@ describe('Test SSH Client', () => {
 
   test('should emit error event', () => {
     const errMsg = { message: 'Error message' };
-    vi.mocked(client.on).mockImplementation((eventName, fn) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    vi.mocked(client.on).mockImplementation((eventName: string, fn: Function) => {
       if (eventName === 'error') {
         fn(errMsg);
       }
@@ -125,7 +127,8 @@ describe('Test SSH Client', () => {
 
 describe('Test SSH Stream', () => {
   beforeEach(() => {
-    vi.mocked(Client.prototype.on).mockImplementation(function (this: Client, eventName, fn): Client {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    vi.mocked(Client.prototype.on).mockImplementation(function (this: Client, eventName: string, fn: Function): Client {
       if (eventName === 'ready') {
         fn();
       }

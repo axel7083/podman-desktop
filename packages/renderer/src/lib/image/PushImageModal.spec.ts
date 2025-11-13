@@ -28,18 +28,7 @@ import type { ImageInspectInfo } from '/@api/image-inspect-info';
 import type { ImageInfoUI } from './ImageInfoUI';
 import PushImageModal from './PushImageModal.svelte';
 
-vi.mock('@xterm/xterm', () => {
-  const Terminal = vi.fn();
-  Terminal.prototype = {
-    loadAddon: vi.fn(),
-    open: vi.fn(),
-    write: vi.fn(),
-    clear: vi.fn(),
-    reset: vi.fn(),
-    dispose: vi.fn(),
-  };
-  return { Terminal };
-});
+vi.mock(import('@xterm/xterm'));
 
 const getConfigurationValueMock = vi.fn();
 const hasAuthMock = vi.fn();

@@ -90,7 +90,17 @@ beforeAll(() => {
 
 function mockCallback(
   callback: (keyLogger: (key: symbol, eventName: LoggerEventName, args: string[]) => void) => Promise<void>,
-): Mock<any> {
+): Mock<
+  (
+    param: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    data: any,
+    handlerKey: symbol,
+    collect: (key: symbol, eventName: 'log' | 'warn' | 'error' | 'finish', args: string[]) => void,
+    tokenId: number | undefined,
+    taskId: number | undefined,
+  ) => Promise<void>
+> {
   return vi.fn().mockImplementation(async function (
     _id: string,
     _params: unknown,
