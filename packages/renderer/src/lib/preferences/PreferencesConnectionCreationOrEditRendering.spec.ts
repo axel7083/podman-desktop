@@ -35,19 +35,7 @@ import type { ProviderContainerConnectionInfo, ProviderInfo } from '/@api/provid
 
 import PreferencesConnectionCreationOrEditRendering from './PreferencesConnectionCreationOrEditRendering.svelte';
 
-vi.mock('@xterm/xterm', () => {
-  return {
-    Terminal: vi.fn(() => {
-      return {
-        loadAddon: vi.fn(),
-        open: vi.fn(),
-        write: vi.fn(),
-        clear: vi.fn(),
-        dispose: vi.fn(),
-      };
-    }),
-  };
-});
+vi.mock(import('@xterm/xterm'));
 
 vi.mock(import('/@/lib/preferences/preferences-connection-rendering-task'), async importOriginal => {
   const original = await importOriginal();
