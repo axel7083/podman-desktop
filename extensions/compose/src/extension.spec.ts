@@ -72,20 +72,6 @@ vi.mock('node:fs', () => ({
   existsSync: vi.fn(),
 }));
 
-const detectMock = {
-  checkSystemWideDockerCompose: vi.fn(),
-  checkSystemWidePodmanCompose: vi.fn(),
-  getDockerComposeBinaryInfo: vi.fn(),
-  getStoragePath: vi.fn(),
-  getExtensionStorageBin: vi.fn(),
-} as unknown as Detect;
-
-const composeDownloadMock = {
-  getLatestVersionAsset: vi.fn(),
-  download: vi.fn(),
-  promptUserForVersion: vi.fn(),
-} as unknown as ComposeDownload;
-
 const cliToolMock = {
   registerUpdate: vi.fn(),
   registerInstaller: vi.fn(),
@@ -99,18 +85,11 @@ vi.mock('./cli-run', () => ({
   getSystemBinaryPath: vi.fn(),
 }));
 
-vi.mock('./detect', () => ({
-  Detect: vi.fn(),
-}));
-
-vi.mock('./download', () => ({
-  ComposeDownload: vi.fn(),
-}));
+vi.mock(import('./detect'));
+vi.mock(import('./download'));
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(Detect).mockReturnValue(detectMock);
-  vi.mocked(ComposeDownload).mockReturnValue(composeDownloadMock);
   vi.mocked(extensionApi.cli.createCliTool).mockReturnValue(cliToolMock);
 });
 
@@ -152,23 +131,23 @@ test('provider registered', async () => {
 });
 
 test('downloadCommand should register cli tool if required', async () => {
-  vi.mocked(detectMock.checkSystemWideDockerCompose).mockResolvedValue(false);
-  vi.mocked(detectMock.getStoragePath).mockResolvedValue('');
-  vi.mocked(detectMock.getDockerComposeBinaryInfo).mockResolvedValue({
+  vi.mocked(Detect.prototype.checkSystemWideDockerCompose).mockResolvedValue(false);
+  vi.mocked(Detect.prototype.getStoragePath).mockResolvedValue('');
+  vi.mocked(Detect.prototype.getDockerComposeBinaryInfo).mockResolvedValue({
     version: 'v0.0.0',
     path: 'system-wide-path',
     updatable: false,
   });
 
-  vi.mocked(composeDownloadMock.getLatestVersionAsset).mockResolvedValue({
+  vi.mocked(ComposeDownload.prototype.getLatestVersionAsset).mockResolvedValue({
     tag: 'v1.0.0',
   } as unknown as ComposeGithubReleaseArtifactMetadata);
 
   vi.mocked(extensionApi.commands.registerCommand).mockImplementation((command, callback) => {
     if (command === 'compose.onboarding.downloadCommand') {
       expect(extensionApi.cli.createCliTool).not.toHaveBeenCalled();
-      vi.mocked(detectMock.getStoragePath).mockResolvedValue('storage-path');
-      vi.mocked(detectMock.getExtensionStorageBin).mockResolvedValue('storage-path');
+      vi.mocked(Detect.prototype.getStoragePath).mockResolvedValue('storage-path');
+      vi.mocked(Detect.prototype.getExtensionStorageBin).mockResolvedValue('storage-path');
       callback();
     }
 
@@ -191,8 +170,8 @@ test('downloadCommand should register cli tool if required', async () => {
  * This function return the object provided to the registerUpdate method
  */
 async function getCliToolUpdate(updatable: boolean): Promise<extensionApi.CliToolSelectUpdate> {
-  vi.mocked(detectMock.checkSystemWideDockerCompose).mockResolvedValue(true);
-  vi.mocked(detectMock.getDockerComposeBinaryInfo).mockResolvedValue({
+  vi.mocked(Detect.prototype.checkSystemWideDockerCompose).mockResolvedValue(true);
+  vi.mocked(Detect.prototype.getDockerComposeBinaryInfo).mockResolvedValue({
     version: 'v0.0.0',
     path: 'system-wide-path',
     updatable: updatable,
@@ -219,8 +198,9 @@ async function getCliToolUpdate(updatable: boolean): Promise<extensionApi.CliToo
 
 describe('registerCLITool', () => {
   test('createCliTool already installed system wide', async () => {
-    vi.mocked(detectMock.checkSystemWideDockerCompose).mockResolvedValue(true);
-    vi.mocked(detectMock.getDockerComposeBinaryInfo).mockResolvedValue({
+    vi.mocked(Detect.prototype.checkSystemWideDockerCompose).mockResolvedValue(true);
+    vi.mocked(Detect.prototype.checkSystemWideDockerCompose).mockResolvedValue(true);
+    vi.mocked(Detect.prototype.getDockerComposeBinaryInfo).mockResolvedValue({
       version: 'v0.0.0',
       path: 'system-wide-path',
       updatable: false, // not updatable as unknown location
@@ -247,8 +227,8 @@ describe('registerCLITool', () => {
   });
 
   test('createCliTool already installed system wide by user', async () => {
-    vi.mocked(detectMock.checkSystemWideDockerCompose).mockResolvedValue(true);
-    vi.mocked(detectMock.getDockerComposeBinaryInfo).mockResolvedValue({
+    vi.mocked(Detect.prototype.checkSystemWideDockerCompose).mockResolvedValue(true);
+    vi.mocked(Detect.prototype.getDockerComposeBinaryInfo).mockResolvedValue({
       version: 'v0.0.0',
       path: 'user-system-wide-path',
       updatable: false, // not updatable as unknown location
@@ -275,8 +255,8 @@ describe('registerCLITool', () => {
   });
 
   test('new version docker-compose available', async () => {
-    vi.mocked(detectMock.checkSystemWideDockerCompose).mockResolvedValue(true);
-    vi.mocked(detectMock.getDockerComposeBinaryInfo).mockResolvedValue({
+    vi.mocked(Detect.prototype.checkSystemWideDockerCompose).mockResolvedValue(true);
+    vi.mocked(Detect.prototype.getDockerComposeBinaryInfo).mockResolvedValue({
       version: 'v0.0.0',
       path: 'system-wide-path',
       updatable: false, // not updatable as unknown location
@@ -306,7 +286,7 @@ describe('registerCLITool', () => {
   });
 
   test('update not updatable version should throw an error', async () => {
-    vi.mocked(composeDownloadMock.promptUserForVersion).mockResolvedValue({
+    vi.mocked(ComposeDownload.prototype.promptUserForVersion).mockResolvedValue({
       tag: 'v1.0.0',
     } as unknown as ComposeGithubReleaseArtifactMetadata);
     const update: extensionApi.CliToolSelectUpdate = await getCliToolUpdate(false);
@@ -318,18 +298,18 @@ describe('registerCLITool', () => {
   });
 
   test('update updatable version should update version', async () => {
-    vi.mocked(composeDownloadMock.promptUserForVersion).mockResolvedValue({
+    vi.mocked(ComposeDownload.prototype.promptUserForVersion).mockResolvedValue({
       tag: 'v1.0.0',
     } as unknown as ComposeGithubReleaseArtifactMetadata);
-    vi.mocked(detectMock.getStoragePath).mockResolvedValue('extension-storage-path');
+    vi.mocked(Detect.prototype.getStoragePath).mockResolvedValue('extension-storage-path');
     const update: extensionApi.CliToolUpdate | extensionApi.CliToolSelectUpdate = await getCliToolUpdate(true);
     await update?.selectVersion();
     await update.doUpdate({} as unknown as Logger);
 
-    expect(composeDownloadMock.download).toHaveBeenCalledWith({
+    expect(ComposeDownload.prototype.download).toHaveBeenCalledWith({
       tag: 'v1.0.0',
     });
-    expect(detectMock.getStoragePath).toHaveBeenCalled();
+    expect(Detect.prototype.getStoragePath).toHaveBeenCalled();
     expect(cliRun.installBinaryToSystem).toHaveBeenCalledWith('extension-storage-path', 'docker-compose');
     expect(cliToolMock.updateVersion).toHaveBeenCalledWith({
       installationSource: 'extension',
@@ -338,8 +318,8 @@ describe('registerCLITool', () => {
   });
 
   test('try to install when there is already an existing version should throw an error', async () => {
-    vi.mocked(detectMock.checkSystemWideDockerCompose).mockResolvedValue(true);
-    vi.mocked(detectMock.getDockerComposeBinaryInfo).mockResolvedValue({
+    vi.mocked(Detect.prototype.checkSystemWideDockerCompose).mockResolvedValue(true);
+    vi.mocked(Detect.prototype.getDockerComposeBinaryInfo).mockResolvedValue({
       version: 'v0.0.0',
       path: 'system-wide-path',
       updatable: true,
@@ -364,8 +344,8 @@ describe('registerCLITool', () => {
   });
 
   test('try to install before selecting cli tool version should throw an error', async () => {
-    vi.mocked(detectMock.checkSystemWideDockerCompose).mockResolvedValue(false);
-    vi.mocked(detectMock.getStoragePath).mockResolvedValue('');
+    vi.mocked(Detect.prototype.checkSystemWideDockerCompose).mockResolvedValue(false);
+    vi.mocked(Detect.prototype.getStoragePath).mockResolvedValue('');
 
     let installer: extensionApi.CliToolInstaller | undefined;
     vi.mocked(cliToolMock.registerInstaller).mockImplementation(mInstaller => {
@@ -385,8 +365,8 @@ describe('registerCLITool', () => {
   });
 
   test('doInstall should download and install latest version', async () => {
-    vi.mocked(detectMock.checkSystemWideDockerCompose).mockResolvedValue(false);
-    vi.mocked(detectMock.getStoragePath).mockResolvedValue('');
+    vi.mocked(Detect.prototype.checkSystemWideDockerCompose).mockResolvedValue(false);
+    vi.mocked(Detect.prototype.getStoragePath).mockResolvedValue('');
 
     let installer: extensionApi.CliToolInstaller | undefined;
     vi.mocked(cliToolMock.registerInstaller).mockImplementation(mInstaller => {
@@ -400,17 +380,17 @@ describe('registerCLITool', () => {
       expect(installer).toBeDefined();
     });
 
-    vi.mocked(composeDownloadMock.getLatestVersionAsset).mockResolvedValue({
+    vi.mocked(ComposeDownload.prototype.getLatestVersionAsset).mockResolvedValue({
       tag: 'v1.0.0',
     } as unknown as ComposeGithubReleaseArtifactMetadata);
 
     await installer?.selectVersion(true);
 
     await installer?.doInstall({} as unknown as Logger);
-    expect(composeDownloadMock.download).toHaveBeenCalledWith({
+    expect(ComposeDownload.prototype.download).toHaveBeenCalledWith({
       tag: 'v1.0.0',
     });
-    expect(detectMock.getStoragePath).toHaveBeenCalled();
+    expect(Detect.prototype.getStoragePath).toHaveBeenCalled();
     expect(cliRun.installBinaryToSystem).toHaveBeenCalledWith('', 'docker-compose');
     expect(cliToolMock.updateVersion).toHaveBeenCalledWith({
       installationSource: 'extension',
@@ -419,14 +399,14 @@ describe('registerCLITool', () => {
   });
 
   test('by uninstalling it should delete all executables', async () => {
-    vi.mocked(detectMock.checkSystemWideDockerCompose).mockResolvedValue(true);
-    vi.mocked(detectMock.getDockerComposeBinaryInfo).mockResolvedValue({
+    vi.mocked(Detect.prototype.checkSystemWideDockerCompose).mockResolvedValue(true);
+    vi.mocked(Detect.prototype.getDockerComposeBinaryInfo).mockResolvedValue({
       version: 'v0.0.0',
       path: 'system-wide-path',
       updatable: false, // not updatable as unknown location
     });
     vi.spyOn(cliRun, 'getSystemBinaryPath').mockReturnValue('system-wide-path');
-    vi.mocked(detectMock.getStoragePath).mockResolvedValue('storage-path');
+    vi.mocked(Detect.prototype.getStoragePath).mockResolvedValue('storage-path');
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
 
     vi.mocked(extensionApi.process.exec).mockResolvedValue({
@@ -452,14 +432,14 @@ describe('registerCLITool', () => {
   });
 
   test('if unlink fails because of a permission issue, it should delete all binaries as admin', async () => {
-    vi.mocked(detectMock.checkSystemWideDockerCompose).mockResolvedValue(true);
-    vi.mocked(detectMock.getDockerComposeBinaryInfo).mockResolvedValue({
+    vi.mocked(Detect.prototype.checkSystemWideDockerCompose).mockResolvedValue(true);
+    vi.mocked(Detect.prototype.getDockerComposeBinaryInfo).mockResolvedValue({
       version: 'v0.0.0',
       path: 'system-wide-path',
       updatable: false, // not updatable as unknown location
     });
     vi.spyOn(cliRun, 'getSystemBinaryPath').mockReturnValue('system-wide-path');
-    vi.mocked(detectMock.getStoragePath).mockResolvedValue('storage-path');
+    vi.mocked(Detect.prototype.getStoragePath).mockResolvedValue('storage-path');
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
     vi.mocked(fs.promises.unlink).mockRejectedValue({
       code: 'EACCES',
@@ -483,16 +463,16 @@ describe('registerCLITool', () => {
   });
 
   test('verify that can install after uninstalling', async () => {
-    vi.mocked(detectMock.checkSystemWideDockerCompose).mockResolvedValue(true);
-    vi.mocked(detectMock.getDockerComposeBinaryInfo).mockResolvedValue({
+    vi.mocked(Detect.prototype.checkSystemWideDockerCompose).mockResolvedValue(true);
+    vi.mocked(Detect.prototype.getDockerComposeBinaryInfo).mockResolvedValue({
       version: 'v0.0.0',
       path: 'system-wide-path',
       updatable: false, // not updatable as unknown location
     });
     vi.spyOn(cliRun, 'getSystemBinaryPath').mockReturnValue('system-wide-path');
-    vi.mocked(detectMock.getStoragePath).mockResolvedValue('storage-path');
+    vi.mocked(Detect.prototype.getStoragePath).mockResolvedValue('storage-path');
     vi.spyOn(fs, 'existsSync').mockReturnValue(true);
-    vi.mocked(composeDownloadMock.promptUserForVersion).mockResolvedValue({
+    vi.mocked(ComposeDownload.prototype.promptUserForVersion).mockResolvedValue({
       tag: 'v1.0.0',
     } as unknown as ComposeGithubReleaseArtifactMetadata);
     vi.mocked(extensionApi.process.exec).mockResolvedValue({
@@ -519,10 +499,10 @@ describe('registerCLITool', () => {
     await installer?.selectVersion();
 
     await installer?.doInstall({} as unknown as Logger);
-    expect(composeDownloadMock.download).toHaveBeenCalledWith({
+    expect(ComposeDownload.prototype.download).toHaveBeenCalledWith({
       tag: 'v1.0.0',
     });
-    expect(detectMock.getStoragePath).toHaveBeenCalled();
+    expect(Detect.prototype.getStoragePath).toHaveBeenCalled();
     expect(cliRun.installBinaryToSystem).toHaveBeenCalledWith('storage-path', 'docker-compose');
     expect(cliToolMock.updateVersion).toHaveBeenCalledWith({
       installationSource: 'extension',
@@ -533,7 +513,7 @@ describe('registerCLITool', () => {
   test('onboarding download command shows error message if version list cannot be obtained', async () => {
     await activate(extensionContextMock);
     const downloadCommandHandler = vi.mocked(extensionApi.commands.registerCommand).mock.calls[2][1];
-    vi.mocked(composeDownloadMock.getLatestVersionAsset).mockRejectedValue(new Error('API call error'));
+    vi.mocked(ComposeDownload.prototype.getLatestVersionAsset).mockRejectedValue(new Error('API call error'));
     vi.mocked(extensionApi.window.showErrorMessage).mockResolvedValue(undefined);
     await downloadCommandHandler();
     expect(extensionApi.window.showErrorMessage).toHaveBeenCalledOnce();
