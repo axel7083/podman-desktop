@@ -273,7 +273,8 @@ describe('PortForwardConnectionService', () => {
       3,
     );
 
-    createdServer.listen(forwardSetup.forward.localPort, 'localhost', vi.fn());
+    const listeningListener: () => void = vi.fn();
+    createdServer.listen(forwardSetup.forward.localPort, 'localhost', listeningListener);
 
     expect(server.listen).toHaveBeenCalledWith(forwardSetup.forward.localPort, 'localhost', expect.any(Function));
   });

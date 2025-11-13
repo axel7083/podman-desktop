@@ -477,9 +477,7 @@ describe.each([
 });
 
 test('Check connection to Kubernetes cluster', async () => {
-  vi.mocked(clientNode.Health).mockReturnValue({
-    readyz: vi.fn().mockResolvedValue(true),
-  } as unknown as clientNode.Health);
+  vi.mocked(clientNode.Health.prototype.readyz).mockResolvedValue(true);
   const client = new KubernetesClient(
     {} as ApiSenderType,
     configurationRegistry,
@@ -492,9 +490,7 @@ test('Check connection to Kubernetes cluster', async () => {
 });
 
 test('Check connection to Kubernetes cluster in error', async () => {
-  vi.mocked(clientNode.Health).mockReturnValue({
-    readyz: vi.fn().mockRejectedValue(undefined),
-  } as unknown as clientNode.Health);
+  vi.mocked(clientNode.Health.prototype.readyz).mockRejectedValue(undefined);
 
   const client = new KubernetesClient(
     {} as ApiSenderType,
