@@ -91,20 +91,7 @@ const directories = {
 const contributionManager = {} as unknown as ContributionManager;
 
 vi.mock('node:fs');
-
-vi.mock('./../docker-extension/docker-desktop-installer', async () => {
-  const ddInstallerReal = await vi.importActual('../docker-extension/docker-desktop-installer');
-
-  return {
-    DockerDesktopInstaller: vi.fn().mockImplementation(() => {
-      return {
-        extractExtensionFiles: vi.fn(),
-        setupContribution: vi.fn(),
-      };
-    }),
-    DockerDesktopContribution: ddInstallerReal['DockerDesktopContribution'],
-  };
-});
+vi.mock(import('./../docker-extension/docker-desktop-installer.js'));
 
 beforeEach(() => {
   vi.clearAllMocks();
