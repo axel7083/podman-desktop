@@ -47,49 +47,45 @@ afterEach(async () => {
   }
 });
 
-test(
-  'should send event into onDid when a file is watched into an existing directory',
-  async () => {
-    const watchedFile = path.join(rootdir, 'file.txt');
-    watcher = new FileSystemWatcherImpl(watchedFile);
+test('should send event into onDid when a file is watched into an existing directory', async t => {
+  t.skip(isWindows());
 
-    const readyListener = vi.fn();
-    watcher.onReady(readyListener);
+  const watchedFile = path.join(rootdir, 'file.txt');
+  watcher = new FileSystemWatcherImpl(watchedFile);
 
-    const createListener = vi.fn();
-    watcher.onDidCreate(createListener);
-    const changeListener = vi.fn();
-    watcher.onDidChange(changeListener);
-    const unlinkListener = vi.fn();
-    watcher.onDidDelete(unlinkListener);
+  const readyListener = vi.fn();
+  watcher.onReady(readyListener);
 
-    await vi.waitFor(async () => {
-      expect(readyListener).toHaveBeenCalled();
-    });
+  const createListener = vi.fn();
+  watcher.onDidCreate(createListener);
+  const changeListener = vi.fn();
+  watcher.onDidChange(changeListener);
+  const unlinkListener = vi.fn();
+  watcher.onDidDelete(unlinkListener);
 
-    expect(createListener).not.toHaveBeenCalled();
-    const h = await promises.open(watchedFile, 'a');
-    await h.close();
-    await vi.waitFor(async () => {
-      expect(createListener).toHaveBeenCalledWith(Uri.file(watchedFile));
-    });
+  await vi.waitFor(async () => {
+    expect(readyListener).toHaveBeenCalled();
+  });
 
-    expect(changeListener).not.toHaveBeenCalled();
-    await promises.writeFile(watchedFile, 'new content');
-    await vi.waitFor(async () => {
-      expect(changeListener).toHaveBeenCalledWith(Uri.file(watchedFile));
-    });
+  expect(createListener).not.toHaveBeenCalled();
+  const h = await promises.open(watchedFile, 'a');
+  await h.close();
+  await vi.waitFor(async () => {
+    expect(createListener).toHaveBeenCalledWith(Uri.file(watchedFile));
+  });
 
-    expect(unlinkListener).not.toHaveBeenCalled();
-    await promises.rm(watchedFile);
-    await vi.waitFor(async () => {
-      expect(unlinkListener).toHaveBeenCalledWith(Uri.file(watchedFile));
-    });
-  },
-  {
-    skip: isWindows(),
-  },
-);
+  expect(changeListener).not.toHaveBeenCalled();
+  await promises.writeFile(watchedFile, 'new content');
+  await vi.waitFor(async () => {
+    expect(changeListener).toHaveBeenCalledWith(Uri.file(watchedFile));
+  });
+
+  expect(unlinkListener).not.toHaveBeenCalled();
+  await promises.rm(watchedFile);
+  await vi.waitFor(async () => {
+    expect(unlinkListener).toHaveBeenCalledWith(Uri.file(watchedFile));
+  });
+});
 
 test('should send event onDidCreate when a directory is created into a watched directory', async () => {
   watcher = new FileSystemWatcherImpl(rootdir);

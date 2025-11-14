@@ -16,33 +16,35 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { Client } from 'ssh2';
+import { Client, type ClientChannel } from 'ssh2';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { MachineInfo } from '/@/types';
 
 import { ProviderConnectionShellAccessImpl } from './podman-machine-stream';
 
-const onMock = vi.fn();
 const onStreamMock = vi.fn();
 const streamMock = {
   on: onStreamMock,
   write: vi.fn(),
   close: vi.fn(),
-};
+} as unknown as ClientChannel;
 
-let client: Client;
 let providerConnectionShellAccess: TestProviderConnectionShellAccessImpl;
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  vi.resetAllMocks();
   const machineInfo: MachineInfo = {
     port: 12345,
     remoteUsername: 'user',
     identityPath: 'path/to/privateKey',
   } as unknown as MachineInfo;
 
-  client = new Client();
+  vi.mocked(Client.prototype.shell).mockImplementation(function (this: Client, callback) {
+    callback(undefined, streamMock);
+    return this;
+  });
+
   providerConnectionShellAccess = new TestProviderConnectionShellAccessImpl(machineInfo);
 });
 
@@ -54,10 +56,12 @@ class TestProviderConnectionShellAccessImpl extends ProviderConnectionShellAcces
 
 vi.mock('@podman-desktop/api', async () => {
   return {
-    EventEmitter: vi.fn().mockImplementation(() => ({
-      fire: vi.fn(),
-      dispose: vi.fn(),
-    })),
+    EventEmitter: vi.fn(
+      class {
+        fire = vi.fn();
+        dispose = vi.fn();
+      },
+    ),
     Disposable: vi.fn(),
   };
 });
@@ -65,29 +69,21 @@ vi.mock('@podman-desktop/api', async () => {
 vi.mock('node:fs');
 
 // Mock ssh2 Client
-vi.mock('ssh2', () => {
-  return {
-    Client: vi.fn().mockImplementation(() => ({
-      on: onMock,
-      connect: vi.fn(),
-      shell: vi.fn(callback => {
-        callback(undefined, streamMock);
-      }),
-      emit: vi.fn(),
-      end: vi.fn(),
-      destroy: vi.fn(),
-    })),
-  };
-});
+vi.mock(import('ssh2'));
 
 describe('Test SSH Client', () => {
+  let client: Client;
+  beforeEach(() => {
+    client = new Client();
+  });
+
   test('should register the ready event', () => {
     const onReady = vi.fn();
 
     // Adds callback for 'ready'
     client.on('ready', onReady);
 
-    expect(onMock).toHaveBeenCalledWith('ready', onReady);
+    expect(client.on).toHaveBeenCalledWith('ready', onReady);
   });
 
   test('should register the error event', () => {
@@ -96,11 +92,12 @@ describe('Test SSH Client', () => {
     // Adds callback for 'error'
     client.on('error', onError);
 
-    expect(onMock).toHaveBeenCalledWith('error', onError);
+    expect(client.on).toHaveBeenCalledWith('error', onError);
   });
 
   test('should emit ready event', () => {
-    onMock.mockImplementation((eventName, fn) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    vi.mocked(client.on).mockImplementation((eventName: string, fn: Function) => {
       if (eventName === 'ready') {
         fn();
       }
@@ -115,7 +112,8 @@ describe('Test SSH Client', () => {
 
   test('should emit error event', () => {
     const errMsg = { message: 'Error message' };
-    onMock.mockImplementation((eventName, fn) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    vi.mocked(client.on).mockImplementation((eventName: string, fn: Function) => {
       if (eventName === 'error') {
         fn(errMsg);
       }
@@ -129,11 +127,12 @@ describe('Test SSH Client', () => {
 
 describe('Test SSH Stream', () => {
   beforeEach(() => {
-    onMock.mockImplementation((eventName, fn) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    vi.mocked(Client.prototype.on).mockImplementation(function (this: Client, eventName: string, fn: Function): Client {
       if (eventName === 'ready') {
         fn();
       }
-      return client;
+      return this;
     });
   });
 
@@ -164,6 +163,10 @@ describe('Test SSH Stream', () => {
 });
 
 test('Returned functions should run without errors', () => {
+  vi.mocked(Client.prototype.on).mockImplementation(function (this: Client): Client {
+    return this;
+  });
+
   const shellAccess = providerConnectionShellAccess.open();
   expect(() => shellAccess.close()).not.toThrow();
   expect(() => shellAccess.write('test')).not.toThrow();
