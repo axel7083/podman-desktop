@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2023-2025 Red Hat, Inc.
+ * Copyright (C) 2024 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { node } from '../../.electron-vendors.cache.json';
+import { chrome } from '../../.electron-vendors.cache.json';
 import { join } from 'path';
 import { builtinModules } from 'module';
+import { defineConfig } from 'vite';
 
 const PACKAGE_ROOT = __dirname;
-/**
- * @type {import('vite').UserConfig}
- * @see https://vitejs.dev/config/
- */
-const config = {
-  mode: process.env.MODE,
+
+
+export default  defineConfig({
+  mode: process.env['MODE'] ?? 'development',
   root: PACKAGE_ROOT,
   envDir: process.cwd(),
   resolve: {
@@ -37,25 +36,16 @@ const config = {
   },
   build: {
     sourcemap: 'inline',
-    target: `node${node}`,
+    target: `chrome${chrome}`,
     outDir: 'dist',
     assetsDir: '.',
-    minify: process.env.MODE === 'production' ? 'esbuild' : false,
+    minify: process.env['MODE'] !== 'development',
     lib: {
       entry: 'src/index.ts',
       formats: ['cjs'],
     },
     rollupOptions: {
-      external: [
-        'electron',
-        'chokidar',
-        'tar-fs',
-        'ssh2',
-        '@segment/analytics-node',
-        'express',
-        'isomorphic-ws',
-        ...builtinModules.flatMap(p => [p, `node:${p}`]),
-      ],
+      external: ['electron', ...builtinModules.flatMap(p => [p, `node:${p}`])],
       output: {
         entryFileNames: '[name].cjs',
       },
@@ -64,10 +54,7 @@ const config = {
     reportCompressedSize: false,
   },
   test: {
-    retry: 3, // Retries failing tests up to 3 times
-    environment: 'node',
+    environment: 'jsdom',
     include: ['src/**/*.{test,spec}.?(c|m)[jt]s?(x)'],
   },
-};
-
-export default config;
+});

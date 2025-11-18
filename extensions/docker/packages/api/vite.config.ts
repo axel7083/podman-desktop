@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2023-2024 Red Hat, Inc.
+ * Copyright (C) 2024 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,47 +15,25 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-
-import { join } from 'path';
-import { builtinModules } from 'module';
-import typescript from '@rollup/plugin-typescript';
+import { defineConfig } from 'vite';
 
 const PACKAGE_ROOT = __dirname;
-const PACKAGE_NAME = '@podman-desktop/tests-playwright';
 
-/**
- * @type {import('vite').UserConfig}
- * @see https://vitejs.dev/config/
- */
-const config = {
-  mode: process.env.MODE,
+// https://vitejs.dev/config/
+export default defineConfig({
+  mode: process.env['MODE'] ?? 'development',
   root: PACKAGE_ROOT,
-  envDir: process.cwd(),
-  resolve: {
-    alias: {
-      '/@/': join(PACKAGE_ROOT, 'src') + '/',
+  base: '',
+  server: {
+    fs: {
+      strict: true,
     },
   },
-  plugins: [typescript()],
   build: {
     sourcemap: true,
-    target: 'esnext',
     outDir: 'dist',
     assetsDir: '.',
-    lib: {
-      entry: 'src/index.ts',
-      formats: ['es'],
-      name: PACKAGE_NAME,
-    },
-    // emptyOutDir: true,
+    emptyOutDir: true,
     reportCompressedSize: false,
-    rollupOptions: {
-      external: ['electron', '@playwright/test', ...builtinModules.flatMap(p => [p, `node:${p}`])],
-      output: {
-        entryFileNames: '[name].js',
-      },
-    },
   },
-};
-
-export default config;
+});

@@ -25,17 +25,17 @@ import { EventStore } from './src/stores/event-store';
 global.window.matchMedia = vi.fn();
 
 // read the given path and extract the method names from the Window interface
-function extractWindowMethods(filePath) {
+function extractWindowMethods(filePath: string) {
   // Read the content of the .d.ts file
   const fileContent = readFileSync(filePath, 'utf-8');
 
   // Create a TypeScript SourceFile
-  const sourceFile = typescript.createSourceFile(filePath, fileContent, typescript.ScriptTarget.Latest, true);
+  const sourceFile: typescript.SourceFile = typescript.createSourceFile(filePath, fileContent, typescript.ScriptTarget.Latest, true);
 
-  const methodNames = [];
+  const methodNames: string[] = [];
 
   // Visit each node in the AST
-  const visit = node => {
+  const visit = (node: typescript.Node) => {
     // Look for the Window interface
     if (
       typescript.isInterfaceDeclaration(node) &&
@@ -43,7 +43,7 @@ function extractWindowMethods(filePath) {
     ) {
       for (const member of node.members) {
         if (typescript.isPropertySignature(member) && member.type && typescript.isFunctionTypeNode(member.type)) {
-          const name = member.name.text;
+          const name = member.name.getText();
           methodNames.push(name);
         }
       }

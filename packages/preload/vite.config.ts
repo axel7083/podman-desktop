@@ -16,51 +16,46 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import { chrome } from '../../.electron-vendors.cache.json';
 import { join } from 'path';
 import { builtinModules } from 'module';
 
 const PACKAGE_ROOT = __dirname;
 
-/**
- * @type {import('vite').UserConfig}
- * @see https://vitejs.dev/config/
- */
-const config = {
-  mode: process.env.MODE,
+import { defineConfig } from 'vite';
+
+export default  defineConfig({
+  mode: process.env['MODE'] ?? 'development',
   root: PACKAGE_ROOT,
   envDir: process.cwd(),
   resolve: {
     alias: {
       '/@/': join(PACKAGE_ROOT, 'src') + '/',
+      '/@api/': join(PACKAGE_ROOT, '../api/src') + '/',
     },
   },
   build: {
     sourcemap: 'inline',
-    target: 'esnext',
+    target: `chrome${chrome}`,
     outDir: 'dist',
     assetsDir: '.',
-    minify: process.env.MODE === 'production' ? 'esbuild' : false,
+    minify: process.env['MODE'] !== 'development',
     lib: {
-      entry: 'src/extension.ts',
+      entry: 'src/index.ts',
       formats: ['cjs'],
     },
     rollupOptions: {
-      external: ['@podman-desktop/api', ...builtinModules.flatMap(p => [p, `node:${p}`])],
+      external: ['electron', ...builtinModules.flatMap(p => [p, `node:${p}`])],
       output: {
-        entryFileNames: '[name].js',
+        entryFileNames: '[name].cjs',
       },
     },
     emptyOutDir: true,
     reportCompressedSize: false,
   },
   test: {
-    globals: true,
-    environment: 'node',
+    environment: 'jsdom',
     include: ['src/**/*.{test,spec}.?(c|m)[jt]s?(x)'],
-    alias: {
-      '@podman-desktop/api': join(PACKAGE_ROOT, '..', '..', '__mocks__/@podman-desktop/api.js'),
-    },
+    passWithNoTests: true,
   },
-};
-
-export default config;
+});

@@ -15,38 +15,50 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-/* eslint-env node */
-import { join } from 'path';
+import { join } from 'node:path';
+import { builtinModules } from 'node:module';
 import { defineConfig } from 'vite';
 
 const PACKAGE_ROOT = __dirname;
 
-// https://vitejs.dev/config/
+/**
+ * @type {import('vite').UserConfig}
+ * @see https://vitejs.dev/config/
+ */
 export default defineConfig({
-  mode: process.env.MODE,
+  mode: process.env['MODE'] ?? 'development',
   root: PACKAGE_ROOT,
+  envDir: process.cwd(),
   resolve: {
     alias: {
       '/@/': join(PACKAGE_ROOT, 'src') + '/',
     },
   },
-  base: '',
-  server: {
-    fs: {
-      strict: true,
-    },
-  },
   build: {
-    sourcemap: true,
+    sourcemap: 'inline',
+    target: 'esnext',
     outDir: 'dist',
     assetsDir: '.',
-
+    minify: process.env['MODE'] === 'production' ? 'esbuild' : false,
+    lib: {
+      entry: 'src/extension.ts',
+      formats: ['cjs'],
+    },
+    rollupOptions: {
+      external: ['@podman-desktop/api', ...builtinModules.flatMap(p => [p, `node:${p}`])],
+      output: {
+        entryFileNames: '[name].js',
+      },
+    },
     emptyOutDir: true,
     reportCompressedSize: false,
   },
   test: {
+    globals: true,
     environment: 'node',
     include: ['src/**/*.{test,spec}.?(c|m)[jt]s?(x)'],
-    passWithNoTests: true,
+    alias: {
+      '@podman-desktop/api': join(PACKAGE_ROOT, '..', '..', '__mocks__/@podman-desktop/api.js'),
+    },
   },
 });
