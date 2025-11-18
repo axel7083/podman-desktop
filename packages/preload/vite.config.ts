@@ -16,13 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { chrome } from '../../.electron-vendors.cache.json';
-import { join } from 'path';
-import { builtinModules } from 'module';
-
-const PACKAGE_ROOT = __dirname;
+import { builtinModules } from 'node:module';
+import { join } from 'node:path';
 
 import { defineConfig } from 'vite';
+
+import { chrome } from '../../.electron-vendors.cache.json';
+
+const PACKAGE_ROOT = __dirname;
 
 export default  defineConfig({
   mode: process.env['MODE'] ?? 'development',

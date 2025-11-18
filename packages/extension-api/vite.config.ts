@@ -16,6 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import { join } from 'node:path';
+
 import { defineConfig } from 'vite';
 
 const PACKAGE_ROOT = __dirname;

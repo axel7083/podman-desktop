@@ -16,8 +16,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { join } from 'node:path';
 import { builtinModules } from 'node:module';
+import { join } from 'node:path';
+
 import typescript from '@rollup/plugin-typescript';
 import { defineConfig } from 'vite';
 

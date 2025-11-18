@@ -16,10 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { node } from '../../.electron-vendors.cache.json';
-import { join } from 'node:path';
 import { builtinModules } from 'node:module';
+import { join } from 'node:path';
+
 import { defineConfig } from 'vite';
+
+import { node } from '../../.electron-vendors.cache.json';
 
 const PACKAGE_ROOT = __dirname;
 

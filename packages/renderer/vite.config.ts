@@ -18,13 +18,14 @@
 
 import { join } from 'node:path';
 import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { svelte } from '@sveltejs/vite-plugin-svelte';
+import tailwindcss from '@tailwindcss/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import { defineConfig } from 'vite';
-import { fileURLToPath } from 'node:url';
-import tailwindcss from '@tailwindcss/vite';
 
-let filename = fileURLToPath(import.meta.url);
+const filename = fileURLToPath(import.meta.url);
 const PACKAGE_ROOT = path.dirname(filename);
 
 // https://vitejs.dev/config/
@@ -57,7 +58,7 @@ export default defineConfig({
     server: {
       deps: {
         inline: ['moment'],
-      }
+      },
     },
     setupFiles: ['./vite.tests.setup.js'],
   },
