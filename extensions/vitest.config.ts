@@ -25,7 +25,7 @@ const PACKAGE_ROOT = __dirname;
  * @type {import('vite').UserConfig}
  * @see https://vitest.dev/config/
  */
-export default  defineConfig({
+export default defineConfig({
   root: PACKAGE_ROOT,
   test: {
     globals: true,

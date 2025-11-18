@@ -4,11 +4,7 @@
     "lib": ["es2023"],
     "module": "preserve",
     "target": "es2023",
-    "types": ["node","vitest/globals"],
+    "types": ["node", "vitest/globals"]
   },
-  "include": [
-    "**/vitest.config.ts",
-    "**/vite.config.ts",
-    "vitest.config.ts"
-  ]
+  "include": ["**/vitest.config.ts", "**/vite.config.ts", "vitest.config.ts"]
 }

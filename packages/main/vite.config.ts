@@ -25,7 +25,7 @@ import { node } from '../../.electron-vendors.cache.json';
 
 const PACKAGE_ROOT = __dirname;
 
-export default  defineConfig({
+export default defineConfig({
   mode: process.env['MODE'] ?? 'development',
   root: PACKAGE_ROOT,
   envDir: process.cwd(),

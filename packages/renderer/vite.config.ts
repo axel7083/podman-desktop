@@ -38,7 +38,11 @@ export default defineConfig({
       '/@api/': join(PACKAGE_ROOT, '../api/src') + '/',
     },
   },
-  plugins: [tailwindcss(), svelte({ configFile: '../../svelte.config.js', hot: !process.env['VITEST'] }), svelteTesting()],
+  plugins: [
+    tailwindcss(),
+    svelte({ configFile: '../../svelte.config.js', hot: !process.env['VITEST'] }),
+    svelteTesting(),
+  ],
   optimizeDeps: {
     exclude: ['tinro'],
   },

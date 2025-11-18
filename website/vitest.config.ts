@@ -25,7 +25,7 @@ const PACKAGE_ROOT = __dirname;
 export default defineConfig({
   resolve: {
     alias: {
-      '/@api/': join(PACKAGE_ROOT, '..','packages', 'api', 'src') + '/',
+      '/@api/': join(PACKAGE_ROOT, '..', 'packages', 'api', 'src') + '/',
     },
   },
   test: {

@@ -22,7 +22,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
 import typescript from 'typescript';
-import { expect,vi} from 'vitest';
+import { expect, vi } from 'vitest';
 
 import { EventStore, type EventStoreInfo } from './src/stores/event-store';
 
@@ -34,7 +34,12 @@ function extractWindowMethods(filePath: string): string[] {
   const fileContent = readFileSync(filePath, 'utf-8');
 
   // Create a TypeScript SourceFile
-  const sourceFile: typescript.SourceFile = typescript.createSourceFile(filePath, fileContent, typescript.ScriptTarget.Latest, true);
+  const sourceFile: typescript.SourceFile = typescript.createSourceFile(
+    filePath,
+    fileContent,
+    typescript.ScriptTarget.Latest,
+    true,
+  );
 
   const methodNames: string[] = [];
 
@@ -91,6 +96,9 @@ global.window.ResizeObserver = ResizeObserverMock;
 
 // Override the prototype of setupWithDebounce to ensure default values are 10ms
 const originalSetupWithDebounce = EventStore.prototype.setupWithDebounce;
-EventStore.prototype.setupWithDebounce = function (debounceTimeoutDelay = 10, debounceThrottleTimeoutDelay = 10): EventStoreInfo {
+EventStore.prototype.setupWithDebounce = function (
+  debounceTimeoutDelay = 10,
+  debounceThrottleTimeoutDelay = 10,
+): EventStoreInfo {
   return originalSetupWithDebounce.call(this, debounceTimeoutDelay, debounceThrottleTimeoutDelay);
 };
