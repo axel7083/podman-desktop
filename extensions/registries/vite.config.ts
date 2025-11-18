@@ -15,9 +15,10 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import { builtinModules } from 'node:module';
+import { join } from 'node:path';
 
-import { join } from 'path';
-import { builtinModules } from 'module';
+import { defineConfig } from 'vite';
 
 const PACKAGE_ROOT = __dirname;
 
@@ -25,8 +26,8 @@ const PACKAGE_ROOT = __dirname;
  * @type {import('vite').UserConfig}
  * @see https://vitejs.dev/config/
  */
-const config = {
-  mode: process.env.MODE,
+export default defineConfig({
+  mode: process.env['MODE'] ?? 'development',
   root: PACKAGE_ROOT,
   envDir: process.cwd(),
   resolve: {
@@ -39,7 +40,7 @@ const config = {
     target: 'esnext',
     outDir: 'dist',
     assetsDir: '.',
-    minify: process.env.MODE === 'production' ? 'esbuild' : false,
+    minify: process.env['MODE'] === 'production' ? 'esbuild' : false,
     lib: {
       entry: 'src/extension.ts',
       formats: ['cjs'],
@@ -61,6 +62,4 @@ const config = {
       '@podman-desktop/api': join(PACKAGE_ROOT, '..', '..', '__mocks__/@podman-desktop/api.js'),
     },
   },
-};
-
-export default config;
+});

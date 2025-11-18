@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2024-2025 Red Hat, Inc.
+ * Copyright (C) 2023 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,36 +16,55 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-/* eslint-env node */
-import { join } from 'path';
-import * as path from 'path';
+import { join } from 'node:path';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { svelte } from '@sveltejs/vite-plugin-svelte';
+import tailwindcss from '@tailwindcss/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import { defineConfig } from 'vite';
-import { fileURLToPath } from 'url';
-import tailwindcss from '@tailwindcss/vite';
 
-let filename = fileURLToPath(import.meta.url);
+const filename = fileURLToPath(import.meta.url);
 const PACKAGE_ROOT = path.dirname(filename);
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  mode: process.env.MODE,
+  mode: process.env['MODE'] ?? 'development',
   root: PACKAGE_ROOT,
   resolve: {
     alias: {
       '/@/': join(PACKAGE_ROOT, 'src') + '/',
+      '/@api/': join(PACKAGE_ROOT, '../api/src') + '/',
     },
   },
-  plugins: [tailwindcss(), svelte({ configFile: '../../svelte.config.js', hot: !process.env.VITEST }), svelteTesting()],
+  plugins: [
+    tailwindcss(),
+    svelte({ configFile: '../../svelte.config.js', hot: !process.env['VITEST'] }),
+    svelteTesting(),
+  ],
+  optimizeDeps: {
+    exclude: ['tinro'],
+  },
   test: {
+    retry: 3, // Retries failing tests up to 3 times
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     globals: true,
     environment: 'jsdom',
-    alias: [{ find: '@testing-library/svelte', replacement: '@testing-library/svelte/svelte5' }],
-    deps: {
-      inline: ['moment'],
+    alias: [
+      { find: '@testing-library/svelte', replacement: '@testing-library/svelte/svelte5' },
+      {
+        find: /^monaco-editor$/,
+        replacement: `${PACKAGE_ROOT}/../../node_modules/monaco-editor/esm/vs/editor/editor.api`,
+      },
+      { find: '@floating-ui/dom', replacement: `${PACKAGE_ROOT}/__mocks__/@floating-ui/dom.ts` },
+    ],
+    server: {
+      deps: {
+        inline: ['moment'],
+      },
     },
+    setupFiles: ['./vite.tests.setup.js'],
   },
   base: '',
   server: {
@@ -57,10 +76,6 @@ export default defineConfig({
     sourcemap: true,
     outDir: 'dist',
     assetsDir: '.',
-    lib: {
-      entry: 'src/lib/index.ts',
-      formats: ['es'],
-    },
 
     emptyOutDir: true,
     reportCompressedSize: false,

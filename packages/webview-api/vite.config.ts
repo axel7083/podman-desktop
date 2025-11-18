@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2023-2025 Red Hat, Inc.
+ * Copyright (C) 2023-2024 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,59 +15,38 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import { join } from 'node:path';
 
-import { chrome } from '../../.electron-vendors.cache.json';
-import { join } from 'path';
-import { builtinModules } from 'module';
+import { defineConfig } from 'vite';
 
 const PACKAGE_ROOT = __dirname;
 
-/**
- * @type {import('vite').UserConfig}
- * @see https://vitejs.dev/config/
- */
-const config = {
-  mode: process.env.MODE,
+// https://vitejs.dev/config/
+export default defineConfig({
+  mode: process.env['MODE'] ?? 'development',
   root: PACKAGE_ROOT,
-  envDir: process.cwd(),
   resolve: {
     alias: {
       '/@/': join(PACKAGE_ROOT, 'src') + '/',
-      '/@api/': join(PACKAGE_ROOT, '../api/src') + '/',
     },
   },
-  /*plugins: [
-    commonjs({
-      dynamicRequireTargets: [
-        // include using a glob pattern (either a string or an array of strings)
-        'node_modules/ssh2/lib/protocol/crypto/poly1305.js',
-      ]
-      }),
-  ],*/
+  base: '',
+  server: {
+    fs: {
+      strict: true,
+    },
+  },
   build: {
-    sourcemap: 'inline',
-    target: `chrome${chrome}`,
+    sourcemap: true,
     outDir: 'dist',
     assetsDir: '.',
-    minify: process.env.MODE !== 'development',
-    lib: {
-      entry: 'src/index.ts',
-      formats: ['cjs'],
-    },
-    rollupOptions: {
-      external: ['electron', ...builtinModules.flatMap(p => [p, `node:${p}`])],
-      output: {
-        entryFileNames: '[name].cjs',
-      },
-    },
+
     emptyOutDir: true,
     reportCompressedSize: false,
   },
   test: {
-    environment: 'jsdom',
+    environment: 'node',
     include: ['src/**/*.{test,spec}.?(c|m)[jt]s?(x)'],
     passWithNoTests: true,
   },
-};
-
-export default config;
+});

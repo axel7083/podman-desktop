@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2023-2025 Red Hat, Inc.
+ * Copyright (C) 2023-2024 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,21 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { join } from 'path';
-import { builtinModules } from 'module';
+import { builtinModules } from 'node:module';
+import { join } from 'node:path';
+
+import typescript from '@rollup/plugin-typescript';
+import { defineConfig } from 'vite';
 
 const PACKAGE_ROOT = __dirname;
+const PACKAGE_NAME = '@podman-desktop/tests-playwright';
 
 /**
  * @type {import('vite').UserConfig}
  * @see https://vitejs.dev/config/
  */
-const config = {
-  mode: process.env.MODE,
+export default defineConfig({
+  mode: process.env['MODE'] ?? 'development',
   root: PACKAGE_ROOT,
   envDir: process.cwd(),
   resolve: {
@@ -34,33 +38,25 @@ const config = {
       '/@/': join(PACKAGE_ROOT, 'src') + '/',
     },
   },
+  plugins: [],
   build: {
-    sourcemap: 'inline',
+    sourcemap: true,
     target: 'esnext',
     outDir: 'dist',
     assetsDir: '.',
-    minify: process.env.MODE === 'production' ? 'esbuild' : false,
     lib: {
-      entry: 'src/extension.ts',
-      formats: ['cjs'],
+      entry: 'src/index.ts',
+      formats: ['es'],
+      name: PACKAGE_NAME,
     },
+    // emptyOutDir: true,
+    reportCompressedSize: false,
     rollupOptions: {
-      external: ['@podman-desktop/api', ...builtinModules.flatMap(p => [p, `node:${p}`])],
+      plugins: [typescript()],
+      external: ['electron', '@playwright/test', ...builtinModules.flatMap(p => [p, `node:${p}`])],
       output: {
         entryFileNames: '[name].js',
       },
     },
-    emptyOutDir: true,
-    reportCompressedSize: false,
   },
-  test: {
-    globals: true,
-    environment: 'node',
-    include: ['src/**/*.{test,spec}.?(c|m)[jt]s?(x)'],
-    alias: {
-      '@podman-desktop/api': join(PACKAGE_ROOT, '..', '..', '__mocks__/@podman-desktop/api.js'),
-    },
-  },
-};
-
-export default config;
+});

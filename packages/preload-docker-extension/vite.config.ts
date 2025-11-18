@@ -15,38 +15,47 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-/* eslint-env node */
-import { join } from 'path';
+
+import { builtinModules } from 'node:module';
+import { join } from 'node:path';
+
 import { defineConfig } from 'vite';
+
+import { chrome } from '../../.electron-vendors.cache.json';
 
 const PACKAGE_ROOT = __dirname;
 
-// https://vitejs.dev/config/
 export default defineConfig({
-  mode: process.env.MODE,
+  mode: process.env['MODE'] ?? 'development',
   root: PACKAGE_ROOT,
+  envDir: process.cwd(),
   resolve: {
     alias: {
       '/@/': join(PACKAGE_ROOT, 'src') + '/',
-    },
-  },
-  base: '',
-  server: {
-    fs: {
-      strict: true,
+      '/@api/': join(PACKAGE_ROOT, '../api/src') + '/',
     },
   },
   build: {
-    sourcemap: true,
+    sourcemap: 'inline',
+    target: `chrome${chrome}`,
     outDir: 'dist',
     assetsDir: '.',
-
+    minify: process.env['MODE'] !== 'development',
+    lib: {
+      entry: 'src/index.ts',
+      formats: ['cjs'],
+    },
+    rollupOptions: {
+      external: ['electron', ...builtinModules.flatMap(p => [p, `node:${p}`])],
+      output: {
+        entryFileNames: '[name].cjs',
+      },
+    },
     emptyOutDir: true,
     reportCompressedSize: false,
   },
   test: {
-    environment: 'node',
+    environment: 'jsdom',
     include: ['src/**/*.{test,spec}.?(c|m)[jt]s?(x)'],
-    passWithNoTests: true,
   },
 });
