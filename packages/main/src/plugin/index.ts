@@ -126,8 +126,8 @@ import type {
 import type { ProxyState } from '/@api/proxy.js';
 import type { PullEvent } from '/@api/pull-event.js';
 import type { ReleaseNotesInfo } from '/@api/release-notes-info.js';
+import type { SecretCreateOptions, SecretCreateResult, SecretInfo } from '/@api/secret-info.js';
 import type { StatusBarEntryDescriptor } from '/@api/status-bar.js';
-import type { SecretInfo } from '/@api/secret-info.js';
 import type { PinOption } from '/@api/status-bar/pin-option.js';
 import type { ViewInfoUI } from '/@api/view-info.js';
 import type { VolumeInspectInfo, VolumeListInfo } from '/@api/volume-info.js';
@@ -808,6 +808,27 @@ export class PluginSystem {
     this.ipcHandle('container-provider-registry:listSecrets', async (): Promise<Array<SecretInfo>> => {
       return containerProviderRegistry.listSecrets();
     });
+
+    this.ipcHandle(
+      'container-provider-registry:removeSecret',
+      async (_listener, engineId: string, secretId: string): Promise<void> => {
+        return containerProviderRegistry.removeSecret(engineId, secretId);
+      },
+    );
+
+    this.ipcHandle(
+      'container-provider-registry:inspectSecret',
+      async (_listener, engineId: string, secretId: string, options?: { showsecret: boolean }): Promise<SecretInfo> => {
+        return containerProviderRegistry.inspectSecret(engineId, secretId, options);
+      },
+    );
+
+    this.ipcHandle(
+      'container-provider-registry:createSecret',
+      async (_listener, options: SecretCreateOptions): Promise<SecretCreateResult> => {
+        return containerProviderRegistry.createSecret(options);
+      },
+    );
 
     this.ipcHandle(
       'container-provider-registry:listSimpleContainersByLabel',

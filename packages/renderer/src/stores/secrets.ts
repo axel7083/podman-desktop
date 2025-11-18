@@ -17,14 +17,14 @@
  ***********************************************************************/
 
 import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
-import { type Writable, writable } from 'svelte/store';
+import { derived, type Writable, writable } from 'svelte/store';
 
-import type { ContainerInfo } from '/@api/container-info';
+import { findMatchInLeaves } from '/@/stores/search-util';
 import type { SecretInfo } from '/@api/secret-info';
 
 import { EventStore } from './event-store';
 
-const windowEvents = ['extension-started', 'provider-change', 'extensions-started'];
+const windowEvents = ['extension-started', 'provider-change', 'extensions-started', 'secret-event'];
 const windowListeners = ['tray:update-provider', 'extensions-already-started'];
 
 let readyToUpdate = false;
@@ -41,7 +41,7 @@ export async function checkForUpdate(eventName: string): Promise<boolean> {
 export const secretsInfo: Writable<Array<SecretInfo>> = writable([]);
 
 // use helper here as window methods are initialized after the store in tests
-const listContainers = (): Promise<ContainerInfo[]> => {
+const listSecrets = (): Promise<SecretInfo[]> => {
   return window.listSecrets();
 };
 
@@ -51,7 +51,13 @@ export const secretsEventStore = new EventStore<Array<SecretInfo>>(
   checkForUpdate,
   windowEvents,
   windowListeners,
-  listContainers,
+  listSecrets,
   ContainerIcon,
 );
 secretsEventStore.setupWithDebounce();
+
+export const searchPattern = writable('');
+
+export const filtered = derived([searchPattern, secretsInfo], ([$searchPattern, $networksList]) =>
+  $networksList.filter(network => findMatchInLeaves(network, $searchPattern.toLowerCase())),
+);

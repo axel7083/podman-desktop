@@ -26,8 +26,7 @@ import { pipeline } from 'node:stream/promises';
 
 import type * as containerDesktopAPI from '@podman-desktop/api';
 import datejs from 'date.js';
-import type { ContainerAttachOptions, ImageBuildOptions } from 'dockerode';
-import Dockerode from 'dockerode';
+import Dockerode, { ContainerAttachOptions, ImageBuildOptions, Secret } from 'dockerode';
 import { inject, injectable } from 'inversify';
 import moment from 'moment';
 import { coerce, gtr } from 'semver';
@@ -61,7 +60,7 @@ import type { NetworkInspectInfo } from '/@api/network-info.js';
 import type { LibPodPodInfo, PodCreateOptions, PodInfo, PodInspectInfo } from '/@api/pod-info.js';
 import type { ProviderContainerConnectionInfo } from '/@api/provider-info.js';
 import type { PullEvent } from '/@api/pull-event.js';
-import type { SecretInfo } from '/@api/secret-info.js';
+import { SecretCreateOptions, SecretCreateResult, SecretInfo } from '/@api/secret-info.js';
 import type { VolumeInfo, VolumeInspectInfo, VolumeListInfo } from '/@api/volume-info.js';
 
 import { isWindows } from '../util.js';
@@ -192,6 +191,8 @@ export class ContainerProviderRegistry {
         this.apiSender.send('volume-event');
       } else if (jsonEvent?.Type === 'network') {
         this.apiSender.send('network-event');
+      } else if (jsonEvent?.Type === 'secret') {
+        this.apiSender.send('secret-event');
       } else if (jsonEvent.status === 'remove' && jsonEvent?.Type === 'container') {
         this.apiSender.send('container-removed-event', jsonEvent.id);
       } else if (jsonEvent.status === 'pull' && jsonEvent?.Type === 'image') {
@@ -449,6 +450,95 @@ export class ContainerProviderRegistry {
     });
   }
 
+  async createSecret(options: SecretCreateOptions): Promise<SecretCreateResult> {
+    if (!options.selectedProvider) throw new Error('cannot create secret without selected provider');
+
+    let telemetryOptions = {};
+    try {
+      const provider = this.getMatchingContainerProvider(options.selectedProvider);
+      if (!provider.api) throw new Error(`provider ${provider.name} has no api`);
+      const { id } = await provider.api.createSecret({
+        // The data need to be encoded in base64 url safe
+        // ref https://docs.podman.io/en/latest/_static/api.html?version=latest#tag/secrets-(compat)/operation/SecretCreate
+        Data: Buffer.from(options.data).toString('base64'),
+        Name: options.name,
+        Labels: options.labels,
+      });
+      return {
+        id,
+        engineId: provider.id,
+      };
+    } catch (error: unknown) {
+      telemetryOptions = { error: error };
+      throw error;
+    } finally {
+      this.telemetryService.track('createSecret', telemetryOptions);
+    }
+  }
+
+  async inspectSecret(engineId: string, secretId: string, options?: { showsecret?: boolean }): Promise<SecretInfo> {
+    let telemetryOptions = {};
+    try {
+      const engine = this.internalProviders.get(engineId);
+      let secret: Secret & { SecretData?: string };
+      if (engine?.libpodApi) {
+        secret = await engine.libpodApi.inspectSecret(secretId, options);
+      } else if (engine?.api) {
+        secret = await engine.api.getSecret(secretId).inspect();
+      } else {
+        throw new Error(`internal providers with engineId ${engineId} has no api`);
+      }
+
+      let secretData: string | undefined = undefined;
+      if ('SecretData' in secret && typeof secret['SecretData'] === 'string') {
+        secretData = secret['SecretData'];
+      } else if (secret.Spec?.Data && typeof secret.Spec.Data === 'string') {
+        secretData = secret.Spec.Data;
+      }
+
+      return {
+        engineName: engine.name,
+        engineId: engine.id,
+        engineType: engine.connection.type,
+        Name:
+          !!secret.Spec && 'Name' in secret.Spec && typeof secret.Spec['Name'] === 'string'
+            ? secret.Spec['Name']
+            : secret.ID,
+        Id: secret.ID,
+        CreatedAt: secret.CreatedAt,
+        UpdatedAt: secret.UpdatedAt,
+        SecretData: secretData,
+      };
+    } catch (error) {
+      telemetryOptions = { error: error };
+      throw error;
+    } finally {
+      this.telemetryService.track('removeSecret', telemetryOptions);
+    }
+  }
+
+  async removeSecret(engineId: string, secretId: string): Promise<void> {
+    let telemetryOptions = {};
+    try {
+      const engine = this.internalProviders.get(engineId);
+      if (engine?.libpodApi) {
+        // we cannot use the /secrets (compact) api to retreive secret with podman
+        // endpoint is malformed
+        // https://github.com/containers/podman/issues/27548
+        await engine.libpodApi.removeSecret(secretId);
+      } else if (engine?.api) {
+        await engine.api.getSecret(secretId).remove();
+      } else {
+        throw new Error(`internal providers with engineId ${engineId} has no api`);
+      }
+    } catch (error) {
+      telemetryOptions = { error: error };
+      throw error;
+    } finally {
+      this.telemetryService.track('removeSecret', telemetryOptions);
+    }
+  }
+
   async listSecrets(): Promise<Array<SecretInfo>> {
     const providers: Array<InternalContainerProvider> = Array.from(this.internalProviders.values());
 
@@ -466,16 +556,12 @@ export class ContainerProviderRegistry {
             Name:
               !!secret.Spec && 'Name' in secret.Spec && typeof secret.Spec['Name'] === 'string'
                 ? secret.Spec['Name']
-                : undefined,
+                : secret.ID,
             Id: secret.ID,
             CreatedAt: secret.CreatedAt,
             UpdatedAt: secret.UpdatedAt,
             Labels: secret.Spec?.Labels,
-            // https://docs.podman.io/en/latest/_static/api.html#tag/secrets/operation/SecretListLibpod
-            SecretData:
-              'SecretData' in secret && typeof secret['SecretData'] === 'string'
-                ? secret['SecretData']
-                : secret.Spec?.Data,
+            SecretData: undefined, // do not include secret when listing
           }));
         } catch (error) {
           this.notifyConsole(`error in engine ${provider.name} ${error}`);

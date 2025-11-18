@@ -15,14 +15,27 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import type { ProviderContainerConnectionInfo } from '/@/provider-info';
 
 export interface SecretInfo {
   engineId: string;
   engineName: string;
   engineType: 'podman' | 'docker';
   Id: string;
-  Name?: string;
+  Name: string;
   SecretData?: string;
   CreatedAt?: string; // datetime
   UpdatedAt?: string; // datetime
+}
+
+export interface SecretCreateOptions {
+  name: string;
+  selectedProvider: ProviderContainerConnectionInfo | undefined;
+  data: string;
+  labels?: Record<string, string>;
+}
+
+export interface SecretCreateResult {
+  id: string;
+  engineId: string;
 }

@@ -106,6 +106,7 @@ import type {
 import type { ProxyState } from '/@api/proxy';
 import type { PullEvent } from '/@api/pull-event';
 import type { ReleaseNotesInfo } from '/@api/release-notes-info';
+import type { SecretCreateOptions, SecretInfo } from '/@api/secret-info';
 import type { StatusBarEntryDescriptor } from '/@api/status-bar';
 import type { PinOption } from '/@api/status-bar/pin-option';
 import type { ViewInfoUI } from '/@api/view-info';
@@ -270,8 +271,23 @@ export function initExposure(): void {
     return ipcInvoke('container-provider-registry:listContainers');
   });
 
-  contextBridge.exposeInMainWorld('listSecrets', async (): Promise<ContainerInfo[]> => {
+  contextBridge.exposeInMainWorld('listSecrets', async (): Promise<SecretInfo[]> => {
     return ipcInvoke('container-provider-registry:listSecrets');
+  });
+
+  contextBridge.exposeInMainWorld('removeSecret', async (engineId: string, secretId: string): Promise<void> => {
+    return ipcInvoke('container-provider-registry:removeSecret', engineId, secretId);
+  });
+
+  contextBridge.exposeInMainWorld(
+    'inspectSecret',
+    async (engineId: string, secretId: string, options?: { showsecret: boolean }): Promise<SecretInfo> => {
+      return ipcInvoke('container-provider-registry:inspectSecret', engineId, secretId, options);
+    },
+  );
+
+  contextBridge.exposeInMainWorld('createSecret', async (options: SecretCreateOptions): Promise<SecretCreateResult> => {
+    return ipcInvoke('container-provider-registry:createSecret', options);
   });
 
   contextBridge.exposeInMainWorld(

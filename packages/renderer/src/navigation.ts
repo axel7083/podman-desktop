@@ -148,5 +148,16 @@ export const handleNavigation = (request: InferredNavigationRequest<NavigationPa
     case NavigationPage.EXTENSIONS_CATALOG:
       router.goto(`/extensions?screen=catalog&searchTerm=${encodeURIComponent(request.parameters.searchTerm ?? '')}`);
       break;
+    case NavigationPage.SECRETS:
+      router.goto(`/secrets`);
+      break;
+    case NavigationPage.SECRET_CREATE:
+      router.goto(`/secrets/create`);
+      break;
+    case NavigationPage.SECRET:
+      router.goto(
+        `/secrets/${encodeURIComponent(request.parameters.engineId)}/${encodeURIComponent(request.parameters.id)}/summary`,
+      );
+      break;
   }
 };

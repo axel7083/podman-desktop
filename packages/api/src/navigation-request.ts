@@ -55,6 +55,9 @@ export interface NavigationParameters {
   [NavigationPage.EXPERIMENTAL_FEATURES]: never;
   [NavigationPage.NETWORK]: { name: string; engineId: string };
   [NavigationPage.EXTENSIONS_CATALOG]: { searchTerm?: string };
+  [NavigationPage.SECRETS]: never;
+  [NavigationPage.SECRET_CREATE]: never;
+  [NavigationPage.SECRET]: { id: string; engineId: string };
 }
 
 // the parameters property is optional when the NavigationParameters say it is

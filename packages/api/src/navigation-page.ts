@@ -52,4 +52,7 @@ export enum NavigationPage {
   CREATE_PROVIDER_CONNECTION = 'create-provider-connection',
   NETWORK = 'network',
   EXTENSIONS_CATALOG = 'extensions-catalog',
+  SECRETS = 'secrets',
+  SECRET_CREATE = 'secrets-create',
+  SECRET = 'secret',
 }

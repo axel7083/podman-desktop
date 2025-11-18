@@ -15,10 +15,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import type { SecretInfo } from '/@api/secret-info';
 
-export interface SecretInfoUI {
+export interface SecretInfoUI extends SecretInfo {
   selected: boolean;
-  CreatedAt?: string;
-  Id: string;
-  Name: string;
 }
