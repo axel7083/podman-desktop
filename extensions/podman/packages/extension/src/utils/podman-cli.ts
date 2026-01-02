@@ -17,6 +17,8 @@
  ***********************************************************************/
 
 import fs from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 
 import * as extensionApi from '@podman-desktop/api';
 
@@ -83,7 +85,11 @@ export async function findPodmanInstallations(): Promise<string[]> {
 export function getInstallationPath(): string {
   const env = process.env;
   if (extensionApi.env.isWindows) {
-    return `c:\\Users\\axels\\AppData\\Local\\Programs\\Podman;c:\\Program Files\\RedHat\\Podman;${env.PATH}`;
+    return [
+      join(homedir(), 'AppData', 'Local', 'Programs', 'Podman'),
+      'c:\\Program Files\\RedHat\\Podman',
+      env.PATH,
+    ].join(';');
   } else if (extensionApi.env.isMac) {
     if (!env.PATH) {
       return macosExtraPath;
