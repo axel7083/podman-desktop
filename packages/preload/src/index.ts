@@ -84,6 +84,7 @@ import type { ImageFilesInfo } from '/@api/image-files-info';
 import type { ImageFilesystemLayersUI } from '/@api/image-filesystem-layers';
 import type { ImageInfo, PodmanListImagesOptions } from '/@api/image-info';
 import type { ImageInspectInfo } from '/@api/image-inspect-info';
+import type { HummingbirdCatalogEntry, ImageOptimizerInfo, OptimizeResult } from '/@api/image-optimizer-info';
 import type { ImageSearchOptions, ImageSearchResult, ImageTagsListOptions } from '/@api/image-registry';
 import type {
   GenerateKubeResult,
@@ -2591,6 +2592,22 @@ export function initExposure(): void {
       return ipcInvoke('image-checker:check', id, image, cancellationToken);
     },
   );
+
+  // Image Optimizer Provider functions
+  contextBridge.exposeInMainWorld('getImageOptimizerProviders', async (): Promise<ImageOptimizerInfo[]> => {
+    return ipcInvoke('image-optimizer:getProviders');
+  });
+
+  contextBridge.exposeInMainWorld(
+    'getImageOptimizerAlternative',
+    async (id: string, imageName: string, cancellationToken?: number): Promise<OptimizeResult | undefined> => {
+      return ipcInvoke('image-optimizer:getAlternative', id, imageName, cancellationToken);
+    },
+  );
+
+  contextBridge.exposeInMainWorld('getImageOptimizerCatalog', async (): Promise<HummingbirdCatalogEntry[]> => {
+    return ipcInvoke('image-optimizer:getAllCatalogs');
+  });
 
   // Layout Registry functions
   contextBridge.exposeInMainWorld(

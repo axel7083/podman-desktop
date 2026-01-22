@@ -100,6 +100,7 @@ import type { ImageFilesInfo } from '/@api/image-files-info.js';
 import type { ImageFilesystemLayersUI } from '/@api/image-filesystem-layers.js';
 import type { ImageInfo, PodmanListImagesOptions } from '/@api/image-info.js';
 import type { ImageInspectInfo } from '/@api/image-inspect-info.js';
+import type { HummingbirdCatalogEntry, ImageOptimizerInfo, OptimizeResult } from '/@api/image-optimizer-info.js';
 import type { ImageSearchOptions, ImageSearchResult, ImageTagsListOptions } from '/@api/image-registry.js';
 import type {
   GenerateKubeResult,
@@ -188,6 +189,7 @@ import { HelpMenu } from './help-menu/help-menu.js';
 import { IconRegistry } from './icon-registry.js';
 import { ImageCheckerImpl } from './image-checker.js';
 import { ImageFilesRegistry } from './image-files-registry.js';
+import { ImageOptimizerImpl } from './image-optimizer.js';
 import { ImageRegistry } from './image-registry.js';
 import { InputQuickPickRegistry } from './input-quickpick/input-quickpick-registry.js';
 import { ExtensionInstaller } from './install/extension-installer.js';
@@ -716,6 +718,7 @@ export class PluginSystem {
     container.bind<CliToolRegistry>(CliToolRegistry).toSelf().inSingletonScope();
     container.bind<ImageCheckerImpl>(ImageCheckerImpl).toSelf().inSingletonScope();
     container.bind<ImageFilesRegistry>(ImageFilesRegistry).toSelf().inSingletonScope();
+    container.bind<ImageOptimizerImpl>(ImageOptimizerImpl).toSelf().inSingletonScope();
     container.bind<Troubleshooting>(Troubleshooting).toSelf().inSingletonScope();
     container.bind<ContributionManager>(ContributionManager).toSelf().inSingletonScope();
     container.bind<DevToolsManager>(DevToolsManager).toSelf().inSingletonScope();
@@ -791,6 +794,7 @@ export class PluginSystem {
     const messageBox = container.get<MessageBox>(MessageBox);
     const imageChecker = container.get<ImageCheckerImpl>(ImageCheckerImpl);
     const imageFiles = container.get<ImageFilesRegistry>(ImageFilesRegistry);
+    const imageOptimizer = container.get<ImageOptimizerImpl>(ImageOptimizerImpl);
     const viewRegistry = container.get<ViewRegistry>(ViewRegistry);
     const feedback = container.get<FeedbackHandler>(FeedbackHandler);
     const cancellationTokenRegistry = container.get<CancellationTokenRegistry>(CancellationTokenRegistry);
@@ -3208,6 +3212,27 @@ export class PluginSystem {
         return imageChecker.check(id, image, token);
       },
     );
+
+    // Image Optimizer Provider handlers
+    this.ipcHandle('image-optimizer:getProviders', async (): Promise<ImageOptimizerInfo[]> => {
+      return imageOptimizer.getImageOptimizerProviders();
+    });
+
+    this.ipcHandle(
+      'image-optimizer:getAlternative',
+      async (_listener, id: string, imageName: string, tokenId?: number): Promise<OptimizeResult | undefined> => {
+        let token;
+        if (tokenId) {
+          const tokenSource = cancellationTokenRegistry.getCancellationTokenSource(tokenId);
+          token = tokenSource?.token;
+        }
+        return imageOptimizer.getAlternative(id, imageName, token);
+      },
+    );
+
+    this.ipcHandle('image-optimizer:getAllCatalogs', async (): Promise<HummingbirdCatalogEntry[]> => {
+      return imageOptimizer.getAllCatalogs();
+    });
 
     this.ipcHandle('image-files:getProviders', async (): Promise<ImageFilesInfo[]> => {
       return imageFiles.getImageFilesProviders();

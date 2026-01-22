@@ -1,0 +1,45 @@
+{
+  "name": "hummingbird",
+  "displayName": "Hummingbird",
+  "description": "Provides hardened, lightweight container image alternatives from Hummingbird",
+  "version": "1.0.0-next",
+  "icon": "icon.png",
+  "publisher": "redhat",
+  "license": "Apache-2.0",
+  "engines": {
+    "podman-desktop": "^0.0.1"
+  },
+  "main": "./dist/extension.js",
+  "source": "./src/extension.ts",
+  "scripts": {
+    "build": "vite build && node ./scripts/build.js",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest watch --coverage",
+    "watch": "vite build --watch"
+  },
+  "contributes": {
+    "configuration": {
+      "title": "Hummingbird",
+      "properties": {
+        "hummingbird.registryPath": {
+          "type": "string",
+          "default": "quay.io/hummingbird",
+          "description": "Registry path for Hummingbird images"
+        },
+        "hummingbird.showOptimizeTab": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show Optimize tab in Image Details"
+        }
+      }
+    }
+  },
+  "dependencies": {
+    "@podman-desktop/api": "workspace:*"
+  },
+  "devDependencies": {
+    "mkdirp": "^3.0.1",
+    "vite": "^7.3.1",
+    "vitest": "^4.0.10"
+  }
+}

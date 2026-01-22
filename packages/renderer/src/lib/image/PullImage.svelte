@@ -19,7 +19,15 @@ import { PreferredRegistriesSettings } from '/@api/prefered-registries-info';
 import type { ProviderContainerConnectionInfo } from '/@api/provider-info';
 import type { PullEvent } from '/@api/pull-event';
 
+import HummingbirdCTA from './HummingbirdCTA.svelte';
 import RecommendedRegistry from './RecommendedRegistry.svelte';
+
+// Hummingbird image patterns for detecting hardened images
+const HUMMINGBIRD_PATTERNS = ['quay.io/hummingbird/', 'hummingbird/'];
+
+function isHummingbirdImage(imageName: string): boolean {
+  return HUMMINGBIRD_PATTERNS.some(pattern => imageName.toLowerCase().includes(pattern.toLowerCase()));
+}
 
 const DOCKER_PREFIX = 'docker.io';
 const DOCKER_PREFIX_WITH_SLASH = DOCKER_PREFIX + '/';
@@ -336,7 +344,10 @@ async function searchFunction(value: string): Promise<void> {
         return 1;
       }
     };
-    searchResult = result.map(value => ({ value: value }));
+    searchResult = result.map(value => ({
+      value: value,
+      badge: isHummingbirdImage(value) ? { text: 'Hardened', color: 'bg-green-500/20 text-green-500' } : undefined,
+    }));
   } catch (error: unknown) {
     searchResult = [];
     sortResults = undefined;
@@ -400,6 +411,8 @@ async function searchFunction(value: string): Promise<void> {
       {#if latestTagMessage}
         <WarningMessage error={latestTagMessage} />
       {/if}
+
+      <HummingbirdCTA imageName={imageToPull} />
 
       {#if providerConnections.length > 1}
         <div class="pt-4">

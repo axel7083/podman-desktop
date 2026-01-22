@@ -27,6 +27,7 @@ import ImageDetailsCheck from './ImageDetailsCheck.svelte';
 import ImageDetailsFiles from './ImageDetailsFiles.svelte';
 import ImageDetailsHistory from './ImageDetailsHistory.svelte';
 import ImageDetailsInspect from './ImageDetailsInspect.svelte';
+import ImageDetailsOptimize from './ImageDetailsOptimize.svelte';
 import ImageDetailsSummary from './ImageDetailsSummary.svelte';
 import type { ImageInfoUI } from './ImageInfoUI';
 import PushImageModal from './PushImageModal.svelte';
@@ -77,6 +78,8 @@ let detailsPage: DetailsPage | undefined = $state();
 
 let showCheckTab: boolean = $derived($imageCheckerProviders.length > 0);
 let showFilesTab: boolean = $derived($imageFilesProviders.length > 0);
+// Always show Optimize tab - the component handles empty provider state
+let showOptimizeTab: boolean = true;
 
 $effect(() => {
   if (!image) {
@@ -121,6 +124,9 @@ $effect(() => {
       {#if showFilesTab}
         <Tab title="Files" selected={isTabSelected($router.path, 'files')} url={getTabUrl($router.path, 'files')} />
       {/if}
+      {#if showOptimizeTab}
+        <Tab title="Optimize" selected={isTabSelected($router.path, 'optimize')} url={getTabUrl($router.path, 'optimize')} />
+      {/if}
     {/snippet}
     {#snippet contentSnippet()}
       {#if image}
@@ -139,6 +145,11 @@ $effect(() => {
         <Route path="/files" breadcrumb="Files" navigationHint="tab">
           <ImageDetailsFiles imageInfo={imageInfo} />
         </Route>
+        {#if showOptimizeTab}
+          <Route path="/optimize" breadcrumb="Optimize" navigationHint="tab">
+            <ImageDetailsOptimize imageInfo={imageInfo} />
+          </Route>
+        {/if}
       {/if}
     {/snippet}
   </DetailsPage>

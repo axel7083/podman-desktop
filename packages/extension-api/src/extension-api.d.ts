@@ -4939,6 +4939,91 @@ declare module '@podman-desktop/api' {
     ): Disposable;
   }
 
+  /**
+   * Result of an image optimization check
+   */
+  export interface OptimizeResult {
+    /** CVE count of the current image (if known) */
+    currentCVECount?: number;
+    /** Information about the hardened alternative */
+    alternative?: {
+      /** Full registry path to the alternative image */
+      registry: string;
+      /** CVE count of the alternative */
+      cveCount?: number;
+      /** Size of the alternative image in bytes */
+      size?: number;
+      /** Whether the alternative is signed */
+      signed?: boolean;
+    };
+    /** Percentage of size savings */
+    sizeSavingsPercent?: number;
+    /** Percentage of CVE reduction */
+    cveSavingsPercent?: number;
+  }
+
+  /**
+   * Entry in the Hummingbird catalog
+   */
+  export interface HummingbirdCatalogEntry {
+    /** Original image name */
+    originalImage: string;
+    /** Hummingbird alternative image path */
+    hummingbirdImage: string;
+    /** Description of the alternative */
+    description?: string;
+  }
+
+  /**
+   * Provider for image optimization suggestions
+   */
+  export interface ImageOptimizerProvider {
+    /**
+     * Get an optimized alternative for the given image
+     * @param imageName the name of the image to check
+     * @param token a cancellation token
+     * @return the optimization result, or undefined if no alternative exists
+     */
+    getAlternative(imageName: string, token?: CancellationToken): ProviderResult<OptimizeResult | undefined>;
+
+    /**
+     * Get the full catalog of available alternatives
+     * @param token a cancellation token
+     * @return list of all available catalog entries
+     */
+    getCatalog?(token?: CancellationToken): ProviderResult<HummingbirdCatalogEntry[]>;
+  }
+
+  /**
+   * Metadata for an image optimizer provider
+   */
+  export interface ImageOptimizerProviderMetadata {
+    /** Unique identifier for the provider */
+    readonly id: string;
+    /** Display label for the provider */
+    readonly label: string;
+  }
+
+  /**
+   * Module providing to extensions a way to register as an image optimizer.
+   *
+   * An Image Optimizer is a provider that suggests hardened, optimized
+   * alternatives to container images, such as Hummingbird images.
+   */
+  export namespace imageOptimizer {
+    /**
+     * Register the extension as an Image Optimizer.
+     *
+     * @param metadata metadata for this provider
+     * @param imageOptimizerProvider an object implementing the `ImageOptimizerProvider` interface
+     * @return A disposable that unregisters this provider when being disposed
+     */
+    export function registerImageOptimizerProvider(
+      metadata: ImageOptimizerProviderMetadata,
+      imageOptimizerProvider: ImageOptimizerProvider,
+    ): Disposable;
+  }
+
   export namespace net {
     /**
      * Finds a free port starting from the specified port and returns it.

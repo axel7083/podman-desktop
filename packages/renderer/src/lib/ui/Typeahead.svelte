@@ -1,5 +1,6 @@
 <script lang="ts">
 import { Spinner } from '@podman-desktop/ui-svelte';
+import { SvelteMap } from 'svelte/reactivity';
 
 import type { TypeaheadGroupedItems, TypeaheadHeadings, TypeaheadItem } from './Typeahead';
 
@@ -98,6 +99,17 @@ let items: string[] = $derived.by(() => {
     currentItems = currentItems.concat(groupedItems[group]);
   }
   return currentItems;
+});
+
+// Map to look up badges by value
+let badgesByValue: SvelteMap<string, TypeaheadItem['badge']> = $derived.by(() => {
+  const map = new SvelteMap<string, TypeaheadItem['badge']>();
+  for (const item of resultItems) {
+    if (item.badge) {
+      map.set(item.value, item.badge);
+    }
+  }
+  return map;
 });
 
 function onItemSelected(s: string): void {
@@ -297,11 +309,17 @@ function onWindowClick(e: Event): void {
       <button
         bind:this={scrollElements[i]}
         class:bg-[var(--pd-content-card-hover-bg)]={i === highlightIndex}
-        class="p-1 text-start w-full cursor-pointer"
+        class="p-1 text-start w-full cursor-pointer flex items-center justify-between gap-2"
         onclick={(): void => onItemSelected(item)}
         onpointerenter={(): void => {
           highlightIndex = i;
-        }}>{item}</button>
+        }}>
+        <span>{item}</span>
+        {#if badgesByValue.get(item)}
+          {@const badge = badgesByValue.get(item)}
+          <span class="text-xs px-1.5 py-0.5 rounded {badge?.color ?? 'bg-green-500/20 text-green-500'}">{badge?.text}</span>
+        {/if}
+      </button>
     {/each}
   </div>
 {/if}

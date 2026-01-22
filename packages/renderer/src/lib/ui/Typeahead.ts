@@ -19,6 +19,13 @@
 export interface TypeaheadItem {
   value: string;
   group?: string;
+  /** Optional badge to display next to the item */
+  badge?: {
+    /** Badge text (e.g., "Hardened") */
+    text: string;
+    /** Badge color (tailwind color class or CSS color) */
+    color?: string;
+  };
 }
 
 export type TypeaheadGroupedItems = { [group: string]: string[] };
