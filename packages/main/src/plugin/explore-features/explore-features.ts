@@ -132,10 +132,15 @@ export class ExploreFeatures {
     await this.updateShowRequirements();
 
     for (const feature of featuresJson.features as ExploreFeature[]) {
-      const imageFile = path.resolve(ExploreFeatures.MAIN_IMAGES_FOLDER, `${feature.id}.png`);
-      if (existsSync(imageFile)) {
-        const fileImage = await promises.readFile(imageFile);
+      // Check for PNG first, then SVG
+      const pngFile = path.resolve(ExploreFeatures.MAIN_IMAGES_FOLDER, `${feature.id}.png`);
+      const svgFile = path.resolve(ExploreFeatures.MAIN_IMAGES_FOLDER, `${feature.id}.svg`);
+      if (existsSync(pngFile)) {
+        const fileImage = await promises.readFile(pngFile);
         feature.img = `data:image/png;base64,${fileImage.toString('base64')}`;
+      } else if (existsSync(svgFile)) {
+        const fileImage = await promises.readFile(svgFile);
+        feature.img = `data:image/svg+xml;base64,${fileImage.toString('base64')}`;
       }
     }
   }

@@ -5,6 +5,7 @@ import { Button, EmptyScreen } from '@podman-desktop/ui-svelte';
 import { onDestroy, onMount } from 'svelte';
 import type { Unsubscriber } from 'svelte/store';
 import Fa from 'svelte-fa';
+import { router } from 'tinro';
 
 import { imageOptimizerProviders } from '/@/stores/image-optimizer-providers';
 import type { ImageOptimizerInfo, OptimizeResult } from '/@api/image-optimizer-info';
@@ -95,14 +96,6 @@ function extractImageName(image: ImageInfo): string | undefined {
   return undefined;
 }
 
-function formatSize(bytes: number | undefined): string {
-  if (bytes === undefined) return 'N/A';
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-  if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-  return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
-}
-
 function handlePullAlternative(): void {
   if (!optimizeResult?.alternative) return;
 
@@ -123,6 +116,13 @@ function handleLearnMore(): void {
     .then(() => window.telemetryTrack('imageOptimize.learnMore'))
     .catch((err: unknown) => console.error('Error opening external link', err));
 }
+
+function handleInstallExtension(): void {
+  window
+    .telemetryTrack('imageOptimize.installExtension')
+    .catch((err: unknown) => console.error('Error tracking telemetry', err));
+  router.goto('/extensions?screen=catalog&searchTerm=' + encodeURIComponent('Hummingbird'));
+}
 </script>
 
 <div class="flex flex-col w-full h-full p-4">
@@ -139,13 +139,39 @@ function handleLearnMore(): void {
       />
     </div>
   {:else if providers.length === 0}
-    <EmptyScreen
-      icon={faLeaf}
-      title="No Optimizer Providers"
-      message="No image optimizer providers are currently installed. Install the Hummingbird extension to see optimized image alternatives."
-    >
-      <Button on:click={handleLearnMore}>Learn More</Button>
-    </EmptyScreen>
+    <div class="flex flex-col items-center justify-center h-full gap-6 p-8">
+      <!-- Custom SVG placeholder: Container with Security Shield -->
+      <svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg" class="opacity-70">
+        <!-- Container Box -->
+        <rect x="20" y="50" width="80" height="70" rx="6" fill="var(--pd-content-card-bg)" stroke="var(--pd-content-text)" stroke-width="2" opacity="0.6"/>
+        <rect x="28" y="58" width="64" height="8" rx="2" fill="var(--pd-content-text)" opacity="0.3"/>
+        <rect x="28" y="72" width="64" height="8" rx="2" fill="var(--pd-content-text)" opacity="0.3"/>
+        <rect x="28" y="86" width="64" height="8" rx="2" fill="var(--pd-content-text)" opacity="0.3"/>
+        <rect x="28" y="100" width="40" height="8" rx="2" fill="var(--pd-content-text)" opacity="0.3"/>
+        
+        <!-- Security Shield -->
+        <path d="M115 35C115 35 95 42 95 42C95 42 95 70 95 80C95 95 105 105 115 110C125 105 135 95 135 80C135 70 135 42 135 42C135 42 115 35 115 35Z" 
+              fill="var(--pd-content-card-bg)" stroke="#22c55e" stroke-width="3"/>
+        <!-- Checkmark inside shield -->
+        <path d="M107 72L113 78L125 62" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        
+        <!-- Zero badge -->
+        <circle cx="130" cy="100" r="16" fill="#22c55e"/>
+        <text x="130" y="106" text-anchor="middle" fill="white" font-size="14" font-weight="bold">0</text>
+      </svg>
+      
+      <div class="flex flex-col items-center gap-3 max-w-lg text-center">
+        <h2 class="text-xl font-semibold text-[var(--pd-content-header)]">Install an Image Optimizer Extension</h2>
+        <p class="text-[var(--pd-content-text)] leading-relaxed">
+          Get recommendations for optimized container images that are more secure and efficient. 
+          Image optimizer extensions analyze your images and suggest <span class="text-green-500 font-medium">zero-CVE</span> and 
+          <span class="text-green-500 font-medium">distroless</span> alternatives that reduce your attack surface, 
+          minimize image size, and improve container security posture.
+        </p>
+      </div>
+      
+      <Button onclick={handleInstallExtension}>Install Extension</Button>
+    </div>
   {:else if optimizeResult?.alternative}
     <div class="flex flex-col gap-6">
       <!-- Header -->
@@ -166,12 +192,12 @@ function handleLearnMore(): void {
             <div class="flex items-center gap-4 mt-2">
               <div class="flex items-center gap-1">
                 <Fa icon={faBoxOpen} class="text-[var(--pd-content-text)] opacity-70" />
-                <span class="text-sm text-[var(--pd-content-text)]">{formatSize(imageInfo?.Size)}</span>
+                <span class="text-sm text-[var(--pd-content-text)]">{optimizeResult.currentImage.size}</span>
               </div>
-              {#if optimizeResult.currentCVECount !== undefined}
+              {#if optimizeResult.currentImage.cveCount !== undefined}
                 <div class="flex items-center gap-1">
                   <Fa icon={faShieldHalved} class="text-red-500" />
-                  <span class="text-sm text-red-500">{optimizeResult.currentCVECount} CVEs</span>
+                  <span class="text-sm text-red-500">{optimizeResult.currentImage.cveCount} CVEs</span>
                 </div>
               {/if}
             </div>
@@ -192,7 +218,7 @@ function handleLearnMore(): void {
               {#if optimizeResult.alternative.size !== undefined}
                 <div class="flex items-center gap-1">
                   <Fa icon={faBoxOpen} class="text-green-500" />
-                  <span class="text-sm text-green-500">{formatSize(optimizeResult.alternative.size)}</span>
+                  <span class="text-sm text-green-500">{optimizeResult.alternative.size}</span>
                 </div>
               {/if}
               {#if optimizeResult.alternative.cveCount !== undefined}
@@ -201,7 +227,7 @@ function handleLearnMore(): void {
                   <span class="text-sm text-green-500">{optimizeResult.alternative.cveCount} CVEs</span>
                 </div>
               {/if}
-              {#if optimizeResult.alternative.signed}
+              {#if optimizeResult.alternative.isSigned}
                 <span class="text-xs bg-green-500/20 text-green-500 px-2 py-0.5 rounded">Signed</span>
               {/if}
             </div>
@@ -209,30 +235,23 @@ function handleLearnMore(): void {
         </div>
 
         <!-- Savings Summary -->
-        {#if optimizeResult.sizeSavingsPercent !== undefined || optimizeResult.cveSavingsPercent !== undefined}
+        {#if optimizeResult.currentImage.cveCount > 0 && optimizeResult.alternative.cveCount < optimizeResult.currentImage.cveCount}
           <div class="mt-4 pt-4 border-t border-[var(--pd-content-divider)] flex gap-6">
-            {#if optimizeResult.sizeSavingsPercent !== undefined}
-              <div class="text-sm text-[var(--pd-content-text)]">
-                <span class="text-green-500 font-semibold">{optimizeResult.sizeSavingsPercent}%</span> smaller
-              </div>
-            {/if}
-            {#if optimizeResult.cveSavingsPercent !== undefined}
-              <div class="text-sm text-[var(--pd-content-text)]">
-                <span class="text-green-500 font-semibold">{optimizeResult.cveSavingsPercent}%</span> fewer CVEs
-              </div>
-            {/if}
+            <div class="text-sm text-[var(--pd-content-text)]">
+              <span class="text-green-500 font-semibold">{Math.round((1 - optimizeResult.alternative.cveCount / optimizeResult.currentImage.cveCount) * 100)}%</span> fewer CVEs
+            </div>
           </div>
         {/if}
 
         <!-- Action Button -->
         <div class="mt-6">
-          <Button on:click={handlePullAlternative}>Pull Hummingbird Image</Button>
+          <Button onclick={handlePullAlternative}>Pull Hummingbird Image</Button>
         </div>
       </div>
 
       <!-- Learn More Link -->
       <div class="text-sm text-[var(--pd-content-text)]">
-        <button class="text-[var(--pd-link)] hover:underline cursor-pointer" on:click={handleLearnMore}>
+        <button class="text-[var(--pd-link)] hover:underline cursor-pointer" onclick={handleLearnMore}>
           Learn more about Hummingbird hardened images
         </button>
       </div>
@@ -243,7 +262,7 @@ function handleLearnMore(): void {
       title="No Optimized Alternative"
       message="No Hummingbird alternative is available for this image at this time."
     >
-      <Button on:click={handleLearnMore}>Learn More About Hummingbird</Button>
+      <Button onclick={handleLearnMore}>Learn More About Hummingbird</Button>
     </EmptyScreen>
   {/if}
 </div>

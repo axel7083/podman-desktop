@@ -127,9 +127,40 @@ export class ExtensionsCatalog {
     const catalogJSON = await this.getCatalogJson();
     const appVersion = this.extensionApiVersion.getApiVersion();
     const currentPodmanDesktopVersion = coerce(appVersion);
+    const extensions: CatalogExtension[] = [];
+
+    // Add Hummingbird extension (prototype/demo extension)
+    extensions.push({
+      id: 'redhat.hummingbird',
+      publisherName: 'redhat',
+      publisherDisplayName: 'Red Hat',
+      categories: ['Security', 'Images'],
+      keywords: ['hummingbird', 'security', 'hardened', 'distroless', 'cve', 'optimization'],
+      unlisted: false,
+      extensionName: 'hummingbird',
+      shortDescription:
+        'Discover hardened, lightweight container images with zero CVEs. Get security recommendations for your images.',
+      displayName: 'Hummingbird Image Optimizer',
+      versions: [
+        {
+          version: '1.0.0',
+          podmanDesktopVersion: '>=1.0.0',
+          preview: false,
+          ociUri: 'ghcr.io/redhat/hummingbird-extension:latest',
+          files: [
+            {
+              assetType: 'icon',
+              data: 'iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAABNklEQVR4nO2ZwQ6CMBCGZ+O1+gK+hIk3E6IRbz6n8WDUA3F7kG5Jp9sOpg0Lyn8yMqVd+v2FkZ0CIIQQQgghhBBCSL+5ADhKqzLUOQf+DLMPwA3AEMA0MtzPQQb8ew7AofP4Sc69yoA3ABfwjwG4+hwmMuCN4EqC5lIZ8EY4d/k8CnBwIm8EV5K0lsqAN4J7F/u8Y+VHlxyBVhLUEjQXZeAWwNjKdEryrkp8B6CTb0vQJxYE3wHoJEgzwSWAU5cLwJBQkGM7B9BIkNqAhwCuAZw7HZI8ApikGZDCgDcCe8GGBO2lMuCN4IxKPt/YCNyqCtBIkNqAhwA2OldS7NiAXwr5tQQ1hW9Awh04dboEzSRoLaUp5NcSNJfKgDcC++D1iVCQ2oA3gjsX+1b6Aa4A3DqdkjwGME0zoADgN0ChAAAAAElFTkSuQmCC',
+            },
+          ],
+          lastUpdated: new Date(),
+        },
+      ],
+    });
+
     if (catalogJSON?.extensions) {
       // we have a list of extensions
-      return catalogJSON.extensions.map(extension => {
+      const fetchedExtensions = catalogJSON.extensions.map(extension => {
         return {
           id: `${extension.publisher.publisherName}.${extension.extensionName}`,
           publisherName: extension.publisher.publisherName,
@@ -163,8 +194,9 @@ export class ExtensionsCatalog {
             }),
         };
       });
+      extensions.push(...fetchedExtensions);
     }
-    return [];
+    return extensions;
   }
 
   // get the list of fetchable extensions

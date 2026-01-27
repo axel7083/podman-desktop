@@ -33,6 +33,15 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
   const config = extensionApi.configuration.getConfiguration('hummingbird');
   const registryPath = config.get<string>('registryPath') ?? 'quay.io/hummingbird';
 
+  // Helper to format size in human-readable format
+  function formatSize(bytes: number | undefined): string {
+    if (bytes === undefined) return 'N/A';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
+  }
+
   // Register the image optimizer provider
   const imageOptimizerProvider: extensionApi.ImageOptimizerProvider = {
     getAlternative: async (
@@ -46,17 +55,20 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
         return undefined;
       }
 
-      // Build the result
+      // Build the result using the correct API types
       const result: extensionApi.OptimizeResult = {
-        currentCVECount: entry.currentCVECount,
-        alternative: {
-          registry: `${registryPath}/${entry.hummingbirdImage}`,
-          cveCount: entry.alternativeCVECount,
-          size: entry.alternativeSize,
-          signed: entry.signed ?? true,
+        currentImage: {
+          size: 'Unknown', // We don't have the current image size
+          cveCount: entry.currentCVECount ?? 0,
+          isSigned: false, // Assume not signed
         },
-        sizeSavingsPercent: entry.sizeSavingsPercent,
-        cveSavingsPercent: entry.cveSavingsPercent,
+        alternative: {
+          imageName: entry.hummingbirdImage,
+          registry: `${registryPath}/${entry.hummingbirdImage}`,
+          size: formatSize(entry.alternativeSize),
+          cveCount: entry.alternativeCVECount ?? 0,
+          isSigned: entry.signed ?? true,
+        },
       };
 
       return result;
@@ -64,9 +76,14 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
 
     getCatalog: async (_token?: extensionApi.CancellationToken): Promise<extensionApi.HummingbirdCatalogEntry[]> => {
       return catalog.getAll().map(entry => ({
-        originalImage: entry.originalImage,
+        standardImage: entry.originalImage,
         hummingbirdImage: `${registryPath}/${entry.hummingbirdImage}`,
-        description: entry.description,
+        tags: entry.tags ?? ['latest'],
+        metadata: {
+          size: formatSize(entry.alternativeSize),
+          cveCount: entry.alternativeCVECount ?? 0,
+          isSigned: entry.signed ?? true,
+        },
       }));
     },
   };
@@ -81,11 +98,6 @@ export async function activate(extensionContext: extensionApi.ExtensionContext):
   );
 
   extensionContext.subscriptions.push(disposable);
-
-  // Track activation
-  await extensionApi.telemetry.track('hummingbird.activated', {
-    catalogSize: catalog.getAll().length,
-  });
 
   console.log('Hummingbird extension activated with', catalog.getAll().length, 'catalog entries');
 }

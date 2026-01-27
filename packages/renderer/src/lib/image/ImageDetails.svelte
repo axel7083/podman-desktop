@@ -125,7 +125,7 @@ $effect(() => {
         <Tab title="Files" selected={isTabSelected($router.path, 'files')} url={getTabUrl($router.path, 'files')} />
       {/if}
       {#if showOptimizeTab}
-        <Tab title="Optimize" selected={isTabSelected($router.path, 'optimize')} url={getTabUrl($router.path, 'optimize')} />
+        <Tab title="Image Optimizations" selected={isTabSelected($router.path, 'optimize')} url={getTabUrl($router.path, 'optimize')} />
       {/if}
     {/snippet}
     {#snippet contentSnippet()}
@@ -146,7 +146,7 @@ $effect(() => {
           <ImageDetailsFiles imageInfo={imageInfo} />
         </Route>
         {#if showOptimizeTab}
-          <Route path="/optimize" breadcrumb="Optimize" navigationHint="tab">
+          <Route path="/optimize" breadcrumb="Image Optimizations" navigationHint="tab">
             <ImageDetailsOptimize imageInfo={imageInfo} />
           </Route>
         {/if}

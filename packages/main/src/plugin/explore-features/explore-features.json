@@ -43,6 +43,17 @@
       "tutorialLink": "",
       "learnMore": "https://podman-desktop.io/docs/migrating-from-docker/managing-docker-compatibility",
       "when": "!isDockerCompatibilityEnabled"
+    },
+    {
+      "id": "optimize-images-security",
+      "title": "Optimize Images for Security",
+      "description": "Discover Hummingbird hardened images - lightweight, secure container images with zero CVEs. Reduce your attack surface and image size by switching to optimized alternatives for popular base images.",
+      "img": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 360 144' fill='none'%3E%3Crect width='360' height='144' fill='%231a1a2e'/%3E%3Crect x='60' y='32' width='80' height='80' rx='8' fill='%234a4e69' stroke='%236c757d' stroke-width='2'/%3E%3Crect x='70' y='50' width='60' height='8' rx='2' fill='%236c757d'/%3E%3Crect x='70' y='66' width='40' height='8' rx='2' fill='%236c757d'/%3E%3Crect x='70' y='82' width='50' height='8' rx='2' fill='%236c757d'/%3E%3Ccircle cx='260' cy='72' r='40' fill='%23198754' fill-opacity='0.2' stroke='%23198754' stroke-width='3'/%3E%3Cpath d='M260 52c-8.284 0-15 6.716-15 15v8h-3c-1.657 0-3 1.343-3 3v20c0 1.657 1.343 3 3 3h36c1.657 0 3-1.343 3-3V78c0-1.657-1.343-3-3-3h-3v-8c0-8.284-6.716-15-15-15zm10 23h-20v-8c0-5.523 4.477-10 10-10s10 4.477 10 10v8z' fill='%23198754'/%3E%3Cpath d='M160 72h40' stroke='%236c757d' stroke-width='2' stroke-dasharray='4 4'/%3E%3Cpath d='M180 65l7 7-7 7' stroke='%236c757d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E",
+      "buttonIcon": "fas fa-shield-halved",
+      "buttonTitle": "Explore Images",
+      "buttonLink": "/images",
+      "tutorialLink": "",
+      "learnMore": "https://developers.redhat.com/hummingbird"
     }
   ]
 }
