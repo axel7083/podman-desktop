@@ -67,8 +67,8 @@ Add a call-to-action component in the Pull Image dialog to promote security exte
 **Requirements:**
 
 - Create `HummingbirdCTA.svelte` component
-- Display message: "Display security insights."
-- Clickable link text: "Add Image security recommendations extensions."
+- Display message: "Discover and adopt hardened, Zero-CVE container images."
+- Clickable link text: "Install Image Optimizer extensions."
 - Clicking redirects to Extensions Catalog filtered by "Hummingbird"
 - Include security shield icon
 

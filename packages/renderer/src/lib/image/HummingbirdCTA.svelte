@@ -24,12 +24,12 @@ function handleAddExtensions(): void {
     <div class="flex items-center gap-2">
       <Fa icon={faShieldHalved} class="text-[var(--pd-content-text)] opacity-70" />
       <span class="text-sm text-[var(--pd-content-text)]">
-        Display security insights.
+        Discover and adopt hardened, Zero-CVE container images.
         <button
           class="text-[var(--pd-link)] hover:underline cursor-pointer ml-1"
-          on:click={handleAddExtensions}
+          onclick={handleAddExtensions}
         >
-          Add Image security recommendations extensions.
+          Install Image Optimizer extensions.
         </button>
       </span>
     </div>
