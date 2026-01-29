@@ -14,23 +14,19 @@ Add a new guide entry in the Learning Center to educate users about distroless a
 **Requirements:**
 
 - Add a new guide entry in the Learning Center guides list
-- Position: 3rd in the list order
+- Position: 3rd in the list order (or ideally having a rotation)
 - Title: "Understanding Distroless and Hardened Images"
 - Description: "Learn how to use lightweight, secure Hummingbird images to reduce CVEs and image size."
 - Categories: `["security", "hummingbird"]`
-- URL: Link to Hummingbird documentation (https://developers.redhat.com/hummingbird)
+- URL: Link to Hummingbird blog post TBD
 - Icon: Provide a placeholder icon (96x96 PNG, shield/security themed)
 
 **Acceptance Criteria:**
 
-- [ ] Guide appears in Learning Center at position 3
+- [ ] Guide appears in Learning Center
 - [ ] Clicking "Get Started" opens the external Hummingbird documentation
 - [ ] Icon is visible and represents security concept
 - [ ] Telemetry tracks when users open this guide
-
-**Files Modified:**
-
-- `packages/main/src/plugin/learning-center/guides.json`
 
 ---
 
@@ -48,7 +44,7 @@ Add a feature card in the "Explore Features" section on the dashboard to promote
 - Title: "Optimize Images for Security"
 - Description: Highlight Hummingbird hardened images with zero CVEs and reduced attack surface
 - Button: "Explore Images" linking to `/images`
-- Learn More: Link to Hummingbird documentation
+- Learn More: Link to Hummingbird extension documentation
 - Image: Placeholder SVG showing a container with a lock/security concept
 
 **Acceptance Criteria:**
@@ -57,12 +53,7 @@ Add a feature card in the "Explore Features" section on the dashboard to promote
 - [ ] Placeholder image displays correctly (container + lock visual)
 - [ ] "Explore Images" button navigates to Images view
 - [ ] "Learn more" link opens external documentation
-- [ ] Feature can be dismissed by user
 - [ ] Telemetry tracks user interactions
-
-**Files Modified:**
-
-- `packages/main/src/plugin/explore-features/explore-features.json`
 
 ---
 
@@ -87,11 +78,6 @@ Add a call-to-action component in the Pull Image dialog to promote security exte
 - [ ] Clicking the link navigates to `/extensions?screen=catalog&searchTerm=Hummingbird`
 - [ ] Telemetry tracks CTA clicks with image name context
 - [ ] Styling matches Podman Desktop design system
-
-**Files Modified:**
-
-- `packages/renderer/src/lib/image/HummingbirdCTA.svelte` (new)
-- `packages/renderer/src/lib/image/PullImage.svelte` (integration)
 
 ---
 
@@ -122,40 +108,17 @@ Add a new "Image Optimizations" tab in the Image Details view that shows optimiz
   - Distroless images
   - Reduced attack surface
   - Improved security posture
+  - Proposed Text: "Get recommendations for optimized container images that are more secure and efficient. Image optimizer extensions analyze your images and suggest zero-CVE and distroless alternatives that reduce your attack surface, minimize image size, and improve container security posture."
 - Button: "Install Extension"
-- Button action: Navigate to Extensions Catalog filtered by "Hummingbird"
+- Button action: Navigate to Extensions Catalog filtered by "type: ImageOptimizer"
 
 #### Active State (Extension Installed):
 
-- Show loading state while checking for alternatives
-- Display comparison card with:
-  - Current image details (name, size, CVE count)
-  - Arrow indicating transformation
-  - Alternative image details (registry, size, CVE count, signed status)
-  - Savings summary (% fewer CVEs)
-- Action button: "Pull Hummingbird Image"
-- Learn more link to documentation
+To be defined in next iteration.
 
 #### No Alternative Available State:
 
-- Title: "No Optimized Alternative"
-- Message explaining no alternative exists for this image
-- Learn more button
-
-**Acceptance Criteria:**
-
-- [ ] Tab appears in Image Details navigation
-- [ ] Empty state displays when no optimizer provider is registered
-- [ ] SVG placeholder is visible and properly styled
-- [ ] "Install Extension" button navigates to catalog with filter
-- [ ] When extension is installed, optimization data loads and displays
-- [ ] Comparison UI shows current vs alternative image
-- [ ] Telemetry tracks tab views and user actions
-
-**Files Modified:**
-
-- `packages/renderer/src/lib/image/ImageDetailsOptimize.svelte` (new)
-- `packages/renderer/src/lib/image/ImageDetails.svelte` (integration)
+To be defined in next iteration.
 
 ---
 
@@ -167,64 +130,7 @@ Add a new "Image Optimizations" tab in the Image Details view that shows optimiz
 Create a new extension API that allows extensions to provide image optimization recommendations.
 
 **Requirements:**
-
-#### API Types (`image-optimizer-info.ts`):
-
-```typescript
-interface ImageOptimizerInfo {
-  id: string;
-  name: string;
-  description: string;
-  icon?: string;
-}
-
-interface ImageOptimizerProvider {
-  readonly id: string;
-  readonly name: string;
-  readonly icon?: string;
-  getAlternative(image: ImageInfo, token?: CancellationToken): Promise<OptimizeResult | undefined>;
-  getCatalog(token?: CancellationToken): Promise<HummingbirdCatalogEntry[]>;
-}
-
-interface OptimizeResult {
-  currentImage: {
-    name: string;
-    size: string;
-    cveCount: number;
-  };
-  alternative: {
-    registry: string;
-    size: string;
-    cveCount: number;
-    isSigned: boolean;
-  };
-}
-
-interface HummingbirdCatalogEntry {
-  original: string;
-  hardened: string;
-  description?: string;
-  categories?: string[];
-}
-```
-
-#### Backend Implementation:
-
-- `ImageOptimizerImpl` class to manage provider registration
-- EventEmitter for provider updates
-- Methods: `registerImageOptimizerProvider`, `getAlternative`, `getCatalog`, `getImageOptimizerProviders`
-
-#### IPC Handlers:
-
-- `image-optimizer:getProviders` - List registered providers
-- `image-optimizer:getAlternative` - Get optimization recommendation for an image
-- `image-optimizer:getCatalog` - Get full catalog of available alternatives
-
-#### Renderer Store:
-
-- Svelte store for `imageOptimizerProviders`
-- Svelte store for `imageOptimizerCatalog`
-- Event-based updates when providers change
+To be defined by Eng.
 
 **Acceptance Criteria:**
 
@@ -233,14 +139,6 @@ interface HummingbirdCatalogEntry {
 - [ ] Frontend can query registered providers
 - [ ] Frontend can request optimization recommendations
 - [ ] Proper cleanup on provider disposal
-
-**Files Modified:**
-
-- `packages/api/src/image-optimizer-info.ts` (new)
-- `packages/main/src/plugin/image-optimizer.ts` (new)
-- `packages/main/src/plugin/index.ts` (IPC handlers)
-- `packages/preload/src/index.ts` (context bridge)
-- `packages/renderer/src/stores/image-optimizer-providers.ts` (new)
 
 ---
 
@@ -256,7 +154,7 @@ Add the Hummingbird extension to the extensions catalog so users can discover an
 - Add entry to `extensions-catalog.json`
 - Extension ID: `hummingbird.hummingbird-optimizer`
 - Display Name: "Hummingbird Optimizer"
-- Publisher: "Hummingbird"
+- Publisher: "Red Hat"
 - Categories: `["Security", "Images"]`
 - Keywords: `["hummingbird", "security", "cve", "hardened", "distroless", "optimization"]`
 - Short Description: Highlight zero-CVE and distroless alternatives
@@ -265,12 +163,9 @@ Add the Hummingbird extension to the extensions catalog so users can discover an
 **Acceptance Criteria:**
 
 - [ ] Extension appears in catalog when searching "Hummingbird"
+- [ ] Extension appears in catalog when searching "type: ImageOptimizer"
 - [ ] Extension details page shows correct information
 - [ ] Install button initiates installation flow
-
-**Files Modified:**
-
-- `packages/main/src/plugin/extension/catalog/extensions-catalog.json`
 
 ---
 
@@ -279,54 +174,9 @@ Add the Hummingbird extension to the extensions catalog so users can discover an
 ### 7.1 Extension Structure
 
 **Description:**  
-Create a reference Hummingbird extension that implements the Image Optimizer Provider API.
+Create a placeholder Hummingbird extension that implements the Image Optimizer Provider API.
 
 **Requirements:**
-
-#### Extension Manifest (`package.json`):
-
-- Name: `hummingbird`
-- Display Name: "Hummingbird Optimizer"
-- Publisher: "hummingbird"
-- Version: "0.0.1"
-- Categories: `["Security", "Images"]`
-
-#### Catalog (`catalog.ts`):
-
-- Maintain mapping of standard images to hardened alternatives
-- Include metadata: CVE counts, sizes, signed status
-- Support lookup by image name
-
-#### Provider Implementation (`extension.ts`):
-
-- Register as ImageOptimizerProvider on activation
-- Implement `getAlternative()` to lookup catalog
-- Implement `getCatalog()` to return full catalog
-- Proper cleanup on deactivation
-
-#### Sample Catalog Entries:
-
-| Original | Hardened                   | Original CVEs | Hardened CVEs |
-| -------- | -------------------------- | ------------- | ------------- |
-| node     | quay.io/hummingbird/nodejs | 45            | 0             |
-| python   | quay.io/hummingbird/python | 38            | 0             |
-| nginx    | quay.io/hummingbird/nginx  | 22            | 0             |
-
-**Acceptance Criteria:**
-
-- [ ] Extension activates without errors
-- [ ] Provider is registered on activation
-- [ ] Catalog contains sample image mappings
-- [ ] getAlternative returns correct data for known images
-- [ ] getCatalog returns full catalog
-- [ ] Provider is unregistered on deactivation
-
-**Files Created:**
-
-- `extensions/hummingbird/package.json`
-- `extensions/hummingbird/tsconfig.json`
-- `extensions/hummingbird/src/extension.ts`
-- `extensions/hummingbird/src/catalog.ts`
 
 ---
 
@@ -354,54 +204,6 @@ Track user interactions with Awareness features to measure effectiveness.
 - [ ] All events fire correctly with proper properties
 - [ ] Events integrate with existing telemetry infrastructure
 - [ ] No PII is included in event properties
-
----
-
-## Technical Notes
-
-### Dependencies
-
-- Svelte 5 with runes (`$state`, `$derived`, `$props`)
-- TailwindCSS for styling
-- tinro for routing
-- FontAwesome for icons
-- Existing Podman Desktop UI components
-
-### Design Guidelines
-
-- Follow Podman Desktop design system
-- Use CSS variables for theming (`--pd-content-*`)
-- Green color (#22c55e) for positive/security indicators
-- Red color for CVE/vulnerability indicators
-
-### Testing Requirements
-
-- Unit tests for new stores
-- Component tests for new Svelte components
-- Integration tests for IPC handlers
-- E2E tests for critical user flows
-
----
-
-## Implementation Priority
-
-1. **Phase 1 - Core Infrastructure**
-   - Image Optimizer Provider API
-   - Svelte stores
-   - IPC handlers
-
-2. **Phase 2 - UI Components**
-   - Image Optimizations tab (placeholder state)
-   - Pull Image CTA
-
-3. **Phase 3 - Discovery**
-   - Learning Center entry
-   - Explore Features entry
-   - Extensions Catalog entry
-
-4. **Phase 4 - Extension**
-   - Hummingbird extension implementation
-   - Full optimization flow
 
 ---
 
