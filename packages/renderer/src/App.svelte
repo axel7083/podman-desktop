@@ -258,7 +258,7 @@ tablePersistence.storage = new PodmanDesktopStoragePersist();
         <Route path="/pod-create-from-containers" breadcrumb="Create Pod">
           <PodCreateFromContainers />
         </Route>
-        
+
         <Route path="/volumes/*" breadcrumb="Volumes" navigationHint="root" firstmatch>
           <Route path="/" breadcrumb="Volumes" navigationHint="root">
             <VolumesList />

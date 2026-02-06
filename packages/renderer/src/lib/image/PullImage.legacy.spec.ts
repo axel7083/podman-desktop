@@ -29,7 +29,7 @@ import { recommendedRegistries } from '/@/stores/recommendedRegistries';
 import { PreferredRegistriesSettings } from '/@api/prefered-registries-info';
 import type { ProviderContainerConnectionInfo, ProviderInfo } from '/@api/provider-info';
 
-import PullImage from './PullImage.svelte';
+import PullImage from './PullImage.legacy.svelte';
 
 beforeAll(() => {
   (window.events as unknown) = {
