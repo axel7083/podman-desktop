@@ -6,6 +6,7 @@ import { tablePersistence } from '@podman-desktop/ui-svelte';
 import { router } from 'tinro';
 
 import { parseExtensionListRequest } from '/@/lib/extensions/extension-list';
+import RemoteImageDetails from '/@/lib/image/catalog/RemoteImageDetails.svelte';
 import KubernetesRoot from '/@/lib/kube/KubernetesRoot.svelte';
 import PinActions from '/@/lib/statusbar/PinActions.svelte';
 import { handleNavigation } from '/@/navigation';
@@ -39,11 +40,11 @@ import ExtensionList from './lib/extensions/ExtensionList.svelte';
 import SendFeedback from './lib/feedback/SendFeedback.svelte';
 import HelpActions from './lib/help/HelpActions.svelte';
 import BuildImageFromContainerfile from './lib/image/BuildImageFromContainerfile.svelte';
+import RemoteImageCatalog from './lib/image/catalog/RemoteImageCatalog.svelte';
 import ImageDetails from './lib/image/ImageDetails.svelte';
 import ImagesList from './lib/image/ImagesList.svelte';
 import ImportContainersImages from './lib/image/ImportContainersImages.svelte';
 import LoadImages from './lib/image/LoadImages.svelte';
-import PullImage from './lib/image/PullImage.svelte';
 import RunImage from './lib/image/RunImage.svelte';
 import SaveImages from './lib/image/SaveImages.svelte';
 import IngressDetails from './lib/ingresses-routes/IngressDetails.svelte';
@@ -191,9 +192,16 @@ tablePersistence.storage = new PodmanDesktopStoragePersist();
           <Route path="/build" breadcrumb="Build an Image" let:meta>
             <BuildImageFromContainerfile taskId={+meta.query.taskId}/>
           </Route>
-          <Route path="/pull" breadcrumb="Pull an Image">
-            <PullImage />
+
+          <Route path="/remote/*" breadcrumb="Image catalog" navigationHint="root" firstmatch>
+            <Route path="/" breadcrumb="Image catalog" navigationHint="root">
+              <RemoteImageCatalog />
+            </Route>
+            <Route path="/details" breadcrumb="Remote Image Details" navigationHint="details" let:meta>
+              <RemoteImageDetails registry={decodeURIComponent(meta.query.registry)} name={decodeURIComponent(meta.query.name)} />
+            </Route>
           </Route>
+
           <Route path="/import" breadcrumb="Import Containers">
             <ImportContainersImages />
           </Route>

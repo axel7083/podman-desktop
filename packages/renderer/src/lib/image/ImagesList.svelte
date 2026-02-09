@@ -176,8 +176,8 @@ function gotoBuildImage(): void {
   router.goto('/images/build');
 }
 
-function gotoPullImage(): void {
-  router.goto('/images/pull');
+function gotoImageCatalog(): void {
+  router.goto('/images/remote');
 }
 
 function importImage(): void {
@@ -317,7 +317,7 @@ function label(item: ImageInfoUI): string {
       aria-label="Import Image">
       Import
     </Button>
-    <Button on:click={gotoPullImage} title="Pull Image From a Registry" icon={faArrowCircleDown}>Pull</Button>
+    <Button on:click={gotoImageCatalog} title="Pull Image From a Registry" icon={faArrowCircleDown}>Catalog</Button>
     <Button on:click={gotoBuildImage} title="Build Image From Containerfile" icon={faCube}>Build</Button>
   {/snippet}
 
