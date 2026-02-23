@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { ContainerProviderConnection, Disposable } from '@podman-desktop/api';
+import type { ContainerProviderConnection, ContainerProviderConnectionEndpoint, Disposable } from '@podman-desktop/api';
 import { env, provider } from '@podman-desktop/api';
 import type { DockerExtensionApi } from '@podman-desktop/docker-extension-api';
 
@@ -27,8 +27,12 @@ export function toDescription(name: string): string {
   return env.isWindows ? `Podman machine ${name}` : 'Podman';
 }
 
-export function toEndpoint(socketPath: string): string {
-  return env.isWindows ? `npipe://${socketPath.replace(/\\/g, '/')}` : `unix://${socketPath}`;
+export function toEndpoint(endpoint: ContainerProviderConnectionEndpoint): string {
+  if ('socketPath' in endpoint) {
+    return env.isWindows ? `npipe://${endpoint.socketPath.replace(/\\/g, '/')}` : `unix://${endpoint.socketPath}`;
+  } else {
+    return `tcp://${endpoint.host}:${endpoint.port}`;
+  }
 }
 
 export class DockerContextSynchronizer implements Disposable {
@@ -53,13 +57,13 @@ export class DockerContextSynchronizer implements Disposable {
   }
 
   protected async processUpdatedConnection(connection: ContainerProviderConnection): Promise<void> {
-    if (connection.type === 'podman') {
+    if (connection.type === 'podman' && 'socketPath') {
       if (connection.status() === 'started') {
         try {
           await this.dockerExtensionAPI.createContext({
             name: toDockerContextName(connection.name),
             metadata: { description: toDescription(connection.name) },
-            endpoints: { docker: { host: toEndpoint(connection.endpoint.socketPath) } },
+            endpoints: { docker: { host: toEndpoint(connection.endpoint) } },
           });
         } catch (error: unknown) {
           console.warn(`Error creating Docker context for Podman machine ${connection.name}`, error);

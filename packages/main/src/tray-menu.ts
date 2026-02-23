@@ -176,6 +176,16 @@ export class TrayMenu {
     }
   }
 
+  protected getProviderContainerConnectionInfoKey(
+    providerContainerConnectionInfo: ProviderContainerConnectionInfo,
+  ): string {
+    if ('socketPath' in providerContainerConnectionInfo.endpoint) {
+      return `${providerContainerConnectionInfo.name}.${providerContainerConnectionInfo.endpoint.socketPath}`;
+    } else {
+      return `${providerContainerConnectionInfo.name}.${providerContainerConnectionInfo.endpoint.host}:${providerContainerConnectionInfo.endpoint.port}`;
+    }
+  }
+
   public addProviderContainerConnectionItems(
     providerInfo: ProviderInfo,
     providerContainerConnectionInfo: ProviderContainerConnectionInfo,
@@ -185,8 +195,9 @@ export class TrayMenu {
       providerInfo,
       childItems: [],
     };
+
     this.menuContainerProviderConnectionItems.set(
-      `${providerContainerConnectionInfoMenuItem.name}.${providerContainerConnectionInfoMenuItem.endpoint.socketPath}`,
+      this.getProviderContainerConnectionInfoKey(providerContainerConnectionInfo),
       providerContainerConnectionInfoMenuItem,
     );
     this.updateMenu();
@@ -197,7 +208,7 @@ export class TrayMenu {
     providerContainerConnectionInfo: ProviderContainerConnectionInfo,
   ): void {
     const menuProviderItem = this.menuContainerProviderConnectionItems.get(
-      `${providerContainerConnectionInfo.name}.${providerContainerConnectionInfo.endpoint.socketPath}`,
+      this.getProviderContainerConnectionInfoKey(providerContainerConnectionInfo),
     );
     if (menuProviderItem) {
       menuProviderItem.status = providerContainerConnectionInfo.status;
@@ -210,7 +221,7 @@ export class TrayMenu {
     providerContainerConnectionInfo: ProviderContainerConnectionInfo,
   ): void {
     this.menuContainerProviderConnectionItems.delete(
-      `${providerContainerConnectionInfo.name}.${providerContainerConnectionInfo.endpoint.socketPath}`,
+      this.getProviderContainerConnectionInfoKey(providerContainerConnectionInfo),
     );
     this.updateMenu();
   }

@@ -383,11 +383,18 @@ export class ContributionManager {
     const connection = this.containerRegistry.getFirstRunningConnection();
     const providerContainerConnectionInfo = connection[0];
 
-    const socketPath = providerContainerConnectionInfo.endpoint.socketPath;
-    let DOCKER_HOST = `unix://${socketPath}`;
-    if (isWindows()) {
-      DOCKER_HOST = socketPath.replace('\\\\.\\pipe\\', 'npipe:////./pipe/');
+    let DOCKER_HOST: string;
+    if ('socketPath' in providerContainerConnectionInfo.endpoint) {
+      const socketPath = providerContainerConnectionInfo.endpoint.socketPath;
+      DOCKER_HOST = `unix://${socketPath}`;
+
+      if (isWindows()) {
+        DOCKER_HOST = socketPath.replace('\\\\.\\pipe\\', 'npipe:////./pipe/');
+      }
+    } else {
+      DOCKER_HOST = `tcp://${providerContainerConnectionInfo.endpoint.host}:${providerContainerConnectionInfo.endpoint.port}`;
     }
+
     const env = {
       // add DOCKER_HOST
       DOCKER_HOST: DOCKER_HOST,

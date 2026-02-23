@@ -26,8 +26,17 @@ const displayName = $derived.by(() => {
 
   return connection.type;
 });
+
+const tip = $derived.by(() => {
+  if (!connection) return '';
+  if ('socketPath' in connection.endpoint) {
+    return connection?.endpoint.socketPath;
+  } else {
+    return `${connection.endpoint.host}:${connection.endpoint.port}`;
+  }
+});
 </script>
 
-<Label tip={connection?.endpoint?.socketPath} name={displayName}>
+<Label tip={tip} name={displayName}>
   <ProviderInfoCircle type={connection?.type} />
 </Label>

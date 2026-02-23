@@ -17,6 +17,7 @@
  ***********************************************************************/
 
 import type * as containerDesktopAPI from '@podman-desktop/api';
+import { ContainerProviderConnectionEndpointSchema } from '@podman-desktop/core-api';
 import type { ApiSenderType } from '@podman-desktop/core-api/api-sender';
 import type { IConfigurationChangeEvent } from '@podman-desktop/core-api/configuration';
 import {
@@ -127,10 +128,9 @@ export class ConfigurationImpl implements containerDesktopAPI.Configuration {
     if (!obj.endpoint || typeof obj.endpoint !== 'object') {
       return false;
     }
-    if (!('socketPath' in obj.endpoint)) {
-      return false;
-    }
-    return typeof obj.endpoint?.socketPath === 'string';
+
+    const result = ContainerProviderConnectionEndpointSchema.safeParse(obj.endpoint);
+    return result.success;
   }
 
   isKubernetesProviderConnection(obj: unknown): obj is containerDesktopAPI.KubernetesProviderConnection {
@@ -171,7 +171,11 @@ export class ConfigurationImpl implements containerDesktopAPI.Configuration {
 
   getConfigurationKey(): string {
     if (this.isContainerProviderConnection(this.scope)) {
-      return `container-connection:${this.scope.name}.${this.scope.endpoint.socketPath}`;
+      if ('socketPath' in this.scope.endpoint) {
+        return `container-connection:${this.scope.name}.${this.scope.endpoint.socketPath}`;
+      } else {
+        return `container-connection:${this.scope.name}.${encodeURIComponent(this.scope.endpoint.host)}.${this.scope.endpoint.port}`;
+      }
     } else if (this.isKubernetesProviderConnection(this.scope)) {
       return `kubernetes-connection:${this.scope.endpoint.apiURL}`;
     } else if (this.scope === CONFIGURATION_SYSTEM_MANAGED_DEFAULTS_SCOPE) {

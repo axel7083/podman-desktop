@@ -26,6 +26,19 @@ import type {
   ProviderLinks,
   ProviderStatus,
 } from '@podman-desktop/api';
+import { z } from 'zod';
+
+export const ContainerProviderConnectionEndpointSchema = z.union([
+  z.object({
+    socketPath: z.string(),
+  }),
+  z.object({
+    host: z.string(),
+    port: z.number(),
+  }),
+]);
+
+export type ContainerProviderConnectionEndpoint = z.output<typeof ContainerProviderConnectionEndpointSchema>;
 
 export type LifecycleMethod = 'start' | 'stop' | 'delete' | 'edit';
 
@@ -34,9 +47,7 @@ export interface ProviderContainerConnectionInfo {
   name: string;
   displayName: string;
   status: ProviderConnectionStatus;
-  endpoint: {
-    socketPath: string;
-  };
+  endpoint: ContainerProviderConnectionEndpoint;
   lifecycleMethods?: LifecycleMethod[];
   /**
    * Specify if the corresponding {@link import('@podman-desktop/api').ProviderContainerConnection} instance

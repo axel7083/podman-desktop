@@ -15,7 +15,11 @@ let { containerEngineRunning }: Props = $props();
   <h6 aria-label="name">Name: {containerEngineRunning.name}</h6>
   <div class="mx-4">
     <h6 aria-label="status">Status: {containerEngineRunning.status}</h6>
-    <h6 aria-label="socket path">Socket path: {containerEngineRunning.endpoint.socketPath}</h6>
+    {#if 'socketPath' in containerEngineRunning.endpoint}
+      <h6 aria-label="socket path">Socket path: {containerEngineRunning.endpoint.socketPath}</h6>
+    {:else}
+      <h6 aria-label="url">host: {containerEngineRunning.endpoint.host}:{containerEngineRunning.endpoint.port}</h6>
+    {/if}
   </div>
   <div>Actions:</div>
   <div class="mx-4">

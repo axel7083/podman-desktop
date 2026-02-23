@@ -121,13 +121,17 @@ describe('toDescription', () => {
 describe('toEndpoint', () => {
   test('should return npipe on Windows', () => {
     vi.mocked(env).isWindows = true;
-    const name = toEndpoint('foo');
+    const name = toEndpoint({
+      socketPath: 'foo',
+    });
     expect(name).toBe('npipe://foo');
   });
 
   test('should return unix on Linux/MacOS', () => {
     vi.mocked(env).isWindows = false;
-    const name = toEndpoint('podman-foo');
+    const name = toEndpoint({
+      socketPath: 'podman-foo',
+    });
     expect(name).toBe('unix://podman-foo');
   });
 });

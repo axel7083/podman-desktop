@@ -78,8 +78,12 @@ $: providerContainerConfiguration = tmpProviderContainerConfiguration.filter(
       </div>
       <div class="flex flex-row mt-5">
         <span class="font-semibold min-w-[150px]">Endpoint</span>
-        <span aria-label={containerConnectionInfo.endpoint.socketPath}
-          >{containerConnectionInfo.endpoint.socketPath}</span>
+        {#if 'socketPath' in containerConnectionInfo.endpoint}
+          <span aria-label={containerConnectionInfo.endpoint.socketPath}>{containerConnectionInfo.endpoint.socketPath}</span>
+        {:else}
+          <span aria-label="tcp">{containerConnectionInfo.endpoint.host}:{containerConnectionInfo.endpoint.port}</span>
+        {/if}
+
       </div>
     </div>
   {/if}

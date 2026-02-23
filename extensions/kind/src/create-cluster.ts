@@ -204,7 +204,7 @@ export async function connectionAuditor(provider: string, items: AuditRequestIte
       type: 'error',
       record: `The ${provider} provider is not running. Please start the ${provider} provider to create a Kind cluster.`,
     });
-  } else {
+  } else if ('socketPath' in runningConnection.connection.endpoint) {
     // Only check memory if provider is running
     const memTotal = await getMemTotalInfo(runningConnection.connection.endpoint.socketPath);
     // check if configured memory is less than 6GB

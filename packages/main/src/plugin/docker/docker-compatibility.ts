@@ -144,7 +144,9 @@ export class DockerCompatibility {
         const currentConnections = this.#providerRegistry.getContainerConnections();
 
         // search if we have a connection with the same socket path
-        const foundConnection = currentConnections.find(c => c.connection.endpoint.socketPath === socketPath);
+        const foundConnection = currentConnections.find(
+          c => 'socketPath' in c.connection.endpoint && c.connection.endpoint.socketPath === socketPath,
+        );
 
         // provider is the one that has the same id as the connection
         const allProviders = this.#providerRegistry.getProviderInfos();
@@ -152,11 +154,18 @@ export class DockerCompatibility {
         const provider = allProviders.find(p => p.id === foundConnection?.providerId);
 
         if (provider && foundConnection) {
+          let endpoint: string;
+          if ('socketPath' in foundConnection.connection.endpoint) {
+            endpoint = Buffer.from(`unix://${foundConnection.connection.endpoint.socketPath}`).toString('base64');
+          } else {
+            endpoint = Buffer.from(
+              `tcp://${foundConnection.connection.endpoint.host}:${foundConnection.connection.endpoint.port}`,
+            ).toString('base64');
+          }
+
           const link = `/preferences/container-connection/view/${provider.internalId}/${Buffer.from(
             foundConnection.connection.name,
-          ).toString(
-            'base64',
-          )}/${Buffer.from(foundConnection.connection.endpoint.socketPath).toString('base64')}/summary`;
+          ).toString('base64')}/${endpoint}/summary`;
 
           // extra data to pass
           status.connectionInfo = {

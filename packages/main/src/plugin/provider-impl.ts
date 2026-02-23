@@ -103,7 +103,12 @@ export class ProviderImpl implements Provider, IDisposable {
       for (const providerConnection of this.containerProviderConnections) {
         const status = providerConnection.status();
         // key can't be socket path as for some providers it can be the same
-        const key = `${providerConnection.name}.${providerConnection.endpoint.socketPath}`;
+        let key: string;
+        if ('socketPath' in providerConnection.endpoint) {
+          key = `${providerConnection.name}.${providerConnection.endpoint.socketPath}`;
+        } else {
+          key = `${providerConnection.name}.${providerConnection.endpoint.host}:${providerConnection.endpoint.port}`;
+        }
         if (status !== this.containerProviderConnectionsStatuses.get(key)) {
           this.providerRegistry.onDidChangeContainerProviderConnectionStatus(this, providerConnection);
           this.containerProviderConnectionsStatuses.set(key, status);

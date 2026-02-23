@@ -1,7 +1,13 @@
 <script lang="ts">
 import { faCircleInfo, faTerminal } from '@fortawesome/free-solid-svg-icons';
 import type { ContainerProviderConnection } from '@podman-desktop/api';
-import type { CheckStatus, Menu, ProviderConnectionInfo, ProviderInfo } from '@podman-desktop/core-api';
+import type {
+  CheckStatus,
+  Menu,
+  ProviderConnectionInfo,
+  ProviderContainerConnectionInfo,
+  ProviderInfo,
+} from '@podman-desktop/core-api';
 import { MenuContext } from '@podman-desktop/core-api';
 import type { IConfigurationPropertyRecordedSchema } from '@podman-desktop/core-api/configuration';
 import { DropdownMenu, EmptyScreen, Tooltip } from '@podman-desktop/ui-svelte';
@@ -425,6 +431,25 @@ $effect(() => {
     providerElementMap[focus].scrollIntoView({ behavior: 'auto', block: 'start' });
   }
 });
+
+function navigateToContainerConnectionDetails(
+  provider: ProviderInfo,
+  connection: ProviderContainerConnectionInfo,
+  view: 'summary' | 'terminal',
+): void {
+  let endpoint: string;
+  if ('socketPath' in connection.endpoint) {
+    endpoint = Buffer.from(`unix://${connection.endpoint.socketPath}`).toString('base64');
+  } else {
+    endpoint = Buffer.from(`tcp://${connection.endpoint.host}:${connection.endpoint.port}`).toString('base64');
+  }
+
+  const link = `/preferences/container-connection/view/${provider.internalId}/${Buffer.from(connection.name).toString(
+    'base64',
+  )}/${endpoint}/${view}`;
+
+  router.goto(link);
+}
 </script>
 
 <SettingsPage title="Resources">
@@ -496,12 +521,7 @@ $effect(() => {
                   <button
                     aria-label="{provider.name} details"
                     type="button"
-                    onclick={(): void =>
-                      router.goto(
-                        `/preferences/container-connection/view/${provider.internalId}/${Buffer.from(
-                          container.name,
-                        ).toString('base64')}/${Buffer.from(container.endpoint.socketPath).toString('base64')}/summary`,
-                      )}>
+                    onclick={navigateToContainerConnectionDetails.bind(undefined, provider, container, 'summary')}>
                     <Icon icon={faCircleInfo} />
                   </button>
                 </Tooltip>
@@ -527,9 +547,13 @@ $effect(() => {
               <div class="mt-2 text-[var(--pd-content-text)] text-xs" aria-label="{container.name} type">
                 {#if container.type === 'docker'}Docker{:else if container.type === 'podman'}Podman{/if} endpoint
               </div>
-              <PreferencesResourcesRenderingCopyButton
-                class={container.status !== 'started' ? 'text-[var(--pd-content-sub-header)]' : ''}
-                path={container.endpoint.socketPath} />
+              {#if 'socketPath' in container.endpoint}
+                <PreferencesResourcesRenderingCopyButton
+                  class={container.status !== 'started' ? 'text-[var(--pd-content-sub-header)]' : ''}
+                  path={container.endpoint.socketPath} />
+              {:else}
+                <span>{container.endpoint.host}:{container.endpoint.port}</span>
+              {/if}
               {#if providerContainerConfiguration.has(provider.internalId)}
                 {@const providerConfiguration = providerContainerConfiguration.get(provider.internalId) ?? []}
                 <div
@@ -584,10 +608,7 @@ $effect(() => {
                           globalContext?.setValue('selectedProviderConnectionType', container.type);
                           globalContext?.setValue('selectedProviderConnectionStatus', container.status);
                       }}>
-                        <DropdownMenu.Item title="Open Terminal" icon={faTerminal} onClick={(): void => {router.goto(
-                          `/preferences/container-connection/view/${provider.internalId}/${Buffer.from(
-                            container.name,
-                          ).toString('base64')}/${Buffer.from(container.endpoint.socketPath).toString('base64')}/terminal`);}}/>
+                        <DropdownMenu.Item title="Open Terminal" icon={faTerminal} onClick={navigateToContainerConnectionDetails.bind(undefined, provider, container, 'terminal')}/>
                         <ContributionActions
                           args={[container]}
                           contextPrefix="providerConnectionItem"

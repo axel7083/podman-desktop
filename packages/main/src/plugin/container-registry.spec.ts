@@ -39,7 +39,7 @@ import { http, HttpResponse } from 'msw';
 import { setupServer, type SetupServerApi } from 'msw/node';
 import type { Headers, PackOptions } from 'tar-fs';
 import * as tarstream from 'tar-stream';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, assert, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import type { Certificates } from '/@/plugin/certificates.js';
 import type { InternalContainerProvider } from '/@/plugin/container-registry.js';
@@ -848,6 +848,7 @@ test('getFirstRunningConnection', async () => {
 
   // first should be podman 1 as we're first ordering podman providers
   expect(connection[0].name).toBe('podman1');
+  assert('socketPath' in connection[0].endpoint);
   expect(connection[0].endpoint.socketPath).toBe('/podman1.socket');
 });
 
@@ -898,6 +899,7 @@ test('getFirstRunningPodmanContainerProvider', async () => {
 
   // first should be podman 1 as we're first ordering podman providers
   expect(connection.name).toBe('podman2');
+  assert('socketPath' in connection.connection.endpoint);
   expect(connection.connection.endpoint.socketPath).toBe('/podman1.socket');
 });
 

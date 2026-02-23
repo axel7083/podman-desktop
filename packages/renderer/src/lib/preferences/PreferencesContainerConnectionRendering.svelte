@@ -1,5 +1,10 @@
 <script lang="ts">
-import type { ProviderConnectionInfo, ProviderContainerConnectionInfo, ProviderInfo } from '@podman-desktop/core-api';
+import type {
+  ContainerProviderConnectionEndpoint,
+  ProviderConnectionInfo,
+  ProviderContainerConnectionInfo,
+  ProviderInfo,
+} from '@podman-desktop/core-api';
 import { NavigationPage } from '@podman-desktop/core-api';
 import type { IConfigurationPropertyRecordedSchema } from '@podman-desktop/core-api/configuration';
 import { Tab } from '@podman-desktop/ui-svelte';
@@ -31,7 +36,6 @@ export let connection: string | undefined = undefined;
 export let name: string | undefined = undefined;
 
 const connectionName = Buffer.from(name ?? '', 'base64').toString();
-const socketPath: string = Buffer.from(connection ?? '', 'base64').toString();
 let connectionStatus: IConnectionStatus;
 let noLog = true;
 let connectionInfo: ProviderContainerConnectionInfo | undefined;
@@ -48,9 +52,23 @@ onMount(async () => {
   providersUnsubscribe = providerInfos.subscribe(providerInfosValue => {
     const providers = providerInfosValue;
     providerInfo = providers.find(provider => provider.internalId === providerInternalId);
-    connectionInfo = providerInfo?.containerConnections?.find(
-      connection => connection.endpoint.socketPath === socketPath && connection.name === connectionName,
-    );
+
+    const decoded = Buffer.from(connection ?? '', 'base64').toString();
+
+    let compare: (endpoint: ContainerProviderConnectionEndpoint) => boolean;
+    if (decoded.startsWith('unix://')) {
+      const socketPath = decoded.substring(7);
+      compare = (endpoint): boolean => 'socketPath' in endpoint && endpoint.socketPath === socketPath;
+    } else if (decoded.startsWith('tcp://')) {
+      const [host, port] = decoded.substring(6).split(':');
+      compare = (endpoint): boolean =>
+        'host' in endpoint && endpoint.host === host && 'port' in endpoint && endpoint.port === parseInt(port);
+    }
+
+    connectionInfo = providerInfo?.containerConnections?.find(connection => {
+      if (connection.name !== connectionName) return false;
+      return compare(connection.endpoint);
+    });
     if (!connectionInfo) {
       handleNavigation({
         page: NavigationPage.RESOURCES,

@@ -389,7 +389,16 @@ declare module '@podman-desktop/api' {
     ): Promise<void>;
   }
 
-  export interface ContainerProviderConnectionEndpoint {
+  export type ContainerProviderConnectionEndpoint =
+    | ContainerProviderConnectionSocketEndpoint
+    | ContainerProviderConnectionTCPEndpoint;
+
+  export interface ContainerProviderConnectionTCPEndpoint {
+    host: string;
+    port: number;
+  }
+
+  export interface ContainerProviderConnectionSocketEndpoint {
     socketPath: string;
   }
 

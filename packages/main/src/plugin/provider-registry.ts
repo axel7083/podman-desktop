@@ -56,7 +56,9 @@ import type {
   UpdateVmConnectionEvent,
   VmProviderConnection,
 } from '@podman-desktop/api';
-import type {
+import {
+  ContainerProviderConnectionEndpoint,
+  ContainerProviderConnectionEndpointSchema,
   Event,
   LifecycleMethod,
   PreflightChecksCallback,
@@ -698,15 +700,25 @@ export class ProviderRegistry {
   private getProviderConnectionInfo(connection: ProviderConnection): ProviderConnectionInfo {
     let providerConnection: ProviderConnectionInfo;
     if (this.isContainerConnection(connection)) {
+      let endpoint: ContainerProviderConnectionEndpoint;
+      if ('socketPath' in connection.endpoint) {
+        endpoint = {
+          socketPath: connection.endpoint.socketPath,
+        };
+      } else {
+        endpoint = {
+          host: connection.endpoint.host,
+          port: connection.endpoint.port,
+        };
+      }
+
       providerConnection = {
         connectionType: 'container',
         name: connection.name,
         displayName: connection.displayName ?? connection.name,
         status: connection.status(),
         type: connection.type,
-        endpoint: {
-          socketPath: connection.endpoint.socketPath,
-        },
+        endpoint: endpoint,
         shellAccess: !!connection.shellAccess,
         vmType: connection.vmType
           ? {
@@ -1018,11 +1030,16 @@ export class ProviderRegistry {
     const provider = this.getMatchingProvider(internalProviderId);
 
     // grab the correct container connection
-    const containerConnection = provider.containerConnections.find(
-      connection =>
-        connection.endpoint.socketPath === providerContainerConnectionInfo.endpoint.socketPath &&
-        connection.name === providerContainerConnectionInfo.name,
-    );
+    const containerConnection = provider.containerConnections.find(connection => {
+      if (connection.name !== providerContainerConnectionInfo.name) return false;
+
+      if ('socketPath' in connection.endpoint && 'socketPath' in providerContainerConnectionInfo.endpoint) {
+        return connection.endpoint.socketPath === providerContainerConnectionInfo.endpoint.socketPath;
+      } else if ('host' in connection.endpoint && 'host' in providerContainerConnectionInfo.endpoint) {
+        return connection.endpoint.host === providerContainerConnectionInfo.endpoint.host;
+      }
+      return false;
+    });
     if (!containerConnection) {
       throw new Error(`no container connection matching provider id ${internalProviderId}`);
     }
@@ -1081,7 +1098,8 @@ export class ProviderRegistry {
   isProviderContainerConnection(
     connection: ProviderConnectionInfo | ContainerProviderConnection,
   ): connection is ProviderContainerConnectionInfo | ContainerProviderConnection {
-    return (connection as ProviderContainerConnectionInfo).endpoint?.socketPath !== undefined;
+    return ContainerProviderConnectionEndpointSchema.safeParse((connection as ProviderContainerConnectionInfo).endpoint)
+      .success;
   }
 
   isProviderKubernetesConnectionInfo(
@@ -1094,7 +1112,8 @@ export class ProviderRegistry {
   }
 
   isContainerConnection(connection: ProviderConnection): connection is ContainerProviderConnection {
-    return (connection as ContainerProviderConnection).endpoint?.socketPath !== undefined;
+    if (!('endpoint' in connection)) return false;
+    return ContainerProviderConnectionEndpointSchema.safeParse(connection.endpoint).success;
   }
 
   isKubernetesConnection(connection: ProviderConnection): connection is KubernetesProviderConnection {

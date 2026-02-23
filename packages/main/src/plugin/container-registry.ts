@@ -301,7 +301,15 @@ export class ContainerProviderRegistry {
       return;
     }
 
-    internalProvider.api = new Dockerode({ socketPath: containerProviderConnection.endpoint.socketPath });
+    if ('socketPath' in containerProviderConnection.endpoint) {
+      internalProvider.api = new Dockerode({ socketPath: containerProviderConnection.endpoint.socketPath });
+    } else {
+      internalProvider.api = new Dockerode({
+        host: containerProviderConnection.endpoint.host,
+        port: containerProviderConnection.endpoint.port,
+      });
+    }
+
     if (containerProviderConnection.type === 'podman') {
       internalProvider.libpodApi = internalProvider.api as unknown as LibPod;
     }
@@ -1068,15 +1076,24 @@ export class ContainerProviderRegistry {
       throw new Error('Unable to find a running engine');
     }
 
-    return [
-      {
+    let connection: ProviderContainerConnectionInfo;
+    if ('socketPath' in matchingConnectionObject.endpoint) {
+      connection = {
         name: matchingConnectionObject.name,
         endpoint: {
           socketPath: matchingConnectionObject.endpoint.socketPath,
         },
-      } as ProviderContainerConnectionInfo,
-      matchingConnection[1].api,
-    ];
+      } as ProviderContainerConnectionInfo;
+    } else {
+      connection = {
+        name: matchingConnectionObject.name,
+        endpoint: {
+          host: matchingConnectionObject.endpoint.host,
+          port: matchingConnectionObject.endpoint.port,
+        },
+      } as ProviderContainerConnectionInfo;
+    }
+    return [connection, matchingConnection[1].api];
   }
 
   /**
@@ -1112,11 +1129,22 @@ export class ContainerProviderRegistry {
     providerContainerConnectionInfo: ProviderContainerConnectionInfo | containerDesktopAPI.ContainerProviderConnection,
   ): InternalContainerProvider {
     // grab all connections
-    const matchingContainerProvider = Array.from(this.internalProviders.values()).find(
-      containerProvider =>
-        containerProvider.connection.endpoint.socketPath === providerContainerConnectionInfo.endpoint.socketPath &&
-        containerProvider.connection.name === providerContainerConnectionInfo.name,
-    );
+    const matchingContainerProvider = Array.from(this.internalProviders.values()).find(containerProvider => {
+      if (containerProvider.connection.name !== providerContainerConnectionInfo.name) return false;
+
+      if (
+        'socketPath' in containerProvider.connection.endpoint &&
+        'socketPath' in providerContainerConnectionInfo.endpoint
+      ) {
+        return containerProvider.connection.endpoint.socketPath === providerContainerConnectionInfo.endpoint.socketPath;
+      } else if (
+        'host' in containerProvider.connection.endpoint &&
+        'host' in providerContainerConnectionInfo.endpoint
+      ) {
+        return containerProvider.connection.endpoint.host === providerContainerConnectionInfo.endpoint.host;
+      }
+      return false;
+    });
     if (!matchingContainerProvider?.api) {
       throw new Error('no running provider for the matching container');
     }

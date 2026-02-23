@@ -23,6 +23,7 @@ import type {
   ProviderInfo,
   ProviderKubernetesConnectionInfo,
 } from '@podman-desktop/core-api';
+import { ContainerProviderConnectionEndpointSchema } from '@podman-desktop/core-api';
 import type { IConfigurationPropertyRecordedSchema } from '@podman-desktop/core-api/configuration';
 import { CONFIGURATION_DEFAULT_SCOPE } from '@podman-desktop/core-api/configuration';
 import type { Terminal } from '@xterm/xterm';
@@ -166,7 +167,8 @@ export function validateProxyAddress(value: string): string | undefined {
 export function isContainerConnection(
   connection: ProviderContainerConnectionInfo | ProviderKubernetesConnectionInfo,
 ): connection is ProviderContainerConnectionInfo {
-  return (connection as ProviderContainerConnectionInfo).endpoint.socketPath !== undefined;
+  return ContainerProviderConnectionEndpointSchema.safeParse((connection as ProviderContainerConnectionInfo).endpoint)
+    .success;
 }
 
 export function calcHalfCpuCores(osCpu: string): number {
