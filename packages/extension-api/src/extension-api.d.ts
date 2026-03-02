@@ -2004,7 +2004,13 @@ declare module '@podman-desktop/api' {
      * Pass in an empty array to disallow access to any local resources.
      */
     readonly localResourceRoots?: readonly Uri[];
+    /**
+     * Default to global
+     */
+    readonly scope?: WebviewScope;
   }
+
+  export type WebviewScope = 'global' | 'dashboard/image/tab';
 
   /**
    * Displays html content, similarly to an iframe.

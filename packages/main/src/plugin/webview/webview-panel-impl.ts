@@ -22,6 +22,7 @@ import type {
   WebviewOptions,
   WebviewPanel,
   WebviewPanelOnDidChangeViewStateEvent,
+  WebviewScope,
 } from '@podman-desktop/api';
 import type { NavigationRequest } from '@podman-desktop/core-api';
 import { NavigationPage } from '@podman-desktop/core-api';
@@ -45,6 +46,7 @@ export class WebviewPanelImpl implements WebviewPanel {
   #active: boolean = false;
   #disposed: boolean = false;
   #title: string;
+  #scope: WebviewScope;
   #iconPath?: IconPath;
   readonly #viewType: string;
 
@@ -74,6 +76,11 @@ export class WebviewPanelImpl implements WebviewPanel {
     this.#title = panelDetails.title;
     this.#iconPath = panelDetails.iconPath;
     this.#viewType = panelDetails.viewType;
+    this.#scope = panelDetails.webviewOptions?.scope ?? 'global';
+  }
+
+  get scope(): WebviewScope {
+    return this.#scope;
   }
 
   get internalId(): string {

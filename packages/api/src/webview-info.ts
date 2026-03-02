@@ -15,6 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import type { WebviewScope } from '@podman-desktop/api';
 
 export interface WebviewInfo {
   id: string;
@@ -24,6 +25,7 @@ export interface WebviewInfo {
   icon: string | { readonly light: string; readonly dark: string } | undefined;
   name: string;
   html: string;
+  scope: WebviewScope;
   // persistent state of the webview
   state: unknown;
 }

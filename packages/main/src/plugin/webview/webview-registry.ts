@@ -330,6 +330,7 @@ export class WebviewRegistry {
         name: webviewPanelImpl.title,
         uuid: webviewPanelImpl.webview.uuid,
         state,
+        scope: webviewPanelImpl.scope,
       };
     });
   }

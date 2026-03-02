@@ -10,6 +10,8 @@ import { webviewLifecycle } from './webview-directive';
 
 // webview id
 export let id: string;
+export let nested: boolean = true;
+export let pathname: string = '/';
 
 // script to load for the webview
 let preloadPath: string;
@@ -102,16 +104,24 @@ onDestroy(() => {
 });
 </script>
 
-{#if preloadPath && webViewPort && webviewInfo}
-  <Route path="/*" breadcrumb={webviewInfo.name}>
+{#snippet webview()}
+  {#if preloadPath && webViewPort && webviewInfo}
     <webview
       bind:this={webviewElement}
       use:webviewLifecycle={lifecycleOptions}
       aria-label="Webview {webviewInfo?.name}"
       role="document"
       httpreferrer="http://{webviewInfo?.uuid}.webview.localhost:{webViewPort}"
-      src="http://{webviewInfo?.uuid}.webview.localhost:{webViewPort}?webviewId={webviewInfo?.id}"
+      src="http://{webviewInfo?.uuid}.webview.localhost:{webViewPort}{pathname}?webviewId={webviewInfo?.id}"
       preload={preloadPath}
       style="height: 100%; width: 100%"></webview>
+  {/if}
+{/snippet}
+
+{#if nested}
+  <Route path="/*" breadcrumb={webviewInfo.name}>
+    {@render webview()}
   </Route>
+{:else}
+  {@render webview()}
 {/if}

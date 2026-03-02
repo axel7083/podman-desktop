@@ -79,6 +79,8 @@ export function createNavigationExtensionGroup(): NavigationRegistryEntry {
     });
 
     allWebviews.forEach(webview => {
+      if (webview.scope !== 'global') return;
+
       const icon = webview.icon ? { iconImage: webview.icon } : { faIconImage: faPuzzlePiece, size: '1.5x' };
 
       const registry: NavigationRegistryEntry = {

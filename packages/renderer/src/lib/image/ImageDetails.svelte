@@ -1,6 +1,6 @@
 <script lang="ts">
 import type { ImageInfo } from '@podman-desktop/api';
-import type { ViewInfoUI } from '@podman-desktop/core-api';
+import type { ViewInfoUI, WebviewInfo } from '@podman-desktop/core-api';
 import { StatusIcon, Tab } from '@podman-desktop/ui-svelte';
 import { router } from 'tinro';
 
@@ -31,6 +31,8 @@ import ImageDetailsSummary from './ImageDetailsSummary.svelte';
 import type { ImageInfoUI } from './ImageInfoUI';
 import PushImageModal from './PushImageModal.svelte';
 import RenameImageModal from './RenameImageModal.svelte';
+import { webviews } from '/@/stores/webviews';
+import Webview from '/@/lib/webview/Webview.svelte';
 
 interface Props {
   imageID: string;
@@ -78,6 +80,11 @@ let detailsPage: DetailsPage | undefined = $state();
 let showCheckTab: boolean = $derived($imageCheckerProviders.length > 0);
 let showFilesTab: boolean = $derived($imageFilesProviders.length > 0);
 
+let tabs: Array<WebviewInfo> = $derived($webviews.filter((webview) => webview.scope === 'dashboard/image/tab'));
+
+const [providerId, connectionName] = $derived(engineId.split('.'));
+
+
 $effect(() => {
   if (!image) {
     // the image has been deleted
@@ -121,6 +128,9 @@ $effect(() => {
       {#if showFilesTab}
         <Tab title="Files" selected={isTabSelected($router.path, 'files')} url={getTabUrl($router.path, 'files')} />
       {/if}
+      {#each tabs as tab, index (index)}
+        <Tab title={tab.name} selected={isTabSelected($router.path, 'webview')} url={getTabUrl($router.path, `webview?id=${tab.id}`)} />
+      {/each}
     {/snippet}
     {#snippet contentSnippet()}
       {#if image}
@@ -138,6 +148,13 @@ $effect(() => {
         </Route>
         <Route path="/files" breadcrumb="Files" navigationHint="tab">
           <ImageDetailsFiles imageInfo={imageInfo} />
+        </Route>
+        <Route path="/webview" breadcrumb="Webview" navigationHint="tab" let:meta>
+          <Webview
+            id={meta.query.id}
+            nested={false}
+            pathname={`/images/${encodeURIComponent(providerId)}/${encodeURIComponent(connectionName)}/${encodeURIComponent(imageID)}`}
+          />
         </Route>
       {/if}
     {/snippet}
