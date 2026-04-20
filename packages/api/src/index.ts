@@ -26,6 +26,7 @@ export * from './container-inspect-info.js';
 export * from './container-registry-settings.js';
 export * from './container-stats-info.js';
 export * from './containerfile-info.js';
+export * from './contracts/index.js';
 export * from './contribution-info.js';
 export * from './dashboard-info.js';
 export * from './dialog.js';

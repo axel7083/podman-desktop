@@ -162,6 +162,7 @@ import { KubeGeneratorRegistry } from '/@/plugin/kubernetes/kube-generator-regis
 import { LockedConfiguration } from '/@/plugin/locked-configuration.js';
 import { MenuRegistry } from '/@/plugin/menu-registry.js';
 import { NavigationManager } from '/@/plugin/navigation/navigation-manager.js';
+import { RpcHandler } from '/@/plugin/routers/rpc-handler.js';
 import { TaskManager } from '/@/plugin/tasks/task-manager.js';
 import { Uri } from '/@/plugin/types/uri.js';
 import { Updater } from '/@/plugin/updater.js';
@@ -513,8 +514,8 @@ export class PluginSystem {
     const apiSender = this.getApiSender(this.getWebContentsSender());
     const container = new Container();
     container.bind<ApiSenderType>(ApiSenderType).toConstantValue(apiSender);
-    container.bind<IPCHandle>(IPCHandle).toConstantValue(this.ipcHandle);
-    container.bind<IPCMainOn>(IPCMainOn).toConstantValue(this.ipcMainOn);
+    container.bind<IPCHandle>(IPCHandle).toConstantValue(this.ipcHandle.bind(this));
+    container.bind<IPCMainOn>(IPCMainOn).toConstantValue(this.ipcMainOn.bind(this));
     container.bind<TrayMenu>(TrayMenu).toConstantValue(this.trayMenu);
     container.bind<IconRegistry>(IconRegistry).toSelf().inSingletonScope();
     const directoryStrategy = new DirectoryStrategy();
@@ -538,6 +539,10 @@ export class PluginSystem {
       notifications,
       configurationRegistryEmitter,
     );
+
+    container.bind<RpcHandler>(RpcHandler).toSelf().inSingletonScope();
+    const rpcHandler = container.get<RpcHandler>(RpcHandler);
+    rpcHandler.init(container);
 
     container.bind<ColorRegistry>(ColorRegistry).to(InjectableColorRegistry).inSingletonScope();
     const colorRegistry = container.get<ColorRegistry>(ColorRegistry);

@@ -1,8 +1,9 @@
 <script lang="ts">
-import { ListOrganizer, type ListOrganizerItem, NavPage, tablePersistence } from '@podman-desktop/ui-svelte';
+import { Button, ListOrganizer, type ListOrganizerItem, NavPage, tablePersistence } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
+import { client } from '/@/client';
 import {
   convertFromListOrganizerItems,
   dashboardPageRegistry,
@@ -162,6 +163,16 @@ function handleDashboardToggle(itemId: string, enabled: boolean): void {
     console.error(`Failed to save dashboard configuration after toggle change: ${error}`);
   });
 }
+
+async function demoPlanet(): Promise<void> {
+  try {
+    console.log('calling planet.list');
+    const result = await client.planet.list({});
+    console.log('planet.list result:', result);
+  } catch (err: unknown) {
+    console.error(err);
+  }
+}
 </script>
 
 <NavPage searchEnabled={false} title="Dashboard">
@@ -178,10 +189,12 @@ function handleDashboardToggle(itemId: string, enabled: boolean): void {
       resetButtonLabel="Reset Layout"
     />
   {/snippet}
-  
+
   {#snippet content()}
   <div class="flex flex-col min-w-full h-full bg-[var(--pd-content-bg)] py-5">
     <div class="min-w-full flex-1">
+      <Button onclick={demoPlanet}>Demo oRPC</Button>
+
       <NotificationsBox />
       <div class="px-5 space-y-5 h-full">
         {#each sortedDashboardRegistry as dashboardRegistryItem (dashboardRegistryItem.id)}

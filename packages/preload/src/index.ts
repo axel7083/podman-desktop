@@ -128,7 +128,7 @@ import type {
   WebviewInfo,
   WelcomeMessages,
 } from '@podman-desktop/core-api';
-import { NavigationPage } from '@podman-desktop/core-api';
+import { NavigationPage, ORPC_START_CHANNEL } from '@podman-desktop/core-api';
 import type { ApiSenderType } from '@podman-desktop/core-api/api-sender';
 import type { AuthenticationProviderInfo } from '@podman-desktop/core-api/authentication';
 import type { IConfigurationPropertyRecordedSchema } from '@podman-desktop/core-api/configuration';
@@ -197,6 +197,19 @@ export function initExposure(): void {
     }
     return result;
   }
+
+  function orpcHandler(event: MessageEvent): void {
+    if (event.origin !== window.origin || event.data !== ORPC_START_CHANNEL) {
+      return;
+    }
+
+    const [serverPort] = event.ports;
+
+    ipcRenderer.postMessage(ORPC_START_CHANNEL, null, [serverPort]);
+    window.removeEventListener('message', orpcHandler);
+  }
+
+  window.addEventListener('message', orpcHandler);
 
   contextBridge.exposeInMainWorld('events', apiSender);
   ipcRenderer.on('api-sender', (_, channel, data) => {

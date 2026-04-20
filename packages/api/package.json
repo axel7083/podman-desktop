@@ -91,6 +91,7 @@
     }
   },
   "dependencies": {
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "@orpc/contract": "^1.13.14"
   }
 }
