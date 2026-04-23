@@ -23,7 +23,7 @@ import type { OrpcContext } from '/@/plugin/routers/rpc-handler.js';
 const os = implement<typeof contracts.planet, OrpcContext>(contracts.planet);
 
 export const listPlanet = os.list.handler(({ input }) => {
-  return Array.from({ length: input.limit ?? 5 }).map((_, index) => ({ id: index, name: `Planet ${index}` }));
+  return Array.from({ length: input.limit ?? 5 }).map((_, index) => ({ id: index + 5, name: `Planet ${index}` }));
 });
 
 export const findPlanet = os.find.handler(({ input }) => {
