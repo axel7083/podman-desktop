@@ -164,14 +164,28 @@ function handleDashboardToggle(itemId: string, enabled: boolean): void {
   });
 }
 
-async function demoPlanet(): Promise<void> {
-  try {
-    console.log('calling planet.list');
-    const result = await client.planet.list({});
-    console.log('planet.list result:', result);
-  } catch (err: unknown) {
-    console.error(err);
+async function demoORPC(): Promise<void> {
+  const ITERATIONS = 10_000;
+
+  console.log(`Starting performance test with ${ITERATIONS} iterations...`);
+
+  // Measure client.container.list({})
+  const startORPC = performance.now();
+  for (let i = 0; i < ITERATIONS; i++) {
+    await client.container.list({});
   }
+  const endORPC = performance.now();
+  const avgORPC = (endORPC - startORPC) / ITERATIONS;
+  console.log(`Average performance for client.container.list({}): ${avgORPC.toFixed(2)}ms`);
+
+  // Measure window.listContainers()
+  const startIPC = performance.now();
+  for (let i = 0; i < ITERATIONS; i++) {
+    await window.listContainers();
+  }
+  const endIPC = performance.now();
+  const avgIPC = (endIPC - startIPC) / ITERATIONS;
+  console.log(`Average performance for window.listContainers(): ${avgIPC.toFixed(2)}ms`);
 }
 </script>
 
@@ -193,7 +207,7 @@ async function demoPlanet(): Promise<void> {
   {#snippet content()}
   <div class="flex flex-col min-w-full h-full bg-[var(--pd-content-bg)] py-5">
     <div class="min-w-full flex-1">
-      <Button onclick={demoPlanet}>Demo oRPC</Button>
+      <Button onclick={demoORPC}>Demo oRPC</Button>
 
       <NotificationsBox />
       <div class="px-5 space-y-5 h-full">

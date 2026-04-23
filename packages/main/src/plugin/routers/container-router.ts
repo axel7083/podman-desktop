@@ -18,13 +18,16 @@
 import { implement } from '@orpc/server';
 import { contracts } from '@podman-desktop/core-api';
 
-import { containerRouter } from '/@/plugin/routers/container-router.js';
-import { planetRouter } from '/@/plugin/routers/planet-router.js';
+import { ContainerProviderRegistry } from '/@/plugin/container-registry.js';
 import type { OrpcContext } from '/@/plugin/routers/rpc-handler.js';
 
-const os = implement<typeof contracts, OrpcContext>(contracts);
+const os = implement<typeof contracts.container, OrpcContext>(contracts.container);
 
-export const router = os.router({
-  planet: planetRouter,
-  container: containerRouter,
+export const listContainer = os.list.handler(async ({ context }) => {
+  const containerProviderRegistry = await context.container.getAsync(ContainerProviderRegistry);
+  return containerProviderRegistry.listContainers();
+});
+
+export const containerRouter = os.router({
+  list: listContainer,
 });

@@ -15,16 +15,14 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { implement } from '@orpc/server';
-import { contracts } from '@podman-desktop/core-api';
 
-import { containerRouter } from '/@/plugin/routers/container-router.js';
-import { planetRouter } from '/@/plugin/routers/planet-router.js';
-import type { OrpcContext } from '/@/plugin/routers/rpc-handler.js';
+import { oc } from '@orpc/contract';
+import { z } from 'zod';
 
-const os = implement<typeof contracts, OrpcContext>(contracts);
+import { ContainerSchema } from './container.schema.js';
 
-export const router = os.router({
-  planet: planetRouter,
-  container: containerRouter,
-});
+export const listContainerContract = oc.input(z.object({})).output(z.array(ContainerSchema));
+
+export const containerContract = {
+  list: listContainerContract,
+};
