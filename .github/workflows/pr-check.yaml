@@ -784,7 +784,8 @@ jobs:
           path: ./tests/playwright/output/development
 
       - name: Upload screenshots to Argos
-        run: pnpm --dir tests/playwright run argos-ci:upload ./tests/playwright/output/screenshots
+        working-directory: ./tests/playwright
+        run: pnpm run argos-ci:upload ./output/screenshots
         # Note: no ARGOS_TOKEN — the SDK uses OIDC automatically
 
   update-e2e-test:
