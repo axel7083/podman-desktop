@@ -38,7 +38,7 @@ export abstract class BasePage {
     if (!path) return;
 
     await this.page.screenshot({
-      path: join(path, `${options.name}-${platform()}-${arch()}.png`),
+      path: join(path, `${process.env.PLAYWRIGHT_SCREENSHOTS_PREFIX}${options.name}-${platform()}-${arch()}.png`),
       mask: options.mask,
     });
   }
