@@ -65,6 +65,10 @@ test.describe
         .toBeTruthy();
 
       playExpect(await updatedImages.getCurrentStatusOfImage(helloContainer)).toBe(ImageState.Unused);
+
+      await updatedImages.screenshot({
+        name: 'image-list',
+      });
     });
 
     test('Pull image from search results', async ({ navigationBar }) => {
@@ -134,6 +138,10 @@ test.describe
       await playExpect(imageDetailPage.summaryTab).toBeVisible();
       await playExpect(imageDetailPage.historyTab).toBeVisible();
       await playExpect(imageDetailPage.inspectTab).toBeVisible();
+
+      await imageDetailPage.screenshot({
+        name: 'image-details',
+      });
     });
 
     test('Rename image', async ({ page }) => {

@@ -161,6 +161,11 @@ test.describe
       const pods = await createPodPage.createPod(podToRun);
       await playExpect(pods.heading).toBeVisible({ timeout: 60_000 });
       await playExpect.poll(async () => await pods.podExists(podToRun), { timeout: 15_000 }).toBeTruthy();
+
+      await pods.screenshot({
+        name: 'pod-list',
+      });
+
       const podDetails = await pods.openPodDetails(podToRun);
       await playExpect.poll(async () => await podDetails.getState(), { timeout: 15_000 }).toBe(PodState.Running);
     });
@@ -201,6 +206,11 @@ test.describe
       const row = podDetails.getPage().getByRole('table').getByRole('row');
       const nameText = await row.getByRole('cell').allInnerTexts();
       playExpect(nameText).toContain(podToRun);
+
+      await podDetails.screenshot({
+        name: 'pod-details-summary',
+      });
+
       await podDetails.activateTab('Inspect');
       await podDetails.activateTab('Kube');
     });

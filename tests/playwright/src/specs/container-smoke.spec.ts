@@ -106,12 +106,20 @@ test.describe
         .poll(async () => await containerDetails.getState(), { timeout: 15_000 })
         .toContain(ContainerState.Running);
 
+      await containerDetails.screenshot({
+        name: 'container-details-summary',
+      });
+
       images = await navigationBar.openImages();
       playExpect(await images.getCurrentStatusOfImage(imageToPull)).toBe(ImageState.Used);
     });
 
     test('Test navigation between pages', async ({ navigationBar }) => {
       const containers = await navigationBar.openContainers();
+
+      await containers.screenshot({
+        name: 'container-list',
+      });
 
       const containersDetails = await containers.openContainersDetails(containerToRun);
       await playExpect(containersDetails.heading).toBeVisible();
@@ -141,8 +149,18 @@ test.describe
       await containersDetails.activateTab('Logs');
       const helloWorldMessage = containersDetails.getPage().getByText('No Log');
       await playExpect(helloWorldMessage).toBeVisible();
+
+      await containersDetails.screenshot({
+        name: 'container-details-logs',
+      });
+
       // Switch between various other tabs, no checking of the content
       await containersDetails.activateTab('Inspect');
+
+      await containersDetails.screenshot({
+        name: 'container-details-inspect',
+      });
+
       await containersDetails.activateTab('Kube');
       await containersDetails.activateTab('Terminal');
 

@@ -59,6 +59,10 @@ test.describe
       await playExpect(proxyPage.httpsProxy).not.toBeEnabled();
       await playExpect(proxyPage.noProxy).not.toBeEnabled();
       await playExpect(proxyPage.updateButton).toBeEnabled();
+
+      await proxyPage.screenshot({
+        name: 'proxy-settings',
+      });
     });
 
     test('Manual proxy setup, validation and update', async () => {
