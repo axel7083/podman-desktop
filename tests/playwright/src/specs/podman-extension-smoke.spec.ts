@@ -67,6 +67,10 @@ async function verifyPodmanExtensionStatus(enabled: boolean): Promise<void> {
     await playExpect(dashboardPage.getPodmanStatusLocator()).toBeVisible({
       timeout: 15_000,
     });
+
+    await dashboardPage.screenshot({
+      name: 'dashboard-podman-enabled',
+    });
   } else {
     await playExpect(dashboardPage.getPodmanStatusLocator()).not.toBeVisible({
       timeout: 15_000,
@@ -109,6 +113,10 @@ async function verifyPodmanExtensionStatus(enabled: boolean): Promise<void> {
       timeout: 10_000,
     });
     await playExpect(podmanExtensionPage.status.getByText(ExtensionState.Active)).toBeVisible();
+
+    await podmanExtensionPage.screenshot({
+      name: 'extension-details-podman',
+    });
   } else {
     await playExpect(podmanExtensionPage.enableButton).toBeVisible({
       timeout: 10_000,
