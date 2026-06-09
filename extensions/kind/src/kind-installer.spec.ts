@@ -231,7 +231,7 @@ describe('install', () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
     const chmodMock = vi.spyOn(fs.promises, 'chmod');
     const downloadReleaseAssetMock = vi.spyOn(installer, 'downloadReleaseAsset').mockResolvedValue(undefined);
-    const output = await installer.download(resultREST[0]);
+    const output = await installer.downloadOld(resultREST[0]);
     expect(output).toStrictEqual(path.join(installer.getKindCliStoragePath()));
     expect(downloadReleaseAssetMock).toBeCalledWith(186178238, expect.any(String));
     expect(chmodMock).not.toBeCalled();
@@ -251,7 +251,7 @@ describe('install', () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
     const chmodMock = vi.spyOn(fs.promises, 'chmod').mockResolvedValue();
     const downloadReleaseAssetMock = vi.spyOn(installer, 'downloadReleaseAsset').mockResolvedValue(undefined);
-    await installer.download(resultREST[0]);
+    await installer.downloadOld(resultREST[0]);
     expect(downloadReleaseAssetMock).toBeCalledWith(186178216, expect.any(String));
     expect(chmodMock).toBeCalledWith(expect.any(String), 0o755);
   });

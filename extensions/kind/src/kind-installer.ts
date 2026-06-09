@@ -19,13 +19,10 @@ import * as fs from 'node:fs';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
-import type { Octokit } from '@octokit/rest';
+import type { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
 import * as extensionApi from '@podman-desktop/api';
 
-export interface AssetInfo {
-  id: number;
-  name: string;
-}
+export type AssetInfo = RestEndpointMethodTypes['repos']['listReleaseAssets']['response']['data'][number];
 
 export interface KindGithubReleaseArtifactMetadata extends extensionApi.QuickPickItem {
   tag: string;
@@ -53,8 +50,8 @@ const MACOS_X64_ASSET_NAME = 'kind-darwin-amd64';
 const MACOS_ARM64_ASSET_NAME = 'kind-darwin-arm64';
 
 export class KindInstaller {
-  private readonly KIND_GITHUB_OWNER = 'kubernetes-sigs';
-  private readonly KIND_GITHUB_REPOSITORY = 'kind';
+  public readonly KIND_GITHUB_OWNER = 'kubernetes-sigs';
+  public readonly KIND_GITHUB_REPOSITORY = 'kind';
   private assetNames = new Map<string, string>();
 
   constructor(
@@ -122,6 +119,32 @@ export class KindInstaller {
     }
   }
 
+  async getReleaseAsset(releaseId: number, operatingSystem: string, arch: string): Promise<AssetInfo> {
+    if (operatingSystem === 'win32') {
+      operatingSystem = 'windows';
+    }
+    if (arch === 'x64') {
+      arch = 'amd64';
+    }
+
+    const listOfAssets: RestEndpointMethodTypes['repos']['listReleaseAssets']['response'] =
+      await this.octokit.repos.listReleaseAssets({
+        owner: this.KIND_GITHUB_OWNER,
+        repo: this.KIND_GITHUB_REPOSITORY,
+        release_id: releaseId,
+      });
+
+    const searchedAssetName = `kind-${operatingSystem}-${arch}`;
+
+    // search for the right asset
+    const asset = listOfAssets.data.find(asset => searchedAssetName === asset.name);
+    if (!asset) {
+      throw new Error(`No asset found for ${operatingSystem} and ${arch}`);
+    }
+
+    return asset;
+  }
+
   // Get the asset id of a given release number for a given operating system and architecture
   // operatingSystem: win32, darwin, linux (see os.platform())
   // arch: x64, arm64 (see os.arch())
@@ -159,10 +182,7 @@ export class KindInstaller {
     return path.resolve(storageBinFolder, `kind${fileExtension}`);
   }
 
-  async download(release: KindGithubReleaseArtifactMetadata): Promise<string> {
-    // Get asset id
-    const assetId = await this.getReleaseAssetId(release.id, os.platform(), os.arch());
-
+  async download(asset: AssetInfo): Promise<string> {
     // Get the storage and check to see if it exists before we download Kind
     const storageBinFolder = path.resolve(this.storagePath, 'bin');
     if (!fs.existsSync(storageBinFolder)) {
@@ -172,7 +192,7 @@ export class KindInstaller {
     const kindDownloadLocation = this.getKindCliStoragePath();
 
     // Download the asset and make it executable
-    await this.downloadReleaseAsset(assetId, kindDownloadLocation);
+    await this.downloadReleaseAsset(asset.id, kindDownloadLocation);
     // make executable
     if (extensionApi.env.isLinux || extensionApi.env.isMac) {
       // eslint-disable-next-line sonarjs/file-permissions
@@ -180,6 +200,13 @@ export class KindInstaller {
     }
 
     return kindDownloadLocation;
+  }
+
+  async downloadOld(release: KindGithubReleaseArtifactMetadata): Promise<string> {
+    // Get asset
+    const asset = await this.getReleaseAsset(release.id, os.platform(), os.arch());
+
+    return this.download(asset);
   }
 
   async downloadReleaseAsset(assetId: number, destination: string): Promise<void> {

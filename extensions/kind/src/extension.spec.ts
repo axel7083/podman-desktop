@@ -311,7 +311,7 @@ describe('cli#update', () => {
     await update?.selectVersion();
     await update.doUpdate({} as unknown as extensionApi.Logger);
 
-    expect(KindInstaller.prototype.download).toHaveBeenCalledWith(mockV1Release);
+    expect(KindInstaller.prototype.downloadOld).toHaveBeenCalledWith(mockV1Release);
     expect(KindInstaller.prototype.getKindCliStoragePath).toHaveBeenCalled();
 
     expect(util.installBinaryToSystem).toHaveBeenCalledWith('storage-path', 'kind');
@@ -410,7 +410,7 @@ describe('cli#install', () => {
     expect(await cliToolInstaller?.selectVersion(true)).equals('1.0.2');
     await cliToolInstaller?.doInstall({} as unknown as extensionApi.Logger);
 
-    expect(KindInstaller.prototype.download).toHaveBeenCalledWith(latest);
+    expect(KindInstaller.prototype.downloadOld).toHaveBeenCalledWith(latest);
     expect(KindInstaller.prototype.getKindCliStoragePath).toHaveBeenCalled();
     expect(util.installBinaryToSystem).toHaveBeenCalledWith('storage-path', 'kind');
     expect(CLI_TOOL_MOCK.updateVersion).toHaveBeenCalledWith({
@@ -434,7 +434,7 @@ describe('cli#install', () => {
     await cliToolInstaller?.doInstall({} as unknown as extensionApi.Logger);
 
     // ensure the download has been called
-    expect(KindInstaller.prototype.download).toHaveBeenCalledWith(mockV1Release);
+    expect(KindInstaller.prototype.downloadOld).toHaveBeenCalledWith(mockV1Release);
     expect(KindInstaller.prototype.getKindCliStoragePath).toHaveBeenCalled();
     expect(util.installBinaryToSystem).toHaveBeenCalledWith('storage-path', 'kind');
     expect(CLI_TOOL_MOCK.updateVersion).toHaveBeenCalledWith({
@@ -599,7 +599,7 @@ describe('kubernetes create factory', () => {
 
     // expect getLatestVersionAsset and download
     expect(KindInstaller.prototype.getLatestVersionAsset).toHaveBeenCalled();
-    expect(KindInstaller.prototype.download).toHaveBeenCalled();
+    expect(KindInstaller.prototype.downloadOld).toHaveBeenCalled();
 
     expect(createCluster).toHaveBeenCalled();
   });

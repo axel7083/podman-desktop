@@ -17,18 +17,22 @@
  ***********************************************************************/
 
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 import * as path from 'node:path';
 
 import { Octokit } from '@octokit/rest';
 import type { AuditRequestItems, CancellationToken, CliTool, Logger } from '@podman-desktop/api';
 import * as extensionApi from '@podman-desktop/api';
 import { window } from '@podman-desktop/api';
+// @ts-expect-error ignore type error https://github.com/janl/mustache.js/issues/797
+import mustache from 'mustache';
 
 import { connectionAuditor, createCluster } from './create-cluster';
 import type { ImageInfo } from './image-handler';
 import { ImageHandler } from './image-handler';
 import type { KindGithubReleaseArtifactMetadata } from './kind-installer';
 import { KindInstaller } from './kind-installer';
+import BinaryInstallDialog from './templates/binary-install-dialog.mustache?raw';
 import {
   getKindBinaryInfo,
   getKindPath,
@@ -73,7 +77,7 @@ async function installLatestKind(): Promise<string> {
   // 1. get latest asset
   const latest = await installer.getLatestVersionAsset();
   // 2. download it
-  let cliPath = await installer.download(latest);
+  let cliPath = await installer.downloadOld(latest);
 
   // 3. try to install system-wide: (can fail)
   try {
@@ -551,7 +555,7 @@ async function registerCliTool(
       }
 
       // download, install system wide and update cli version
-      await installer.download(releaseToUpdateTo);
+      await installer.downloadOld(releaseToUpdateTo);
       let cliPath = installer.getKindCliStoragePath();
       try {
         cliPath = await installBinaryToSystem(cliPath, KIND_CLI_NAME);
@@ -614,9 +618,28 @@ async function registerCliTool(
         throw new Error(`Cannot install ${KIND_CLI_NAME}. No release selected.`);
       }
 
-      // download, install system wide and update cli version
-      await installer.download(releaseToInstall);
+      const asset = await installer.getReleaseAsset(releaseToInstall.id, os.platform(), os.arch());
       let cliPath = installer.getKindCliStoragePath();
+      const destinationPath: string = getSystemBinaryPath(KIND_CLI_NAME);
+
+      const result = await window.showInformationMessage(
+        mustache.render(BinaryInstallDialog, {
+          name: asset.name,
+          version: releaseVersionToInstall,
+          repository: `https://github.com/${installer.KIND_GITHUB_OWNER}/${installer.KIND_GITHUB_REPOSITORY}`,
+          size: `${(asset.size / 1e6).toFixed(2)} MB`,
+          released: asset.created_at,
+          internalStorage: cliPath,
+          systemStorage: destinationPath,
+        }),
+        'Cancel',
+        'Install',
+        'Install System-Wide',
+      );
+      if (result !== 'Confirm') return;
+
+      // download, install system wide and update cli version
+      await installer.download(asset);
 
       try {
         cliPath = await installBinaryToSystem(cliPath, KIND_CLI_NAME);
