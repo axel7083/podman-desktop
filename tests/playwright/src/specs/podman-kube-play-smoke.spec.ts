@@ -73,6 +73,11 @@ test.describe
 
       const podsPage = await navigationBar.openPods();
       const podmanKubePlayPage = await podsPage.openPodmanKubePlay();
+
+      await podmanKubePlayPage.screenshot({
+        name: 'kube-play',
+      });
+
       await podmanKubePlayPage.playYaml({
         podmanKubePlayOption: PodmanKubePlayOptions.CreateYamlFileFromScratch,
         jsonResourceDefinition: JSON_RESOURCE_DEFINITION,

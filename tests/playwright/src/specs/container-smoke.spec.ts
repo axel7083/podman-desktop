@@ -106,10 +106,6 @@ test.describe
         .poll(async () => await containerDetails.getState(), { timeout: 15_000 })
         .toContain(ContainerState.Running);
 
-      await containerDetails.screenshot({
-        name: 'container-details-summary',
-      });
-
       images = await navigationBar.openImages();
       playExpect(await images.getCurrentStatusOfImage(imageToPull)).toBe(ImageState.Used);
     });
@@ -151,11 +147,14 @@ test.describe
       await playExpect(helloWorldMessage).toBeVisible();
 
       await containersDetails.screenshot({
-        name: 'container-details-logs',
+        name: 'container-details-no-log',
       });
 
-      // Switch between various other tabs, no checking of the content
+      // Switch between various other tabs, checking of the content
       await containersDetails.activateTab('Inspect');
+      await playExpect
+        .poll(async () => await containersDetails.searchInInspectEditor(containerToRun), { timeout: 10_000 })
+        .toBeTruthy();
 
       await containersDetails.screenshot({
         name: 'container-details-inspect',
@@ -177,6 +176,10 @@ test.describe
       await playExpect
         .poll(async () => containersDetails.getCountOfSearchResults(), { timeout: 10_000 })
         .toBeGreaterThanOrEqual(1);
+
+      await containersDetails.screenshot({
+        name: 'container-details-tty-hello-world',
+      });
 
       await containersDetails.clearLogs();
       await playExpect(containersDetails.terminalContent).not.toContainText('Hello World');

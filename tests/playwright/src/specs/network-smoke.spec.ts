@@ -76,7 +76,7 @@ test.describe
         .toBeTruthy();
 
       await networksPage.screenshot({
-        name: 'network-list',
+        name: 'networks',
       });
     });
 
