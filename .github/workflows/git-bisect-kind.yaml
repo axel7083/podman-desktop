@@ -43,7 +43,7 @@ jobs:
         run: |
           git fetch --all --tags --force
           echo "Verifying commits exist:"
-          git log --oneline -1 10ff3ffc223b8d94674cf4ec3db953385aadaba3 || echo "Good commit not found!"
+          git log --oneline -1 67d62bcc36c0e4e7bad34cc7be86e6893d970886 || echo "Good commit not found!"
           git log --oneline -1 ca83d6896961a4cc1dac5835d8fa5d380f2c4406 || echo "Bad commit not found!"
 
       - name: Install Podman v5 using external action
