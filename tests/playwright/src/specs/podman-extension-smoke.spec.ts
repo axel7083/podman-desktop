@@ -67,10 +67,6 @@ async function verifyPodmanExtensionStatus(enabled: boolean): Promise<void> {
     await playExpect(dashboardPage.getPodmanStatusLocator()).toBeVisible({
       timeout: 15_000,
     });
-
-    await dashboardPage.screenshot({
-      name: 'dashboard-podman-enabled',
-    });
   } else {
     await playExpect(dashboardPage.getPodmanStatusLocator()).not.toBeVisible({
       timeout: 15_000,
