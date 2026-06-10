@@ -9,8 +9,6 @@ import { authenticationProviders } from '/@/stores/authenticationProviders';
 export let onBeforeToggle = (): void => {};
 let showMenu = false;
 
-let clientY: number;
-let clientX: number;
 export let outsideWindow: HTMLDivElement;
 
 function toggleMenu(): void {
@@ -28,10 +26,7 @@ function onWindowClick(e: Event): void {
   showMenu = e.target instanceof Node && outsideWindow.contains(e.target);
 }
 
-export function onButtonClick(e: MouseEvent): void {
-  // keep track of the cursor position
-  clientY = e.clientY;
-  clientX = e.clientX;
+export function onButtonClick(): void {
   toggleMenu();
 }
 </script>
@@ -39,7 +34,7 @@ export function onButtonClick(e: MouseEvent): void {
 <svelte:window on:keyup={handleEscape} on:click={onWindowClick} />
 
 {#if showMenu}
-  <DropdownMenu.Items clientY={clientY} clientX={clientX}>
+  <DropdownMenu.Items referenceElement={outsideWindow}>
     <DropdownMenu.Item
       title="Manage authentication"
       icon={faKey}

@@ -18,78 +18,80 @@
 
 import '@testing-library/jest-dom/vitest';
 
+import { autoUpdate, computePosition } from '@floating-ui/dom';
 import { render, screen } from '@testing-library/svelte';
-import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 
 import DropDownMenuItems from './DropDownMenuItems.svelte';
 
-class ResizeObserver {
-  observe = vi.fn();
-  disconnect = vi.fn();
-  unobserve = vi.fn();
-}
+vi.mock(import('@floating-ui/dom'));
 
 beforeEach(() => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).ResizeObserver = ResizeObserver;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).innerHeight = 500;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).innerWidth = 700;
-  Object.defineProperty(HTMLElement.prototype, 'clientHeight', { value: 100 });
-  Object.defineProperty(HTMLElement.prototype, 'clientWidth', { value: 100 });
-});
-
-afterEach(() => {
-  vi.resetAllMocks();
-});
-
-test('Expect DropDownMenuItems to open on the above the button', async () => {
-  render(DropDownMenuItems, {
-    clientX: 200,
-    clientY: 400,
+  vi.mocked(computePosition).mockResolvedValue({
+    middlewareData: {},
+    placement: 'bottom-start',
+    strategy: 'fixed',
+    x: 100,
+    y: 200,
   });
-  const dropDownMenuItems = screen.getByTitle('Drop Down Menu Items', {});
+
+  vi.mocked(autoUpdate).mockImplementation((_ref, _tooltip, update) => {
+    update();
+    return (): void => {};
+  });
+});
+
+function createReferenceElement(): HTMLElement {
+  const el = document.createElement('button');
+  document.body.appendChild(el);
+  return el;
+}
+
+test('Expect DropDownMenuItems to render and be visible', async () => {
+  render(DropDownMenuItems, {
+    referenceElement: createReferenceElement(),
+  });
+  const dropDownMenuItems = screen.getByTitle('Drop Down Menu Items');
 
   expect(dropDownMenuItems).toBeVisible();
   expect(dropDownMenuItems).toBeInTheDocument();
-  expect(dropDownMenuItems).toHaveStyle('top: -100px');
 });
 
-test('Expect DropDownMenuItems to open on the under the button', async () => {
+test('Expect DropDownMenuItems to use fixed positioning', async () => {
   render(DropDownMenuItems, {
-    clientX: 200,
-    clientY: 50,
+    referenceElement: createReferenceElement(),
   });
-  const dropDownMenuItems = screen.getByTitle('Drop Down Menu Items', {});
+  const dropDownMenuItems = screen.getByTitle('Drop Down Menu Items');
 
-  expect(dropDownMenuItems).toBeVisible();
-  expect(dropDownMenuItems).toBeInTheDocument();
-  expect(dropDownMenuItems).toHaveStyle('top: 20px');
+  expect(dropDownMenuItems).toHaveClass('fixed');
 });
 
-test('Expect DropDownMenuItems to open on the right of the button', async () => {
+test('Expect computePosition to be called with bottom-start placement', async () => {
+  const ref = createReferenceElement();
   render(DropDownMenuItems, {
-    clientX: 650,
-    clientY: 200,
+    referenceElement: ref,
   });
-  const dropDownMenuItems = screen.getByTitle('Drop Down Menu Items', {});
 
-  expect(dropDownMenuItems).toBeVisible();
-  expect(dropDownMenuItems).toBeInTheDocument();
-  expect(dropDownMenuItems).not.toHaveClass('left-0');
-  expect(dropDownMenuItems).not.toHaveClass('origin-top-left');
+  expect(computePosition).toHaveBeenCalledWith(
+    ref,
+    expect.anything(),
+    expect.objectContaining({ placement: 'bottom-start' }),
+  );
 });
 
-test('Expect DropDownMenuItems to open on the left of the button', async () => {
+test('Expect autoUpdate to be called for dynamic repositioning', async () => {
   render(DropDownMenuItems, {
-    clientX: 50,
-    clientY: 200,
+    referenceElement: createReferenceElement(),
   });
-  const dropDownMenuItems = screen.getByTitle('Drop Down Menu Items', {});
 
-  expect(dropDownMenuItems).toBeVisible();
-  expect(dropDownMenuItems).toBeInTheDocument();
-  expect(dropDownMenuItems).not.toHaveClass('right-0');
-  expect(dropDownMenuItems).not.toHaveClass('origin-top-right');
+  expect(autoUpdate).toHaveBeenCalled();
+});
+
+test('Expect tooltip-hide event to be dispatched on mount', async () => {
+  const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
+  render(DropDownMenuItems, {
+    referenceElement: createReferenceElement(),
+  });
+
+  expect(dispatchSpy).toHaveBeenCalledWith(expect.objectContaining({ type: 'tooltip-hide' }));
 });

@@ -36,9 +36,6 @@ function handleEscape({ key }: KeyboardEvent): void {
   }
 }
 
-let clientY = $state(0);
-let clientX = $state(0);
-
 function toggleMenu(): void {
   onBeforeToggle();
   showMenu = !showMenu;
@@ -52,10 +49,7 @@ function onWindowClick(e: any): void {
   }
 }
 
-function onButtonClick(e: MouseEvent): void {
-  // keep track of the cursor position
-  clientY = e.clientY;
-  clientX = e.clientX;
+function onButtonClick(): void {
   toggleMenu();
 }
 </script>
@@ -65,7 +59,7 @@ function onButtonClick(e: MouseEvent): void {
 
 {#if !hidden}
   <!-- Create a "kebab" menu for additional actions. -->
-  <div class="relative inline-block text-left">
+  <div class="inline-block text-left">
     <!-- Button for the dropdown menu -->
     <button
       aria-label={title.length > 0 ? title : 'kebab menu'}
@@ -79,8 +73,8 @@ function onButtonClick(e: MouseEvent): void {
       </button>
 
     <!-- Dropdown menu for all other actions -->
-    {#if showMenu}
-      <DropDownMenuItems clientY={clientY} clientX={clientX}>
+    {#if showMenu && outsideWindow}
+      <DropDownMenuItems referenceElement={outsideWindow}>
         {@render children?.()}
       </DropDownMenuItems>
     {/if}

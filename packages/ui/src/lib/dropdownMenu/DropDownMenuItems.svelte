@@ -1,53 +1,60 @@
 <script lang="ts">
-import { onDestroy, onMount, type Snippet } from 'svelte';
-
-// Provide default values for dropdown height and width
-// for onMount validations.
-let dropDownHeight = $state(0);
-let dropDownWidth = $state(0);
-let dropDownElement: HTMLElement;
-let sideAlign = $state<string>();
+import { autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
+import type { Snippet } from 'svelte';
 
 interface Props {
-  clientY: number;
-  clientX: number;
+  referenceElement: HTMLElement;
   children?: Snippet;
 }
 
-let { clientY, clientX, children }: Props = $props();
+let { referenceElement, children }: Props = $props();
 
-const STATUS_BAR_HEIGHT = 24;
+let dropDownElement: HTMLElement | undefined = $state(undefined);
+let isPositioned = $state(false);
 
-// When initializing the widget, set the placement on top or on bottom
-// depending on the clientY position (cursor position) and the height of the dropdown menu to display
-onMount(() => {
-  const innerHeight = window.innerHeight;
-  if (innerHeight - clientY - STATUS_BAR_HEIGHT < dropDownHeight) {
-    dropDownElement.style.top = `-${dropDownHeight}px`;
-  } else {
-    dropDownElement.style.top = '20px';
+async function updatePosition(): Promise<void> {
+  if (!referenceElement || !dropDownElement) return;
+
+  const { x, y } = await computePosition(referenceElement, dropDownElement, {
+    placement: 'bottom-start',
+    middleware: [offset(4), flip({ padding: 5 }), shift({ padding: 5 })],
+  });
+
+  if (!dropDownElement) return;
+
+  Object.assign(dropDownElement.style, {
+    left: `${Math.round(x)}px`,
+    top: `${Math.round(y)}px`,
+  });
+
+  isPositioned = true;
+}
+
+$effect((): (() => void) => {
+  if (referenceElement && dropDownElement) {
+    updatePosition().catch(console.error);
+
+    const cleanup = autoUpdate(referenceElement, dropDownElement, () => {
+      updatePosition().catch(console.error);
+    });
+
+    window.dispatchEvent(new Event('tooltip-hide'));
+
+    return (): void => {
+      cleanup();
+      window.dispatchEvent(new Event('tooltip-show'));
+    };
   }
 
-  // When initializing the widget, set the placement on left or right
-  // depending on the clientX position (cursor position) and the width of the dropdown menu to display
-  if (window.innerWidth - clientX < dropDownWidth) {
-    sideAlign = 'right-0 origin-top-right';
-  } else {
-    sideAlign = 'left-0 origin-top-left';
-  }
-  window.dispatchEvent(new Event('tooltip-hide'));
-});
-
-onDestroy(() => {
-  window.dispatchEvent(new Event('tooltip-show'));
+  return (): void => {};
 });
 </script>
 
 <div
   title="Drop Down Menu Items"
-  bind:clientHeight={dropDownHeight}
-  bind:clientWidth={dropDownWidth}
   bind:this={dropDownElement}
-  class="{sideAlign} absolute z-10 m-2 rounded-md shadow-lg bg-[var(--pd-dropdown-bg)] ring-2 ring-[var(--pd-dropdown-ring)] hover:ring-[var(--pd-dropdown-hover-ring)] divide-y divide-[var(--pd-dropdown-divider)] focus:outline-hidden">
+  class="fixed z-10 rounded-md shadow-lg bg-[var(--pd-dropdown-bg)] ring-2 ring-[var(--pd-dropdown-ring)] hover:ring-[var(--pd-dropdown-hover-ring)] divide-y divide-[var(--pd-dropdown-divider)] focus:outline-hidden"
+  class:opacity-0={!isPositioned}
+  style="left: 0; top: 0;">
   {@render children?.()}
 </div>
