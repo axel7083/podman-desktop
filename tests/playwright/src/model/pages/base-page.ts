@@ -39,7 +39,7 @@ export abstract class BasePage {
 
     await this.page.screenshot({
       path: join(path, `${process.env.PLAYWRIGHT_SCREENSHOTS_PREFIX}${options.name}-${platform()}-${arch()}.png`),
-      mask: options.mask,
+      mask: [...(options.mask ?? []), this.page.locator('[data-cell="duration"]')],
     });
   }
 }
