@@ -86,7 +86,7 @@ jobs:
           # Run git bisect
           git bisect start
           git bisect bad ca83d6896961a4cc1dac5835d8fa5d380f2c4406
-          git bisect good 10ff3ffc223b8d94674cf4ec3db953385aadaba3
+          git bisect good 67d62bcc36c0e4e7bad34cc7be86e6893d970886
 
           # Run the bisect with the test script
           git bisect run /tmp/bisect-test.sh
