@@ -1,4 +1,24 @@
+/**********************************************************************
+ * Copyright (C) 2026 Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ ***********************************************************************/
 import { expect as playExpect, test } from '/@/utility/fixtures';
+
+const IMAGE_NAME: string = 'ghcr.io/podmandesktop-ci/nginx';
+const CONTAINER_NAME: string = 'nginx-container';
 
 test.beforeAll(async ({ runner, welcomePage }) => {
   runner.setVideoAndTraceName('screenshots');
@@ -35,11 +55,28 @@ test.describe
       const containersPage = await navigationBar.openContainers();
       await playExpect(containersPage.heading).toBeVisible();
 
-      // focus on the content
-      await containersPage.content.focus();
-
+      // Screenshot empty containers list
       await containersPage.screenshot({
         name: 'containers-empty',
+      });
+
+      // Start one container
+      const imagesPage = await navigationBar.openImages();
+      await imagesPage.pullImage(IMAGE_NAME);
+
+      await playExpect(imagesPage.heading).toBeVisible();
+      await playExpect
+        .poll(async () => await imagesPage.waitForImageExists(IMAGE_NAME, 5_000), { timeout: 0 })
+        .toBeTruthy();
+
+      const imageDetailsPage = await imagesPage.openImageDetails(IMAGE_NAME);
+      const runImagePage = await imageDetailsPage.openRunImage();
+
+      await runImagePage.startContainer(CONTAINER_NAME);
+
+      await playExpect(containersPage.heading).toBeVisible();
+      await containersPage.screenshot({
+        name: 'containers-nginx-running',
       });
     });
 
@@ -54,7 +91,7 @@ test.describe
       await podsPage.content.focus();
 
       await podsPage.screenshot({
-        name: 'pods-empty',
+        name: 'pods',
       });
     });
 
@@ -69,7 +106,14 @@ test.describe
       await imagesPage.content.focus();
 
       await imagesPage.screenshot({
-        name: 'images-empty',
+        name: 'images',
+      });
+
+      const pullImagePage = await imagesPage.openPullImage();
+      await playExpect(pullImagePage.heading).toBeVisible();
+
+      await pullImagePage.screenshot({
+        name: 'image-pull',
       });
     });
 
@@ -84,7 +128,7 @@ test.describe
       await volumesPage.content.focus();
 
       await volumesPage.screenshot({
-        name: 'volumes-empty',
+        name: 'volumes',
       });
     });
 
@@ -99,7 +143,7 @@ test.describe
       await networksPage.content.focus();
 
       await networksPage.screenshot({
-        name: 'networks-empty',
+        name: 'networks',
       });
     });
   });
