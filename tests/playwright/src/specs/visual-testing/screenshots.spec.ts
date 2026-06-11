@@ -76,7 +76,7 @@ test.describe
     /**
      * Volumes
      */
-    test('images screenshot', async ({ navigationBar }) => {
+    test('volumes screenshot', async ({ navigationBar }) => {
       const volumesPage = await navigationBar.openVolumes();
       await playExpect(volumesPage.heading).toBeVisible();
 
@@ -91,7 +91,7 @@ test.describe
     /**
      * Networks
      */
-    test('images screenshot', async ({ navigationBar }) => {
+    test('networks screenshot', async ({ navigationBar }) => {
       const networksPage = await navigationBar.openNetworks();
       await playExpect(networksPage.heading).toBeVisible();
 
