@@ -72,10 +72,6 @@ test.describe
       const registryBox = registryPage.registriesTable.getByLabel('GitHub');
       const username = registryBox.getByText(registryUsername);
       await playExpect(username).toBeVisible();
-
-      await registryPage.screenshot({
-        name: 'registry',
-      });
     });
 
     test('Pull image', async ({ navigationBar }) => {

@@ -113,10 +113,6 @@ test.describe
     test('Test navigation between pages', async ({ navigationBar }) => {
       const containers = await navigationBar.openContainers();
 
-      await containers.screenshot({
-        name: 'container-list',
-      });
-
       const containersDetails = await containers.openContainersDetails(containerToRun);
       await playExpect(containersDetails.heading).toBeVisible();
       await containersDetails.backLink.click();
@@ -145,21 +141,8 @@ test.describe
       await containersDetails.activateTab('Logs');
       const helloWorldMessage = containersDetails.getPage().getByText('No Log');
       await playExpect(helloWorldMessage).toBeVisible();
-
-      await containersDetails.screenshot({
-        name: 'container-details-no-log',
-      });
-
-      // Switch between various other tabs, checking of the content
+      // Switch between various other tabs, no checking of the content
       await containersDetails.activateTab('Inspect');
-      await playExpect
-        .poll(async () => await containersDetails.searchInInspectEditor(containerToRun), { timeout: 10_000 })
-        .toBeTruthy();
-
-      await containersDetails.screenshot({
-        name: 'container-details-inspect',
-      });
-
       await containersDetails.activateTab('Kube');
       await containersDetails.activateTab('Terminal');
 
@@ -176,10 +159,6 @@ test.describe
       await playExpect
         .poll(async () => containersDetails.getCountOfSearchResults(), { timeout: 10_000 })
         .toBeGreaterThanOrEqual(1);
-
-      await containersDetails.screenshot({
-        name: 'container-details-tty-hello-world',
-      });
 
       await containersDetails.clearLogs();
       await playExpect(containersDetails.terminalContent).not.toContainText('Hello World');

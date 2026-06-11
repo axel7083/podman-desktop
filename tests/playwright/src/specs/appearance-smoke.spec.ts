@@ -80,10 +80,6 @@ test.describe
 
       const theme = await getThemeState(page);
       playExpect(theme.colorScheme).toBe('dark');
-
-      await preferencesPage.screenshot({
-        name: 'appearance-dark',
-      });
     });
 
     test('Switching to light mode applies light theme', async ({ page }) => {
@@ -101,10 +97,6 @@ test.describe
 
       const theme = await getThemeState(page);
       playExpect(theme.colorScheme).toBe('light');
-
-      await preferencesPage.screenshot({
-        name: 'appearance-light',
-      });
     });
 
     test('Switching back to dark mode re-applies dark theme', async ({ page }) => {

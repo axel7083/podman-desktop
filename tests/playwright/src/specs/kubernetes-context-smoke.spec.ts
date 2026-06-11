@@ -85,10 +85,6 @@ test.describe
           await playExpect(await kubePage.getSetCurrentContextButton(context)).toBeVisible();
         }
       }
-
-      await kubePage.screenshot({
-        name: 'kubernetes-contexts',
-      });
     });
 
     test('Can switch default context', async ({ navigationBar }) => {
