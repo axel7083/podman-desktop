@@ -74,10 +74,6 @@ test.describe
           timeout: 30_000,
         })
         .toBeTruthy();
-
-      await networksPage.screenshot({
-        name: 'networks',
-      });
     });
 
     test('Pull image for network container test', async ({ navigationBar }) => {

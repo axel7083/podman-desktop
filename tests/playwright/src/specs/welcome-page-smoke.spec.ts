@@ -36,10 +36,6 @@ test.describe
       .serial('Welcome page handling', () => {
         test('Check the Welcome page is displayed', async ({ welcomePage }) => {
           await playExpect(welcomePage.welcomeMessage).toBeVisible();
-
-          await welcomePage.screenshot({
-            name: 'welcome-page',
-          });
         });
 
         test('Telemetry checkbox is present, set to true, consent can be changed', async ({ welcomePage }) => {
@@ -51,10 +47,6 @@ test.describe
         test('Redirection from Welcome page to Dashboard works', async ({ welcomePage }) => {
           const dashboardPage = await welcomePage.closeWelcomePage();
           await playExpect(dashboardPage.heading).toBeVisible();
-
-          await dashboardPage.screenshot({
-            name: 'dashboard',
-          });
         });
       });
 

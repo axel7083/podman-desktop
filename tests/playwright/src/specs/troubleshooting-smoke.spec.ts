@@ -40,10 +40,6 @@ test.describe
       await statusBar.troubleshootingButton.click();
       troubleshootingPage = new TroubleshootingPage(page);
       await playExpect(troubleshootingPage.heading).toBeVisible();
-
-      await troubleshootingPage.screenshot({
-        name: 'troubleshooting',
-      });
     });
 
     test('Can reconnect providers', async () => {

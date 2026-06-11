@@ -59,10 +59,6 @@ test.describe
           timeout: 25_000,
         })
         .toBeTruthy();
-
-      await volumesPage.screenshot({
-        name: 'volume-list',
-      });
     });
 
     test('Test navigation between pages', async ({ navigationBar }) => {

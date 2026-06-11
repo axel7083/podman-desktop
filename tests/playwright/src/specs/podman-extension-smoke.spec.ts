@@ -109,10 +109,6 @@ async function verifyPodmanExtensionStatus(enabled: boolean): Promise<void> {
       timeout: 10_000,
     });
     await playExpect(podmanExtensionPage.status.getByText(ExtensionState.Active)).toBeVisible();
-
-    await podmanExtensionPage.screenshot({
-      name: 'extension-details-podman',
-    });
   } else {
     await playExpect(podmanExtensionPage.enableButton).toBeVisible({
       timeout: 10_000,

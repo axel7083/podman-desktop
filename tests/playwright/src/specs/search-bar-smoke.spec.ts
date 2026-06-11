@@ -52,10 +52,6 @@ test.describe
       await playExpect(commandPalette.commandPaletteInputField).toBeFocused();
       await playExpect(commandPalette.selectedItem).toBeVisible({ timeout: 10_000 });
 
-      await commandPalette.screenshot({
-        name: 'command-palette',
-      });
-
       await commandPalette.close();
     });
 

@@ -54,13 +54,9 @@ test.describe
 
     test('Pull image', async ({ navigationBar }) => {
       const imagesPage = await navigationBar.openImages();
+      await playExpect(imagesPage.heading).toBeVisible();
+
       const pullImagePage = await imagesPage.openPullImage();
-      await playExpect(pullImagePage.heading).toBeVisible();
-
-      await imagesPage.screenshot({
-        name: 'image-pull',
-      });
-
       const updatedImages = await pullImagePage.pullImage(helloContainer);
       await playExpect(updatedImages.heading).toBeVisible({ timeout: 10_000 });
 
@@ -69,10 +65,6 @@ test.describe
         .toBeTruthy();
 
       playExpect(await updatedImages.getCurrentStatusOfImage(helloContainer)).toBe(ImageState.Unused);
-
-      await updatedImages.screenshot({
-        name: 'images',
-      });
     });
 
     test('Pull image from search results', async ({ navigationBar }) => {
@@ -142,20 +134,11 @@ test.describe
       await playExpect(imageDetailPage.summaryTab).toBeVisible();
       await playExpect(imageDetailPage.historyTab).toBeVisible();
       await playExpect(imageDetailPage.inspectTab).toBeVisible();
-
-      await imageDetailPage.screenshot({
-        name: 'image-details',
-      });
     });
 
     test('Rename image', async ({ page }) => {
       const imageDetailsPage = new ImageDetailsPage(page, helloContainer);
       const editPage = await imageDetailsPage.openEditImage();
-
-      await editPage.screenshot({
-        name: 'image-edit',
-      });
-
       const imagesPage = await editPage.renameImage('quay.io/podman/hi');
       playExpect(await imagesPage.waitForImageExists('quay.io/podman/hi')).toBe(true);
     });
@@ -182,11 +165,6 @@ test.describe
       await playExpect(imagesPage.heading).toBeVisible();
 
       const buildImagePage = await imagesPage.openBuildImage();
-
-      await buildImagePage.screenshot({
-        name: 'image-build',
-      });
-
       await playExpect(buildImagePage.heading).toBeVisible();
       const dockerfilePath = path.resolve(__dirname, '..', '..', 'resources', 'test-containerfile');
       const contextDirectory = path.resolve(__dirname, '..', '..', 'resources');
