@@ -15,11 +15,13 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import type { ContainerInteractiveParams } from '/@/model/core/types';
 import { expect as playExpect, test } from '/@/utility/fixtures';
 
 const NGINX_IMAGE: string = 'ghcr.io/podmandesktop-ci/nginx:latest';
 const NGINX_IMAGE_NAME: string = 'ghcr.io/podmandesktop-ci/nginx';
 const NGINX_CONTAINER_NAME: string = 'nginx-container';
+const CONTAINER_START_PARAMS: ContainerInteractiveParams = { attachTerminal: false };
 
 test.beforeAll(async ({ runner, welcomePage }) => {
   runner.setVideoAndTraceName('screenshots');
@@ -73,9 +75,9 @@ test.describe
       const imageDetailsPage = await imagesPage.openImageDetails(NGINX_IMAGE_NAME);
       const runImagePage = await imageDetailsPage.openRunImage();
 
-      await runImagePage.startContainer(NGINX_CONTAINER_NAME);
+      await runImagePage.startContainer(NGINX_CONTAINER_NAME, CONTAINER_START_PARAMS);
 
-      await playExpect(containersPage.heading).toBeVisible();
+      await playExpect(containersPage.heading).toBeVisible({ timeout: 5_000 });
       await containersPage.screenshot({
         name: 'containers-nginx-running',
       });
