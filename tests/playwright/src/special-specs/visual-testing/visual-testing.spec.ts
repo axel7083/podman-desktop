@@ -70,7 +70,7 @@ test.describe
         .poll(async () => await imagesPage.waitForImageExists(NGINX_IMAGE_NAME, 5_000), { timeout: 0 })
         .toBeTruthy();
 
-      const imageDetailsPage = await imagesPage.openImageDetails(NGINX_CONTAINER_NAME);
+      const imageDetailsPage = await imagesPage.openImageDetails(NGINX_IMAGE_NAME);
       const runImagePage = await imageDetailsPage.openRunImage();
 
       await runImagePage.startContainer(NGINX_CONTAINER_NAME);
