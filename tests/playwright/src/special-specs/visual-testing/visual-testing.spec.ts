@@ -17,8 +17,9 @@
  ***********************************************************************/
 import { expect as playExpect, test } from '/@/utility/fixtures';
 
-const IMAGE_NAME: string = 'ghcr.io/podmandesktop-ci/nginx';
-const CONTAINER_NAME: string = 'nginx-container';
+const NGINX_IMAGE: string = 'ghcr.io/podmandesktop-ci/nginx:latest';
+const NGINX_IMAGE_NAME: string = 'ghcr.io/podmandesktop-ci/nginx';
+const NGINX_CONTAINER_NAME: string = 'nginx-container';
 
 test.beforeAll(async ({ runner, welcomePage }) => {
   runner.setVideoAndTraceName('screenshots');
@@ -62,17 +63,17 @@ test.describe
 
       // Start one container
       const imagesPage = await navigationBar.openImages();
-      await imagesPage.pullImage(IMAGE_NAME);
+      await imagesPage.pullImage(NGINX_IMAGE);
 
       await playExpect(imagesPage.heading).toBeVisible();
       await playExpect
-        .poll(async () => await imagesPage.waitForImageExists(IMAGE_NAME, 5_000), { timeout: 0 })
+        .poll(async () => await imagesPage.waitForImageExists(NGINX_IMAGE_NAME, 5_000), { timeout: 0 })
         .toBeTruthy();
 
-      const imageDetailsPage = await imagesPage.openImageDetails(IMAGE_NAME);
+      const imageDetailsPage = await imagesPage.openImageDetails(NGINX_CONTAINER_NAME);
       const runImagePage = await imageDetailsPage.openRunImage();
 
-      await runImagePage.startContainer(CONTAINER_NAME);
+      await runImagePage.startContainer(NGINX_CONTAINER_NAME);
 
       await playExpect(containersPage.heading).toBeVisible();
       await containersPage.screenshot({
