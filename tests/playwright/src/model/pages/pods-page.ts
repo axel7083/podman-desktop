@@ -41,6 +41,15 @@ export class PodsPage extends MainPage {
     });
   }
 
+  async screenshot(options: { name: string; mask?: Array<Locator> }): Promise<void> {
+    const selectors = ['[data-columns="age"]', '[data-columns="name"]'];
+
+    return super.screenshot({
+      ...options,
+      mask: [...(options.mask ?? []), ...selectors.map(selector => this.page.locator(selector))],
+    });
+  }
+
   async openPodDetails(name: string): Promise<PodDetailsPage> {
     return test.step(`Open Pod: ${name} details`, async () => {
       const podRow = await this.getPodRowByName(name);

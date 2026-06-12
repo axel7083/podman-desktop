@@ -39,6 +39,15 @@ export class VolumesPage extends MainPage {
     this.collectUsageDataButton = this.additionalActions.getByRole('button', { name: 'Gather volume sizes' });
   }
 
+  async screenshot(options: { name: string; mask?: Array<Locator> }): Promise<void> {
+    const selectors = ['[data-columns="age"]'];
+
+    return super.screenshot({
+      ...options,
+      mask: [...(options.mask ?? []), ...selectors.map(selector => this.page.locator(selector))],
+    });
+  }
+
   async openCreateVolumePage(volumeName: string): Promise<CreateVolumePage> {
     return test.step('Open Create Volume Page', async () => {
       const row = await this.getVolumeRowByName(volumeName);

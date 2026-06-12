@@ -37,9 +37,11 @@ export abstract class BasePage {
     const path = process.env.PLAYWRIGHT_SCREENSHOTS_PATH;
     if (!path) return;
 
+    const masks = ['duration'];
+
     await this.page.screenshot({
       path: join(path, `${options.name}-${platform()}-${arch()}.png`),
-      mask: [...(options.mask ?? []), this.page.locator('[data-cell="duration"]')],
+      mask: [...(options.mask ?? []), ...masks.map(mask => this.page.locator(`[data-key="${mask}"]`))],
     });
   }
 }

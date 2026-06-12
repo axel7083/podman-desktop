@@ -63,6 +63,15 @@ export class ContainersPage extends MainPage {
     });
   }
 
+  async screenshot(options: { name: string; mask?: Array<Locator> }): Promise<void> {
+    const selectors = ['[data-columns="uptime"]', '[data-columns="name"]'];
+
+    return super.screenshot({
+      ...options,
+      mask: [...(options.mask ?? []), ...selectors.map(selector => this.page.locator(selector))],
+    });
+  }
+
   async openContainersDetails(name: string): Promise<ContainerDetailsPage> {
     return test.step(`Open Container: ${name} details`, async () => {
       const containerRow = await this.getContainerRowByName(name);

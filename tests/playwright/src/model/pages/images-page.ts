@@ -60,6 +60,15 @@ export class ImagesPage extends MainPage {
     this.confirmImportContainersButton = this.page.getByRole('button', { name: 'Import containers', exact: true });
   }
 
+  async screenshot(options: { name: string; mask?: Array<Locator> }): Promise<void> {
+    const selectors = ['[data-columns="age"]', '[data-columns="name"]', '[data-columns="size"]'];
+
+    return super.screenshot({
+      ...options,
+      mask: [...(options.mask ?? []), ...selectors.map(selector => this.page.locator(selector))],
+    });
+  }
+
   async openPullImage(): Promise<PullImagePage> {
     return test.step('Open pull image page', async () => {
       await waitWhile(() => this.noContainerEngine(), {

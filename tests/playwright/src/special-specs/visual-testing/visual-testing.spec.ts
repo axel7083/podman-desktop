@@ -22,6 +22,7 @@ import { handleConfirmationDialog } from '/@/utility/operations';
 const NGINX_IMAGE: string = 'ghcr.io/podmandesktop-ci/nginx:latest';
 const NGINX_IMAGE_NAME: string = 'ghcr.io/podmandesktop-ci/nginx';
 const NGINX_CONTAINER_NAME: string = 'nginx-container';
+const VOLUME_NAME: string = 'foo-volume';
 const POD_NAME: string = 'nginx-pod';
 const CONTAINER_START_PARAMS: ContainerInteractiveParams = { attachTerminal: false };
 
@@ -161,14 +162,29 @@ test.describe
      * Volumes
      */
     test('volumes screenshot', async ({ navigationBar }) => {
-      const volumesPage = await navigationBar.openVolumes();
+      let volumesPage = await navigationBar.openVolumes();
       await playExpect(volumesPage.heading).toBeVisible();
-
-      // focus on the content
-      await volumesPage.content.focus();
 
       await volumesPage.screenshot({
         name: 'volumes',
+      });
+
+      const createVolumePage = await volumesPage.openCreateVolumePage(VOLUME_NAME);
+      await playExpect(createVolumePage.heading).toBeVisible();
+
+      await createVolumePage.screenshot({
+        name: 'volume-create',
+      });
+
+      volumesPage = await createVolumePage.createVolume(VOLUME_NAME);
+      await playExpect
+        .poll(async () => await volumesPage.waitForVolumeExists(VOLUME_NAME), {
+          timeout: 25_000,
+        })
+        .toBeTruthy();
+
+      await volumesPage.screenshot({
+        name: 'volume-foo',
       });
     });
 

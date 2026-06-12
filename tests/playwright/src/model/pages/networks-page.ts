@@ -35,6 +35,15 @@ export class NetworksPage extends MainPage {
     this.deleteSelectedButton = this.bottomAdditionalActions.getByRole('button', { name: 'Delete' });
   }
 
+  async screenshot(options: { name: string; mask?: Array<Locator> }): Promise<void> {
+    const selectors = ['[data-columns="id"]'];
+
+    return super.screenshot({
+      ...options,
+      mask: [...(options.mask ?? []), ...selectors.map(selector => this.page.locator(selector))],
+    });
+  }
+
   async getNetworkRowByName(name: string): Promise<Locator | undefined> {
     return this.getRowByName(name);
   }

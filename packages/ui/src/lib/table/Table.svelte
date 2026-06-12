@@ -479,6 +479,7 @@ async function resetColumns(): Promise<void> {
           {/if}
           {#each visibleColumns as column, index (index)}
             <div
+              data-columns={column.title?.toLowerCase()}
               class="whitespace-nowrap {column.info.align === 'right'
                 ? 'justify-self-end'
                 : column.info.align === 'center'

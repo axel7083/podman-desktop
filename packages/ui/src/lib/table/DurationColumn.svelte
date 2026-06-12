@@ -68,4 +68,4 @@ onDestroy(() => {
 });
 </script>
 
-<SimpleColumn data-cell="duration" object={duration} />
+<SimpleColumn object={duration} />
