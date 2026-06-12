@@ -480,7 +480,7 @@ async function resetColumns(): Promise<void> {
           {#each visibleColumns as column, index (index)}
             <div
               data-columns={column.title?.toLowerCase()}
-              class="whitespace-nowrap {column.info.align === 'right'
+              class="whitespace-nowrap h-full content-center {column.info.align === 'right'
                 ? 'justify-self-end'
                 : column.info.align === 'center'
                   ? 'justify-self-center'
@@ -518,7 +518,8 @@ async function resetColumns(): Promise<void> {
               {/if}
               {#each visibleColumns as column, index (index)}
                 <div
-                  class="whitespace-nowrap {column.info.align === 'right'
+                  data-columns={column.title?.toLowerCase()}
+                  class="whitespace-nowrap h-full content-center {column.info.align === 'right'
                     ? 'justify-self-end'
                     : column.info.align === 'center'
                       ? 'justify-self-center'
