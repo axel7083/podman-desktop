@@ -1,17 +1,29 @@
 <script lang="ts">
-import { router } from 'tinro';
+import { NavigationPage } from '@podman-desktop/core-api';
+
+import { handleNavigation } from '/@/navigation';
 
 import type { VolumeInfoUI } from './VolumeInfoUI';
 
-export let object: VolumeInfoUI;
+interface Props {
+  object: VolumeInfoUI;
+}
+
+let { object }: Props = $props();
 
 function openDetailsVolume(volume: VolumeInfoUI): void {
-  router.goto(`/volumes/${encodeURI(volume.name)}/${encodeURI(volume.engineId)}/summary`);
+  handleNavigation({
+    page: NavigationPage.VOLUME,
+    parameters: {
+      engineId: volume.engineId,
+      name: volume.name,
+    },
+  });
 }
 </script>
 
 <button
-  class="hover:cursor-pointer flex text-[var(--pd-table-body-text-highlight)] max-w-full overflow-hidden text-ellipsis"
-  on:click={(): void => openDetailsVolume(object)}>
+  class="hover:cursor-pointer flex text-[var(--pd-table-body-text-highlight)] w-full overflow-hidden text-ellipsis"
+  onclick={(): void => openDetailsVolume(object)}>
   {object.shortName}
 </button>

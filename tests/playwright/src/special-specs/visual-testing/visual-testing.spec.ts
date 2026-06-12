@@ -30,6 +30,7 @@ const NGINX_CONTAINER_NAME: string = 'nginx-container';
 const VOLUME_NAME: string = 'foo-volume';
 const POD_NAME: string = 'nginx-pod';
 const CONTAINER_START_PARAMS: ContainerInteractiveParams = { attachTerminal: false };
+const NETWORK_NAME: string = 'foo-network';
 
 test.beforeAll(async ({ runner, welcomePage }) => {
   runner.setVideoAndTraceName('screenshots');
@@ -280,14 +281,16 @@ test.describe
 
         test('network details summary', async ({ navigationBar }) => {
           const networksPage = await navigationBar.openNetworks();
-          // Get the first network from the list
-          const networkRows = await networksPage.getAllTableRows();
-          if (networkRows.length === 0) {
-            throw new Error('No networks found to open details');
-          }
 
-          const firstNetworkName = await networkRows[0].getByRole('cell').first().innerText();
-          const networkDetailsPage = await networksPage.openNetworkDetails(firstNetworkName);
+          const networkCreatePage = await networksPage.openNetworkCreate(NETWORK_NAME);
+          await playExpect(networkCreatePage.heading).toBeVisible();
+
+          await networkCreatePage.screenshot({
+            name: 'network-create',
+          });
+
+          const networkDetailsPage = await networkCreatePage.createNetwork(NETWORK_NAME);
+          await playExpect(networkDetailsPage.heading).toBeVisible({ timeout: 10_000 });
 
           await networkDetailsPage.activateTab(NetworkDetailsPage.SUMMARY_TAB);
           await playExpect(networkDetailsPage.tabContent.getByRole('table')).toBeVisible();
