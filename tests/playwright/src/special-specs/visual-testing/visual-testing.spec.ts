@@ -22,6 +22,7 @@ import { handleConfirmationDialog } from '/@/utility/operations';
 const NGINX_IMAGE: string = 'ghcr.io/podmandesktop-ci/nginx:latest';
 const NGINX_IMAGE_NAME: string = 'ghcr.io/podmandesktop-ci/nginx';
 const NGINX_CONTAINER_NAME: string = 'nginx-container';
+const POD_NAME: string = 'nginx-pod';
 const CONTAINER_START_PARAMS: ContainerInteractiveParams = { attachTerminal: false };
 
 test.beforeAll(async ({ runner, welcomePage }) => {
@@ -98,8 +99,10 @@ test.describe
       const runImagePage = await imageDetailsPage.openRunImage();
 
       await runImagePage.startContainer(NGINX_CONTAINER_NAME, CONTAINER_START_PARAMS);
+      await playExpect
+        .poll(async () => await containersPage.containerExists(NGINX_CONTAINER_NAME), { timeout: 10_000 })
+        .toBeTruthy();
 
-      await playExpect(containersPage.heading).toBeVisible({ timeout: 5_000 });
       await containersPage.screenshot({
         name: 'containers-nginx-running',
       });
@@ -116,7 +119,19 @@ test.describe
       await podsPage.content.focus();
 
       await podsPage.screenshot({
-        name: 'pods',
+        name: 'pods-empty',
+      });
+
+      const containersPage = await navigationBar.openContainers();
+      await playExpect(containersPage.heading).toBeVisible();
+
+      const createPodPage = await containersPage.openCreatePodPage([NGINX_CONTAINER_NAME]);
+      const pods = await createPodPage.createPod(POD_NAME);
+      await playExpect(pods.heading).toBeVisible({ timeout: 60_000 });
+      await playExpect.poll(async () => await pods.podExists(POD_NAME), { timeout: 15_000 }).toBeTruthy();
+
+      await podsPage.screenshot({
+        name: 'pods-nginx',
       });
     });
 
