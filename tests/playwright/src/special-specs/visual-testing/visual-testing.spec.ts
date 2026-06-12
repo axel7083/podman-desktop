@@ -246,6 +246,9 @@ test.describe
           const volumesPage = await navigationBar.openVolumes();
           await playExpect(volumesPage.heading).toBeVisible();
 
+          const volumeRow = await volumesPage.getVolumeRowByName(VOLUME_NAME);
+          playExpect(volumeRow).not.toBeUndefined();
+
           const volumeDetailsPage = await volumesPage.openVolumeDetails(VOLUME_NAME);
           await playExpect(volumeDetailsPage.heading).toBeVisible();
 
