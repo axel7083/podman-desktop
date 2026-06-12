@@ -15,34 +15,41 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { ResourceElementState } from '/@/model/core/states';
 import type { ContainerInteractiveParams } from '/@/model/core/types';
-import { PodmanMachineDetails } from '/@/model/pages/podman-machine-details-page';
-import { ResourcesPage } from '/@/model/pages/resources-page';
 import { expect as playExpect, test } from '/@/utility/fixtures';
+import { handleConfirmationDialog } from '/@/utility/operations';
 
 const NGINX_IMAGE: string = 'ghcr.io/podmandesktop-ci/nginx:latest';
 const NGINX_IMAGE_NAME: string = 'ghcr.io/podmandesktop-ci/nginx';
 const NGINX_CONTAINER_NAME: string = 'nginx-container';
 const CONTAINER_START_PARAMS: ContainerInteractiveParams = { attachTerminal: false };
-const DEFAULT_MACHINE = 'podman-machine-default';
 
 test.beforeAll(async ({ runner, welcomePage }) => {
   runner.setVideoAndTraceName('screenshots');
   await welcomePage.handleWelcomePage(true);
 });
 
-test.afterAll(async ({ runner, navigationBar, page }) => {
+test.afterAll(async ({ runner, navigationBar }) => {
   test.setTimeout(180_000);
 
-  const settingsBar = await navigationBar.openSettings();
-  await settingsBar.openTabPage(ResourcesPage);
-  const podmanMachineDetails = new PodmanMachineDetails(page, DEFAULT_MACHINE);
-  await playExpect(podmanMachineDetails.podmanMachineStopButton).toBeEnabled();
-  await podmanMachineDetails.podmanMachineStopButton.click();
-  await playExpect(podmanMachineDetails.podmanMachineStatus).toHaveText(ResourceElementState.Off, {
-    timeout: 60_000,
-  });
+  // Go to containers page
+  const containersPage = await navigationBar.openContainers();
+  await playExpect(containersPage.heading).toBeVisible();
+
+  // Select all containers through the checkbox
+  const toggleAll = containersPage.page.getByRole('checkbox', { name: 'Toggle all' });
+  await playExpect(toggleAll).toBeVisible();
+  await toggleAll.click();
+
+  // Get the bulk delete button
+  const bulkDelete = containersPage.page.getByRole('button', { name: 'Delete selected containers and pods' });
+  await playExpect(bulkDelete).toBeVisible();
+  await bulkDelete.click();
+
+  await handleConfirmationDialog(containersPage.page, 'Delete Containers?', true, 'Delete');
+
+  // Wait until none are remaining
+  await playExpect.poll(async () => await containersPage.getAllTableRows()).toHaveLength(0);
 
   await runner.close(45_000);
 });
