@@ -244,7 +244,10 @@ test.describe
 
         test('volume details summary', async ({ navigationBar }) => {
           const volumesPage = await navigationBar.openVolumes();
+          await playExpect(volumesPage.heading).toBeVisible();
+
           const volumeDetailsPage = await volumesPage.openVolumeDetails(VOLUME_NAME);
+          await playExpect(volumeDetailsPage.heading).toBeVisible();
 
           await volumeDetailsPage.activateTab(VolumeDetailsPage.SUMMARY_TAB);
           await playExpect(volumeDetailsPage.tabContent.getByRole('table')).toBeVisible();

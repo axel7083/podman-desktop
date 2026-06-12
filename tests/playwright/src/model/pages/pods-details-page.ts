@@ -60,7 +60,7 @@ export class PodDetailsPage extends DetailsPage {
       mask: [
         ...(options.mask ?? []),
         ...selectors.map(selector => this.page.locator(selector)),
-        this.page.getByRole('link'),
+        this.page.getByRole('table').getByRole('link'),
       ],
     });
   }
