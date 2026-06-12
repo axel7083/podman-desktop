@@ -57,7 +57,11 @@ export class PodDetailsPage extends DetailsPage {
 
     return super.screenshot({
       ...options,
-      mask: [...(options.mask ?? []), ...selectors.map(selector => this.page.locator(selector))],
+      mask: [
+        ...(options.mask ?? []),
+        ...selectors.map(selector => this.page.locator(selector)),
+        this.page.getByRole('link'),
+      ],
     });
   }
 

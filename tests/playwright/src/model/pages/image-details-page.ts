@@ -42,6 +42,10 @@ export class ImageDetailsPage extends DetailsPage {
   readonly browseButton: Locator;
   readonly pushButton: Locator;
 
+  static readonly SUMMARY_TAB = 'Summary';
+  static readonly HISTORY_TAB = 'History';
+  static readonly INSPECT_TAB = 'Inspect';
+
   constructor(page: Page, name: string) {
     super(page, name);
     this.runImageButton = this.controlActions.getByRole('button', {
@@ -121,6 +125,15 @@ export class ImageDetailsPage extends DetailsPage {
     await this.confirmSaveImages.click();
 
     return new ImagesPage(this.page);
+  }
+
+  async screenshot(options: { name: string; mask?: Array<Locator> }): Promise<void> {
+    const selectors = ['tr:has-text("ID")', 'tr:has-text("Size")', 'tr:has-text("Age")'];
+
+    return super.screenshot({
+      ...options,
+      mask: [...(options.mask ?? []), ...selectors.map(selector => this.page.locator(selector))],
+    });
   }
 
   async pushImageToKindCluster(): Promise<void> {

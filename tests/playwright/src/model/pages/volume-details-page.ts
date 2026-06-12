@@ -37,6 +37,20 @@ export class VolumeDetailsPage extends DetailsPage {
     });
   }
 
+  async screenshot(options: { name: string; mask?: Array<Locator> }): Promise<void> {
+    const selectors = [
+      'tr:has-text("Size")',
+      'tr:has-text("Age")',
+      'tr:has-text("Mount Point")',
+      'tr:has-text("Created")',
+    ];
+
+    return super.screenshot({
+      ...options,
+      mask: [...(options.mask ?? []), ...selectors.map(selector => this.page.locator(selector))],
+    });
+  }
+
   async isUsed(): Promise<boolean> {
     return (await this.header.getByTitle(VolumeState.Used).count()) > 0;
   }

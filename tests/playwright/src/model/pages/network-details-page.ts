@@ -41,6 +41,15 @@ export class NetworkDetailsPage extends DetailsPage {
     });
   }
 
+  async screenshot(options: { name: string; mask?: Array<Locator> }): Promise<void> {
+    const selectors = ['tr:has-text("Id")'];
+
+    return super.screenshot({
+      ...options,
+      mask: [...(options.mask ?? []), ...selectors.map(selector => this.page.locator(selector))],
+    });
+  }
+
   async updateNetwork(options?: {
     dnsServersToAdd?: string;
     dnsServersToRemove?: string;

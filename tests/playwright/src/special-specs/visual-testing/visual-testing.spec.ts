@@ -17,7 +17,10 @@
  ***********************************************************************/
 import type { ContainerInteractiveParams } from '/@/model/core/types';
 import { ContainerDetailsPage } from '/@/model/pages/container-details-page';
+import { ImageDetailsPage } from '/@/model/pages/image-details-page';
+import { NetworkDetailsPage } from '/@/model/pages/network-details-page';
 import { PodDetailsPage } from '/@/model/pages/pods-details-page';
+import { VolumeDetailsPage } from '/@/model/pages/volume-details-page';
 import { expect as playExpect, test } from '/@/utility/fixtures';
 import { handleConfirmationDialog } from '/@/utility/operations';
 
@@ -173,67 +176,119 @@ test.describe
     /**
      * Images
      */
-    test('images screenshot', async ({ navigationBar }) => {
-      const imagesPage = await navigationBar.openImages();
-      await playExpect(imagesPage.heading).toBeVisible();
+    test.describe
+      .serial('images', () => {
+        test('images screenshot', async ({ navigationBar }) => {
+          const imagesPage = await navigationBar.openImages();
+          await playExpect(imagesPage.heading).toBeVisible();
 
-      // focus on the content
-      await imagesPage.content.focus();
+          // focus on the content
+          await imagesPage.content.focus();
 
-      await imagesPage.screenshot({
-        name: 'images',
+          await imagesPage.screenshot({
+            name: 'images',
+          });
+
+          const pullImagePage = await imagesPage.openPullImage();
+          await playExpect(pullImagePage.heading).toBeVisible();
+
+          await pullImagePage.screenshot({
+            name: 'image-pull',
+          });
+        });
+
+        test('image details summary', async ({ navigationBar }) => {
+          const imagesPage = await navigationBar.openImages();
+          const imageDetailsPage = await imagesPage.openImageDetails(NGINX_IMAGE_NAME);
+
+          await imageDetailsPage.activateTab(ImageDetailsPage.SUMMARY_TAB);
+          await playExpect(imageDetailsPage.tabContent.getByRole('table')).toBeVisible();
+
+          await imageDetailsPage.screenshot({
+            name: 'image-nginx-summary',
+          });
+        });
       });
-
-      const pullImagePage = await imagesPage.openPullImage();
-      await playExpect(pullImagePage.heading).toBeVisible();
-
-      await pullImagePage.screenshot({
-        name: 'image-pull',
-      });
-    });
 
     /**
      * Volumes
      */
-    test('volumes screenshot', async ({ navigationBar }) => {
-      let volumesPage = await navigationBar.openVolumes();
-      await playExpect(volumesPage.heading).toBeVisible();
+    test.describe
+      .serial('volumes', () => {
+        test('volumes screenshot', async ({ navigationBar }) => {
+          let volumesPage = await navigationBar.openVolumes();
+          await playExpect(volumesPage.heading).toBeVisible();
 
-      await volumesPage.screenshot({
-        name: 'volumes',
+          await volumesPage.screenshot({
+            name: 'volumes',
+          });
+
+          const createVolumePage = await volumesPage.openCreateVolumePage(VOLUME_NAME);
+          await playExpect(createVolumePage.heading).toBeVisible();
+
+          await createVolumePage.screenshot({
+            name: 'volume-create',
+          });
+
+          volumesPage = await createVolumePage.createVolume(VOLUME_NAME);
+          await playExpect
+            .poll(async () => await volumesPage.waitForVolumeExists(VOLUME_NAME), {
+              timeout: 25_000,
+            })
+            .toBeTruthy();
+
+          await volumesPage.screenshot({
+            name: 'volume-foo',
+          });
+        });
+
+        test('volume details summary', async ({ navigationBar }) => {
+          const volumesPage = await navigationBar.openVolumes();
+          const volumeDetailsPage = await volumesPage.openVolumeDetails(VOLUME_NAME);
+
+          await volumeDetailsPage.activateTab(VolumeDetailsPage.SUMMARY_TAB);
+          await playExpect(volumeDetailsPage.tabContent.getByRole('table')).toBeVisible();
+
+          await volumeDetailsPage.screenshot({
+            name: 'volume-foo-summary',
+          });
+        });
       });
-
-      const createVolumePage = await volumesPage.openCreateVolumePage(VOLUME_NAME);
-      await playExpect(createVolumePage.heading).toBeVisible();
-
-      await createVolumePage.screenshot({
-        name: 'volume-create',
-      });
-
-      volumesPage = await createVolumePage.createVolume(VOLUME_NAME);
-      await playExpect
-        .poll(async () => await volumesPage.waitForVolumeExists(VOLUME_NAME), {
-          timeout: 25_000,
-        })
-        .toBeTruthy();
-
-      await volumesPage.screenshot({
-        name: 'volume-foo',
-      });
-    });
 
     /**
      * Networks
      */
-    test('networks screenshot', async ({ navigationBar }) => {
-      const networksPage = await navigationBar.openNetworks();
-      await playExpect(networksPage.heading).toBeVisible();
+    test.describe
+      .serial('networks', () => {
+        test('networks screenshot', async ({ navigationBar }) => {
+          const networksPage = await navigationBar.openNetworks();
+          await playExpect(networksPage.heading).toBeVisible();
 
-      // focus on the content
-      await networksPage.content.focus();
+          // focus on the content
+          await networksPage.content.focus();
 
-      await networksPage.screenshot({
-        name: 'networks',
+          await networksPage.screenshot({
+            name: 'networks',
+          });
+        });
+
+        test('network details summary', async ({ navigationBar }) => {
+          const networksPage = await navigationBar.openNetworks();
+          // Get the first network from the list
+          const networkRows = await networksPage.getAllTableRows();
+          if (networkRows.length === 0) {
+            throw new Error('No networks found to open details');
+          }
+
+          const firstNetworkName = await networkRows[0].getByRole('cell').first().innerText();
+          const networkDetailsPage = await networksPage.openNetworkDetails(firstNetworkName);
+
+          await networkDetailsPage.activateTab(NetworkDetailsPage.SUMMARY_TAB);
+          await playExpect(networkDetailsPage.tabContent.getByRole('table')).toBeVisible();
+
+          await networkDetailsPage.screenshot({
+            name: 'network-details-summary',
+          });
+        });
       });
-    });
   });
