@@ -15,21 +15,35 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import { ResourceElementState } from '/@/model/core/states';
 import type { ContainerInteractiveParams } from '/@/model/core/types';
+import { PodmanMachineDetails } from '/@/model/pages/podman-machine-details-page';
+import { ResourcesPage } from '/@/model/pages/resources-page';
 import { expect as playExpect, test } from '/@/utility/fixtures';
 
 const NGINX_IMAGE: string = 'ghcr.io/podmandesktop-ci/nginx:latest';
 const NGINX_IMAGE_NAME: string = 'ghcr.io/podmandesktop-ci/nginx';
 const NGINX_CONTAINER_NAME: string = 'nginx-container';
 const CONTAINER_START_PARAMS: ContainerInteractiveParams = { attachTerminal: false };
+const DEFAULT_MACHINE = 'podman-machine-default';
 
 test.beforeAll(async ({ runner, welcomePage }) => {
   runner.setVideoAndTraceName('screenshots');
   await welcomePage.handleWelcomePage(true);
 });
 
-test.afterAll(async ({ runner }) => {
-  test.setTimeout(120_000);
+test.afterAll(async ({ runner, navigationBar, page }) => {
+  test.setTimeout(180_000);
+
+  const settingsBar = await navigationBar.openSettings();
+  await settingsBar.openTabPage(ResourcesPage);
+  const podmanMachineDetails = new PodmanMachineDetails(page, DEFAULT_MACHINE);
+  await playExpect(podmanMachineDetails.podmanMachineStopButton).toBeEnabled();
+  await podmanMachineDetails.podmanMachineStopButton.click();
+  await playExpect(podmanMachineDetails.podmanMachineStatus).toHaveText(ResourceElementState.Off, {
+    timeout: 60_000,
+  });
+
   await runner.close(45_000);
 });
 
