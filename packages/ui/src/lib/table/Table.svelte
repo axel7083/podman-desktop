@@ -480,11 +480,11 @@ async function resetColumns(): Promise<void> {
           {#each visibleColumns as column, index (index)}
             <div
               data-columns={column.title?.toLowerCase()}
-              class="whitespace-nowrap h-full w-full content-center {column.info.align === 'right'
-                ? 'justify-self-end'
+              class="flex whitespace-nowrap h-full w-full items-center {column.info.align === 'right'
+                ? 'justify-end'
                 : column.info.align === 'center'
-                  ? 'justify-self-center'
-                  : 'justify-self-start'} self-center {column.info.overflow === true
+                  ? 'justify-center'
+                  : 'justify-start'} self-center {column.info.overflow === true
                 ? ''
                 : 'overflow-hidden'} max-w-full py-1.5"
               class:col-span-2={index === visibleColumns.length - 1 && enableLayoutConfiguration && tablePersistence.storage}
@@ -519,11 +519,11 @@ async function resetColumns(): Promise<void> {
               {#each visibleColumns as column, index (index)}
                 <div
                   data-columns={column.title?.toLowerCase()}
-                  class="whitespace-nowrap h-full w-full content-center {column.info.align === 'right'
-                    ? 'justify-self-end'
+                  class="flex whitespace-nowrap h-full w-full items-center {column.info.align === 'right'
+                    ? 'justify-end'
                     : column.info.align === 'center'
-                      ? 'justify-self-center'
-                      : 'justify-self-start'} self-center {column.info.overflow === true
+                      ? 'justify-center'
+                      : 'justify-start'} self-center  {column.info.overflow === true
                     ? ''
                     : 'overflow-hidden'} max-w-full py-1.5"
                   class:col-span-2={index === visibleColumns.length - 1 && enableLayoutConfiguration && tablePersistence.storage}
