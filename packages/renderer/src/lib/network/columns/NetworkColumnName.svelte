@@ -10,7 +10,7 @@ let { object }: Props = $props();
 </script>
 
 <button
-  class="hover:cursor-pointer flex text-[var(--pd-table-body-text-highlight)] max-w-full overflow-hidden text-ellipsis"
+  class="hover:cursor-pointer flex text-[var(--pd-table-body-text-highlight)] w-full overflow-hidden text-ellipsis"
   onclick={(): void => openDetailsNetwork(object)}>
   {object.name}
 </button>
