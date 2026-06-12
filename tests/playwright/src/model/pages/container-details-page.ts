@@ -78,6 +78,15 @@ export class ContainerDetailsPage extends DetailsPage {
     this.confirmExportButton = page.getByRole('button', { name: 'Export container', exact: true });
   }
 
+  async screenshot(options: { name: string; mask?: Array<Locator> }): Promise<void> {
+    const selectors = ['tr:has-text("Id")', 'tr:has-text("ID")', 'tr:has-text("Uptime")', 'tr:has-text("Started at")'];
+
+    return super.screenshot({
+      ...options,
+      mask: [...(options.mask ?? []), ...selectors.map(selector => this.page.locator(selector))],
+    });
+  }
+
   async getState(): Promise<string> {
     return test.step('Get container state', async () => {
       const currentState = await this.header.getByRole('status').getAttribute('title');

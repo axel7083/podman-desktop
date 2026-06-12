@@ -16,6 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { ContainerInteractiveParams } from '/@/model/core/types';
+import { ContainerDetailsPage } from '/@/model/pages/container-details-page';
+import { PodDetailsPage } from '/@/model/pages/pods-details-page';
 import { expect as playExpect, test } from '/@/utility/fixtures';
 import { handleConfirmationDialog } from '/@/utility/operations';
 
@@ -78,63 +80,95 @@ test.describe
     /**
      * Containers
      */
-    test('containers screenshot', async ({ navigationBar }) => {
-      const containersPage = await navigationBar.openContainers();
-      await playExpect(containersPage.heading).toBeVisible();
+    test.describe
+      .serial('containers', () => {
+        test('containers empty', async ({ navigationBar }) => {
+          const containersPage = await navigationBar.openContainers();
+          await playExpect(containersPage.heading).toBeVisible();
 
-      // Screenshot empty containers list
-      await containersPage.screenshot({
-        name: 'containers-empty',
+          // Screenshot empty containers list
+          await containersPage.screenshot({
+            name: 'containers-empty',
+          });
+        });
+
+        test('containers nginx', async ({ navigationBar }) => {
+          // Start one container
+          const imagesPage = await navigationBar.openImages();
+          await imagesPage.pullImage(NGINX_IMAGE);
+
+          await playExpect(imagesPage.heading).toBeVisible();
+          await playExpect
+            .poll(async () => await imagesPage.waitForImageExists(NGINX_IMAGE_NAME, 5_000), { timeout: 0 })
+            .toBeTruthy();
+
+          const imageDetailsPage = await imagesPage.openImageDetails(NGINX_IMAGE_NAME);
+          const runImagePage = await imageDetailsPage.openRunImage();
+
+          const containersPage = await runImagePage.startContainer(NGINX_CONTAINER_NAME, CONTAINER_START_PARAMS);
+          await playExpect
+            .poll(async () => await containersPage.containerExists(NGINX_CONTAINER_NAME), { timeout: 10_000 })
+            .toBeTruthy();
+
+          await containersPage.screenshot({
+            name: 'containers-nginx-running',
+          });
+        });
+
+        test('containers nginx details', async ({ navigationBar }) => {
+          const containersPage = await navigationBar.openContainers();
+          const containerDetailsPage = await containersPage.openContainersDetails(NGINX_CONTAINER_NAME);
+
+          await containerDetailsPage.activateTab(ContainerDetailsPage.SUMMARY_TAB);
+          await playExpect(containerDetailsPage.tabContent.getByRole('table')).toBeVisible();
+
+          await containerDetailsPage.screenshot({
+            name: 'container-nginx-summary',
+          });
+        });
       });
-
-      // Start one container
-      const imagesPage = await navigationBar.openImages();
-      await imagesPage.pullImage(NGINX_IMAGE);
-
-      await playExpect(imagesPage.heading).toBeVisible();
-      await playExpect
-        .poll(async () => await imagesPage.waitForImageExists(NGINX_IMAGE_NAME, 5_000), { timeout: 0 })
-        .toBeTruthy();
-
-      const imageDetailsPage = await imagesPage.openImageDetails(NGINX_IMAGE_NAME);
-      const runImagePage = await imageDetailsPage.openRunImage();
-
-      await runImagePage.startContainer(NGINX_CONTAINER_NAME, CONTAINER_START_PARAMS);
-      await playExpect
-        .poll(async () => await containersPage.containerExists(NGINX_CONTAINER_NAME), { timeout: 10_000 })
-        .toBeTruthy();
-
-      await containersPage.screenshot({
-        name: 'containers-nginx-running',
-      });
-    });
 
     /**
      * Pods
      */
-    test('pods screenshot', async ({ navigationBar }) => {
-      const podsPage = await navigationBar.openPods();
-      await playExpect(podsPage.heading).toBeVisible();
+    test.describe
+      .serial('pods', () => {
+        test('pods empty', async ({ navigationBar }) => {
+          const podsPage = await navigationBar.openPods();
+          await playExpect(podsPage.heading).toBeVisible();
 
-      // focus on the content
-      await podsPage.content.focus();
+          await podsPage.screenshot({
+            name: 'pods-empty',
+          });
+        });
 
-      await podsPage.screenshot({
-        name: 'pods-empty',
+        test('pods nginx', async ({ navigationBar }) => {
+          const containersPage = await navigationBar.openContainers();
+          await playExpect(containersPage.heading).toBeVisible();
+
+          const createPodPage = await containersPage.openCreatePodPage([NGINX_CONTAINER_NAME]);
+          const podsPage = await createPodPage.createPod(POD_NAME);
+          await playExpect(podsPage.heading).toBeVisible({ timeout: 60_000 });
+          await playExpect.poll(async () => await podsPage.podExists(POD_NAME), { timeout: 15_000 }).toBeTruthy();
+
+          await podsPage.screenshot({
+            name: 'pods-nginx',
+          });
+        });
+
+        test('pods details', async ({ navigationBar }) => {
+          const podsPage = await navigationBar.openPods();
+          await playExpect(podsPage.heading).toBeVisible();
+
+          const podDetails = await podsPage.openPodDetails(POD_NAME);
+          await podDetails.activateTab(PodDetailsPage.SUMMARY_TAB);
+          await playExpect(podDetails.tabContent.getByRole('table')).toBeVisible();
+
+          await podDetails.screenshot({
+            name: 'pod-nginx-summary',
+          });
+        });
       });
-
-      const containersPage = await navigationBar.openContainers();
-      await playExpect(containersPage.heading).toBeVisible();
-
-      const createPodPage = await containersPage.openCreatePodPage([NGINX_CONTAINER_NAME]);
-      const pods = await createPodPage.createPod(POD_NAME);
-      await playExpect(pods.heading).toBeVisible({ timeout: 60_000 });
-      await playExpect.poll(async () => await pods.podExists(POD_NAME), { timeout: 15_000 }).toBeTruthy();
-
-      await podsPage.screenshot({
-        name: 'pods-nginx',
-      });
-    });
 
     /**
      * Images

@@ -52,6 +52,15 @@ export class PodDetailsPage extends DetailsPage {
     this.searchResults = this.tabContent.locator('div.xterm-selection > div');
   }
 
+  async screenshot(options: { name: string; mask?: Array<Locator> }): Promise<void> {
+    const selectors = ['tr:has-text("ID")', 'tr:has-text("Age")', 'tr:has-text("Created")'];
+
+    return super.screenshot({
+      ...options,
+      mask: [...(options.mask ?? []), ...selectors.map(selector => this.page.locator(selector))],
+    });
+  }
+
   async getState(): Promise<string> {
     return test.step('Get Pod State', async () => {
       const currentState = await this.header.getByRole('status').getAttribute('title');
