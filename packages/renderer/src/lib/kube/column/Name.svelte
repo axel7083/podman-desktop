@@ -15,7 +15,7 @@ async function openDetails(): Promise<void> {
 </script>
 
 <button class="hover:cursor-pointer flex flex-col w-full text-left" onclick={openDetails}>
-  <div class="text-[var(--pd-table-body-text-highlight)] overflow-hidden text-ellipsis">
+  <div class="text-[var(--pd-table-body-text-highlight)] w-full overflow-hidden text-ellipsis">
     {object.name}
   </div>
   {#if isNamespaced(object)}

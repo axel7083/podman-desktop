@@ -20,8 +20,8 @@ function openDetails(image: ImageInfoUI): void {
 }
 </script>
 
-<button class="flex flex-col max-w-full" onclick={(): void => openDetails(object)}>
-  <div class="flex flex-row gap-1 items-center max-w-full">
+<button class="flex flex-col w-full" onclick={(): void => openDetails(object)}>
+  <div class="flex flex-row gap-1 items-center w-full">
     <div class="text-[var(--pd-table-body-text-highlight)] overflow-hidden text-ellipsis">
       {object.name}
       {object.isManifest ? ' (manifest)' : ''}

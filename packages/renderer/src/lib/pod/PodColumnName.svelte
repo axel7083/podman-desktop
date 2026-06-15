@@ -18,8 +18,8 @@ function openDetailsPod(pod: PodInfoUI): void {
 }
 </script>
 
-<button class="hover:cursor-pointer flex flex-col max-w-full text-left" on:click={(): void => openDetailsPod(object)}>
-  <div class="text-[var(--pd-table-body-text-highlight)] max-w-full overflow-hidden text-ellipsis">
+<button class="hover:cursor-pointer flex flex-col w-full text-left" on:click={(): void => openDetailsPod(object)}>
+  <div class="text-[var(--pd-table-body-text-highlight)] w-full overflow-hidden text-ellipsis">
     {object.name}
   </div>
   <div class="flex flex-row text-sm gap-1">

@@ -17,7 +17,7 @@ function openContainerDetails(container: ContainerInfoUI): void {
 }
 </script>
 
-<button class="flex flex-col whitespace-nowrap max-w-full" on:click={(): void => openContainerDetails(object)}>
+<button class="flex flex-col whitespace-nowrap w-full" on:click={(): void => openContainerDetails(object)}>
   <div class="flex items-center max-w-full">
     <div class="max-w-full">
       <div class="flex flex-nowrap max-w-full">
