@@ -16,12 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { containerContract } from '/@/contracts/container/container.contract.js';
-import { planetContract } from '/@/contracts/planet/planet.contract.js';
+import type { AnyContractRouter, ContractProcedure } from '@orpc/contract';
+import type { Context, Procedure } from '@orpc/server';
 
-export * from './constants.js';
-
-export const contracts = {
-  planet: planetContract,
-  container: containerContract,
-};
+export type ServiceFromContract<T extends AnyContractRouter, TContext extends Context = Record<never, never>> =
+  T extends ContractProcedure<infer UInputSchema, infer UOutputSchema, infer UErrorMap, infer UMeta>
+    ? Procedure<TContext, TContext, UInputSchema, UOutputSchema, UErrorMap, UMeta>
+    : {
+        [K in keyof T]: T[K] extends AnyContractRouter ? ServiceFromContract<T[K], TContext> : never;
+      };

@@ -15,27 +15,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { implement } from '@orpc/server';
-import { contracts } from '@podman-desktop/core-api';
 
-import type { OrpcContext } from '/@/plugin/routers/rpc-handler.js';
+import { oc, type } from '@orpc/contract';
 
-const os = implement<typeof contracts.planet, OrpcContext>(contracts.planet);
+import type { ContainerInfo } from '/@/container-info.js';
 
-export const listPlanet = os.list.handler(({ input }) => {
-  return Array.from({ length: input.limit ?? 5 }).map((_, index) => ({ id: index + 5, name: `Planet ${index}` }));
-});
-
-export const findPlanet = os.find.handler(({ input }) => {
-  return { id: input.id, name: 'Planet X' };
-});
-
-export const createPlanet = os.create.handler(({ input }) => {
-  return { id: 123, name: input.name };
-});
-
-export const planetRouter = os.router({
-  list: listPlanet,
-  find: findPlanet,
-  create: createPlanet,
-});
+export const containerContract = {
+  list: oc.input(type<void>()).output(type<Array<ContainerInfo>>()),
+};

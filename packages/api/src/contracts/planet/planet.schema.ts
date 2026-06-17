@@ -22,3 +22,5 @@ export const PlanetSchema = z.object({
   name: z.string(),
   description: z.string().optional(),
 });
+
+export type Planet = z.output<typeof PlanetSchema>;

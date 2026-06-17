@@ -15,17 +15,18 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import { onError } from '@orpc/server';
+import { Context, implement, onError } from '@orpc/server';
 import { RPCHandler } from '@orpc/server/message-port';
-import { ORPC_START_CHANNEL } from '@podman-desktop/core-api';
+import { contracts, ORPC_START_CHANNEL } from '@podman-desktop/core-api';
 import { Container as InversifyContainer, inject, injectable } from 'inversify';
 
 import { IPCMainOn } from '/@/plugin/api.js';
-import { router } from '/@/plugin/routers/router.js';
+import { ContainerRouter } from '/@/plugin/routers/container.router.js';
+import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
 
-export interface OrpcContext {
-  container: InversifyContainer;
-}
+const os = implement<typeof contracts, OrpcContext>(contracts);
+
+export type OrpcContext = Context;
 
 @injectable()
 export class RpcHandler {
@@ -34,15 +35,25 @@ export class RpcHandler {
   constructor(
     @inject(IPCMainOn)
     protected readonly ipcHandle: IPCMainOn,
+    @inject(PlanetRouter)
+    readonly planet: PlanetRouter,
+    @inject(ContainerRouter)
+    readonly container: ContainerRouter,
   ) {
-    this.#handler = new RPCHandler(router, {
-      interceptors: [
-        onError(error => {
-          console.error(error);
-          throw error;
-        }),
-      ],
-    });
+    this.#handler = new RPCHandler(
+      os.router({
+        planet: this.planet,
+        container: this.container,
+      }),
+      {
+        interceptors: [
+          onError(error => {
+            console.error(error);
+            throw error;
+          }),
+        ],
+      },
+    );
   }
 
   init(container: InversifyContainer): void {

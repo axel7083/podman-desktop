@@ -17,12 +17,25 @@
  ***********************************************************************/
 import { implement } from '@orpc/server';
 import { contracts } from '@podman-desktop/core-api';
+import { injectable } from 'inversify';
 
-import { planetRouter } from '/@/plugin/routers/planet-router.js';
 import type { OrpcContext } from '/@/plugin/routers/rpc-handler.js';
 
-const os = implement<typeof contracts, OrpcContext>(contracts);
+import type { ServiceFromContract } from './utils/service-contract.js';
 
-export const router = os.router({
-  planet: planetRouter,
-});
+const os = implement<typeof contracts.planet, OrpcContext>(contracts.planet);
+
+@injectable()
+export class PlanetRouter implements ServiceFromContract<typeof contracts.planet, OrpcContext> {
+  list = os.list.handler(({ input }) => {
+    return Array.from({ length: input.limit ?? 5 }).map((_, index) => ({ id: index + 5, name: `Planet ${index}` }));
+  });
+
+  find = os.find.handler(({ input }) => {
+    return { id: input.id, name: 'Planet X' };
+  });
+
+  create = os.create.handler(({ input }) => {
+    return { id: 123, name: input.name };
+  });
+}

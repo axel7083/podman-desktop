@@ -21,14 +21,13 @@ import { z } from 'zod';
 
 import { PlanetSchema } from './planet.schema.js';
 
-export const listPlanetContract = oc
-  .input(
-    z.object({
-      limit: z.number().int().min(1).max(100).optional(),
-      cursor: z.number().int().min(0).default(0),
-    }),
-  )
-  .output(z.array(PlanetSchema));
+export const ListPlanetInputSchema = z.object({
+  limit: z.number().int().min(1).max(100).optional(),
+  cursor: z.number().int().min(0),
+});
+export type ListPlanetInput = z.output<typeof ListPlanetInputSchema>;
+
+export const listPlanetContract = oc.input(ListPlanetInputSchema).output(z.array(PlanetSchema));
 
 export const findPlanetContract = oc.input(PlanetSchema.pick({ id: true })).output(PlanetSchema);
 

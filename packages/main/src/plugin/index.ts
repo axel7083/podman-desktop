@@ -162,6 +162,7 @@ import { KubeGeneratorRegistry } from '/@/plugin/kubernetes/kube-generator-regis
 import { LockedConfiguration } from '/@/plugin/locked-configuration.js';
 import { MenuRegistry } from '/@/plugin/menu-registry.js';
 import { NavigationManager } from '/@/plugin/navigation/navigation-manager.js';
+import { routersModule } from '/@/plugin/routers/$module.js';
 import { RpcHandler } from '/@/plugin/routers/rpc-handler.js';
 import { TaskManager } from '/@/plugin/tasks/task-manager.js';
 import { Uri } from '/@/plugin/types/uri.js';
@@ -540,10 +541,6 @@ export class PluginSystem {
       configurationRegistryEmitter,
     );
 
-    container.bind<RpcHandler>(RpcHandler).toSelf().inSingletonScope();
-    const rpcHandler = container.get<RpcHandler>(RpcHandler);
-    rpcHandler.init(container);
-
     container.bind<ColorRegistry>(ColorRegistry).to(InjectableColorRegistry).inSingletonScope();
     const colorRegistry = container.get<ColorRegistry>(ColorRegistry);
     colorRegistry.init();
@@ -856,6 +853,10 @@ export class PluginSystem {
       ExperimentalFeatureFeedbackHandler,
     );
     await experimentalFeatureFeedbackHandler.init();
+
+    container.load(routersModule);
+    const rpcHandler = container.get<RpcHandler>(RpcHandler);
+    rpcHandler.init(container);
 
     await this.setupSecurityRestrictionsOnLinks(messageBox);
 

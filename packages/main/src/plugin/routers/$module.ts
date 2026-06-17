@@ -16,12 +16,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { containerContract } from '/@/contracts/container/container.contract.js';
-import { planetContract } from '/@/contracts/planet/planet.contract.js';
+import { ContainerModule } from 'inversify';
 
-export * from './constants.js';
+import { ContainerRouter } from '/@/plugin/routers/container.router.js';
+import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
+import { RpcHandler } from '/@/plugin/routers/rpc-handler.js';
 
-export const contracts = {
-  planet: planetContract,
-  container: containerContract,
-};
+const routersModule = new ContainerModule(options => {
+  options.bind<PlanetRouter>(PlanetRouter).toSelf().inSingletonScope();
+  options.bind<ContainerRouter>(ContainerRouter).toSelf().inSingletonScope();
+
+  options.bind<RpcHandler>(RpcHandler).toSelf().inSingletonScope();
+});
+
+export { routersModule };
