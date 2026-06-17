@@ -139,6 +139,7 @@
     "*.{css,json}": "biome format --write"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.20",
     "@biomejs/biome": "^2.5.0",
     "@commitlint/cli": "^21.0.2",
     "@commitlint/config-conventional": "^21.0.2",
@@ -253,5 +254,5 @@
       "markdown-it": ">=14.2.0"
     }
   },
-  "packageManager": "pnpm@10.28.0+sha512.05df71d1421f21399e053fde567cea34d446fa02c76571441bfc1c7956e98e363088982d940465fd34480d4d90a0668bc12362f8aa88000a64e83d0b0e47be48"
+  "packageManager": "pnpm@10.34.3+sha512.f2c531b08829d7be7f03c90addc266615f9c5477463e4bf1d275cb263ce9ea57cf0d5599110d94649a9bb3fed9f0b5efcea74a7016b61532a24cb9ad87860c1d"
 }
