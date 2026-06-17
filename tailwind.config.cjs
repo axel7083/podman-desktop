@@ -59,6 +59,21 @@ module.exports = {
           css: {
             '--tw-prose-links': 'var(--pd-link)',
             '--tw-prose-invert-links': 'var(--pd-link)',
+            p: {
+              fontSize: '12px',
+            },
+            h1: {
+              fontSize: '16px',
+            },
+            h2: {
+              fontSize: '14px',
+            },
+            h3: {
+              fontSize: '12px',
+            },
+            h4: {
+              fontSize: '10px',
+            },
           },
         },
       }),
