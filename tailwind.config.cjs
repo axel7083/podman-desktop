@@ -19,6 +19,7 @@
 const tailwindColors = require('tailwindcss/colors');
 const colorPalette = require('./tailwind-color-palette.json');
 
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     'packages/renderer/index.html',
@@ -51,6 +52,16 @@ module.exports = {
         300: tailwindColors.zinc[300],
         700: tailwindColors.zinc[700],
       },
+    },
+    extend: {
+      typography: () => ({
+        DEFAULT: {
+          css: {
+            '--tw-prose-links': 'var(--pd-link)',
+            '--tw-prose-invert-links': 'var(--pd-link)',
+          },
+        },
+      }),
     },
   },
   plugins: [require('@tailwindcss/typography')],
