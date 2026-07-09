@@ -29,12 +29,21 @@ let gotos: Array<GoToInfo> = $state([]);
 export function createNavigationPodEntry(): NavigationRegistryEntry {
   podsInfos.subscribe(pods => {
     count = pods.length;
+
+    // Add all pod entries
     gotos = pods.map(pod => ({
       page: NavigationPage.PODMAN_POD_SUMMARY,
       parameters: { name: pod.Name, engineId: pod.engineId },
       icon: { iconComponent: PodIcon },
       name: `Pod: ${pod.Name}`,
     }));
+
+    // Add pod list entry
+    gotos.push({
+      page: NavigationPage.PODMAN_PODS,
+      icon: { iconComponent: PodIcon },
+      name: `Pods (${count})`,
+    });
   });
 
   const registry: NavigationRegistryEntry = {

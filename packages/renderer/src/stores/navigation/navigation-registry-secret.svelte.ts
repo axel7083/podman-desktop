@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { GoToInfo } from '@podman-desktop/core-api';
+import { type GoToInfo, NavigationPage } from '@podman-desktop/core-api';
 
 import SecretIcon from '/@/lib/images/SecretIcon.svelte';
 import { secretsInfo } from '/@/stores/secrets';
@@ -29,12 +29,20 @@ let gotos: Array<GoToInfo> = $state([]);
 export function createNavigationSecretEntry(): NavigationRegistryEntry {
   secretsInfo.subscribe(secrets => {
     count = secrets.length;
+
+    // Add all secrets entries
     gotos = secrets.map(secret => ({
-      page: 'secrets' as never,
+      page: NavigationPage.SECRET,
       parameters: { id: secret.Id, engineId: secret.engineId },
       icon: { iconComponent: SecretIcon },
       name: `Secret: ${secret.Name}`,
     }));
+    // Add secret list entry
+    gotos.push({
+      page: NavigationPage.SECRETS,
+      icon: { iconComponent: SecretIcon },
+      name: `Secrets (${count})`,
+    });
   });
 
   const registry: NavigationRegistryEntry = {

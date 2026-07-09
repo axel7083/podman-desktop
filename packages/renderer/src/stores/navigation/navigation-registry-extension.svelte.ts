@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import { faPuzzlePiece } from '@fortawesome/free-solid-svg-icons';
-import type { ContributionInfo, WebviewInfo } from '@podman-desktop/core-api';
+import { type ContributionInfo, type GoToInfo, NavigationPage, type WebviewInfo } from '@podman-desktop/core-api';
 
 import ExtensionIcon from '/@/lib/images/ExtensionIcon.svelte';
 import { contributions } from '/@/stores/contribs';
@@ -42,6 +42,11 @@ export function createNavigationExtensionEntry(): NavigationRegistryEntry {
 
 let extensionNavigationGroupItems: NavigationRegistryEntry[] = $state([]);
 
+let webviewGotos: Array<GoToInfo> = $state([]);
+let contribGotos: Array<GoToInfo> = $state([]);
+
+const gotos = $derived([...webviewGotos, ...contribGotos]);
+
 export function createNavigationExtensionGroup(): NavigationRegistryEntry {
   const mainGroupEntry: NavigationRegistryEntry = {
     name: 'Extensions',
@@ -49,7 +54,9 @@ export function createNavigationExtensionGroup(): NavigationRegistryEntry {
     link: `/extensions`,
     tooltip: 'Extensions',
     type: 'group',
-    gotos: [],
+    get gotos() {
+      return gotos;
+    },
     get counter() {
       return 0;
     },
@@ -64,6 +71,9 @@ export function createNavigationExtensionGroup(): NavigationRegistryEntry {
 
   const refresh = (): void => {
     const newItems: NavigationRegistryEntry[] = [];
+    const newWebviewGotos: Array<GoToInfo> = [];
+    const newContribGotos: Array<GoToInfo> = [];
+
     allContribs.forEach(contrib => {
       const registry: NavigationRegistryEntry = {
         name: contrib.name,
@@ -78,6 +88,17 @@ export function createNavigationExtensionGroup(): NavigationRegistryEntry {
           return 0;
         },
       };
+
+      newContribGotos.push({
+        page: NavigationPage.CONTRIBUTION,
+        parameters: {
+          name: contrib.name,
+        },
+        icon: {
+          iconImage: contrib.icon,
+        },
+        name: `Contribution: ${contrib.name}`,
+      });
       newItems.push(registry);
     });
 
@@ -96,9 +117,20 @@ export function createNavigationExtensionGroup(): NavigationRegistryEntry {
         },
       };
       newItems.push(registry);
+      newWebviewGotos.push({
+        page: NavigationPage.WEBVIEW,
+        parameters: {
+          id: webview.id,
+        },
+        icon,
+        name: `Extensions: ${webview.name}`,
+      });
     });
 
     extensionNavigationGroupItems = newItems;
+
+    webviewGotos = newWebviewGotos;
+    contribGotos = newContribGotos;
   };
 
   contributions.subscribe(contribs => {

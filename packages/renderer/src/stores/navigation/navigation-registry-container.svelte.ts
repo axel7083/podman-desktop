@@ -29,12 +29,20 @@ let gotos: Array<GoToInfo> = $state([]);
 export function createNavigationContainerEntry(): NavigationRegistryEntry {
   containersInfos.subscribe(containers => {
     count = containers.length;
+
+    // Add all containers entries
     gotos = containers.map(container => ({
       page: NavigationPage.CONTAINER_SUMMARY,
       parameters: { id: container.Id, engineId: container.engineId },
       icon: { iconComponent: ContainerIcon },
       name: `Container: ${container.Names[0].replace(/^\//, '')}`,
     }));
+    // Add container list entry
+    gotos.push({
+      page: NavigationPage.CONTAINERS,
+      icon: { iconComponent: ContainerIcon },
+      name: `Containers (${count})`,
+    });
   });
 
   const registry: NavigationRegistryEntry = {

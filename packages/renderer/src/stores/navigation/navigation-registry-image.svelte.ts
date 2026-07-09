@@ -24,7 +24,7 @@ import { imagesInfos } from '/@/stores/images';
 
 import type { NavigationRegistryEntry } from './navigation-registry';
 
-let count = $state(0);
+let count = $derived(0);
 let gotos: Array<GoToInfo> = $state([]);
 
 const imageUtils = new ImageUtils();
@@ -33,12 +33,20 @@ export function createNavigationImageEntry(): NavigationRegistryEntry {
   imagesInfos.subscribe(images => {
     count = images.length;
 
+    // Add all images entries
     gotos = images.map(image => ({
       page: NavigationPage.IMAGE,
       parameters: { id: image.Id, engineId: image.engineId, tag: image.RepoTags?.[0] ?? image.Id },
       icon: { iconComponent: ImageIcon },
       name: `Image: ${image.RepoTags?.[0] ?? imageUtils.getShortId(image.Id)}`,
     }));
+
+    // Add image list entry
+    gotos.push({
+      page: NavigationPage.IMAGES,
+      icon: { iconComponent: ImageIcon },
+      name: `Images (${count})`,
+    });
   });
 
   const registry: NavigationRegistryEntry = {

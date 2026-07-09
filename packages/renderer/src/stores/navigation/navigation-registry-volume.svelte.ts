@@ -31,12 +31,21 @@ export function createNavigationVolumeEntry(): NavigationRegistryEntry {
     const flattenedVolumes = volumes.map(volumeInfo => volumeInfo.Volumes).flat();
 
     count = flattenedVolumes.length;
+
+    // Add all volumes entries
     gotos = flattenedVolumes.map(volume => ({
       page: NavigationPage.VOLUME,
       parameters: { engineId: volume.engineId, name: volume.Name },
       icon: { iconComponent: VolumeIcon },
       name: `Volume: ${volume.Name}`,
     }));
+
+    // Add volume list entry
+    gotos.push({
+      page: NavigationPage.VOLUMES,
+      icon: { iconComponent: VolumeIcon },
+      name: `Volumes (${count})`,
+    });
   });
 
   const registry: NavigationRegistryEntry = {
