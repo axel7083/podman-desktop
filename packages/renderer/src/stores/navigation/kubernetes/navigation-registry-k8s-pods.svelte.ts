@@ -32,6 +32,7 @@ export function createNavigationKubernetesPodsEntry(): NavigationRegistryEntry {
     link: '/kubernetes/pods',
     tooltip: 'Pods',
     type: 'entry',
+    gotos: [],
     get counter() {
       return count;
     },

@@ -64,6 +64,7 @@ export function createNavigationKubernetesGroup(): NavigationRegistryEntry {
     link: '/kubernetes',
     tooltip: 'Kubernetes',
     type: 'submenu',
+    gotos: [],
     get counter() {
       return 0;
     },

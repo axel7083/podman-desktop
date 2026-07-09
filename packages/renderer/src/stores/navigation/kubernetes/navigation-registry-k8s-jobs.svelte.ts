@@ -36,6 +36,7 @@ export function createNavigationKubernetesJobsEntry(): NavigationRegistryEntry {
     link: '/kubernetes/jobs',
     tooltip: 'Jobs',
     type: 'entry',
+    gotos: [],
     get counter() {
       return count;
     },

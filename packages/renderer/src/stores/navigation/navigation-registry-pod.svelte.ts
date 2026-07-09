@@ -16,24 +16,36 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import { type GoToInfo, NavigationPage } from '@podman-desktop/core-api';
+
 import PodIcon from '/@/lib/images/PodIcon.svelte';
 import { podsInfos } from '/@/stores/pods';
 
 import type { NavigationRegistryEntry } from './navigation-registry';
 
 let count = $state(0);
+let gotos: Array<GoToInfo> = $state([]);
 
 export function createNavigationPodEntry(): NavigationRegistryEntry {
   podsInfos.subscribe(pods => {
     count = pods.length;
+    gotos = pods.map(pod => ({
+      page: NavigationPage.PODMAN_POD_SUMMARY,
+      parameters: { name: pod.Name, engineId: pod.engineId },
+      icon: { iconComponent: PodIcon },
+      name: `Pod: ${pod.Name}`,
+    }));
   });
+
   const registry: NavigationRegistryEntry = {
     name: 'Pods',
     icon: { iconComponent: PodIcon },
     link: '/pods',
     tooltip: 'Pods',
     type: 'entry',
-
+    get gotos() {
+      return gotos;
+    },
     get counter() {
       return count;
     },

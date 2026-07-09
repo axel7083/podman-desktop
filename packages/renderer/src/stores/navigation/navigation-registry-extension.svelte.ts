@@ -32,6 +32,7 @@ export function createNavigationExtensionEntry(): NavigationRegistryEntry {
     link: '/extensions',
     tooltip: 'Extensions',
     type: 'entry',
+    gotos: [],
     get counter() {
       return 0;
     },
@@ -48,6 +49,7 @@ export function createNavigationExtensionGroup(): NavigationRegistryEntry {
     link: `/extensions`,
     tooltip: 'Extensions',
     type: 'group',
+    gotos: [],
     get counter() {
       return 0;
     },
@@ -71,6 +73,7 @@ export function createNavigationExtensionGroup(): NavigationRegistryEntry {
         link: `/contribs/${contrib.name}`,
         type: 'entry',
         tooltip: contrib.name,
+        gotos: [],
         get counter() {
           return 0;
         },
@@ -87,6 +90,7 @@ export function createNavigationExtensionGroup(): NavigationRegistryEntry {
         link: `/webviews/${webview.id}`,
         tooltip: webview.name,
         type: 'entry',
+        gotos: [],
         get counter() {
           return 0;
         },

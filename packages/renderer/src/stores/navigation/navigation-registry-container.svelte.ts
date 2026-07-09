@@ -16,6 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import { type GoToInfo, NavigationPage } from '@podman-desktop/core-api';
 import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
 
 import { containersInfos } from '/@/stores/containers';
@@ -23,17 +24,28 @@ import { containersInfos } from '/@/stores/containers';
 import type { NavigationRegistryEntry } from './navigation-registry';
 
 let count = $state(0);
+let gotos: Array<GoToInfo> = $state([]);
 
 export function createNavigationContainerEntry(): NavigationRegistryEntry {
   containersInfos.subscribe(containers => {
     count = containers.length;
+    gotos = containers.map(container => ({
+      page: NavigationPage.CONTAINER_SUMMARY,
+      parameters: { id: container.Id, engineId: container.engineId },
+      icon: { iconComponent: ContainerIcon },
+      name: `Container: ${container.Names[0].replace(/^\//, '')}`,
+    }));
   });
+
   const registry: NavigationRegistryEntry = {
     name: 'Containers',
     icon: { iconComponent: ContainerIcon },
     link: '/containers',
     tooltip: 'Containers',
     type: 'entry',
+    get gotos() {
+      return gotos;
+    },
     get counter() {
       return count;
     },

@@ -26,6 +26,7 @@ export function createNavigationKubernetesDashboardEntry(): NavigationRegistryEn
     link: '/kubernetes/dashboard',
     tooltip: 'Dashboard',
     type: 'entry',
+    gotos: [],
     get counter() {
       return 0;
     },

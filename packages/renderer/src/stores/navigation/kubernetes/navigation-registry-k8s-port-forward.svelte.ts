@@ -32,6 +32,7 @@ export function createNavigationKubernetesPortForwardEntry(): NavigationRegistry
     link: '/kubernetes/portForward',
     tooltip: 'Port Forwarding',
     type: 'entry',
+    gotos: [],
     get counter(): number {
       return count;
     },

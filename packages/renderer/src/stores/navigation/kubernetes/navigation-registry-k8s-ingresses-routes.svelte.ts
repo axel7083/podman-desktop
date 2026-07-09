@@ -47,6 +47,7 @@ export function createNavigationKubernetesIngressesRoutesEntry(): NavigationRegi
     link: '/kubernetes/ingressesRoutes',
     tooltip: 'Ingresses & Routes',
     type: 'entry',
+    gotos: [],
     get counter() {
       return count;
     },

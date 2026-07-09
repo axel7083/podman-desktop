@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { ImageInfo } from '@podman-desktop/core-api';
+import { type GoToInfo, NavigationPage } from '@podman-desktop/core-api';
 
 import { ImageUtils } from '/@/lib/image/image-utils';
 import ImageIcon from '/@/lib/images/ImageIcon.svelte';
@@ -25,23 +25,31 @@ import { imagesInfos } from '/@/stores/images';
 import type { NavigationRegistryEntry } from './navigation-registry';
 
 let count = $state(0);
+let gotos: Array<GoToInfo> = $state([]);
 
 const imageUtils = new ImageUtils();
 
 export function createNavigationImageEntry(): NavigationRegistryEntry {
   imagesInfos.subscribe(images => {
-    const allImages = images
-      .map((imageInfo: ImageInfo) => imageUtils.getImagesInfoUI(imageInfo, [], undefined, []))
-      .flat();
-    count = allImages.length;
+    count = images.length;
+
+    gotos = images.map(image => ({
+      page: NavigationPage.IMAGE,
+      parameters: { id: image.Id, engineId: image.engineId, tag: image.RepoTags?.[0] ?? image.Id },
+      icon: { iconComponent: ImageIcon },
+      name: `Image: ${image.RepoTags?.[0] ?? imageUtils.getShortId(image.Id)}`,
+    }));
   });
+
   const registry: NavigationRegistryEntry = {
     name: 'Images',
     icon: { iconComponent: ImageIcon },
     link: '/images',
     tooltip: 'Images',
     type: 'entry',
-
+    get gotos() {
+      return gotos;
+    },
     get counter() {
       return count;
     },

@@ -33,6 +33,7 @@ export function createNavigationKubernetesPersistentVolumeEntry(): NavigationReg
     link: '/kubernetes/persistentvolumeclaims',
     tooltip: 'Persistent Volume Claims',
     type: 'entry',
+    gotos: [],
     get counter() {
       return count;
     },
