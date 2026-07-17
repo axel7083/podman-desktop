@@ -62,7 +62,7 @@ test('no provider through window.getProviderInfos should make the store empty', 
 
   // now get list
   const providerListResult = get(providerInfos);
-  expect(providerListResult.length).toBe(0);
+  expect(providerListResult).toHaveLength(0);
 });
 
 test.each([
@@ -110,7 +110,7 @@ test.each([
 
   // now get list
   const providerListResult = get(providerInfos);
-  expect(providerListResult.length).toBe(1);
+  expect(providerListResult).toHaveLength(1);
   expect(providerListResult[0].id).toEqual('id123');
 });
 

@@ -915,7 +915,7 @@ test('Verify extension activate registers extension features and the disposable 
   };
 
   expect(featureRegistry.registerFeatures).not.toHaveBeenCalled();
-  expect(subscriptions.length).toBe(0);
+  expect(subscriptions).toHaveLength(0);
   await extensionLoader.activateExtension(analyzedExtension, {});
 
   expect(featureRegistry.registerFeatures).toHaveBeenCalledWith(id, ['feature1', 'feature2']);
@@ -988,7 +988,7 @@ test('Verify setExtensionsUpdates', async () => {
   console.log('ext ', extensions);
 
   // check we have our extension
-  expect(extensions.length).toBe(1);
+  expect(extensions).toHaveLength(1);
   expect(extensions[0]?.id).toBe(extensionId);
 
   // check that update field is empty
@@ -1009,7 +1009,7 @@ test('Verify setExtensionsUpdates', async () => {
   // get list of extensions
   const extensionsAfterUpdate = await extensionLoader.listExtensions();
   // check we have our extension
-  expect(extensionsAfterUpdate.length).toBe(1);
+  expect(extensionsAfterUpdate).toHaveLength(1);
   expect(extensionsAfterUpdate[0]?.id).toBe(extensionId);
 
   // check that update field is set
@@ -1545,7 +1545,7 @@ test('Verify exports and packageJSON', async () => {
   const allExtensions = extensionLoader.getAllExposedExtensions();
   expect(allExtensions).toBeDefined();
   // 1 item
-  expect(allExtensions.length).toBe(1);
+  expect(allExtensions).toHaveLength(1);
   expect(allExtensions[0]?.exports.hello()).toBe('world');
   expect((allExtensions[0] as any).packageJSON.foo).toBe('bar');
 });
@@ -2027,7 +2027,7 @@ test('check listWebviews', async () => {
 
   // esnure we got result
   expect(result).toBeDefined();
-  expect(result.length).toBe(2);
+  expect(result).toHaveLength(2);
   expect(result[0]?.id).toBe('123');
   expect(result[0]?.viewType).toBe('customView');
   expect(result[0]?.title).toBe('customTitle1');
@@ -2102,12 +2102,12 @@ describe('authentication Provider', async () => {
     const api = createApi(disposables);
     expect(api).toBeDefined();
     // size is 0 for disposables
-    expect(disposables.length).toBe(0);
+    expect(disposables).toHaveLength(0);
     api.authentication.registerAuthenticationProvider('provider1.id', 'Provider1 Label', providerMock, {
       supportsMultipleAccounts: true,
     });
     // one disposable
-    expect(disposables.length).toBe(1);
+    expect(disposables).toHaveLength(1);
 
     expect(authenticationProviderRegistry.registerAuthenticationProvider).toBeCalledWith(
       'provider1.id',
@@ -2198,7 +2198,7 @@ test('createCliTool ', async () => {
   const api = createApi(disposables);
 
   expect(api).toBeDefined();
-  expect(disposables.length).toBe(0);
+  expect(disposables).toHaveLength(0);
   const options: containerDesktopAPI.CliToolOptions = {
     name: 'tool-name',
     displayName: 'tool-display-name',
@@ -2211,7 +2211,7 @@ test('createCliTool ', async () => {
   vi.mocked(cliToolRegistry.createCliTool).mockReturnValue({ id: 'created' } as containerDesktopAPI.CliTool);
 
   const newCliTool = api.cli.createCliTool(options);
-  expect(disposables.length).toBe(1);
+  expect(disposables).toHaveLength(1);
 
   expect(cliToolRegistry.createCliTool).toBeCalledWith(expect.objectContaining({ extensionPath: '/path' }), options);
   expect(newCliTool).toStrictEqual({ id: 'created' });
@@ -2241,9 +2241,9 @@ test('registerImageCheckerProvider ', async () => {
   };
 
   vi.mocked(imageCheckerImpl.registerImageCheckerProvider).mockReturnValue(Disposable.create(() => {}));
-  expect(disposables.length).toBe(0);
+  expect(disposables).toHaveLength(0);
   api.imageChecker.registerImageCheckerProvider(provider, { label: 'dummyLabel' });
-  expect(disposables.length).toBe(1);
+  expect(disposables).toHaveLength(1);
   expect(imageCheckerImpl.registerImageCheckerProvider).toBeCalledWith(
     expect.objectContaining({ extensionPath: '/path' }),
     provider,
@@ -2422,7 +2422,7 @@ describe('containerEngine', async () => {
     expect(api).toBeDefined();
 
     const images = await api.containerEngine.listImages();
-    expect(images.length).toBe(0);
+    expect(images).toHaveLength(0);
     expect(containerProviderRegistry.podmanListImages).toHaveBeenCalledWith(undefined);
   });
 
@@ -2435,7 +2435,7 @@ describe('containerEngine', async () => {
     const images = await api.containerEngine.listImages({
       provider: CONTAINER_PROVIDER_MOCK,
     });
-    expect(images.length).toBe(0);
+    expect(images).toHaveLength(0);
     expect(containerProviderRegistry.podmanListImages).toHaveBeenCalledWith({
       provider: CONTAINER_PROVIDER_MOCK,
     });
@@ -2448,7 +2448,7 @@ describe('containerEngine', async () => {
     expect(api).toBeDefined();
 
     const infos = await api.containerEngine.listInfos();
-    expect(infos.length).toBe(0);
+    expect(infos).toHaveLength(0);
     expect(containerProviderRegistry.listInfos).toHaveBeenCalledWith(undefined);
   });
 
@@ -2460,7 +2460,7 @@ describe('containerEngine', async () => {
     const infos = await api.containerEngine.listInfos({
       provider: CONTAINER_PROVIDER_MOCK,
     });
-    expect(infos.length).toBe(0);
+    expect(infos).toHaveLength(0);
     expect(containerProviderRegistry.listInfos).toHaveBeenCalledWith({
       provider: CONTAINER_PROVIDER_MOCK,
     });
@@ -2677,7 +2677,7 @@ test('when loading registry registerRegistry, do not push to disposables', async
 
   api.registry.registerRegistry(fakeRegistry);
 
-  expect(disposables.length).toBe(0);
+  expect(disposables).toHaveLength(0);
 });
 
 test('when registering a navigation route, should be pushed to disposables', () => {
@@ -2686,9 +2686,9 @@ test('when registering a navigation route, should be pushed to disposables', () 
   const api = createApi(disposables);
   expect(api).toBeDefined();
 
-  expect(disposables.length).toBe(0);
+  expect(disposables).toHaveLength(0);
   api.navigation.register('dummy-route-id', 'dummy-command-id');
-  expect(disposables.length).toBe(1);
+  expect(disposables).toHaveLength(1);
 });
 
 test('withProgress should add the extension id to the routeId', async () => {
@@ -2988,7 +2988,7 @@ describe('loadDevelopmentFolderExtensions', () => {
     await extensionLoader.loadDevelopmentFolderExtensions(analyzedExtensions);
 
     // check only bar has been added
-    expect(analyzedExtensions.length).toBe(1);
+    expect(analyzedExtensions).toHaveLength(1);
     expect(analyzedExtensions[0]).toBe(barAnalyzedExtension);
 
     // expect we got a console error for baz

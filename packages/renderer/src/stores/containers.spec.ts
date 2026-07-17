@@ -91,6 +91,6 @@ test.each([
 
   // now get list
   const containerListResult = get(containersInfos);
-  expect(containerListResult.length).toBe(1);
+  expect(containerListResult).toHaveLength(1);
   expect(containerListResult[0].Id).toEqual('id123');
 });

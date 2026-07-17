@@ -110,9 +110,9 @@ describe('context tests', () => {
     }
 
     const contexts = await client.deleteContext(originalContexts[1].name);
-    expect(contexts.length).toBe(1);
+    expect(contexts).toHaveLength(1);
     expect(contexts[0]).toStrictEqual(originalContexts[0]);
-    expect(client.getContexts().length).toBe(1);
+    expect(client.getContexts()).toHaveLength(1);
     expect(client.getContexts()[0]).toStrictEqual(originalContexts[0]);
     expect(apiSendMock).toHaveBeenCalledTimes(1);
     expect(apiSendMock).toHaveBeenCalledWith('kubernetes-context-update');
@@ -132,13 +132,13 @@ describe('context tests', () => {
     }
 
     const contexts = await client.deleteContext(originalContexts[1].name);
-    expect(contexts.length).toBe(0);
-    expect(client.getContexts().length).toBe(0);
+    expect(contexts).toHaveLength(0);
+    expect(client.getContexts()).toHaveLength(0);
     // user2 is not deleted, as it was already not referenced before
-    expect(client.getUsers().length).toBe(1);
+    expect(client.getUsers()).toHaveLength(1);
     expect(client.getUsers()[0]).toStrictEqual(originalUsers[1]);
     // cluster2 is not deleted, as it was already not referenced before
-    expect(client.getClusters().length).toBe(1);
+    expect(client.getClusters()).toHaveLength(1);
     expect(client.getClusters()[0]).toStrictEqual(originalClusters[1]);
   });
 
@@ -153,9 +153,9 @@ describe('context tests', () => {
     }
 
     await expect(async () => await client.deleteContext(originalContextName)).rejects.toThrow('an error');
-    expect(client.getContexts().length).toBe(2);
-    expect(client.getUsers().length).toBe(2);
-    expect(client.getClusters().length).toBe(2);
+    expect(client.getContexts()).toHaveLength(2);
+    expect(client.getUsers()).toHaveLength(2);
+    expect(client.getClusters()).toHaveLength(2);
   });
 
   test('should duplicate context from config', async () => {
@@ -167,13 +167,13 @@ describe('context tests', () => {
 
     await client.duplicateContext(originalContexts[0].name);
     let contexts = client.getContexts();
-    expect(contexts.length).toBe(3);
-    expect(client.getContexts().length).toBe(3);
+    expect(contexts).toHaveLength(3);
+    expect(client.getContexts()).toHaveLength(3);
 
     await client.duplicateContext(originalContexts[0].name);
     contexts = client.getContexts();
-    expect(contexts.length).toBe(4);
-    expect(client.getContexts().length).toBe(4);
+    expect(contexts).toHaveLength(4);
+    expect(client.getContexts()).toHaveLength(4);
   });
 
   test('should create unique context name', () => {
@@ -211,8 +211,8 @@ describe('context tests', () => {
 
     await client.updateContext(originalContexts[0].name, 'new-name', 'new-namespace', '', '');
     const contexts = client.getContexts();
-    expect(contexts.length).toBe(2);
-    expect(client.getContexts().length).toBe(2);
+    expect(contexts).toHaveLength(2);
+    expect(client.getContexts()).toHaveLength(2);
 
     if (!contexts[0]?.name) {
       throw new Error('contexts[0].name should be defined');
@@ -231,8 +231,8 @@ describe('context tests', () => {
 
     await client.updateContext(originalContexts[0].name, originalContexts[0].name, '', '', '');
     const contexts = client.getContexts();
-    expect(contexts.length).toBe(2);
-    expect(client.getContexts().length).toBe(2);
+    expect(contexts).toHaveLength(2);
+    expect(client.getContexts()).toHaveLength(2);
 
     if (!contexts[0]?.name) {
       throw new Error('contexts[0].name should be defined');
@@ -251,8 +251,8 @@ describe('context tests', () => {
 
     await client.updateContext(originalContexts[0].name, originalContexts[0].name, 'namespace', 'cluster2', 'user1');
     const contexts = client.getContexts();
-    expect(contexts.length).toBe(2);
-    expect(client.getContexts().length).toBe(2);
+    expect(contexts).toHaveLength(2);
+    expect(client.getContexts()).toHaveLength(2);
 
     if (!contexts[0]?.name) {
       throw new Error('contexts[0].name should be defined');
@@ -270,8 +270,8 @@ describe('context tests', () => {
 
     await client.updateContext(originalContexts[0].name, originalContexts[0].name, 'namespace', 'cluster1', 'user2');
     const contexts = client.getContexts();
-    expect(contexts.length).toBe(2);
-    expect(client.getContexts().length).toBe(2);
+    expect(contexts).toHaveLength(2);
+    expect(client.getContexts()).toHaveLength(2);
 
     if (!contexts[0]?.name) {
       throw new Error('contexts[0].name should be defined');
@@ -284,9 +284,9 @@ describe('context tests', () => {
     client.saveKubeConfig = vi.fn().mockImplementation((_config: KubeConfig) => {});
 
     await client.deleteContext('unknown-context');
-    expect(client.getContexts().length).toBe(2);
-    expect(client.getUsers().length).toBe(2);
-    expect(client.getClusters().length).toBe(2);
+    expect(client.getContexts()).toHaveLength(2);
+    expect(client.getUsers()).toHaveLength(2);
+    expect(client.getClusters()).toHaveLength(2);
   });
 
   test('should keep the current context name when we delete the context (if not current)', async () => {
@@ -334,7 +334,7 @@ describe('context tests', () => {
     if (!currentContext) throw new Error('currentContext should be defined');
 
     const contexts = await client.deleteContext(currentContext);
-    expect(contexts.length).toBe(1);
+    expect(contexts).toHaveLength(1);
 
     expect(client.getCurrentContextName()).toBeUndefined();
   });

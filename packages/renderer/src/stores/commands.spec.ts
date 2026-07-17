@@ -57,7 +57,7 @@ test('commands should be updated', async () => {
 
   // get list and expect nothing there
   const commands = get(commandsInfos);
-  expect(commands.length).toBe(0);
+  expect(commands).toHaveLength(0);
 
   getCommandPaletteCommandsMock.mockReset();
   getCommandPaletteCommandsMock.mockResolvedValue([
@@ -84,5 +84,5 @@ test('commands should be updated', async () => {
 
   // check if the commands has been updated
   const afterCommands = get(commandsInfos);
-  expect(afterCommands.length).toBe(2);
+  expect(afterCommands).toHaveLength(2);
 });

@@ -70,7 +70,7 @@ test('Expect to show only the first three elements from the notifications queue'
   render(NotificationsBox);
 
   const titleDivs = screen.getAllByLabelText('Notification title');
-  expect(titleDivs.length).toBe(3);
+  expect(titleDivs).toHaveLength(3);
   expect(titleDivs[0].textContent).toEqual('1');
   expect(titleDivs[1].textContent).toEqual('2');
   expect(titleDivs[2].textContent).toEqual('3');
@@ -111,7 +111,7 @@ test('Expect to show only the notification highlighted', async () => {
   render(NotificationsBox);
 
   const titleDivs = screen.getAllByLabelText('Notification title');
-  expect(titleDivs.length).toBe(2);
+  expect(titleDivs).toHaveLength(2);
   expect(titleDivs[0].textContent).toEqual('2');
   expect(titleDivs[1].textContent).toEqual('4');
 });

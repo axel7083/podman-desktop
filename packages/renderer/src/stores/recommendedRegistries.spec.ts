@@ -75,7 +75,7 @@ test('recommendedRegistries should be updated in case of an extension is stopped
 
   // now get list
   const registries = get(recommendedRegistries);
-  expect(registries.length).toBe(1);
+  expect(registries).toHaveLength(1);
   expect(registries[0].extensionId).toEqual('my.extensionId');
 
   // ok now mock the getRecommendedRegistries function to return an empty list
@@ -93,7 +93,7 @@ test('recommendedRegistries should be updated in case of an extension is stopped
 
   // check if the registries are updated
   const registries2 = get(recommendedRegistries);
-  expect(registries2.length).toBe(0);
+  expect(registries2).toHaveLength(0);
 });
 
 test('recommendedRegistries should be updated in case configuration changed is called with expected key', async () => {
@@ -117,7 +117,7 @@ test('recommendedRegistries should be updated in case configuration changed is c
 
   // now get list
   const registries = get(recommendedRegistries);
-  expect(registries.length).toBe(1);
+  expect(registries).toHaveLength(1);
   expect(registries[0].extensionId).toEqual('my.extensionId');
 
   // ok now mock the getRecommendedRegistries function to return an empty list
@@ -155,7 +155,7 @@ test('recommendedRegistries should not be updated in case configuration changed 
 
   // now get list
   const registries = get(recommendedRegistries);
-  expect(registries.length).toBe(1);
+  expect(registries).toHaveLength(1);
   expect(registries[0].extensionId).toEqual('my.extensionId');
 
   // ok now mock the getRecommendedRegistries function to return an empty list

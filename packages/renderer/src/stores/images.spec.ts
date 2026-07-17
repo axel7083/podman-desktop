@@ -75,7 +75,7 @@ test('images should be updated in case of a image is loaded from an archive', as
 
   // now get list
   const images = get(imagesInfos);
-  expect(images.length).toBe(1);
+  expect(images).toHaveLength(1);
   expect(images[0].Id).toBe('1');
 
   // ok now mock the listImages function to return an empty list
@@ -91,7 +91,7 @@ test('images should be updated in case of a image is loaded from an archive', as
 
   // check if the images have been updated
   const images2 = get(imagesInfos);
-  expect(images2.length).toBe(0);
+  expect(images2).toHaveLength(0);
 });
 
 describe('filtered images tests', () => {
@@ -108,7 +108,7 @@ describe('filtered images tests', () => {
     await storeInfo.fetch();
 
     const images = get(filtered);
-    expect(images.length).toBe(1);
+    expect(images).toHaveLength(1);
     expect(images[0].Id).toBe('2');
   });
 
@@ -124,7 +124,7 @@ describe('filtered images tests', () => {
 
     // Check the filtered images
     const images = get(filtered);
-    expect(images.length).toBe(1);
+    expect(images).toHaveLength(1);
     expect(images[0].Id).toBe('3');
     expect(images[0].isManifest).toBe(false);
   });
@@ -142,7 +142,7 @@ describe('filtered images tests', () => {
     // Check the filtered images, make sure that we do NOT have any images
     // as we do not want filtered to show images with isManifest set to true
     const images = get(filtered);
-    expect(images.length).toBe(1);
+    expect(images).toHaveLength(1);
   });
 
   test('check against 3 images with different isManifest values', async () => {
@@ -163,7 +163,7 @@ describe('filtered images tests', () => {
     const images = get(filtered);
 
     // Expect to have 3 images now
-    expect(images.length).toBe(3);
+    expect(images).toHaveLength(3);
 
     // Check the first image
     expect(images[0].Id).toBe('5');

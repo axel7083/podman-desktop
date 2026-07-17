@@ -60,7 +60,7 @@ suite('image checker module', () => {
       imageChecker.registerImageCheckerProvider(extensionInfo, provider1, metadata1);
       imageChecker.registerImageCheckerProvider(extensionInfo, provider2);
       const providers = imageChecker.getImageCheckerProviders();
-      expect(providers.length).toBe(2);
+      expect(providers).toHaveLength(2);
 
       expect(providers[0]?.id).equals(`${extensionInfo.id}-0`);
       expect(providers[0]?.label).equals('Provider label');
@@ -111,10 +111,10 @@ suite('image checker module', () => {
       const dispo1 = imageChecker.registerImageCheckerProvider(extensionInfo, provider1, metadata1);
       imageChecker.registerImageCheckerProvider(extensionInfo, provider2);
       const providers = imageChecker.getImageCheckerProviders();
-      expect(providers.length).toBe(2);
+      expect(providers).toHaveLength(2);
       dispo1.dispose();
       const providersAfterDispose = imageChecker.getImageCheckerProviders();
-      expect(providersAfterDispose.length).toBe(1);
+      expect(providersAfterDispose).toHaveLength(1);
     });
 
     test('calls check method', async () => {
@@ -132,7 +132,7 @@ suite('image checker module', () => {
       };
       imageChecker.registerImageCheckerProvider(extensionInfo, provider);
       const providers = imageChecker.getImageCheckerProviders();
-      expect(providers.length).toBe(1);
+      expect(providers).toHaveLength(1);
       const imageInfo: ImageInfo = {
         engineId: 'eng-id',
         engineName: 'eng-name',
@@ -154,7 +154,7 @@ suite('image checker module', () => {
       }
       const result = await imageChecker.check(providerGet.id, imageInfo);
       expect(result).toBeDefined();
-      expect(result!.checks.length).toBe(1);
+      expect(result!.checks).toHaveLength(1);
       expect(result!.checks[0]?.name).toBe('check1');
       expect(result!.checks[0]?.status).toBe('failed');
     });

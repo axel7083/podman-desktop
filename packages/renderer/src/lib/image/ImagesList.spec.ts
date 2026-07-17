@@ -346,7 +346,7 @@ describe('Contributions', () => {
 
     // now assert status item contains the icon
     const subElement = statusElement.getElementsByClassName('podman-desktop-icon-my-custom-icon');
-    expect(subElement.length).toBe(1);
+    expect(subElement).toHaveLength(1);
   });
 
   test.each([

@@ -186,7 +186,7 @@ test.each<{
   });
 
   // check buffer events
-  expect(eventStoreInfo.bufferEvents.length).toBe(1);
+  expect(eventStoreInfo.bufferEvents).toHaveLength(1);
   expect(eventStoreInfo.bufferEvents[0]).toHaveProperty('name', listenedWindowEvent);
   expect(eventStoreInfo.bufferEvents[0]).toHaveProperty('skipped', false);
   expect(eventStoreInfo.bufferEvents[0]).toHaveProperty('args', updaterShouldBeCalledWith);
@@ -218,7 +218,7 @@ test('should call fetch method using listener event', async () => {
   // now call the setup
   const eventStoreInfo = eventStore.setup();
 
-  expect(eventStoreInfo.bufferEvents.length).toBe(0);
+  expect(eventStoreInfo.bufferEvents).toHaveLength(0);
 
   // check we have callbacks
   expect(callbacks.size).toBe(1);
@@ -245,7 +245,7 @@ test('should call fetch method using listener event', async () => {
   });
 
   // check buffer events
-  expect(eventStoreInfo.bufferEvents.length).toBe(1);
+  expect(eventStoreInfo.bufferEvents).toHaveLength(1);
   expect(eventStoreInfo.bufferEvents[0]).toHaveProperty('name', windowListenerEventName);
   expect(eventStoreInfo.bufferEvents[0]).toHaveProperty('skipped', false);
   expect(eventStoreInfo.bufferEvents[0]).toHaveProperty('args', []);
@@ -265,7 +265,7 @@ test('should call fetch with arguments', async () => {
   // now call the setup
   const eventStoreInfo = eventStore.setup();
 
-  expect(eventStoreInfo.bufferEvents.length).toBe(0);
+  expect(eventStoreInfo.bufferEvents).toHaveLength(0);
 
   const args = ['my', 'list', 'of', 'arguments'];
 

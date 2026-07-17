@@ -61,7 +61,7 @@ describe('spinner SVG structure', () => {
     const svg = spinner.querySelector('svg');
     expect(svg).not.toBeNull();
     const lines = svg!.querySelectorAll('line');
-    expect(lines.length).toBe(8);
+    expect(lines).toHaveLength(8);
   });
 
   test('should have viewBox 0 0 64 64', () => {
@@ -79,7 +79,7 @@ describe('spinner SVG structure', () => {
     assert(svg);
     const g = svg.querySelector('g');
     assert(g);
-    expect(g.querySelectorAll('line').length).toBe(8);
-    expect(g.children.length).toBe(8);
+    expect(g.querySelectorAll('line')).toHaveLength(8);
+    expect(g.children).toHaveLength(8);
   });
 });

@@ -175,5 +175,5 @@ test('When a feature card is closed, it is removed from the carousel', async () 
 
   await tick();
 
-  expect(screen.getAllByRole('button', { name: 'Close' }).length).toBe(closeButtons.length - 1);
+  expect(screen.getAllByRole('button', { name: 'Close' })).toHaveLength(closeButtons.length - 1);
 });

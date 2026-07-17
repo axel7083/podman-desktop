@@ -54,7 +54,7 @@ test('notified when there is a change', async () => {
   });
 
   // expect no events have been received
-  expect(received.length).toBe(0);
+  expect(received).toHaveLength(0);
 
   // now, send an event
   const onDidChangeCallback = callbacks.get('onDidChangeConfiguration');
@@ -68,7 +68,7 @@ test('notified when there is a change', async () => {
   });
 
   // check that we received the event
-  expect(received.length).toBe(1);
+  expect(received).toHaveLength(1);
   expect(received[0].key).toBe('my.property');
   expect(received[0].value).toBe('new value');
   expect(received[0].scope).toBe('DEFAULT');

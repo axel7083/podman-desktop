@@ -96,8 +96,8 @@ test('Expect tooltip to include container provider connections', async () => {
   const tooltipTrigger = screen.getByTestId('tooltip-trigger');
   await fireEvent.mouseEnter(tooltipTrigger);
 
-  expect(screen.getAllByText('Running').length).toBe(2);
-  expect(screen.getAllByText('Off').length).toBe(1);
+  expect(screen.getAllByText('Running')).toHaveLength(2);
+  expect(screen.getAllByText('Off')).toHaveLength(1);
 
   expect(screen.getByText(': connection 1')).toBeInTheDocument();
   expect(screen.getByText(': connection 2')).toBeInTheDocument();
@@ -115,8 +115,8 @@ test('Expect tooltip to include Kubernetes provider connections', async () => {
   const tooltipTrigger = screen.getByTestId('tooltip-trigger');
   await fireEvent.mouseEnter(tooltipTrigger);
 
-  expect(screen.getAllByText('Running').length).toBe(2);
-  expect(screen.getAllByText('Off').length).toBe(1);
+  expect(screen.getAllByText('Running')).toHaveLength(2);
+  expect(screen.getAllByText('Off')).toHaveLength(1);
 
   expect(screen.getByText(': connection 1')).toBeInTheDocument();
   expect(screen.getByText(': connection 2')).toBeInTheDocument();
@@ -134,8 +134,8 @@ test('Expect tooltip to include VM provider connections', async () => {
   const tooltipTrigger = screen.getByTestId('tooltip-trigger');
   await fireEvent.mouseEnter(tooltipTrigger);
 
-  expect(screen.getAllByText('Running').length).toBe(2);
-  expect(screen.getAllByText('Off').length).toBe(1);
+  expect(screen.getAllByText('Running')).toHaveLength(2);
+  expect(screen.getAllByText('Off')).toHaveLength(1);
 
   expect(screen.getByText(': connection 1')).toBeInTheDocument();
   expect(screen.getByText(': connection 2')).toBeInTheDocument();

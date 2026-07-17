@@ -53,7 +53,7 @@ test('render', async () => {
   ];
   render(ImageDetailsFilesLayers, { layers });
   const rows = screen.getAllByRole('row');
-  expect(rows.length).toBe(2);
+  expect(rows).toHaveLength(2);
   within(rows[0]).getByText('1 kB • layer1');
   within(rows[0]).getByText('files: 5 added (+1 kB)');
   within(rows[1]).getByText('0 B • layer2');

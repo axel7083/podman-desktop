@@ -132,7 +132,7 @@ test('no group if empty', async () => {
 
   // no list item
   const listItems = screen.queryAllByRole('list');
-  expect(listItems.length).toBe(0);
+  expect(listItems).toHaveLength(0);
 });
 
 test('display enum', async () => {

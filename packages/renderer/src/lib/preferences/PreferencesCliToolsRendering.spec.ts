@@ -156,6 +156,6 @@ suite('CLI Tool Prefernces page shows', () => {
     expect(within(cliToolRows[2]).queryAllByLabelText('cli-version')[0].textContent).toEqual('tool-name3 v1.0.3');
 
     // Expect cliToolRows[3] cli-version to not exist since we do not provide version
-    expect(within(cliToolRows[3]).queryAllByLabelText('cli-version').length).toEqual(0);
+    expect(within(cliToolRows[3]).queryAllByLabelText('cli-version')).toHaveLength(0);
   });
 });

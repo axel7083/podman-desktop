@@ -72,7 +72,7 @@ test('onboarding should be updated in case of an extension is stopped', async ()
 
   // now get list
   const onboardingList1 = get(onboardingList);
-  expect(onboardingList1.length).toBe(1);
+  expect(onboardingList1).toHaveLength(1);
   expect(onboardingList1[0].extension).toEqual('extension');
 
   // ok now mock the listOnboarding function to return an empty list
@@ -88,7 +88,7 @@ test('onboarding should be updated in case of an extension is stopped', async ()
 
   // check if the onboardings are updated
   const onboardingList2 = get(onboardingList);
-  expect(onboardingList2.length).toBe(0);
+  expect(onboardingList2).toHaveLength(0);
 });
 
 test('onboarding should be updated in case of an extension is started', async () => {
@@ -107,7 +107,7 @@ test('onboarding should be updated in case of an extension is started', async ()
 
   // now get list
   const onboardingList1 = get(onboardingList);
-  expect(onboardingList1.length).toBe(0);
+  expect(onboardingList1).toHaveLength(0);
 
   // now add a new thing
   listOnboardingMock.mockResolvedValue([
@@ -128,6 +128,6 @@ test('onboarding should be updated in case of an extension is started', async ()
   await vi.waitFor(() => {
     // check if the onboardings are updated
     const onboardingList2 = get(onboardingList);
-    expect(onboardingList2.length).toBe(1);
+    expect(onboardingList2).toHaveLength(1);
   });
 });

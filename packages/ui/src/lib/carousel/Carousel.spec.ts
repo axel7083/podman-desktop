@@ -52,7 +52,7 @@ test('carousel cards get visible when size permits', async () => {
 
   // Initially all cards are in DOM but may not be visible due to overflow
   const allCards = screen.getAllByText(/card [1-3]/);
-  expect(allCards.length).toBe(3);
+  expect(allCards).toHaveLength(3);
 
   // With narrow width, only card 1 should be fully visible in the viewport
   callback([{ contentRect: { width: 360 } }] as ResizeObserverEntry[], new ResizeObserver(callback));

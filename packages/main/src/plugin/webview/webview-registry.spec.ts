@@ -439,7 +439,7 @@ test('check listWebviews', async () => {
   const webviews = webviewRegistry.listWebviews();
 
   // check
-  expect(webviews.length).toBe(2);
+  expect(webviews).toHaveLength(2);
   expect(webviews[0]?.id).toBe(panelImpl1.internalId);
   expect(webviews[0]?.viewType).toBe('viewTypeInfo');
   expect(webviews[0]?.html).toBe('html1');
@@ -469,7 +469,7 @@ test('check listSimpleWebviews', async () => {
   const webviews = await webviewRegistry.listSimpleWebviews();
 
   // check
-  expect(webviews.length).toBe(2);
+  expect(webviews).toHaveLength(2);
   expect(webviews[0]?.id).toBe(panelImpl1.internalId);
   expect(webviews[0]?.viewType).toBe('viewTypeInfo');
   expect(webviews[0]?.title).toBe('customTitle1');
@@ -495,19 +495,19 @@ test('check disposeWebviewPanel', async () => {
   const webviews = webviewRegistry.listWebviews();
 
   // check
-  expect(webviews.length).toBe(2);
+  expect(webviews).toHaveLength(2);
 
   // dispose the first one
   webviewRegistry.disposeWebviewPanel(panel1 as WebviewPanelImpl);
 
   // check
   const webviewsAfterDispose = webviewRegistry.listWebviews();
-  expect(webviewsAfterDispose.length).toBe(1);
+  expect(webviewsAfterDispose).toHaveLength(1);
 
   // dispose the second one
   webviewRegistry.disposeWebviewPanel(panel2 as WebviewPanelImpl);
 
   // check
   const webviewsAfterDispose2 = webviewRegistry.listWebviews();
-  expect(webviewsAfterDispose2.length).toBe(0);
+  expect(webviewsAfterDispose2).toHaveLength(0);
 });

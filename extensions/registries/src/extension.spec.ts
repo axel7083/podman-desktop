@@ -43,5 +43,5 @@ test('activate is registering 4 registries', async () => {
   });
 
   // 4 subscriptions/disposables should be added
-  expect(extensionContext.subscriptions.length).toBe(4);
+  expect(extensionContext.subscriptions).toHaveLength(4);
 });

@@ -123,7 +123,7 @@ describe('an OnboardingRegistry instance exists', () => {
     const onboarding = onboardingRegistry.listOnboarding();
     expect(onboarding).toBeDefined();
     expectTypeOf(onboarding).toBeArray();
-    expect(onboarding.length).toBe(1);
+    expect(onboarding).toHaveLength(1);
     expect(onboarding[0]?.title).toBe('Get started with Test app');
   });
 

@@ -656,7 +656,7 @@ test('Expect onboarding to handle two extension ids and global onboarding set to
   await fireEvent.click(nextButton);
 
   // Wait until 'foobar1completed' is shown
-  await vi.waitFor(() => expect(screen.queryAllByText('foobar1completed').length).toBe(0));
+  await vi.waitFor(() => expect(screen.queryAllByText('foobar1completed')).toHaveLength(0));
 
   // Click next again
   await fireEvent.click(nextButton);
@@ -666,7 +666,7 @@ test('Expect onboarding to handle two extension ids and global onboarding set to
    */
 
   // Wait until 'foobar2stepcontent' is shown
-  await vi.waitFor(() => expect(screen.queryAllByText('foobar2stepcontent').length).toBe(0));
+  await vi.waitFor(() => expect(screen.queryAllByText('foobar2stepcontent')).toHaveLength(0));
 
   await tick();
   const displayName2 = screen.queryByText('Foobar2 Onboarding');

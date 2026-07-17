@@ -102,7 +102,7 @@ test('getFeaturedExtensions should check installable extensions', async () => {
   await featured.init();
   const featuredExtensions = await featured.getFeaturedExtensions();
   expect(featuredExtensions).toBeDefined();
-  expect(featuredExtensions.length).toBe(2);
+  expect(featuredExtensions).toHaveLength(2);
 
   // check data
   const podmanExtension = featuredExtensions.find(e => e.id === 'podman-desktop.podman');
@@ -146,5 +146,5 @@ test('getFeaturedExtensions', async () => {
   expect(featuredExtensions1).toBeDefined();
 
   // should not be limited
-  expect(featuredExtensions1.length).toBe(10);
+  expect(featuredExtensions1).toHaveLength(10);
 });

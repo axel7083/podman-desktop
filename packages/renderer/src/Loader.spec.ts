@@ -101,7 +101,7 @@ test('Loader should send the event if extensions take time to start', async () =
   render(Loader, { props: {} });
 
   // check we don't have yet received the 'extensions-already-started' event
-  expect(dispatchEventMock.mock.calls.length).toBe(0);
+  expect(dispatchEventMock.mock.calls).toHaveLength(0);
 
   // wait one second (to simulate a long initialization of extensions)
   await new Promise(resolve => setTimeout(resolve, 1000));
@@ -115,7 +115,7 @@ test('Loader should send the event if extensions take time to start', async () =
   }
 
   // check that we have received the 'extensions-already-started' event
-  expect(dispatchEventMock.mock.calls.length).toBe(1);
+  expect(dispatchEventMock.mock.calls).toHaveLength(1);
   expect(dispatchEventMock.mock.calls[0][0].type).toBe('extensions-already-started');
 });
 
@@ -132,6 +132,6 @@ test('Loader should send extensions-already-started event as soon as possible if
   }
 
   // check we have received the 'extensions-already-started' event
-  expect(dispatchEventMock.mock.calls.length).toBe(1);
+  expect(dispatchEventMock.mock.calls).toHaveLength(1);
   expect(dispatchEventMock.mock.calls[0][0].type).toBe('extensions-already-started');
 });

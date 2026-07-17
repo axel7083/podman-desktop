@@ -64,12 +64,12 @@ test('build Api Sender', () => {
 
   // send a message
   apiSender.send('channel', 'message');
-  expect(received.length).toBe(1);
+  expect(received).toHaveLength(1);
   expect(received[0]).toBe('message');
 
   // send another message
   apiSender.send('channel', 'message2');
-  expect(received.length).toBe(2);
+  expect(received).toHaveLength(2);
   expect(received[1]).toBe('message2');
 
   // dispose the receiver
@@ -78,7 +78,7 @@ test('build Api Sender', () => {
   // send another message
   apiSender.send('channel', 'message3');
   // should not be received anymore as we disposed the listener
-  expect(received.length).toBe(2);
+  expect(received).toHaveLength(2);
 });
 
 describe('collect calls to exposeInMainWorld and ipcRenderer.on and calls initExposure', () => {

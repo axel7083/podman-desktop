@@ -70,7 +70,7 @@ test('should be updated in case of an extension is stopped', async () => {
 
   // now get list
   const extensionDevelopmentFoldersList1 = get(extensionDevelopmentFolders);
-  expect(extensionDevelopmentFoldersList1.length).toBe(1);
+  expect(extensionDevelopmentFoldersList1).toHaveLength(1);
   expect(extensionDevelopmentFoldersList1[0].path).toEqual('foo');
 
   // ok now mock the listExtensionDevelopmentFolders function to return an empty list
@@ -85,7 +85,7 @@ test('should be updated in case of an extension is stopped', async () => {
   // check if the onboardings are updated
   await vi.waitFor(() => {
     const extensionDevelopmentFoldersList2 = get(extensionDevelopmentFolders);
-    expect(extensionDevelopmentFoldersList2.length).toBe(0);
+    expect(extensionDevelopmentFoldersList2).toHaveLength(0);
   });
 });
 
@@ -108,7 +108,7 @@ test('should be updated in case of an extension is started', async () => {
 
   // now get list
   const extensionDevelopmentFoldersList1 = get(extensionDevelopmentFolders);
-  expect(extensionDevelopmentFoldersList1.length).toBe(1);
+  expect(extensionDevelopmentFoldersList1).toHaveLength(1);
   expect(extensionDevelopmentFoldersList1[0].path).toEqual('foo');
 
   // ok now mock the listExtensionDevelopmentFolders function to return an empty list
@@ -122,6 +122,6 @@ test('should be updated in case of an extension is started', async () => {
   // check if the onboardings are updated
   await vi.waitFor(() => {
     const extensionDevelopmentFoldersList2 = get(extensionDevelopmentFolders);
-    expect(extensionDevelopmentFoldersList2.length).toBe(0);
+    expect(extensionDevelopmentFoldersList2).toHaveLength(0);
   });
 });

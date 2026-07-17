@@ -75,8 +75,8 @@ test('volumes should be updated in case of a container is removed', async () => 
 
   // now get list
   const volumes = get(volumeListInfos);
-  expect(volumes.length).toBe(1);
-  expect(volumes[0].Volumes.length).toBe(1);
+  expect(volumes).toHaveLength(1);
+  expect(volumes[0].Volumes).toHaveLength(1);
 
   // ok now mock the listVolumes function to return an empty list
   listVolumesMock.mockResolvedValue([]);
@@ -91,7 +91,7 @@ test('volumes should be updated in case of a container is removed', async () => 
 
   // check if the volumes are updated
   const volumes2 = get(volumeListInfos);
-  expect(volumes2.length).toBe(0);
+  expect(volumes2).toHaveLength(0);
 });
 
 test.each([
@@ -141,6 +141,6 @@ test.each([
 
   // now get list
   const volumeListResult = get(volumeListInfos);
-  expect(volumeListResult.length).toBe(1);
+  expect(volumeListResult).toHaveLength(1);
   expect(volumeListResult[0].Volumes[0].Name).toEqual('volume1');
 });

@@ -81,14 +81,14 @@ test('Should return empty array for unknown context', async () => {
   const menus = menuRegistry.getContributedMenus('unknownContext');
   expect(menus).toBeDefined();
   expectTypeOf(menus).toBeArray();
-  expect(menus.length).toBe(0);
+  expect(menus).toHaveLength(0);
 });
 
 test('Image context should have a single entry', async () => {
   const menus = menuRegistry.getContributedMenus('dashboard/image');
   expect(menus).toBeDefined();
   expectTypeOf(menus).toBeArray();
-  expect(menus.length).toBe(1);
+  expect(menus).toHaveLength(1);
   expect(menus[0]?.command).toBe('image.command1');
   expect(menus[0]?.title).toBe('Image 1');
 });
@@ -97,7 +97,7 @@ test('Container context should have two entries', async () => {
   const menus = menuRegistry.getContributedMenus('dashboard/container');
   expect(menus).toBeDefined();
   expectTypeOf(menus).toBeArray();
-  expect(menus.length).toBe(2);
+  expect(menus).toHaveLength(2);
   expect(menus[0]?.command).toBe('container.command1');
   expect(menus[0]?.title).toBe('Container 1');
   expect(menus[1]?.command).toBe('container.command2');
@@ -108,7 +108,7 @@ test('Menus with unregistered commands should not be returned', async () => {
   const menus = menuRegistry.getContributedMenus('dashboard/unregistered');
   expect(menus).toBeDefined();
   expectTypeOf(menus).toBeArray();
-  expect(menus.length).toBe(0);
+  expect(menus).toHaveLength(0);
 });
 
 test('Should not find menus after dispose', async () => {

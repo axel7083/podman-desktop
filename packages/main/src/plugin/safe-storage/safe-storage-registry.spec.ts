@@ -65,7 +65,7 @@ test('should init safe storage', async () => {
   // register configuration
   const notifications = await safeStorageRegistry.init();
   expect(notifications).toBeDefined();
-  expect(notifications.length).toBe(0);
+  expect(notifications).toHaveLength(0);
 
   // get getExtensionStorage
   const extensionSpecificStorage = safeStorageRegistry.getExtensionStorage('id1');
@@ -123,7 +123,7 @@ test('should init safe storage if error', async () => {
   // register configuration
   const notifications = await safeStorageRegistry.init();
   expect(notifications).toBeDefined();
-  expect(notifications.length).toBe(1);
+  expect(notifications).toHaveLength(1);
 
   expect(cpSync).toHaveBeenCalledWith(expect.stringContaining('data.json'), expect.stringContaining('.backup-'));
 

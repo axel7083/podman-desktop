@@ -141,11 +141,11 @@ describe.each<{
     await vi.waitFor(async () => {
       const rows = await screen.findAllByRole('row');
       expect(rows).toBeDefined();
-      expect(rows.length).toBe(2);
+      expect(rows).toHaveLength(2);
 
       const cells = await within(rows[1]).findAllByRole('cell');
       expect(cells).toBeDefined();
-      expect(cells.length).toBe(7);
+      expect(cells).toHaveLength(7);
 
       expect(cells[2]).toHaveClass('overflow-hidden');
       expect(cells[3]).toHaveClass('overflow-hidden');
@@ -287,7 +287,7 @@ describe.each<{
     await vi.waitFor(() => {
       // Should render 3 status dots, reordered
       const statusDots = screen.getAllByTestId('status-dot');
-      expect(statusDots.length).toBe(3);
+      expect(statusDots).toHaveLength(3);
 
       expect(statusDots[0].title).toBe('container-3-name: Running');
       expect(statusDots[1].title).toBe('container-1-name: Waiting');

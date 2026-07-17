@@ -57,7 +57,7 @@ test('expect multiline JSON with complex object using cli format', async () => {
 "{"Active":"0","Reclaimable":"93.34MB","Size":"93.34MB","TotalCount":"261","Type":"Build Cache"}"`;
 
   const result = parseJsonLines({ stdout: text });
-  expect(result.length).toBe(4);
+  expect(result).toHaveLength(4);
   expect(result[0].Type).toBe('Images');
 });
 

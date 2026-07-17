@@ -92,7 +92,7 @@ test('should register a configuration', async () => {
   expect(configurationNode?.id).toBe('preferences.dockerCompatibility');
   expect(configurationNode?.title).toBe('Docker Compatibility');
   expect(configurationNode?.properties).toBeDefined();
-  expect(Object.keys(configurationNode?.properties ?? {}).length).toBe(1);
+  expect(Object.keys(configurationNode?.properties ?? {})).toHaveLength(1);
   expect(configurationNode?.properties?.[TestDockerCompatibility.ENABLED_FULL_KEY]).toBeDefined();
   expect(configurationNode?.properties?.[TestDockerCompatibility.ENABLED_FULL_KEY]?.type).toBe('boolean');
   expect(configurationNode?.properties?.[TestDockerCompatibility.ENABLED_FULL_KEY]?.default).toBeFalsy();

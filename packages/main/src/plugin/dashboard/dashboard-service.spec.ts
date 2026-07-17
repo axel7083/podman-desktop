@@ -134,7 +134,7 @@ test('should register a configuration', () => {
   expect(configurationNode?.id).toBe('preferences.experimental.enhancedDashboard');
   expect(configurationNode?.title).toBe('Experimental (Enhanced Dashboard)');
   expect(configurationNode?.properties).toBeDefined();
-  expect(Object.keys(configurationNode?.properties ?? {}).length).toBe(2);
+  expect(Object.keys(configurationNode?.properties ?? {})).toHaveLength(2);
   expect(configurationNode?.properties?.[ENHANCED_DASHBOARD_CONFIGURATION_KEY]).toBeDefined();
   expect(configurationNode?.properties?.[ENHANCED_DASHBOARD_CONFIGURATION_KEY]?.type).toBe('object');
   expect(configurationNode?.properties?.[ENHANCED_DASHBOARD_CONFIGURATION_KEY]?.description).toBe(

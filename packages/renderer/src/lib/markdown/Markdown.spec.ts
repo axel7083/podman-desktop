@@ -467,17 +467,17 @@ describe('Custom warnings', () => {
     const markdownContent = screen.getByRole('region', { name: 'markdown-content' });
 
     // Verify no script tags made it through
-    expect(markdownContent.querySelectorAll('script').length).toBe(0);
+    expect(markdownContent.querySelectorAll('script')).toHaveLength(0);
 
     // Verify no iframes
-    expect(markdownContent.querySelectorAll('iframe').length).toBe(0);
+    expect(markdownContent.querySelectorAll('iframe')).toHaveLength(0);
 
     // Verify no dangerous elements
-    expect(markdownContent.querySelectorAll('object').length).toBe(0);
-    expect(markdownContent.querySelectorAll('embed').length).toBe(0);
-    expect(markdownContent.querySelectorAll('meta').length).toBe(0);
-    expect(markdownContent.querySelectorAll('base').length).toBe(0);
-    expect(markdownContent.querySelectorAll('link[rel="stylesheet"]').length).toBe(0);
+    expect(markdownContent.querySelectorAll('object')).toHaveLength(0);
+    expect(markdownContent.querySelectorAll('embed')).toHaveLength(0);
+    expect(markdownContent.querySelectorAll('meta')).toHaveLength(0);
+    expect(markdownContent.querySelectorAll('base')).toHaveLength(0);
+    expect(markdownContent.querySelectorAll('link[rel="stylesheet"]')).toHaveLength(0);
 
     // Verify no event handlers on any elements
     const allElements = markdownContent.querySelectorAll('*');

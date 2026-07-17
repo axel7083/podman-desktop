@@ -77,7 +77,7 @@ suite('image files module', () => {
       imageFiles.create(extensionInfo, provider1, metadata1);
       imageFiles.create(extensionInfo, provider2);
       const providers = imageFiles.getImageFilesProviders();
-      expect(providers.length).toBe(2);
+      expect(providers).toHaveLength(2);
 
       expect(providers[0]?.id).equals(`${extensionInfo.id}-0`);
       expect(providers[0]?.label).equals('Provider label');
@@ -128,10 +128,10 @@ suite('image files module', () => {
       const dispo1 = imageFiles.create(extensionInfo, provider1, metadata1);
       imageFiles.create(extensionInfo, provider2);
       const providers = imageFiles.getImageFilesProviders();
-      expect(providers.length).toBe(2);
+      expect(providers).toHaveLength(2);
       dispo1.dispose();
       const providersAfterDispose = imageFiles.getImageFilesProviders();
-      expect(providersAfterDispose.length).toBe(1);
+      expect(providersAfterDispose).toHaveLength(1);
     });
 
     test('calls getFilesystemLayers method', async () => {
@@ -161,7 +161,7 @@ suite('image files module', () => {
       };
       imageFiles.create(extensionInfo, provider);
       const providers = imageFiles.getImageFilesProviders();
-      expect(providers.length).toBe(1);
+      expect(providers).toHaveLength(1);
       const imageInfo: ImageInfo = {
         engineId: 'eng-id',
         engineName: 'eng-name',
@@ -183,7 +183,7 @@ suite('image files module', () => {
       const result = await imageFiles.getFilesystemLayers(providers[0].id, imageInfo);
       console.log('result', result);
       expect(result).toBeDefined();
-      expect(result!.layers.length).toBe(1);
+      expect(result!.layers).toHaveLength(1);
       expect(result!.layers[0]?.files!.length).toBe(1);
       expect(result!.layers[0]?.files![0]).toEqual(file);
       expect(result!.layers[0]?.whiteouts!.length).toBe(1);

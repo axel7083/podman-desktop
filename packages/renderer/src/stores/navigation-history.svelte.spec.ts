@@ -334,7 +334,7 @@ describe('submenu navigation', () => {
 
     const backEntries = getBackEntries();
 
-    expect(backEntries.length).toBe(2);
+    expect(backEntries).toHaveLength(2);
     // getBackEntries returns in reverse order, so [0] is index 1, [1] is index 0
     // backEntries[0] = '/kubernetes/pods' - should show full breadcrumb from registry
     expect(backEntries[0].name).toBe('Kubernetes > Pods');
@@ -343,7 +343,7 @@ describe('submenu navigation', () => {
 
     // The current entry (detail page) should show full breadcrumb with resource name
     const forwardEntries = getForwardEntries();
-    expect(forwardEntries.length).toBe(0); // We're at the end
+    expect(forwardEntries).toHaveLength(0); // We're at the end
   });
 
   test('should preserve special characters in submenu breadcrumbs', () => {
@@ -357,7 +357,7 @@ describe('submenu navigation', () => {
 
     const backEntries = getBackEntries();
 
-    expect(backEntries.length).toBe(2);
+    expect(backEntries).toHaveLength(2);
     // backEntries[0] = '/kubernetes/configmapsSecrets' base route
     // Should show proper name from registry with '&' preserved
     expect(backEntries[0].name).toBe('Kubernetes > ConfigMaps & Secrets');
@@ -374,7 +374,7 @@ describe('submenu navigation', () => {
     navigationHistory.index = 1;
 
     const entries = getBackEntries();
-    expect(entries.length).toBe(1);
+    expect(entries).toHaveLength(1);
     expect(entries[0].name).toBe('Kubernetes > ConfigMaps & Secrets > my-config > Summary');
   });
 });
@@ -396,7 +396,7 @@ describe('tab navigation for detail pages', () => {
 
     // Stack should now have 3 entries (each tab is a separate history entry)
     expect(navigationHistory.stack).toEqual(['/containers', '/containers/abc123/summary', '/containers/abc123/logs']);
-    expect(navigationHistory.stack.length).toBe(3);
+    expect(navigationHistory.stack).toHaveLength(3);
     expect(navigationHistory.index).toBe(2);
   });
 
@@ -420,7 +420,7 @@ describe('tab navigation for detail pages', () => {
 
     const entries = getForwardEntries();
 
-    expect(entries.length).toBe(1);
+    expect(entries).toHaveLength(1);
     expect(entries[0].name).toBe('Kubernetes > Pods > nginx-pod > Logs');
   });
 });

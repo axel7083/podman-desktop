@@ -326,9 +326,9 @@ test.each([
   const subElement = statusElement.getElementsByClassName('podman-desktop-icon-my-custom-icon');
   // should not be overriden for list contribution
   if (IMAGE_LIST_VIEW_ICONS === viewIdContrib) {
-    expect(subElement.length).toBe(0);
+    expect(subElement).toHaveLength(0);
   } else {
-    expect(subElement.length).toBe(1);
+    expect(subElement).toHaveLength(1);
   }
 });
 

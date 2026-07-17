@@ -91,7 +91,7 @@ beforeEach(() => {
 test('expect parse correctly certificates', async () => {
   const certificateContent = `${BEGIN_CERTIFICATE}${CR}Foo${CR}${END_CERTIFICATE}${CR}${BEGIN_CERTIFICATE}${CR}Bar${CR}${END_CERTIFICATE}${CR}${BEGIN_CERTIFICATE}${CR}Baz${CR}${END_CERTIFICATE}${CR}${BEGIN_CERTIFICATE}${CR}Qux${CR}${END_CERTIFICATE}${CR}`;
   const list = certificate.extractCertificates(certificateContent);
-  expect(list.length).toBe(4);
+  expect(list).toHaveLength(4);
 
   // strip prefix and suffix, CR
   const stripped = list.map(cert =>
@@ -179,7 +179,7 @@ describe('getAllCertificates', () => {
     await certificate.init();
 
     expect(certificate.getAllCertificates()).toEqual(testCerts);
-    expect(certificate.getAllCertificates().length).toBe(3);
+    expect(certificate.getAllCertificates()).toHaveLength(3);
   });
 });
 
@@ -231,7 +231,7 @@ describe('retrieveLinuxCertificates', () => {
 
     const result = await certificate.retrieveLinuxCertificates();
 
-    expect(result.length).toBe(1);
+    expect(result).toHaveLength(1);
     expect(result[0]).toContain('LinuxCert');
   });
 
@@ -243,7 +243,7 @@ describe('retrieveLinuxCertificates', () => {
 
     const result = await certificate.retrieveLinuxCertificates();
 
-    expect(result.length).toBe(1);
+    expect(result).toHaveLength(1);
     expect(result[0]).toContain('BundleCert');
   });
 
@@ -264,7 +264,7 @@ describe('retrieveLinuxCertificates', () => {
     const result = await certificate.retrieveLinuxCertificates();
 
     // Same certificate from both files should be deduplicated to 1
-    expect(result.length).toBe(1);
+    expect(result).toHaveLength(1);
   });
 
   test('should handle extractCertificates errors gracefully', async () => {
@@ -292,7 +292,7 @@ describe('getMacOSCertificates', () => {
 
     const result = await certificate.getMacOSCertificates();
 
-    expect(result.length).toBe(1);
+    expect(result).toHaveLength(1);
     expect(result[0]).toContain('MacCert');
   });
 
@@ -350,7 +350,7 @@ describe('retrieveMacOSCertificates', () => {
 
     const result = await certificate.retrieveMacOSCertificates();
 
-    expect(result.length).toBe(2);
+    expect(result).toHaveLength(2);
     expect(result[0]).toContain('RootCert');
     expect(result[1]).toContain('UserCert');
   });
@@ -374,7 +374,7 @@ describe('extractCertificates', () => {
 
     const result = certificate.extractCertificates(content);
 
-    expect(result.length).toBe(1);
+    expect(result).toHaveLength(1);
   });
 
   test('should handle certificates without trailing newline', () => {
@@ -382,6 +382,6 @@ describe('extractCertificates', () => {
 
     const result = certificate.extractCertificates(content);
 
-    expect(result.length).toBe(2);
+    expect(result).toHaveLength(2);
   });
 });

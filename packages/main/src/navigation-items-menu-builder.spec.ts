@@ -114,7 +114,7 @@ describe('buildNavigationToggleMenuItems', async () => {
     const menu = navigationItemsMenuBuilder.buildNavigationToggleMenuItems();
 
     // 4 items (first one being a separator)
-    expect(menu.length).toBe(4);
+    expect(menu).toHaveLength(4);
 
     // check the first item is a separator
     expect(menu[0]?.type).toBe('separator');
@@ -187,7 +187,7 @@ describe('buildNavigationMenu', async () => {
 
     const menu = navigationItemsMenuBuilder.buildNavigationMenu(parameters);
 
-    expect(menu.length).toBe(1);
+    expect(menu).toHaveLength(1);
     expect(spyMock).toBeCalledWith('inside');
   });
 });

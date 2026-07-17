@@ -189,7 +189,7 @@ test('should register a configuration', async () => {
   expect(configurationNode?.id).toBe('preferences.appearance');
   expect(configurationNode?.title).toBe('Appearance');
   expect(configurationNode?.properties).toBeDefined();
-  expect(Object.keys(configurationNode?.properties ?? {}).length).toBe(3);
+  expect(Object.keys(configurationNode?.properties ?? {})).toHaveLength(3);
   expect(configurationNode?.properties?.['preferences.zoomLevel']).toBeDefined();
   expect(configurationNode?.properties?.['preferences.zoomLevel']?.markdownDescription).toBeDefined();
   expect(configurationNode?.properties?.['preferences.zoomLevel']?.type).toBe('number');

@@ -82,7 +82,7 @@ test('grab colors', async () => {
 
   // now get the current-theme list
   const colors = get(colorsInfos);
-  expect(colors.length).toBe(2);
+  expect(colors).toHaveLength(2);
   expect(colors[0].id).toBe('color1');
   expect(colors[0].value).toBe('#123');
   expect(colors[0].cssVar).toBe('--pd-color1');
@@ -92,14 +92,14 @@ test('grab colors', async () => {
 
   // dark context store should be populated with dark-theme values
   const darkColors = get(darkContextColorsInfos);
-  expect(darkColors.length).toBe(1);
+  expect(darkColors).toHaveLength(1);
   expect(darkColors[0].id).toBe('color-dark');
   expect(darkColors[0].value).toBe('#dark01');
   expect(darkColors[0].cssVar).toBe('--pd-color-dark');
 
   // hc-dark context store should be populated with hc-dark-theme values
   const hcDarkColors = get(hcDarkContextColorsInfos);
-  expect(hcDarkColors.length).toBe(1);
+  expect(hcDarkColors).toHaveLength(1);
   expect(hcDarkColors[0].id).toBe('color-hcdark');
   expect(hcDarkColors[0].value).toBe('#hcd01');
   expect(hcDarkColors[0].cssVar).toBe('--pd-color-hcdark');

@@ -391,7 +391,7 @@ test('configurationRegistry propagated', async () => {
   expect(spyFire).toHaveBeenCalled();
   expect(receivedConfig).toBeDefined();
   expect(receivedConfig).toBe(configurationRegistry);
-  expect(notifications.length).toBe(0);
+  expect(notifications).toHaveLength(0);
 });
 
 const pushImageHandlerId = 'container-provider-registry:pushImage';

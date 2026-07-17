@@ -212,7 +212,7 @@ describe('extractCatalogExtensions', () => {
 
     // expect the first one to be featured named y
     // then Z extension, then A extension and then B extension
-    expect(catalogExtensionsUI.length).toBe(4);
+    expect(catalogExtensionsUI).toHaveLength(4);
     expect(catalogExtensionsUI[0].id).toBe('idYInstalled');
     expect(catalogExtensionsUI[1].id).toBe('idZNotInstalled');
     expect(catalogExtensionsUI[2].id).toBe('idAInstalled');
@@ -389,7 +389,7 @@ describe('filters', () => {
       ),
       'bar',
     );
-    expect(filteredCatalogExtensions.length).toBe(1);
+    expect(filteredCatalogExtensions).toHaveLength(1);
     expect(filteredCatalogExtensions[0].id).toBe('idAInstalled');
   });
 
@@ -402,7 +402,7 @@ describe('filters', () => {
       ),
       'bar is:installed',
     );
-    expect(filteredCatalogExtensions.length).toBe(1);
+    expect(filteredCatalogExtensions).toHaveLength(1);
     expect(filteredCatalogExtensions[0].id).toBe('idAInstalled');
   });
 
@@ -415,7 +415,7 @@ describe('filters', () => {
       ),
       'bar not:installed',
     );
-    expect(filteredCatalogExtensions.length).toBe(0);
+    expect(filteredCatalogExtensions).toHaveLength(0);
   });
 
   test('filterCatalogExtensions with single word and installed and not installed, only first boolean is used', () => {
@@ -427,7 +427,7 @@ describe('filters', () => {
       ),
       'bar is:installed not:installed',
     );
-    expect(filteredCatalogExtensions.length).toBe(1);
+    expect(filteredCatalogExtensions).toHaveLength(1);
     expect(filteredCatalogExtensions[0].id).toBe('idAInstalled');
   });
 
@@ -440,7 +440,7 @@ describe('filters', () => {
       ),
       'bar word',
     );
-    expect(filteredCatalogExtensions.length).toBe(1);
+    expect(filteredCatalogExtensions).toHaveLength(1);
     expect(filteredCatalogExtensions[0].id).toBe('idAInstalled');
   });
 
@@ -453,7 +453,7 @@ describe('filters', () => {
       ),
       'bar notfound',
     );
-    expect(filteredCatalogExtensions.length).toBe(0);
+    expect(filteredCatalogExtensions).toHaveLength(0);
   });
 
   test('filterCatalogExtensions with multiple words found and one category', () => {
@@ -465,7 +465,7 @@ describe('filters', () => {
       ),
       'bar word category:category1',
     );
-    expect(filteredCatalogExtensions.length).toBe(1);
+    expect(filteredCatalogExtensions).toHaveLength(1);
     expect(filteredCatalogExtensions[0].id).toBe('idAInstalled');
   });
 
@@ -478,7 +478,7 @@ describe('filters', () => {
       ),
       'bar word category:category1 category:category2',
     );
-    expect(filteredCatalogExtensions.length).toBe(1);
+    expect(filteredCatalogExtensions).toHaveLength(1);
     expect(filteredCatalogExtensions[0].id).toBe('idAInstalled');
   });
 
@@ -491,7 +491,7 @@ describe('filters', () => {
       ),
       'bar word category:category1 category:category3',
     );
-    expect(filteredCatalogExtensions.length).toBe(0);
+    expect(filteredCatalogExtensions).toHaveLength(0);
   });
 
   test('filterCatalogExtensions with multiple words found and one keyword', () => {
@@ -503,7 +503,7 @@ describe('filters', () => {
       ),
       'bar word keyword:keyword1',
     );
-    expect(filteredCatalogExtensions.length).toBe(1);
+    expect(filteredCatalogExtensions).toHaveLength(1);
     expect(filteredCatalogExtensions[0].id).toBe('idAInstalled');
   });
 
@@ -516,7 +516,7 @@ describe('filters', () => {
       ),
       'bar word keyword:keyword1 keyword:keyword2',
     );
-    expect(filteredCatalogExtensions.length).toBe(1);
+    expect(filteredCatalogExtensions).toHaveLength(1);
     expect(filteredCatalogExtensions[0].id).toBe('idAInstalled');
   });
 
@@ -529,12 +529,12 @@ describe('filters', () => {
       ),
       'bar word keyword:keyword1 keyword:keyword3',
     );
-    expect(filteredCatalogExtensions.length).toBe(0);
+    expect(filteredCatalogExtensions).toHaveLength(0);
   });
 
   test('filterInstalledExtensions with single word', () => {
     const filteredInstalledExtensions = extensionsUtils.filterInstalledExtensions(combined, 'bar');
-    expect(filteredInstalledExtensions.length).toBe(1);
+    expect(filteredInstalledExtensions).toHaveLength(1);
     expect(filteredInstalledExtensions[0].id).toBe('idAInstalled');
   });
 
@@ -563,28 +563,28 @@ describe('filters', () => {
     test('filterCatalogExtensions with quoted category containing spaces', () => {
       const extensions = extensionsUtils.extractCatalogExtensions([extWithSpacedCategory, bFakeExtension], [], []);
       const filtered = extensionsUtils.filterCatalogExtensions(extensions, 'category:"Extension Packs"');
-      expect(filtered.length).toBe(1);
+      expect(filtered).toHaveLength(1);
       expect(filtered[0].id).toBe('idSpacedCategory');
     });
 
     test('filterCatalogExtensions with quoted keyword containing spaces', () => {
       const extensions = extensionsUtils.extractCatalogExtensions([extWithSpacedCategory, bFakeExtension], [], []);
       const filtered = extensionsUtils.filterCatalogExtensions(extensions, 'keyword:"Vulnerability Scanner"');
-      expect(filtered.length).toBe(1);
+      expect(filtered).toHaveLength(1);
       expect(filtered[0].id).toBe('idSpacedCategory');
     });
 
     test('filterCatalogExtensions with quoted category and additional search term', () => {
       const extensions = extensionsUtils.extractCatalogExtensions([extWithSpacedCategory, bFakeExtension], [], []);
       const filtered = extensionsUtils.filterCatalogExtensions(extensions, 'spaced category:"Extension Packs"');
-      expect(filtered.length).toBe(1);
+      expect(filtered).toHaveLength(1);
       expect(filtered[0].id).toBe('idSpacedCategory');
     });
 
     test('filterCatalogExtensions with unquoted spaced category does not match', () => {
       const extensions = extensionsUtils.extractCatalogExtensions([extWithSpacedCategory, bFakeExtension], [], []);
       const filtered = extensionsUtils.filterCatalogExtensions(extensions, 'category:Extension Packs');
-      expect(filtered.length).toBe(0);
+      expect(filtered).toHaveLength(0);
     });
 
     test('SearchTermParser separates terms from quoted filters', () => {

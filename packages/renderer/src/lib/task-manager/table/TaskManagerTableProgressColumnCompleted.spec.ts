@@ -107,5 +107,5 @@ test('Expect no error for completed task with failure an no error', async () => 
   expect(failureStatus).toBeInTheDocument();
 
   // no error child
-  expect(completedStatus.children.length).toBe(2);
+  expect(completedStatus.children).toHaveLength(2);
 });

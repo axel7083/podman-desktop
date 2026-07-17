@@ -366,7 +366,7 @@ test('Check handlePluginInstall', async () => {
   );
 
   // checked no error
-  expect(allReplies.filter(line => line.includes('docker-desktop-plugin:install-error')).length).toEqual(0);
+  expect(allReplies.filter(line => line.includes('docker-desktop-plugin:install-error'))).toHaveLength(0);
 
   // contribution manager is called
   expect(contributionManagerInitMock).toBeCalled();

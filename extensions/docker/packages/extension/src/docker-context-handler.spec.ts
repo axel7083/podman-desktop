@@ -183,7 +183,7 @@ describe('getContexts', () => {
     expect(console.error).not.toBeCalled();
     // no read file
     expect(fs.promises.readFile).not.toBeCalled();
-    expect(contexts.length).toBe(1); // default context in addition
+    expect(contexts).toHaveLength(1); // default context in addition
     expect(contexts.find(c => c.name === 'default')).toBeDefined();
   });
 
@@ -221,7 +221,7 @@ describe('getContexts', () => {
 
     // expect error while parsing
     expect(console.error).toBeCalledWith('Error parsing docker context meta file', expect.any(Error));
-    expect(contexts.length).toBe(2); // default context in addition
+    expect(contexts).toHaveLength(2); // default context in addition
     expect(contexts.find(c => c.name === 'default')).toBeDefined();
     expect(contexts.find(c => c.name === 'bar')).toBeDefined();
     // not there due to the error
@@ -249,7 +249,7 @@ describe('getContexts', () => {
 
     // expect no error
     expect(console.error).not.toBeCalled();
-    expect(contexts.length).toBe(3); // default context in addition
+    expect(contexts).toHaveLength(3); // default context in addition
     expect(contexts.find(c => c.name === 'default')).toBeDefined();
     expect(contexts.find(c => c.name === 'foo')).toBeDefined();
     expect(contexts.find(c => c.name === 'bar')).toBeDefined();
@@ -277,7 +277,7 @@ describe('getContexts', () => {
     );
 
     // only 2 contexts as the one is filtered
-    expect(contexts.length).toBe(2);
+    expect(contexts).toHaveLength(2);
     expect(contexts.find(c => c.name === 'default')).toBeDefined();
     expect(contexts.find(c => c.name === 'foo')).not.toBeDefined();
     expect(contexts.find(c => c.name === 'bar')).toBeDefined();

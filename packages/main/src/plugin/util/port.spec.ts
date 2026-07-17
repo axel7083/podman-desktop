@@ -51,7 +51,7 @@ test('return valid port range', async () => {
   const range = await port.getFreePortRange(3);
 
   const rangeValues = range.split('-');
-  expect(rangeValues.length).toBe(2);
+  expect(rangeValues).toHaveLength(2);
 
   const startRange = getInt(rangeValues[0]);
   const endRange = getInt(rangeValues[1]);
@@ -70,7 +70,7 @@ test.each(
   const range = await port.getFreePortRange(3);
 
   const rangeValues = range.split('-');
-  expect(rangeValues.length).toBe(2);
+  expect(rangeValues).toHaveLength(2);
 
   const startRange = getInt(rangeValues[0]);
   const endRange = getInt(rangeValues[1]);
@@ -89,7 +89,7 @@ test.each(
   await closeServer(server);
 
   const newRangeValues = newRange.split('-');
-  expect(newRangeValues.length).toBe(2);
+  expect(newRangeValues).toHaveLength(2);
 
   const startNewRange = getInt(newRangeValues[0]);
   const endNewRange = getInt(newRangeValues[1]);

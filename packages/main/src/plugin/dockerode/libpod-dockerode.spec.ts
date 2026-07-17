@@ -97,7 +97,7 @@ test('Check list of images using Podman API', async () => {
 
   const api = new Dockerode({ protocol: 'http', host: 'localhost' });
   const listOfImages = await (api as unknown as LibPod).podmanListImages({} as PodmanListImagesOptions);
-  expect(listOfImages.length).toBe(1);
+  expect(listOfImages).toHaveLength(1);
   const firstImage = listOfImages[0];
   expect(firstImage?.Id).toBe('sha256:1234567890');
 });
@@ -174,7 +174,7 @@ test('Check list of containers using Podman API', async () => {
 
   const api = new Dockerode({ protocol: 'http', host: 'localhost' });
   const listOfContainers = await (api as unknown as LibPod).listPodmanContainers();
-  expect(listOfContainers.length).toBe(1);
+  expect(listOfContainers).toHaveLength(1);
   const firstContainer = listOfContainers[0];
   expect(firstContainer?.Id).toBe('37a54a845ef27a212634ef00c994c0793b5f19ec16853d606beb1c929461c1cd');
 });
@@ -224,7 +224,7 @@ test('Check list of containers using Podman API and all true options', async () 
 
   const api = new Dockerode({ protocol: 'http', host: 'localhost' });
   const listOfContainers = await (api as unknown as LibPod).listPodmanContainers({ all: true });
-  expect(listOfContainers.length).toBe(1);
+  expect(listOfContainers).toHaveLength(1);
   const firstContainer = listOfContainers[0];
   expect(firstContainer?.Id).toBe('37a54a845ef27a212634ef00c994c0793b5f19ec16853d606beb1c929461c1cd');
 });
@@ -339,7 +339,7 @@ test('Check using libpod/manifests/{name}/json endpoint', async () => {
   // Check manifest information returned
   expect(manifest.mediaType).toBe('application/vnd.docker.distribution.manifest.v2+json');
   expect(manifest.schemaVersion).toBe(2);
-  expect(manifest.manifests.length).toBe(1);
+  expect(manifest.manifests).toHaveLength(1);
 
   // Check manifest.manifests
   expect(manifest.manifests[0]?.mediaType).toBe('application/vnd.docker.distribution.manifest.v2+json');

@@ -52,14 +52,14 @@ test('Should return empty array for unknown view', async () => {
   const views = viewRegistry.fetchViewsContributions('unknown');
   expect(views).toBeDefined();
   expectTypeOf(views).toBeArray();
-  expect(views.length).toBe(0);
+  expect(views).toHaveLength(0);
 });
 
 test('View context should have a single entry', async () => {
   const views = viewRegistry.fetchViewsContributions('extension');
   expect(views).toBeDefined();
   expectTypeOf(views).toBeArray();
-  expect(views.length).toBe(1);
+  expect(views).toHaveLength(1);
   expect((views[0]?.value as ViewContributionIcon).when).toBe('io.x-k8s.kind.cluster in containerLabelKeys');
   expect((views[0]?.value as ViewContributionIcon).icon).toBe('${kind-icon}');
 });

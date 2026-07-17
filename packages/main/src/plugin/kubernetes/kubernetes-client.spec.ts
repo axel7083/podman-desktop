@@ -664,7 +664,7 @@ test('should return empty routes list if there is no active namespace', async ()
   vi.spyOn(client, 'checkConnection').mockResolvedValue(true);
 
   const list = await client.listRoutes();
-  expect(list.length).toBe(0);
+  expect(list).toHaveLength(0);
 });
 
 test('should return empty routes list if cannot connect to cluster', async () => {
@@ -672,7 +672,7 @@ test('should return empty routes list if cannot connect to cluster', async () =>
   vi.spyOn(client, 'checkConnection').mockResolvedValue(false);
 
   const list = await client.listRoutes();
-  expect(list.length).toBe(0);
+  expect(list).toHaveLength(0);
 });
 
 test('should return empty routes list if cannot execute call to cluster', async () => {
@@ -683,7 +683,7 @@ test('should return empty routes list if cannot execute call to cluster', async 
   });
 
   const list = await client.listRoutes();
-  expect(list.length).toBe(0);
+  expect(list).toHaveLength(0);
 });
 
 test('should return route list if connection to cluster is ok', async () => {
@@ -721,7 +721,7 @@ test('should return route list if connection to cluster is ok', async () => {
   });
 
   const list = await client.listRoutes();
-  expect(list.length).toBe(1);
+  expect(list).toHaveLength(1);
   expect(list[0]?.metadata?.name).toEqual('route');
 });
 

@@ -160,7 +160,7 @@ describe('getExtensionBanners', () => {
     getRecommendationIgnored.mockReturnValue(true);
 
     const extensions = await recommendationsRegistry.getExtensionBanners();
-    expect(extensions.length).toBe(0);
+    expect(extensions).toHaveLength(0);
 
     expect(featuredMock.getFeaturedExtensions).not.toHaveBeenCalled();
   });
@@ -181,7 +181,7 @@ describe('getExtensionBanners', () => {
     ]);
 
     const extensions = await recommendationsRegistry.getExtensionBanners();
-    expect(extensions.length).toBe(0);
+    expect(extensions).toHaveLength(0);
 
     expect(featuredMock.getFeaturedExtensions).toHaveBeenCalled();
   });
@@ -201,7 +201,7 @@ describe('getExtensionBanners', () => {
     vi.mocked(featuredMock.getFeaturedExtensions).mockResolvedValue([featured]);
 
     const extensions = await recommendationsRegistry.getExtensionBanners();
-    expect(extensions.length).toBe(1);
+    expect(extensions).toHaveLength(1);
     expect(extensions[0]?.featured).toStrictEqual(featured);
     expect(extensions[0]?.extensionId).toBe('dummy.id-0');
     expect(extensions[0]?.title).toBe('dummy title');
@@ -228,7 +228,7 @@ describe('getExtensionBanners', () => {
     );
 
     const extensions = await recommendationsRegistry.getExtensionBanners();
-    expect(extensions.length).toBe(1);
+    expect(extensions).toHaveLength(1);
 
     expect(featuredMock.getFeaturedExtensions).toHaveBeenCalled();
   });
@@ -249,7 +249,7 @@ describe('getExtensionBanners', () => {
     );
 
     const extensions = await recommendationsRegistry.getExtensionBanners(-1);
-    expect(extensions.length).toBe(10);
+    expect(extensions).toHaveLength(10);
 
     expect(featuredMock.getFeaturedExtensions).toHaveBeenCalled();
   });
@@ -271,7 +271,7 @@ describe('getExtensionBanners', () => {
     vi.mocked(featuredMock.getFeaturedExtensions).mockResolvedValue([featured]);
 
     const extensions = await recommendationsRegistry.getExtensionBanners();
-    expect(extensions.length).toBe(0);
+    expect(extensions).toHaveLength(0);
 
     expect(featuredMock.getFeaturedExtensions).toHaveBeenCalled();
   });
@@ -316,11 +316,11 @@ describe('getExtensionBanners', () => {
 
     vi.setSystemTime(new Date(2050, 1, 1, 1));
     const resultA = await recommendationsRegistry.getExtensionBanners(5);
-    expect(resultA.length).toBe(5);
+    expect(resultA).toHaveLength(5);
 
     vi.setSystemTime(new Date(2050, 1, 1, 2));
     const resultB = await recommendationsRegistry.getExtensionBanners(5);
-    expect(resultB.length).toBe(5);
+    expect(resultB).toHaveLength(5);
 
     expect(resultA).not.toStrictEqual(resultB);
   });
@@ -347,7 +347,7 @@ describe('getExtensionBanners', () => {
       vi.setSystemTime(new Date(2050, 1, 1, h));
 
       const banners = await recommendationsRegistry.getExtensionBanners(1);
-      expect(banners.length).toBe(1);
+      expect(banners).toHaveLength(1);
 
       const actualExtensionId = banners[0]?.extensionId;
       expect(actualExtensionId).toBeDefined();
@@ -364,7 +364,7 @@ describe('getRegistries', () => {
     getRecommendationIgnored.mockReturnValue(true);
 
     const registries = await recommendationsRegistry.getRegistries();
-    expect(registries.length).toBe(0);
+    expect(registries).toHaveLength(0);
 
     expect(vi.mocked(extensionLoaderMock).listExtensions).not.toHaveBeenCalled();
     expect(vi.mocked(extensionsCatalogMock).getFetchableExtensions).not.toHaveBeenCalled();
@@ -387,7 +387,7 @@ describe('getRegistries', () => {
     ]);
 
     const registries = await recommendationsRegistry.getRegistries();
-    expect(registries.length).toBe(1);
+    expect(registries).toHaveLength(1);
     if (!registries[0]) {
       throw new Error('registry is undefined');
     }

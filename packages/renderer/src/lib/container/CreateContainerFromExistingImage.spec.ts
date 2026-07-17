@@ -185,7 +185,7 @@ test('Expect not a local image to have an active pull image and run button', asy
   await tick();
   const list = screen.getByRole('row');
   const items = within(list).getAllByRole('button');
-  expect(items.length).toBe(2);
+  expect(items).toHaveLength(2);
 
   await user.keyboard('[ArrowDown]');
 
@@ -216,7 +216,7 @@ test('Expect a local image to have an active run image button', async () => {
 
   const list = screen.getByRole('row');
   const items = within(list).getAllByRole('button');
-  expect(items.length).toBe(6);
+  expect(items).toHaveLength(6);
 
   await user.keyboard('[ArrowDown]');
 
@@ -247,7 +247,7 @@ test('Expect no user input to show only local images', async () => {
 
   const list = screen.getByRole('row');
   const items = within(list).getAllByRole('button');
-  expect(items.length).toBe(6);
+  expect(items).toHaveLength(6);
 });
 
 test('window#listImages should not be call without a selected container connection', async () => {

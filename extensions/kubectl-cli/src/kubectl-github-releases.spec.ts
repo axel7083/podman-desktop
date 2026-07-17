@@ -66,7 +66,7 @@ test('expect grab 5 releases', async () => {
 
   const result = await kubectlGitHubReleases.grabLatestsReleasesMetadata();
   expect(result).toBeDefined();
-  expect(result.length).toBe(5);
+  expect(result).toHaveLength(5);
 });
 
 describe('Grab asset id for a given release id', async () => {

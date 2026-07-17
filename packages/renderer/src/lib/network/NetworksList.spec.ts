@@ -173,7 +173,7 @@ test('Expect to have edit action for Podman networks', async () => {
   await init();
 
   const editButtons = screen.getAllByRole('button', { name: 'Update Network' });
-  expect(editButtons.length).toBe(2);
+  expect(editButtons).toHaveLength(2);
 
   const podmanNetworkRow = screen.getByRole('row', { name: 'Network 2' });
   expect(podmanNetworkRow).toBeInTheDocument();
@@ -186,7 +186,7 @@ test('Expect to have delete action for unused networks', async () => {
   await init();
 
   const deleteButtons = screen.getAllByRole('button', { name: 'Delete Network' });
-  expect(deleteButtons.length).toBe(2);
+  expect(deleteButtons).toHaveLength(2);
 
   const unusedNetworkRow = screen.getByRole('row', { name: 'Network 1' });
   expect(unusedNetworkRow).toBeInTheDocument();

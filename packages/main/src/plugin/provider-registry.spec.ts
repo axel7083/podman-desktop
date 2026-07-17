@@ -364,7 +364,7 @@ test('connections should contain the display name provided when registering', as
     status: 'installed',
   });
 
-  expect(providerRegistry.getContainerConnections().length).toBe(0);
+  expect(providerRegistry.getContainerConnections()).toHaveLength(0);
 
   const displayName = 'Podman Display Name';
   provider.registerContainerProviderConnection({
@@ -379,7 +379,7 @@ test('connections should contain the display name provided when registering', as
   });
 
   const connections = providerRegistry.getContainerConnections();
-  expect(connections.length).toBe(1);
+  expect(connections).toHaveLength(1);
   expect(connections[0]?.connection.displayName).toBe(displayName);
 });
 

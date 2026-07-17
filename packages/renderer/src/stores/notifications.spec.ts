@@ -73,7 +73,7 @@ test('notifications should be updated in case of an extension is stopped', async
 
   // now get queue
   const notificationQueue1 = get(notificationQueue);
-  expect(notificationQueue1.length).toBe(1);
+  expect(notificationQueue1).toHaveLength(1);
   expect(notificationQueue1[0].id).toEqual(0);
 
   // ok now mock the listNotifications function to return an empty list
@@ -89,5 +89,5 @@ test('notifications should be updated in case of an extension is stopped', async
 
   // check if the notifications are updated
   const notificationQueue2 = get(notificationQueue);
-  expect(notificationQueue2.length).toBe(0);
+  expect(notificationQueue2).toHaveLength(0);
 });

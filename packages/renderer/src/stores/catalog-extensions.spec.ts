@@ -61,7 +61,7 @@ test('catalog extension should be updated in case of a container is removed', as
 
   // get list and expect nothing there
   const catalogExtensions = get(catalogExtensionInfos);
-  expect(catalogExtensions.length).toBe(0);
+  expect(catalogExtensions).toHaveLength(0);
 
   getCatalogExtensionsMock.mockReset();
   getCatalogExtensionsMock.mockResolvedValue([
@@ -120,7 +120,7 @@ test('catalog extension should be updated in case of a container is removed', as
 
   // check if the catalog has been updated
   const afterCatalogExtensions = get(catalogExtensionInfos);
-  expect(afterCatalogExtensions.length).toBe(2);
+  expect(afterCatalogExtensions).toHaveLength(2);
 
   // get first extension
   const firstExtension = afterCatalogExtensions.find(ext => ext.id === 'first.extension1');

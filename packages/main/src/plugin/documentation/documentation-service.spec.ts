@@ -130,7 +130,7 @@ describe('fetchDocumentation', () => {
 
     const items = await documentationService.getDocumentationItems();
     expect(items).toBeDefined();
-    expect(items.length).toBe(2);
+    expect(items).toHaveLength(2);
 
     // Should include fallback items
     const firstItem = items.find(item => item.id === 'item1');
@@ -354,8 +354,8 @@ describe('parseDocumentationContent', () => {
     const cat1Items = items.filter(item => item.category === 'category 1');
     const cat2Items = items.filter(item => item.category === 'category 2');
 
-    expect(cat1Items.length).toBe(4); // parsed
-    expect(cat2Items.length).toBe(3); // parsed
+    expect(cat1Items).toHaveLength(4); // parsed
+    expect(cat2Items).toHaveLength(3); // parsed
 
     // Check specific parsed items
     const introItem = items.find(item => item.name === 'Introduction & Getting Started');
@@ -490,10 +490,10 @@ describe('parseDocumentationContent', () => {
 
     const docItems = items.filter(item => item.category === 'category 1');
 
-    expect(docItems.length).toBe(2);
+    expect(docItems).toHaveLength(2);
 
     const tutorialItems = items.filter(item => item.category === 'category 2');
-    expect(tutorialItems.length).toBe(1);
+    expect(tutorialItems).toHaveLength(1);
   });
 });
 

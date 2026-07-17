@@ -403,7 +403,7 @@ describe.each<{
       const { getAllByLabelText } = render(PreferencesResourcesRendering, {});
 
       const statuses = getAllByLabelText('Connection Status');
-      expect(statuses.length).toBe(2);
+      expect(statuses).toHaveLength(2);
     });
 
     test('Expect to be start, delete actions enabled and stop, restart disabled when container stopped', async () => {

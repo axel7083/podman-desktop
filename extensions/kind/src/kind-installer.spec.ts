@@ -103,7 +103,7 @@ describe('grabLatestsReleasesMetadata', () => {
     mockOctokit.repos.listReleases.mockResolvedValue({ data: resultREST });
     const releases = await installer.grabLatestsReleasesMetadata();
     expect(releases).toBeDefined();
-    expect(releases.length).toBe(5);
+    expect(releases).toHaveLength(5);
   });
 });
 

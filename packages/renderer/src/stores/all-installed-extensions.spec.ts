@@ -32,7 +32,7 @@ beforeEach(() => {
 test('combined extensions from DD', async () => {
   let allExtensons = get(combinedInstalledExtensions);
 
-  expect(allExtensons.length).toBe(0);
+  expect(allExtensons).toHaveLength(0);
 
   // now, add some contributions
   contributions.set([
@@ -68,7 +68,7 @@ test('combined extensions from DD', async () => {
 
   // refresh the extensions
   allExtensons = get(combinedInstalledExtensions);
-  expect(allExtensons.length).toBe(2);
+  expect(allExtensons).toHaveLength(2);
 
   const extension1 = allExtensons.find(ext => ext.id === 'first.extension1');
   expect(extension1).toBeDefined();
@@ -81,7 +81,7 @@ test('combined extensions from DD', async () => {
 test('combined extensions from PD', async () => {
   let allExtensons = get(combinedInstalledExtensions);
 
-  expect(allExtensons.length).toBe(0);
+  expect(allExtensons).toHaveLength(0);
 
   extensionInfos.set([
     {
@@ -114,7 +114,7 @@ test('combined extensions from PD', async () => {
 
   // refresh the extensions
   allExtensons = get(combinedInstalledExtensions);
-  expect(allExtensons.length).toBe(2);
+  expect(allExtensons).toHaveLength(2);
 
   const extension1 = allExtensons.find(ext => ext.id === 'first.extension1');
   expect(extension1).toBeDefined();
@@ -126,7 +126,7 @@ test('combined extensions from PD', async () => {
 test('combined extensions from all', async () => {
   let allExtensons = get(combinedInstalledExtensions);
 
-  expect(allExtensons.length).toBe(0);
+  expect(allExtensons).toHaveLength(0);
 
   extensionInfos.set([
     {
@@ -163,7 +163,7 @@ test('combined extensions from all', async () => {
 
   // refresh the extensions
   allExtensons = get(combinedInstalledExtensions);
-  expect(allExtensons.length).toBe(2);
+  expect(allExtensons).toHaveLength(2);
 
   const extension1 = allExtensons.find(ext => ext.id === 'first.extension1');
   expect(extension1).toBeDefined();

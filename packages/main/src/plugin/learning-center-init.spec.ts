@@ -40,7 +40,7 @@ test('should register configuration', async () => {
   expect(configurationNode?.id).toBe('learningCenter');
   expect(configurationNode?.title).toBe('Show learning center content');
   expect(configurationNode?.properties).toBeDefined();
-  expect(Object.keys(configurationNode?.properties ?? {}).length).toBe(1);
+  expect(Object.keys(configurationNode?.properties ?? {})).toHaveLength(1);
   expect(configurationNode?.properties?.['learningCenter.expanded']).toBeDefined();
   expect(configurationNode?.properties?.['learningCenter.expanded']?.type).toBe('boolean');
   expect(configurationNode?.properties?.['learningCenter.expanded']?.default).toBe(true);

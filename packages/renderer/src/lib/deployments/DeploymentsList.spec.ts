@@ -164,11 +164,11 @@ describe.each<{
     await vi.waitFor(async () => {
       const rows = await screen.findAllByRole('row');
       expect(rows).toBeDefined();
-      expect(rows.length).toBe(2);
+      expect(rows).toHaveLength(2);
 
       const cells = await within(rows[1]).findAllByRole('cell');
       expect(cells).toBeDefined();
-      expect(cells.length).toBe(8);
+      expect(cells).toHaveLength(8);
 
       expect(cells[2]).toHaveClass('overflow-hidden');
       expect(cells[3]).toHaveClass('overflow-hidden');

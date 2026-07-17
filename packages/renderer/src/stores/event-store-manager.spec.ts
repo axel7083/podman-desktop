@@ -28,7 +28,7 @@ beforeEach(() => {
 });
 
 test('should add object into store-manager', async () => {
-  expect(get(allEventStoresInfo).length).toBe(0);
+  expect(get(allEventStoresInfo)).toHaveLength(0);
 
   const eventStoreInfo: EventStoreInfo = {
     name: 'test',
@@ -39,13 +39,13 @@ test('should add object into store-manager', async () => {
   addStore(eventStoreInfo);
 
   // check size
-  expect(get(allEventStoresInfo).length).toBe(1);
+  expect(get(allEventStoresInfo)).toHaveLength(1);
 
   /// try to add it again
   addStore(eventStoreInfo);
 
   // check size (should be the same)
-  expect(get(allEventStoresInfo).length).toBe(1);
+  expect(get(allEventStoresInfo)).toHaveLength(1);
 });
 
 test('should get object into store-manager', async () => {
@@ -78,7 +78,7 @@ test('should update object into store-manager', async () => {
 
   // grab objects from store
   const allEvents = get(allEventStoresInfo);
-  expect(allEvents.length).toBe(1);
+  expect(allEvents).toHaveLength(1);
   // take first item
   const storeInfo = allEvents[0];
   // check the name
@@ -94,7 +94,7 @@ test('should update object into store-manager', async () => {
 
   // grab objects from store
   const allEventsAfterUpdate = get(allEventStoresInfo);
-  expect(allEventsAfterUpdate.length).toBe(1);
+  expect(allEventsAfterUpdate).toHaveLength(1);
   // take first item
   const afterUpdateInfo = allEventsAfterUpdate[0];
   // check the name

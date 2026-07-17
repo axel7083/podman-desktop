@@ -86,7 +86,7 @@ test('Check close button', async () => {
   render(TroubleshootingPageStoreDetails, { eventStoreInfo, closeCallback });
 
   const closeButtons = screen.getAllByRole('button', { name: 'Close' });
-  expect(closeButtons.length).toBe(2);
+  expect(closeButtons).toHaveLength(2);
 
   const primaryCloseButton = closeButtons.find(btn => btn.textContent?.trim() === 'Close');
   expect(primaryCloseButton).toBeDefined();

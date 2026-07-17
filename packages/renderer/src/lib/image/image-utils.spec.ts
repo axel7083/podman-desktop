@@ -133,7 +133,7 @@ test('should expect badge to be valid value with context/view set', async () => 
   } as unknown as ImageInfo;
   const badges = imageUtils.computeBagdes(imageInfo, context, [view]);
   // size should be one
-  expect(badges.length).toBe(1);
+  expect(badges).toHaveLength(1);
 
   expect(badges[0].label).toBe('my-custom-badge');
   expect(badges[0].color).toBe('#ff0000');
@@ -240,7 +240,7 @@ describe('getImagesFromManifest and construct ImageInfoUI', () => {
       .map(child => imageUtils.getImagesInfoUI(child, containerInfoList, contextUI, viewContributions, imageList))
       .flat();
 
-    expect(children.length).toBe(2);
+    expect(children).toHaveLength(2);
     expect(children[0].id).toBe('image1');
     expect(children[1].id).toBe('image2');
   });
@@ -253,7 +253,7 @@ describe('getImagesFromManifest and construct ImageInfoUI', () => {
       viewContributions,
       imageList,
     );
-    expect(imageInfoUIs.length).toBe(1);
+    expect(imageInfoUIs).toHaveLength(1);
     expect(imageInfoUIs[0].id).toBe('manifest1');
   });
 });

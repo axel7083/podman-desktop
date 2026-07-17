@@ -378,7 +378,7 @@ test('Expect the pod1 row to have 3 status dots with the correct colors and the 
   // 3 for the first pod, 1 for the second pod
   // this should also appear REORGANIZED and in a different order.
   const statusDots = screen.getAllByTestId('status-dot');
-  expect(statusDots.length).toBe(4);
+  expect(statusDots).toHaveLength(4);
 
   expect(statusDots[0].title).toBe('container1: Running');
   expect(statusDots[1].title).toBe('container3: Exited');
@@ -401,7 +401,7 @@ test('Expect the manyPod row to show 9 dots representing every status', async ()
   // it should be organized as follows:
   // running, created, paused, waiting, degraded, exited, stopped, terminated, dead
   const statusDots = screen.getAllByTestId('status-dot');
-  expect(statusDots.length).toBe(9);
+  expect(statusDots).toHaveLength(9);
 
   expect(statusDots[0].title).toBe('Running: 3');
   expect(statusDots[1].title).toBe('Created: 1');

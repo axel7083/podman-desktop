@@ -52,5 +52,5 @@ test('terminals should be updated in case of a matching container is removed', a
   const updatedTerminals = get(containerTerminals);
 
   // check that the terminal has been removed
-  expect(updatedTerminals.length).toBe(0);
+  expect(updatedTerminals).toHaveLength(0);
 });

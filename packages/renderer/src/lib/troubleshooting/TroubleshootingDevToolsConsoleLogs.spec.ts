@@ -69,7 +69,7 @@ test('Check logs are displayed with clipboard button', async () => {
 
   // get number of <li> elements from this <ul>
   const logs = logsList.querySelectorAll('li');
-  expect(logs.length).toBe(2);
+  expect(logs).toHaveLength(2);
 
   // expect to have the clipboard button
   const clipboardButton = screen.getByRole('button', { name: 'Copy To Clipboard' });

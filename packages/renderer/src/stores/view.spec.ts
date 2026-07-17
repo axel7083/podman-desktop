@@ -72,7 +72,7 @@ test('views should be updated in case of an extension is stopped', async () => {
 
   // now get list
   const views = get(viewsContributions);
-  expect(views.length).toBe(1);
+  expect(views).toHaveLength(1);
   expect(views[0].extensionId).toEqual('extension');
 
   // ok now mock the listVolumes function to return an empty list
@@ -88,5 +88,5 @@ test('views should be updated in case of an extension is stopped', async () => {
 
   // check if the volumes are updated
   const views2 = get(viewsContributions);
-  expect(views2.length).toBe(0);
+  expect(views2).toHaveLength(0);
 });

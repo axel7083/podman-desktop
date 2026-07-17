@@ -83,7 +83,7 @@ test('check stopPodmanProcesses with error', async () => {
   expect(process.exec).toBeCalledWith('wsl', ['--list', '--running', '--quiet'], { env: { WSL_UTF8: '1' } });
 
   // only one call, no call to terminate
-  expect(vi.mocked(process.exec).call.length).toBe(1);
+  expect(vi.mocked(process.exec).call).toHaveLength(1);
 });
 
 test('check getContainersConfPath', async () => {

@@ -1106,7 +1106,7 @@ describe('createMachine rosetta enable-file provisioning', () => {
 
     expect(startCalls.length).toBeGreaterThanOrEqual(1);
     expect(stopCalls.length).toBeGreaterThanOrEqual(1);
-    expect(sshTouchCalls.length).toBe(1);
+    expect(sshTouchCalls).toHaveLength(1);
   });
 });
 
@@ -2220,14 +2220,14 @@ test('No updates of machines in parallel', async () => {
   const podmanMachineListCalls = spyExecPromise.mock.calls.filter(
     call => call[0] === 'podman' && JSON.stringify(call[1]) === JSON.stringify(['machine', 'list', '--format', 'json']),
   );
-  expect(podmanMachineListCalls.length).toBe(1);
+  expect(podmanMachineListCalls).toHaveLength(1);
 
   // wait the second call
   await updateMachines2;
   const podmanMachineListAfterCalls = spyExecPromise.mock.calls.filter(
     call => call[0] === 'podman' && JSON.stringify(call[1]) === JSON.stringify(['machine', 'list', '--format', 'json']),
   );
-  expect(podmanMachineListAfterCalls.length).toBe(2);
+  expect(podmanMachineListAfterCalls).toHaveLength(2);
 });
 
 describe('initCheckAndRegisterUpdate', () => {

@@ -40,7 +40,7 @@ test('should register a configuration', async () => {
   expect(configurationNode?.id).toBe('releaseNotesBanner');
   expect(configurationNode?.title).toBe('Show release notes banner');
   expect(configurationNode?.properties).toBeDefined();
-  expect(Object.keys(configurationNode?.properties ?? {}).length).toBe(1);
+  expect(Object.keys(configurationNode?.properties ?? {})).toHaveLength(1);
   expect(configurationNode?.properties?.['releaseNotesBanner.show']).toBeDefined();
   expect(configurationNode?.properties?.['releaseNotesBanner.show']?.type).toBe('string');
   expect(configurationNode?.properties?.['releaseNotesBanner.show']?.default).toBe('show');

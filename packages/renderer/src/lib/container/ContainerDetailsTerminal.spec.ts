@@ -88,14 +88,14 @@ test('expect being able to reconnect ', async () => {
 
   // should be no terminal being stored
   const terminals = get(containerTerminals);
-  expect(terminals.length).toBe(0);
+  expect(terminals).toHaveLength(0);
 
   // destroy the object
   renderObject.unmount();
 
   // now, check that we have a terminal that is in the store
   const terminalsAfterDestroy = get(containerTerminals);
-  expect(terminalsAfterDestroy.length).toBe(1);
+  expect(terminalsAfterDestroy).toHaveLength(1);
 
   // ok, now render a new terminal widget, it should reuse data from the store
   renderObject = render(ContainerDetailsTerminal, { container, screenReaderMode: true });
@@ -707,7 +707,7 @@ test('prompt is not duplicated after restoring terminal from containerTerminals 
 
   // should be no terminal being stored
   const terminals = get(containerTerminals);
-  expect(terminals.length).toBe(0);
+  expect(terminals).toHaveLength(0);
 
   // destroy the terminal tab
   renderObject.unmount();

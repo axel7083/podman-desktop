@@ -1468,7 +1468,7 @@ describe('update', async () => {
       expect(makeInformerMock).toHaveBeenCalledTimes(1);
       expect(makeInformerMock).toHaveBeenCalledWith(expect.any(KubeConfig), informerPath, expect.anything());
 
-      expect(client.getContextResources('context1', resource as ResourceName).length).toBe(1);
+      expect(client.getContextResources('context1', resource as ResourceName)).toHaveLength(1);
 
       makeInformerMock.mockClear();
 
@@ -1481,7 +1481,7 @@ describe('update', async () => {
       await client.update(kubeConfig2);
 
       expect(informerStopMock).toHaveBeenCalledWith('context1', informerPath);
-      expect(client.getContextResources('context1', resource as ResourceName).length).toBe(0);
+      expect(client.getContextResources('context1', resource as ResourceName)).toHaveLength(0);
     });
 
     test('check log message contains context name', async () => {

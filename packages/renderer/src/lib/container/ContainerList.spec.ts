@@ -547,7 +547,7 @@ test('Expect to display running / stopped containers depending on tab', { timeou
   window.dispatchEvent(new CustomEvent('tray:update-provider'));
 
   // wait for the store to be cleared
-  await vi.waitFor(() => expect(get(containersInfos).length).toBe(0), { timeout: 5_000 });
+  await vi.waitFor(() => expect(get(containersInfos)).toHaveLength(0), { timeout: 5_000 });
 
   vi.mocked(window.getProviderInfos).mockResolvedValue([
     {
@@ -667,8 +667,8 @@ test('Expect to display running / stopped containers depending on tab', { timeou
   window.dispatchEvent(new CustomEvent('tray:update-provider'));
 
   // wait until store is populated
-  await vi.waitFor(() => expect(get(containersInfos).length).toBe(6), { timeout: 5_000 });
-  await vi.waitFor(() => expect(get(providerInfos).length).toBe(1), { timeout: 5_000 });
+  await vi.waitFor(() => expect(get(containersInfos)).toHaveLength(6), { timeout: 5_000 });
+  await vi.waitFor(() => expect(get(providerInfos)).toHaveLength(1), { timeout: 5_000 });
 
   await waitRender({});
 

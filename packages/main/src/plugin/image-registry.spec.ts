@@ -852,7 +852,7 @@ describe('expect checkCredentials', async () => {
     const newRegistries: Registry[] = [...imageRegistry.getRegistries()];
     expect(newRegistries).toBeDefined();
     expectTypeOf(newRegistries).toBeArray();
-    expect(newRegistries.length).toBe(1);
+    expect(newRegistries).toHaveLength(1);
   });
 
   test('should not duplicate a registry, and return a Disposable, when registering a registry twice', () => {
@@ -867,14 +867,14 @@ describe('expect checkCredentials', async () => {
     const registries1: Registry[] = [...imageRegistry.getRegistries()];
     expect(registries1).toBeDefined();
     expectTypeOf(registries1).toBeArray();
-    expect(registries1.length).toBe(1);
+    expect(registries1).toHaveLength(1);
 
     const res2 = imageRegistry.registerRegistry(reg1);
     expectTypeOf(res2).toMatchTypeOf({} as Disposable);
     const registries2: Registry[] = [...imageRegistry.getRegistries()];
     expect(registries2).toBeDefined();
     expectTypeOf(registries2).toBeArray();
-    expect(registries2.length).toBe(1);
+    expect(registries2).toHaveLength(1);
   });
 });
 
@@ -888,7 +888,7 @@ test('getRegistryConfig should return only valid registries if validateRegistrie
   const registries: Registry[] = [...imageRegistry.getRegistries()];
   expect(registries).toBeDefined();
   expectTypeOf(registries).toBeArray();
-  expect(registries.length).toBe(0);
+  expect(registries).toHaveLength(0);
 
   const reg1: Registry = {
     source: 'a-source-1',
@@ -923,11 +923,11 @@ test('getRegistryConfig should return only valid registries if validateRegistrie
   imageRegistry.registerRegistry(reg3);
   imageRegistry.registerRegistry(reg4);
 
-  expect(imageRegistry.getRegistries().length).toBe(4);
+  expect(imageRegistry.getRegistries()).toHaveLength(4);
 
   const registryConfig = await imageRegistry.getRegistryConfig(false);
 
-  expect(Object.keys(registryConfig).length).toBe(4);
+  expect(Object.keys(registryConfig)).toHaveLength(4);
   expect(Object.keys(registryConfig)).toContain('an-url-1');
   expect(Object.keys(registryConfig)).toContain('an-url-2');
   expect(Object.keys(registryConfig)).toContain('an-url-3');
@@ -935,7 +935,7 @@ test('getRegistryConfig should return only valid registries if validateRegistrie
 
   const validRegistryConfig = await imageRegistry.getRegistryConfig(true);
 
-  expect(Object.keys(validRegistryConfig).length).toBe(2);
+  expect(Object.keys(validRegistryConfig)).toHaveLength(2);
   expect(Object.keys(validRegistryConfig)).toContain('an-url-2');
   expect(Object.keys(validRegistryConfig)).toContain('an-url-3');
 });

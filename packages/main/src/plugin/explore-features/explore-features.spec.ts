@@ -187,7 +187,7 @@ test('init explore features in the configuration registry', async () => {
   expect(configurationNode?.id).toBe('exploreFeatures');
   expect(configurationNode?.title).toBe('Show explore features content');
   expect(configurationNode?.properties).toBeDefined();
-  expect(Object.keys(configurationNode?.properties ?? {}).length).toBe(2);
+  expect(Object.keys(configurationNode?.properties ?? {})).toHaveLength(2);
   expect(configurationNode?.properties?.['exploreFeatures.expanded']).toBeDefined();
   expect(configurationNode?.properties?.['exploreFeatures.expanded']?.type).toBe('boolean');
   expect(configurationNode?.properties?.['exploreFeatures.expanded']?.default).toBe(true);
@@ -218,7 +218,7 @@ test('Get features list', async () => {
   await exploreFeaturesMock.init();
   const features = await exploreFeaturesMock.downloadFeaturesList();
 
-  expect(features.length).toBe(4);
+  expect(features).toHaveLength(4);
 
   // all features show by default
   expect(features[0]?.show).toBe(true);

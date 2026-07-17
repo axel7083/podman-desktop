@@ -36,7 +36,7 @@ test('Expect basic table layout', async () => {
   // 3 people = header + 3 rows
   const rows = await screen.findAllByRole('row');
   expect(rows).toBeDefined();
-  expect(rows.length).toBe(4);
+  expect(rows).toHaveLength(4);
 
   // first data row should contain John and his age
   expect(rows[1].textContent).toContain('John');
@@ -64,7 +64,7 @@ test('Expect basic column headers', async () => {
 
   const headers = await screen.findAllByRole('columnheader');
   expect(headers).toBeDefined();
-  expect(headers.length).toBe(7);
+  expect(headers).toHaveLength(7);
   expect(headers[2].textContent).toContain('Id');
   expect(headers[2]).toHaveClass('select-none');
   expect(headers[2]).toHaveClass('max-w-full');
@@ -106,7 +106,7 @@ test('Expect column sort indicators', async () => {
 
   const headers = await screen.findAllByRole('columnheader');
   expect(headers).toBeDefined();
-  expect(headers.length).toBe(7);
+  expect(headers).toHaveLength(7);
   expect(headers[2].innerHTML).toContain('fa-sort');
   expect(headers[2]).toHaveClass('cursor-pointer');
   expect(headers[3].innerHTML).toContain('fa-sort');
@@ -122,7 +122,7 @@ test('Expect default sort indicator', async () => {
 
   const headers = await screen.findAllByRole('columnheader');
   expect(headers).toBeDefined();
-  expect(headers.length).toBe(7);
+  expect(headers).toHaveLength(7);
   expect(headers[2].textContent).toContain('Id');
   expect(headers[2].innerHTML).toContain('fa-sort-up');
 });
@@ -132,7 +132,7 @@ test('Expect no default sort indicator on other columns', async () => {
 
   const headers = await screen.findAllByRole('columnheader');
   expect(headers).toBeDefined();
-  expect(headers.length).toBe(7);
+  expect(headers).toHaveLength(7);
   expect(headers[3].innerHTML).not.toContain('fa-sort-up');
   expect(headers[3].innerHTML).not.toContain('fa-sort-down');
   expect(headers[4].innerHTML).not.toContain('fa-sort-up');
@@ -147,7 +147,7 @@ test('Expect sorting by name works', async () => {
 
   let rows = await screen.findAllByRole('row');
   expect(rows).toBeDefined();
-  expect(rows.length).toBe(4);
+  expect(rows).toHaveLength(4);
   expect(rows[1].textContent).toContain('John');
   expect(rows[1]).toHaveAccessibleName('John');
   expect(rows[2].textContent).toContain('Henry');
@@ -174,7 +174,7 @@ test('Expect sorting by age sorts descending initially', async () => {
 
   let rows = await screen.findAllByRole('row');
   expect(rows).toBeDefined();
-  expect(rows.length).toBe(4);
+  expect(rows).toHaveLength(4);
   expect(rows[1].textContent).toContain('John');
   expect(rows[2].textContent).toContain('Henry');
   expect(rows[3].textContent).toContain('Charlie');
@@ -197,7 +197,7 @@ test('Expect sorting by age twice sorts ascending', async () => {
 
   let rows = await screen.findAllByRole('row');
   expect(rows).toBeDefined();
-  expect(rows.length).toBe(4);
+  expect(rows).toHaveLength(4);
   expect(rows[1].textContent).toContain('John');
   expect(rows[2].textContent).toContain('Henry');
   expect(rows[3].textContent).toContain('Charlie');
@@ -223,18 +223,18 @@ test('Expect correct aria roles', async () => {
   // there should be 6 column headers (expander, checkbox, 4 columns)
   const headers = await screen.findAllByRole('columnheader');
   expect(headers).toBeDefined();
-  expect(headers.length).toBe(7);
+  expect(headers).toHaveLength(7);
 
   // and 4 rows (first is header)
   const rows = await screen.findAllByRole('row');
   expect(rows).toBeDefined();
-  expect(rows.length).toBe(4);
+  expect(rows).toHaveLength(4);
 
   // and each non-header row should have 6 cells (expander, checkbox, 4 cells)
   for (let i = 1; i < 4; i++) {
     const cells = await within(rows[i]).findAllByRole('cell');
     expect(cells).toBeDefined();
-    expect(cells.length).toBe(7);
+    expect(cells).toHaveLength(7);
   }
 });
 
@@ -244,17 +244,17 @@ test('Expect rowgroups', async () => {
   // there should be two role groups
   const rowgroups = await screen.findAllByRole('rowgroup');
   expect(rowgroups).toBeDefined();
-  expect(rowgroups.length).toBe(2);
+  expect(rowgroups).toHaveLength(2);
 
   // one for the header row
   const headers = await within(rowgroups[0]).findAllByRole('columnheader');
   expect(headers).toBeDefined();
-  expect(headers.length).toBe(7);
+  expect(headers).toHaveLength(7);
 
   // and one for the data rows
   const dataRows = await within(rowgroups[1]).findAllByRole('row');
   expect(dataRows).toBeDefined();
-  expect(dataRows.length).toBe(3);
+  expect(dataRows).toHaveLength(3);
 });
 
 test('Expect overflow-hidden', async () => {
@@ -263,7 +263,7 @@ test('Expect overflow-hidden', async () => {
   // get the 4 rows (first is header)
   const rows = await screen.findAllByRole('row');
   expect(rows).toBeDefined();
-  expect(rows.length).toBe(4);
+  expect(rows).toHaveLength(4);
 
   // and each non-header row should have 6 cells (expander, checkbox, 4 cells).
   // all 4 data cells should have overflow-hidden, except for age which has it
@@ -271,7 +271,7 @@ test('Expect overflow-hidden', async () => {
   for (let i = 1; i < 4; i++) {
     const cells = await within(rows[i]).findAllByRole('cell');
     expect(cells).toBeDefined();
-    expect(cells.length).toBe(7);
+    expect(cells).toHaveLength(7);
 
     expect(cells[2]).toHaveClass('overflow-hidden');
     expect(cells[3]).toHaveClass('overflow-hidden');
@@ -298,11 +298,11 @@ test('Expect table to be sorted by Id on load', async () => {
   // Wait for the table to load and fetch all rows
   const rows = await screen.findAllByRole('row');
   expect(rows).toBeDefined();
-  expect(rows.length).toBe(4);
+  expect(rows).toHaveLength(4);
 
   const headers = await screen.findAllByRole('columnheader');
   expect(headers).toBeDefined();
-  expect(headers.length).toBe(7);
+  expect(headers).toHaveLength(7);
   expect(headers[2].textContent).toContain('Id');
 
   // Check that Id column is sorted in ascending order
@@ -321,7 +321,7 @@ test('Expect table to be sorted by Name on load, if something has changed in the
 
   let rows = await screen.findAllByRole('row');
   expect(rows).toBeDefined();
-  expect(rows.length).toBe(4);
+  expect(rows).toHaveLength(4);
   expect(rows[1].textContent).toContain('John');
   expect(rows[2].textContent).toContain('Henry');
   expect(rows[3].textContent).toContain('Charlie');
@@ -355,7 +355,7 @@ test('Expect table to be sorted by Name on load, if something has changed in the
   // Check that the order is still the same even though hobbies had changed above.
   const newRows = await screen.findAllByRole('row');
   expect(newRows).toBeDefined();
-  expect(newRows.length).toBe(4);
+  expect(newRows).toHaveLength(4);
   expect(newRows[1].textContent).toContain('Charlie');
   expect(newRows[1].textContent).toContain('Karting');
   expect(newRows[2].textContent).toContain('Henry');
@@ -372,7 +372,7 @@ test('Expect duration cell to be empty when undefined', async () => {
 
   const rows = await screen.findAllByRole('row');
   expect(rows).toBeDefined();
-  expect(rows.length).toBe(4);
+  expect(rows).toHaveLength(4);
 
   const expected = ['', '', '1 hour'];
 
@@ -380,7 +380,7 @@ test('Expect duration cell to be empty when undefined', async () => {
   for (let i = 1; i < expected.length + 1; i++) {
     const cells = await within(rows[i]).findAllByRole('cell');
     expect(cells).toBeDefined();
-    expect(cells.length).toBe(7);
+    expect(cells).toHaveLength(7);
 
     expect(cells[6].textContent?.trim()).toBe(expected[i - 1]);
   }
@@ -620,7 +620,7 @@ describe('Table#collapsed', () => {
 
     // Should have 5 headers: expansion(1) + checkbox(1) + columns(2) + layout(1)
     const headers = await screen.findAllByRole('columnheader');
-    expect(headers.length).toBe(5);
+    expect(headers).toHaveLength(5);
 
     // Should have layout management button
     const layoutButton = screen.getByTitle('Configure Columns');
@@ -644,7 +644,7 @@ describe('Table#collapsed', () => {
 
     // Should have 4 headers: expansion(1) + checkbox(1) + columns(2)
     const headers = await screen.findAllByRole('columnheader');
-    expect(headers.length).toBe(4);
+    expect(headers).toHaveLength(4);
 
     // Should not have layout management button
     const layoutButton = screen.queryByTitle('Configure Columns');

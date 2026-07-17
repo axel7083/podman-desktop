@@ -35,7 +35,7 @@ test('should register a configuration', async () => {
   expect(configurationNode?.id).toBe('preferences.experimental.statusbarProviders');
   expect(configurationNode?.title).toBe('Experimental (Status Bar Providers)');
   expect(configurationNode?.properties).toBeDefined();
-  expect(Object.keys(configurationNode?.properties ?? {}).length).toBe(1);
+  expect(Object.keys(configurationNode?.properties ?? {})).toHaveLength(1);
   expect(configurationNode?.properties?.['statusbarProviders.showProviders']).toBeDefined();
   expect(configurationNode?.properties?.['statusbarProviders.showProviders']?.type).toBe('object');
   expect(configurationNode?.properties?.['statusbarProviders.showProviders']?.description).toBe(

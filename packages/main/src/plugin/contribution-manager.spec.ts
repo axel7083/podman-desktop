@@ -731,7 +731,7 @@ test('init', async () => {
   const contributions = contributionManager.listContributions();
 
   // should have 2
-  expect(contributions.length).toBe(2);
+  expect(contributions).toHaveLength(2);
 
   const openshiftExt = contributions.find(c => c.name === 'OpenShift');
   expect(openshiftExt).toBeDefined();

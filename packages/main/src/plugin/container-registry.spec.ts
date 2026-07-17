@@ -1709,7 +1709,7 @@ describe('buildImage', () => {
       provider: connection,
     });
 
-    expect(vi.mocked(dockerAPI.buildImage).mock.calls.length).toBe(1);
+    expect(vi.mocked(dockerAPI.buildImage).mock.calls).toHaveLength(1);
     const args = vi.mocked(dockerAPI.buildImage).mock.calls[0];
     const archive = args?.[0] as unknown as tarstream.Pack;
     const extract = tarstream.extract();
@@ -3814,7 +3814,7 @@ test('check handleEvents normalizes Docker v1.52+ event before emitting to exten
     }),
   );
 
-  await vi.waitFor(() => expect(receivedEvents.length).toBe(1));
+  await vi.waitFor(() => expect(receivedEvents).toHaveLength(1));
   expect(receivedEvents[0]).toMatchObject({
     status: 'stop',
     id: 'docker29-id',
@@ -4847,7 +4847,7 @@ describe('getContainerCreateMountOptionFromBind', () => {
 describe('listImages', () => {
   test('list images without arguments', async () => {
     const result = await containerRegistry.listImages();
-    expect(result.length).toBe(0);
+    expect(result).toHaveLength(0);
 
     expect(vi.spyOn(containerRegistry, 'getMatchingContainerProvider')).not.toHaveBeenCalled();
   });
@@ -4884,7 +4884,7 @@ describe('listImages', () => {
     expect(getMatchingContainerProviderMock).toHaveBeenCalled();
     expect(api.listImages).toHaveBeenCalled();
 
-    expect(result.length).toBe(1);
+    expect(result).toHaveLength(1);
     expect(result[0]).toStrictEqual({
       Id: 'dummyImageId',
       engineId: 'dummyId',
@@ -6322,7 +6322,7 @@ test('resolve Podman image shortname to FQN', async () => {
     {} as unknown as ProviderContainerConnectionInfo,
     'shortname',
   );
-  expect(imagesNames.length).toBe(3);
+  expect(imagesNames).toHaveLength(3);
   expect(imagesNames[0]).toBe('someregistry/shortname');
   expect(imagesNames[1]).toBe('docker.io/shortname');
   expect(imagesNames[2]).toBe('quay.io/shortname');
@@ -6334,7 +6334,7 @@ test('resolve Podman image shortname to FQN', async () => {
     {} as unknown as ProviderContainerConnectionInfo,
     'shortname',
   );
-  expect(imagesNames.length).toBe(1);
+  expect(imagesNames).toHaveLength(1);
   expect(imagesNames[0]).toBe('shortname');
 });
 
@@ -6361,7 +6361,7 @@ test('resolve Dokcer image shortname to FQN', async () => {
     {} as unknown as ProviderContainerConnectionInfo,
     'shortname',
   );
-  expect(imagesNames.length).toBe(1);
+  expect(imagesNames).toHaveLength(1);
   expect(imagesNames[0]).toBe('shortname');
 });
 

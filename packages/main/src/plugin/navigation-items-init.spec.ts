@@ -40,7 +40,7 @@ test('should register a configuration', async () => {
   expect(configurationNode?.id).toBe('preferences.navBar');
   expect(configurationNode?.title).toBe('User Confirmation');
   expect(configurationNode?.properties).toBeDefined();
-  expect(Object.keys(configurationNode?.properties ?? {}).length).toBe(1);
+  expect(Object.keys(configurationNode?.properties ?? {})).toHaveLength(1);
   expect(configurationNode?.properties?.['navbar.disabledItems']).toBeDefined();
   expect(configurationNode?.properties?.['navbar.disabledItems']?.description).toBe(
     'Items being disabled in the navigation bar',

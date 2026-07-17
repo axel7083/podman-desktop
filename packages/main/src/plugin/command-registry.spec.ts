@@ -69,7 +69,7 @@ test('Should dispose commands from an extension', async () => {
   const commandPaletteCommands = commandRegistry.getCommandPaletteCommands();
   expect(commandPaletteCommands).toBeDefined();
   expectTypeOf(commandPaletteCommands).toBeArray();
-  expect(commandPaletteCommands.length).toBe(1);
+  expect(commandPaletteCommands).toHaveLength(1);
 
   // check we have our command
   const myCommand = commandPaletteCommands.find(command => command.id === myCommandId);
@@ -83,7 +83,7 @@ test('Should dispose commands from an extension', async () => {
   const commandPaletteCommandsAfter = commandRegistry.getCommandPaletteCommands();
   expect(commandPaletteCommandsAfter).toBeDefined();
   expectTypeOf(commandPaletteCommandsAfter).toBeArray();
-  expect(commandPaletteCommandsAfter.length).toBe(0);
+  expect(commandPaletteCommandsAfter).toHaveLength(0);
 });
 
 test('Should dispose global commands ', async () => {
@@ -107,7 +107,7 @@ test('Should dispose global commands ', async () => {
   const commandPaletteCommands = commandRegistry.getCommandPaletteCommands();
   expect(commandPaletteCommands).toBeDefined();
   expectTypeOf(commandPaletteCommands).toBeArray();
-  expect(commandPaletteCommands.length).toBe(2);
+  expect(commandPaletteCommands).toHaveLength(2);
 
   // check we have our command
   const myCommand = commandPaletteCommands.find(command => command.id === myCommandId1);
@@ -125,7 +125,7 @@ test('Should dispose global commands ', async () => {
   const commandPaletteCommandsAfter = commandRegistry.getCommandPaletteCommands();
   expect(commandPaletteCommandsAfter).toBeDefined();
   expectTypeOf(commandPaletteCommandsAfter).toBeArray();
-  expect(commandPaletteCommandsAfter.length).toBe(1);
+  expect(commandPaletteCommandsAfter).toHaveLength(1);
 
   // now clear also the first registration
   disposable1.dispose();
@@ -134,7 +134,7 @@ test('Should dispose global commands ', async () => {
   const commandPaletteCommandsAfter2 = commandRegistry.getCommandPaletteCommands();
   expect(commandPaletteCommandsAfter2).toBeDefined();
   expectTypeOf(commandPaletteCommandsAfter2).toBeArray();
-  expect(commandPaletteCommandsAfter2.length).toBe(0);
+  expect(commandPaletteCommandsAfter2).toHaveLength(0);
 });
 
 test('Should include category in the title', async () => {
@@ -163,7 +163,7 @@ test('Should include category in the title', async () => {
   const commandPaletteCommands = commandRegistry.getCommandPaletteCommands();
   expect(commandPaletteCommands).toBeDefined();
   expectTypeOf(commandPaletteCommands).toBeArray();
-  expect(commandPaletteCommands.length).toBe(2);
+  expect(commandPaletteCommands).toHaveLength(2);
 
   // check we have our command
   const myCommand = commandPaletteCommands.find(command => command.id === myCommandId1);

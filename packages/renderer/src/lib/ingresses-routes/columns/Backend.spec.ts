@@ -102,7 +102,7 @@ test('Expect simple column styling with multiple paths ingress', async () => {
   render(Backend, { object: ingressUI });
 
   const backends = ingressRouteUtils.getBackends(ingressUI);
-  expect(backends.length).toBe(2);
+  expect(backends).toHaveLength(2);
   const firstElement = screen.getByText(backends[0]);
   expect(firstElement).toBeInTheDocument();
   expect(firstElement).toHaveClass('text-[var(--pd-table-body-text)]');

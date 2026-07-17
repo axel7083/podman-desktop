@@ -115,7 +115,7 @@ test('should list the result after the delay, and display spinner during loading
   assertIsListVisible(true);
   const list = screen.getByRole('row');
   const items = within(list).getAllByRole('button');
-  expect(items.length).toBe(3);
+  expect(items).toHaveLength(3);
   within(list).getByText('aze01');
   within(list).getByText('aze02');
   within(list).getByText('aze03');
@@ -143,7 +143,7 @@ test('should list items started with search term on top if no compare function i
     await tick();
     const list = screen.getByRole('row');
     const items = within(list).getAllByRole('button');
-    expect(items.length).toBe(6);
+    expect(items).toHaveLength(6);
     expect(items[0].textContent).toBe('aze01');
     expect(items[1].textContent).toBe('aze02');
     expect(items[2].textContent).toBe('aze03');
@@ -186,7 +186,7 @@ test('should list items in order based on compare function if provided', async (
   await waitFor(() => {
     const list = screen.getByRole('row');
     const items = within(list).getAllByRole('button');
-    expect(items.length).toBe(6);
+    expect(items).toHaveLength(6);
     expect(items[0].textContent).toBe('first01');
     expect(items[1].textContent).toBe('first02');
     expect(items[2].textContent).toBe('first03');
@@ -218,7 +218,7 @@ test('should navigate in list with keys', async () => {
 
   await waitFor(() => {
     const items = within(screen.getByRole('row')).getAllByRole('button');
-    expect(items.length).toBe(15);
+    expect(items).toHaveLength(15);
 
     // No item is selected first
     assertItemSelected(items, -1);
@@ -401,7 +401,7 @@ test('should include heading based on given order and searchFunctions order', as
     await tick();
     const list = getByRole('row');
     const items = within(list).getAllByRole('button');
-    expect(items.length).toBe(18);
+    expect(items).toHaveLength(18);
     expect(items[0].textContent).toBe('searchFunction1 results');
     expect(items[0]).toBeDisabled();
     expect(items[1].textContent).toBe('test11');
@@ -436,7 +436,7 @@ test('list opens on focus', async () => {
   await waitFor(() => {
     const list = screen.getByRole('row');
     const items = within(list).getAllByRole('button');
-    expect(items.length).toBe(4);
+    expect(items).toHaveLength(4);
     expect(items[0].textContent).toBe('text1');
     expect(items[1].textContent).toBe('text2');
     expect(items[2].textContent).toBe('text3');

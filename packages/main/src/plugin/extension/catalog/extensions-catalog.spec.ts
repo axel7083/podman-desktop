@@ -189,7 +189,7 @@ test('should skip extensions with only preview versions in fetchable list', asyn
   server.listen({ onUnhandledRequest: 'error' });
 
   const fetchableExtensions = await extensionsCatalog.getFetchableExtensions();
-  expect(fetchableExtensions.length).toBe(1);
+  expect(fetchableExtensions).toHaveLength(1);
   expect(fetchableExtensions[0]?.extensionId).toBe('foo.fooName');
 });
 
@@ -203,7 +203,7 @@ test('should fetch fetchable extensions', async () => {
 
   const fetchableExtensions = await extensionsCatalog.getFetchableExtensions();
   expect(fetchableExtensions).toBeDefined();
-  expect(fetchableExtensions.length).toBe(1);
+  expect(fetchableExtensions).toHaveLength(1);
 
   // check data
   const extension = fetchableExtensions[0];
@@ -229,7 +229,7 @@ test('should not fetch fetchable extensions if internet connection is taking too
   // no error, but array should be empty as it is taking too much time to download
   const fetchableExtensions = await extensionsCatalog.getFetchableExtensions();
   expect(fetchableExtensions).toBeDefined();
-  expect(fetchableExtensions.length).toBe(0);
+  expect(fetchableExtensions).toHaveLength(0);
   // error being logged
   expect(console.error).toBeCalledWith(expect.stringContaining('Unable to fetch the available extensions:'));
 
@@ -265,11 +265,11 @@ test('should use cached catalog and not fetch again within cache timeout', async
   server.listen({ onUnhandledRequest: 'error' });
 
   const first = await extensionsCatalog.getExtensions();
-  expect(first.length).toBe(1);
+  expect(first).toHaveLength(1);
   expect(fetchCount).toBe(1);
 
   const second = await extensionsCatalog.getExtensions();
-  expect(second.length).toBe(1);
+  expect(second).toHaveLength(1);
   expect(fetchCount).toBe(1);
 });
 
@@ -323,7 +323,7 @@ test('should refetch catalog after cache timeout expires', async () => {
   server.listen({ onUnhandledRequest: 'error' });
 
   const first = await extensionsCatalog.getExtensions();
-  expect(first.length).toBe(1);
+  expect(first).toHaveLength(1);
   expect(fetchCount).toBe(1);
 
   // Advance time past the cache timeout
@@ -331,7 +331,7 @@ test('should refetch catalog after cache timeout expires', async () => {
   vi.setSystemTime(Date.now() + ExtensionsCatalog.CACHE_TIMEOUT + 1);
 
   const second = await extensionsCatalog.getExtensions();
-  expect(second.length).toBe(1);
+  expect(second).toHaveLength(1);
   expect(fetchCount).toBe(2);
 
   vi.useRealTimers();
@@ -347,7 +347,7 @@ test('should get all extensions', async () => {
 
   const allExtensions = await extensionsCatalog.getExtensions();
   expect(allExtensions).toBeDefined();
-  expect(allExtensions.length).toBe(1);
+  expect(allExtensions).toHaveLength(1);
 
   // check data
   const extension = allExtensions[0];
@@ -383,7 +383,7 @@ test('should filter incompatible extension versions', async () => {
 
   const allExtensions = await extensionsCatalog.getExtensions();
   expect(allExtensions).toBeDefined();
-  expect(allExtensions.length).toBe(1);
+  expect(allExtensions).toHaveLength(1);
 
   // check data
   const extension = allExtensions[0];
@@ -413,7 +413,7 @@ test('should get proper unlisted fields', async () => {
 
   const allExtensions = await extensionsCatalog.getExtensions();
   expect(allExtensions).toBeDefined();
-  expect(allExtensions.length).toBe(3);
+  expect(allExtensions).toHaveLength(3);
 
   // check data
   const missingUnlistedExtension = allExtensions.find(e => e.id === 'foo.fooName');
@@ -448,7 +448,7 @@ test('should fetch alternate link', async () => {
 
   const fetchableExtensions = await extensionsCatalog.getFetchableExtensions();
   expect(fetchableExtensions).toBeDefined();
-  expect(fetchableExtensions.length).toBe(1);
+  expect(fetchableExtensions).toHaveLength(1);
 
   // check data
   const extension = fetchableExtensions[0];

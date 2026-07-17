@@ -99,7 +99,7 @@ test('Expect cleanContext to remove onboarding values from context and reset the
   expect(onboarding.steps[0].status).toBeUndefined();
   expect(onboarding.steps[1].status).toBeUndefined();
   const contextValues = context.collectAllValues();
-  expect(Object.keys(contextValues).length).toBe(0);
+  expect(Object.keys(contextValues)).toHaveLength(0);
 });
 
 test('Expect that the onboarding is not completed if atleast one step has not been completed', async () => {
