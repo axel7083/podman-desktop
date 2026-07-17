@@ -150,6 +150,7 @@ export default [
       'vitest/no-identical-title': 'error',
       'vitest/prefer-import-in-mock': 'error',
       'vitest/hoisted-apis-on-top': 'error',
+      'vitest/prefer-to-have-length': 'error',
       'vitest/prefer-mock-promise-shorthand': 'error',
       'vitest/prefer-mock-return-shorthand': 'error',
       eqeqeq: 'error',
