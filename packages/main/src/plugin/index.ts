@@ -871,18 +871,6 @@ export class PluginSystem {
 
     await this.setupSecurityRestrictionsOnLinks(messageBox);
 
-    this.ipcHandle('tasks:clear-all', async (): Promise<void> => {
-      return taskManager.clearTasks();
-    });
-
-    this.ipcHandle('tasks:clear', async (_listener, taskId: string): Promise<void> => {
-      return taskManager.getTask(taskId).dispose();
-    });
-
-    this.ipcHandle('tasks:execute', async (_listener, taskId: string): Promise<void> => {
-      return taskManager.execute(taskId);
-    });
-
     this.ipcHandle('container-provider-registry:listContainers', async (): Promise<ContainerInfo[]> => {
       return containerProviderRegistry.listContainers();
     });

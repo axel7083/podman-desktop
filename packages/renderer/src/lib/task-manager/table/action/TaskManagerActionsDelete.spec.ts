@@ -19,20 +19,12 @@
 import '@testing-library/jest-dom/vitest';
 
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import type { TaskInfoUI } from '/@/stores/tasks';
 
 import TaskManagerActionsDelete from './TaskManagerActionsDelete.svelte';
-
-beforeAll(() => {
-  Object.defineProperty(global, 'window', {
-    value: {
-      clearTask: vi.fn(),
-    },
-    writable: true,
-  });
-});
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -62,8 +54,7 @@ test('Expect cancellable action being displayed if completed', async () => {
   // click on the button
   await fireEvent.click(deleteButton);
 
-  // expect the window.clearTask to be called
-  expect(window.clearTask).toHaveBeenCalledWith(completedTask.id);
+  expect(client.tasks.clear).toHaveBeenCalledWith(completedTask.id);
 });
 
 test('Expect cancellable action not being displayed if not cancellable', async () => {

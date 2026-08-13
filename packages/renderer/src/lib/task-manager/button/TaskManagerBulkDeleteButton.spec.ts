@@ -21,6 +21,7 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { type TaskInfoUI, tasksInfo } from '/@/stores/tasks';
 
 import TaskManagerBulkDeleteButton from './TaskManagerBulkDeleteButton.svelte';
@@ -30,7 +31,6 @@ beforeAll(() => {
     value: {
       getConfigurationValue: vi.fn(),
       showMessageBox: vi.fn(),
-      clearTask: vi.fn(),
     },
     writable: true,
   });
@@ -86,8 +86,7 @@ test('Expect bulk button is bringing confirmation but not deleting anything', as
     type: 'danger',
   });
 
-  // expect we did not call the clearTask method
-  expect(window.clearTask).not.toHaveBeenCalled();
+  expect(client.tasks.clear).not.toHaveBeenCalled();
 });
 
 test('Expect delete is called after confirming', async () => {
@@ -101,8 +100,7 @@ test('Expect delete is called after confirming', async () => {
   // click the button
   await fireEvent.click(bulkButton);
 
-  // expect we called the clearTask method for each selected task
-  expect(window.clearTask).toHaveBeenCalledWith('1');
-  expect(window.clearTask).toHaveBeenCalledWith('2');
-  expect(window.clearTask).not.toHaveBeenCalledWith('3');
+  expect(client.tasks.clear).toHaveBeenCalledWith('1');
+  expect(client.tasks.clear).toHaveBeenCalledWith('2');
+  expect(client.tasks.clear).not.toHaveBeenCalledWith('3');
 });

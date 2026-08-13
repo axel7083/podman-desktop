@@ -255,18 +255,6 @@ export function initExposure(): void {
     } as NavigationRequest<NavigationPage.EXPERIMENTAL_FEATURES>);
   });
 
-  contextBridge.exposeInMainWorld('clearTasks', async (): Promise<void> => {
-    return ipcInvoke('tasks:clear-all');
-  });
-
-  contextBridge.exposeInMainWorld('clearTask', async (taskId: string): Promise<void> => {
-    return ipcInvoke('tasks:clear', taskId);
-  });
-
-  contextBridge.exposeInMainWorld('executeTask', async (taskId: string): Promise<void> => {
-    return ipcInvoke('tasks:execute', taskId);
-  });
-
   contextBridge.exposeInMainWorld('extensionSystemIsReady', async (): Promise<boolean> => {
     return ipcInvoke('extension-system:isReady');
   });

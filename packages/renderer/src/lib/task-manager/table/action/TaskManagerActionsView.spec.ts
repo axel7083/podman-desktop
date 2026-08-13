@@ -19,21 +19,12 @@
 import '@testing-library/jest-dom/vitest';
 
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import type { TaskInfoUI } from '/@/stores/tasks';
 
 import TaskManagerActionsView from './TaskManagerActionsView.svelte';
-
-beforeAll(() => {
-  Object.defineProperty(global, 'window', {
-    value: {
-      executeTask: vi.fn(),
-      executeCommand: vi.fn(),
-    },
-    writable: true,
-  });
-});
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -63,8 +54,7 @@ test('Expect task with action being displayed', async () => {
   // click on the button
   await fireEvent.click(viewButton);
 
-  // expect the window commands to be called
-  expect(window.executeTask).toHaveBeenCalledWith(actionTask.id);
+  expect(client.tasks.execute).toHaveBeenCalledWith(actionTask.id);
   expect(window.executeCommand).toHaveBeenCalledWith('show-task-manager');
 });
 

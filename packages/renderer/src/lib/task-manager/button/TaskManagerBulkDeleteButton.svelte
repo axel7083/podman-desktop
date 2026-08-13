@@ -2,6 +2,7 @@
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { Button } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
 import { withBulkConfirmation } from '/@/lib/actions/BulkActions';
 import { filtered } from '/@/stores/tasks';
 
@@ -22,7 +23,7 @@ async function deleteSelectedTasks(): Promise<void> {
   // mark tasks for deletion
   bulkDeleteInProgress = true;
   for (const taskToDelete of selectedTasks) {
-    await window.clearTask(taskToDelete.id);
+    await client.tasks.clear(taskToDelete.id);
   }
 
   bulkDeleteInProgress = false;

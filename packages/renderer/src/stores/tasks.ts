@@ -20,6 +20,8 @@ import { type NotificationTaskInfo, TASK_STATUSES, type TaskInfo, type TaskStatu
 import type { Writable } from 'svelte/store';
 import { derived, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { findMatchInLeaves } from './search-util';
 
 /**
@@ -78,7 +80,7 @@ export const filtered = derived([searchPattern, tasksInfo], ([$searchPattern, $t
 
 // remove element from the store
 export async function removeTask(taskId: string): Promise<void> {
-  return window.clearTask(taskId);
+  return client.tasks.clear(taskId);
 }
 
 // Normalize task - for notification tasks with failure status, copy body to error
@@ -99,7 +101,7 @@ function updateTask(task: TaskInfo): void {
 
 // remove element from the store that are completed
 export async function clearNotifications(): Promise<void> {
-  return window.clearTasks();
+  return client.tasks.clearAll();
 }
 
 window.events?.receive('task-created', (task: unknown) => {

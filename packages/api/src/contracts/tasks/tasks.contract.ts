@@ -16,12 +16,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { planetContract } from '/@/contracts/planet/planet.contract.js';
-import { tasksContract } from '/@/contracts/tasks/tasks.contract.js';
+import { oc, type } from '@orpc/contract';
 
-export * from './constants.js';
-
-export const contracts = {
-  planet: planetContract,
-  tasks: tasksContract,
+export const tasksContract = {
+  clearAll: oc.output(type<void>()),
+  clear: oc.input(type<string>()).output(type<void>()),
+  execute: oc.input(type<string>()).output(type<void>()),
 };

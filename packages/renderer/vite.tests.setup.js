@@ -23,6 +23,12 @@ import typescript from 'typescript';
 import { EventStore } from './src/stores/event-store';
 import { vi } from 'vitest';
 
+vi.mock('/@/client', () => ({
+  client: {
+    tasks: { clearAll: vi.fn(), clear: vi.fn(), execute: vi.fn() },
+  },
+}));
+
 /**
  * Mock matchMedia
  * @param query {string} the media query to match
