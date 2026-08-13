@@ -24,9 +24,9 @@ import { IPCMainOn } from '/@/plugin/api.js';
 import { ContainerRouter } from '/@/plugin/routers/container.router.js';
 import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
 
-const os = implement<typeof contracts, OrpcContext>(contracts);
-
 export type OrpcContext = Context;
+
+const implementer = implement<typeof contracts>(contracts).$context<OrpcContext>();
 
 @injectable()
 export class RpcHandler {
@@ -40,20 +40,19 @@ export class RpcHandler {
     @inject(ContainerRouter)
     readonly container: ContainerRouter,
   ) {
-    this.#handler = new RPCHandler(
-      os.router({
-        planet: this.planet,
-        container: this.container,
-      }),
-      {
-        interceptors: [
-          onError(error => {
-            console.error(error);
-            throw error;
-          }),
-        ],
-      },
-    );
+    const router = implementer.router({
+      planet: planet.router,
+      container: container.router,
+    });
+
+    this.#handler = new RPCHandler(router, {
+      interceptors: [
+        onError(error => {
+          console.error(error);
+          throw error;
+        }),
+      ],
+    });
   }
 
   init(container: InversifyContainer): void {

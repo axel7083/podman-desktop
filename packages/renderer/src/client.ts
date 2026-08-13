@@ -17,7 +17,7 @@
  ***********************************************************************/
 import { createORPCClient } from '@orpc/client';
 import { RPCLink } from '@orpc/client/message-port';
-import type { ContractRouterClient } from '@orpc/contract';
+import type { RouterContractClient } from '@orpc/contract';
 import type { contracts } from '@podman-desktop/core-api';
 import { ORPC_START_CHANNEL } from '@podman-desktop/core-api';
 
@@ -31,4 +31,4 @@ const link = new RPCLink({
 
 clientPort.start();
 
-export const client: ContractRouterClient<typeof contracts> = createORPCClient(link);
+export const client: RouterContractClient<typeof contracts> = createORPCClient(link);

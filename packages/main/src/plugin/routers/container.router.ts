@@ -15,6 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import type { ContractedRouter } from '@orpc/server';
 import { implement } from '@orpc/server';
 import { contracts } from '@podman-desktop/core-api';
 import { inject, injectable } from 'inversify';
@@ -22,18 +23,18 @@ import { inject, injectable } from 'inversify';
 import { ContainerProviderRegistry } from '/@/plugin/container-registry.js';
 import type { OrpcContext } from '/@/plugin/routers/rpc-handler.js';
 
-import type { ServiceFromContract } from './utils/service-contract.js';
-
 const os = implement<typeof contracts.container, OrpcContext>(contracts.container);
 
 @injectable()
-export class ContainerRouter implements ServiceFromContract<typeof contracts.container, OrpcContext> {
+export class ContainerRouter {
   constructor(
     @inject(ContainerProviderRegistry)
     private containerRegistry: ContainerProviderRegistry,
   ) {}
 
-  list = os.list.handler(() => {
-    return this.containerRegistry.listContainers();
-  });
+  router: ContractedRouter<typeof contracts.container, OrpcContext> = {
+    list: os.list.handler(() => {
+      return this.containerRegistry.listContainers();
+    }),
+  };
 }

@@ -70,6 +70,6 @@
     "winreg": "^1.2.5",
     "yaml": "^2.9.0",
     "zod": "^4.4.3",
-    "@orpc/server": "^1.13.14"
+    "@orpc/server": "beta"
   }
 }
