@@ -16,12 +16,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { containerContract } from '/@/contracts/container/container.contract.js';
 import { planetContract } from '/@/contracts/planet/planet.contract.js';
 
 export * from './constants.js';
 
 export const contracts = {
   planet: planetContract,
-  container: containerContract,
 };

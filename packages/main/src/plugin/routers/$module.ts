@@ -18,14 +18,11 @@
 
 import { ContainerModule } from 'inversify';
 
-import { ContainerRouter } from '/@/plugin/routers/container.router.js';
 import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
 import { RpcHandler } from '/@/plugin/routers/rpc-handler.js';
 
 const routersModule = new ContainerModule(options => {
   options.bind<PlanetRouter>(PlanetRouter).toSelf().inSingletonScope();
-  options.bind<ContainerRouter>(ContainerRouter).toSelf().inSingletonScope();
-
   options.bind<RpcHandler>(RpcHandler).toSelf().inSingletonScope();
 });
 
