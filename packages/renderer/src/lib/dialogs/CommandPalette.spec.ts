@@ -45,7 +45,7 @@ beforeAll(() => {
   vi.mocked(window.executeCommand).mockResolvedValue(undefined);
   vi.mocked(client.system.openExternal).mockResolvedValue(undefined);
   vi.mocked(client.system.getPlatform).mockResolvedValue('linux');
-  vi.mocked(window.getDocumentationItems).mockResolvedValue([]);
+  vi.mocked(client.documentation.getItems).mockResolvedValue([]);
 
   containersInfos.set([mockContainerInfo]);
   // mock missing scrollIntoView method
@@ -55,7 +55,7 @@ beforeAll(() => {
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(client.telemetry.track).mockResolvedValue(undefined);
-  vi.mocked(window.getCommandPaletteSearchOptions).mockResolvedValue([
+  vi.mocked(client.commands.getCommandPaletteSearchOptions).mockResolvedValue([
     { category: 'category 1', text: 'Category 1 text', placeholder: 'Enter category 1 item' },
     { category: 'category 2', text: 'Category 2 text', placeholder: 'Enter category 2 item' },
     { category: 'category 3', text: 'Category 3 text', placeholder: 'Enter category 3 item' },
@@ -68,7 +68,7 @@ describe('Command Palette', () => {
     render(CommandPalette);
 
     await waitFor(() => {
-      expect(window.getCommandPaletteSearchOptions).toHaveBeenCalled();
+      expect(client.commands.getCommandPaletteSearchOptions).toHaveBeenCalled();
     });
 
     // check we have the command palette input field
@@ -87,7 +87,7 @@ describe('Command Palette', () => {
     render(CommandPalette, { display: true });
 
     await waitFor(() => {
-      expect(window.getCommandPaletteSearchOptions).toHaveBeenCalled();
+      expect(client.commands.getCommandPaletteSearchOptions).toHaveBeenCalled();
     });
 
     // check we have the command palette input field
@@ -119,7 +119,7 @@ describe('Command Palette', () => {
     render(CommandPalette, { display: true });
 
     await waitFor(() => {
-      expect(window.getCommandPaletteSearchOptions).toHaveBeenCalled();
+      expect(client.commands.getCommandPaletteSearchOptions).toHaveBeenCalled();
     });
 
     // Wait for component to initialize and items to be rendered
@@ -185,7 +185,7 @@ describe('Command Palette', () => {
     render(CommandPalette, { display: true });
 
     await waitFor(() => {
-      expect(window.getCommandPaletteSearchOptions).toHaveBeenCalled();
+      expect(client.commands.getCommandPaletteSearchOptions).toHaveBeenCalled();
     });
 
     // Wait for component to initialize and items to be rendered
@@ -254,7 +254,7 @@ describe('Command Palette', () => {
     render(CommandPalette, { display: true });
 
     await waitFor(() => {
-      expect(window.getCommandPaletteSearchOptions).toHaveBeenCalled();
+      expect(client.commands.getCommandPaletteSearchOptions).toHaveBeenCalled();
     });
 
     // Wait for component to initialize and items to be rendered
@@ -313,7 +313,7 @@ describe('Command Palette', () => {
     render(CommandPalette, { display: true });
 
     await waitFor(() => {
-      expect(window.getCommandPaletteSearchOptions).toHaveBeenCalled();
+      expect(client.commands.getCommandPaletteSearchOptions).toHaveBeenCalled();
     });
 
     // check we have the command palette input field
@@ -389,7 +389,7 @@ describe('Command Palette', () => {
     render(CommandPalette, { display: true });
 
     await waitFor(() => {
-      expect(window.getCommandPaletteSearchOptions).toHaveBeenCalled();
+      expect(client.commands.getCommandPaletteSearchOptions).toHaveBeenCalled();
     });
 
     // check we have the command palette input field
@@ -464,7 +464,7 @@ describe('Command Palette', () => {
       render(CommandPalette, { display: true });
 
       await waitFor(() => {
-        expect(window.getCommandPaletteSearchOptions).toHaveBeenCalled();
+        expect(client.commands.getCommandPaletteSearchOptions).toHaveBeenCalled();
       });
 
       // press the shortcut
@@ -498,7 +498,7 @@ describe('Command Palette', () => {
       render(CommandPalette);
 
       await waitFor(() => {
-        expect(window.getCommandPaletteSearchOptions).toHaveBeenCalled();
+        expect(client.commands.getCommandPaletteSearchOptions).toHaveBeenCalled();
       });
       // check command palette is not displayed initially
       const inputBefore = screen.queryByRole('textbox', { name: COMMAND_PALETTE_ARIA_LABEL });
@@ -529,7 +529,7 @@ describe('Command Palette', () => {
     render(CommandPalette, { display: true });
 
     await waitFor(() => {
-      expect(window.getCommandPaletteSearchOptions).toHaveBeenCalled();
+      expect(client.commands.getCommandPaletteSearchOptions).toHaveBeenCalled();
     });
 
     // check command palette is displayed
@@ -583,7 +583,7 @@ describe('Command Palette', () => {
     render(CommandPalette, { display: true });
 
     await waitFor(() => {
-      expect(window.getCommandPaletteSearchOptions).toHaveBeenCalled();
+      expect(client.commands.getCommandPaletteSearchOptions).toHaveBeenCalled();
     });
 
     // check command palette is displayed
@@ -692,7 +692,7 @@ describe('Command Palette', () => {
     render(CommandPalette, { display: true });
 
     await waitFor(() => {
-      expect(window.getCommandPaletteSearchOptions).toHaveBeenCalled();
+      expect(client.commands.getCommandPaletteSearchOptions).toHaveBeenCalled();
     });
 
     // Switch to the GoTo tab (category 4)
@@ -766,7 +766,7 @@ describe('Command Palette', () => {
     const { getByRole, queryByRole } = render(CommandPalette, { display: true });
 
     await waitFor(() => {
-      expect(window.getCommandPaletteSearchOptions).toHaveBeenCalled();
+      expect(client.commands.getCommandPaletteSearchOptions).toHaveBeenCalled();
     });
 
     const gotoTab = getByRole('button', { name: 'Ctrl+F Category 4 text' });

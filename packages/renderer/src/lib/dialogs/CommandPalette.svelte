@@ -124,8 +124,8 @@ let filteredItems = $derived.by(() => {
 onMount(async () => {
   const platform = await client.system.getPlatform();
   isMac = platform === 'darwin';
-  documentationItems = await window.getDocumentationItems();
-  searchOptions = await window.getCommandPaletteSearchOptions();
+  documentationItems = await client.documentation.getItems();
+  searchOptions = await client.commands.getCommandPaletteSearchOptions();
 });
 
 // Focus the input when the command palette becomes visible
