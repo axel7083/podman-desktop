@@ -18,6 +18,8 @@
 
 import { writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 export const updateAvailable = writable(false);
@@ -28,7 +30,7 @@ const windowListeners = ['extensions-already-started'];
 
 async function checkForUpdate(eventName: string): Promise<boolean> {
   if ('extensions-already-started' === eventName) {
-    const podmanDesktopUpdateAvailable = await window.podmanDesktopUpdateAvailable();
+    const podmanDesktopUpdateAvailable = await client.app.updateAvailable();
     updateAvailable.set(podmanDesktopUpdateAvailable);
   } else if ('app-update-available' === eventName) {
     return true;

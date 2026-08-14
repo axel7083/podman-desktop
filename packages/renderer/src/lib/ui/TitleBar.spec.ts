@@ -34,7 +34,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.getTitleBarText).mockResolvedValue('Podman Desktop');
+  vi.mocked(client.app.getTitleBarText).mockResolvedValue('Podman Desktop');
 });
 
 async function waitRender(customProperties: object): Promise<void> {

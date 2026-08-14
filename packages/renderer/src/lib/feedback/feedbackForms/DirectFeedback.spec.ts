@@ -33,7 +33,7 @@ beforeEach(() => {
     thankYouMessage: 'Your input is valuable in helping us better understand and tailor Podman Desktop.',
     gitHubStarsMessage: 'Like Podman Desktop? Give us a star on GitHub',
   });
-  vi.mocked(window.getAppRepository).mockResolvedValue('https://github.com/test/test-repo');
+  vi.mocked(client.app.getAppRepository).mockResolvedValue('https://github.com/test/test-repo');
 });
 
 test('Expect that the button is disabled when loading the page', async () => {
@@ -255,7 +255,7 @@ test('Expect email field has correct text', async () => {
 });
 
 test('Expect GitHub section hidden when repository is not a GitHub URL', async () => {
-  vi.mocked(window.getAppRepository).mockResolvedValue('https://gitlab.com/test/test-repo');
+  vi.mocked(client.app.getAppRepository).mockResolvedValue('https://gitlab.com/test/test-repo');
 
   render(DirectFeedback, { category: 'developers', contentChange: vi.fn(), onCloseForm: vi.fn() });
 
@@ -269,7 +269,7 @@ test('Expect GitHub section hidden when repository is not a GitHub URL', async (
 });
 
 test('Expect GitHub section hidden when repository is undefined', async () => {
-  vi.mocked(window.getAppRepository).mockResolvedValue(undefined);
+  vi.mocked(client.app.getAppRepository).mockResolvedValue(undefined);
 
   render(DirectFeedback, { category: 'developers', contentChange: vi.fn(), onCloseForm: vi.fn() });
 

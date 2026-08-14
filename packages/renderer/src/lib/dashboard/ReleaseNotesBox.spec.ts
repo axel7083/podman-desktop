@@ -21,42 +21,28 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
-import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { onDidChangeConfiguration } from '/@/stores/configurationProperties';
 import { updateAvailable } from '/@/stores/update-store';
 
 import ReleaseNotesBox from './ReleaseNotesBox.svelte';
 
-const podmanDesktopUpdateAvailableMock = vi.fn();
-const getPodmanDesktopVersionMock = vi.fn();
-const updatePodmanDesktopMock = vi.fn();
-const updateConfigurationValueMock = vi.fn();
-const getConfigurationValueMock = vi.fn();
-const podmanDesktopGetReleaseNotesMock = vi.fn();
 const responseJSON = { image: 'image1.png', title: 'Release 1.1', summary: 'some info about v1.1.0 release' };
-
-beforeAll(() => {
-  Object.defineProperty(window, 'podmanDesktopUpdateAvailable', { value: podmanDesktopUpdateAvailableMock });
-  Object.defineProperty(window, 'getPodmanDesktopVersion', { value: getPodmanDesktopVersionMock });
-  Object.defineProperty(window, 'podmanDesktopGetReleaseNotes', { value: podmanDesktopGetReleaseNotesMock });
-  Object.defineProperty(window, 'updatePodmanDesktop', { value: updatePodmanDesktopMock });
-  Object.defineProperty(window, 'updateConfigurationValue', { value: updateConfigurationValueMock });
-  Object.defineProperty(window, 'getConfigurationValue', { value: getConfigurationValueMock });
-});
 
 const callbacks = new Map<string, (arg: unknown) => void>();
 
 beforeEach(() => {
   vi.resetAllMocks();
-  podmanDesktopUpdateAvailableMock.mockResolvedValue(false);
-  getPodmanDesktopVersionMock.mockResolvedValue('1.1.0');
-  podmanDesktopGetReleaseNotesMock.mockResolvedValue({
+  vi.mocked(client.app.updateAvailable).mockResolvedValue(false);
+  vi.mocked(client.app.getVersion).mockResolvedValue('1.1.0');
+  vi.mocked(client.app.getReleaseNotes).mockResolvedValue({
     releaseNotesAvailable: true,
     notesURL: `appHomepage/blog/podman-desktop-release-1.1`,
     notes: responseJSON,
   });
-  getConfigurationValueMock.mockResolvedValue('show');
+  vi.mocked(client.configuration.getValue).mockResolvedValue('show');
   onDidChangeConfiguration.addEventListener = vi.fn().mockImplementation((message: string, callback: () => void) => {
     callbacks.set(message, callback);
   });
@@ -65,8 +51,8 @@ beforeEach(() => {
 test('expect banner to be visible', async () => {
   render(ReleaseNotesBox);
   await tick();
-  expect(getConfigurationValueMock).toBeCalledWith('releaseNotesBanner.show');
-  await waitFor(() => expect(podmanDesktopGetReleaseNotesMock).toBeCalled());
+  expect(vi.mocked(client.configuration.getValue)).toBeCalledWith({ key: 'releaseNotesBanner.show' });
+  await waitFor(() => expect(vi.mocked(client.app.getReleaseNotes)).toBeCalled());
   await tick();
   expect(screen.getByText(responseJSON.title)).toBeInTheDocument();
   expect(screen.getAllByText(responseJSON.summary)[0]).toBeInTheDocument();
@@ -115,13 +101,13 @@ test('expect image to be hidden if there is a loading error', async () => {
 });
 
 test('expect no release notes available', async () => {
-  podmanDesktopGetReleaseNotesMock.mockResolvedValue({
+  vi.mocked(client.app.getReleaseNotes).mockResolvedValue({
     releaseNotesAvailable: false,
     notesURL: `appRepo/release-summary`,
   });
 
   render(ReleaseNotesBox);
-  await waitFor(() => expect(podmanDesktopGetReleaseNotesMock).toBeCalled());
+  await waitFor(() => expect(vi.mocked(client.app.getReleaseNotes)).toBeCalled());
   await tick();
   expect(screen.queryByText(responseJSON.title)).not.toBeInTheDocument();
   expect(screen.queryByText(responseJSON.summary)).not.toBeInTheDocument();
@@ -134,18 +120,18 @@ test('expect no release notes available', async () => {
 test('expect update button to show when there is an update', async () => {
   updateAvailable.set(true);
   render(ReleaseNotesBox);
-  await waitFor(() => expect(podmanDesktopGetReleaseNotesMock));
+  await waitFor(() => expect(vi.mocked(client.app.getReleaseNotes)));
   await tick();
   await waitFor(() => expect(screen.queryByRole('button', { name: 'Update' })).toBeInTheDocument());
   const updateButton = screen.getByRole('button', { name: 'Update' });
   await userEvent.click(updateButton);
-  expect(updatePodmanDesktopMock).toHaveBeenCalled();
+  expect(vi.mocked(client.app.update)).toHaveBeenCalled();
 });
 
 test('expect update button to not show when there is no update', async () => {
   updateAvailable.set(false);
   render(ReleaseNotesBox);
-  await waitFor(() => expect(podmanDesktopGetReleaseNotesMock).toBeCalled());
+  await waitFor(() => expect(vi.mocked(client.app.getReleaseNotes)).toBeCalled());
   await tick();
   expect(screen.queryByRole('button', { name: 'Update' })).not.toBeInTheDocument();
 });
@@ -156,18 +142,21 @@ test('expect clicking on close button to not show banner anymore', async () => {
   const closeButton = screen.getByRole('button', { name: 'Close' });
   await userEvent.click(closeButton);
   await tick();
-  expect(updateConfigurationValueMock).toBeCalledWith('releaseNotesBanner.show', '1.1.0');
+  expect(vi.mocked(client.configuration.updateValue)).toBeCalledWith({
+    key: 'releaseNotesBanner.show',
+    value: '1.1.0',
+  });
   expect(screen.queryByText(responseJSON.title)).not.toBeInTheDocument();
   expect(screen.queryByText(responseJSON.summary)).not.toBeInTheDocument();
 });
 
 test('expect no release notes widget if no notesUrl as well', async () => {
-  podmanDesktopGetReleaseNotesMock.mockResolvedValue({
+  vi.mocked(client.app.getReleaseNotes).mockResolvedValue({
     releaseNotesAvailable: false,
   });
 
   render(ReleaseNotesBox);
-  await waitFor(() => expect(podmanDesktopGetReleaseNotesMock).toBeCalled());
+  await waitFor(() => expect(vi.mocked(client.app.getReleaseNotes)).toBeCalled());
   await tick();
   expect(screen.queryByText(responseJSON.title)).not.toBeInTheDocument();
   expect(screen.queryByText(responseJSON.summary)).not.toBeInTheDocument();
@@ -179,10 +168,10 @@ test('expect no release notes widget if no notesUrl as well', async () => {
 
 test('show release notes on configuration change to non-current version value', async () => {
   // do not show release notes
-  getConfigurationValueMock.mockResolvedValueOnce('1.1.0');
+  vi.mocked(client.configuration.getValue).mockResolvedValueOnce('1.1.0');
   const showReleaseNotes = 'releaseNotesBanner.show';
   render(ReleaseNotesBox);
-  await waitFor(() => expect(podmanDesktopGetReleaseNotesMock).toBeCalled());
+  await waitFor(() => expect(vi.mocked(client.app.getReleaseNotes)).toBeCalled());
 
   expect(screen.queryByText(responseJSON.title)).not.toBeInTheDocument();
   expect(screen.queryByText(responseJSON.summary)).not.toBeInTheDocument();
@@ -198,7 +187,7 @@ test('show release notes on configuration change to non-current version value', 
 });
 
 test('hide release notes on configuration change to current version value', async () => {
-  getConfigurationValueMock.mockResolvedValueOnce('show');
+  vi.mocked(client.configuration.getValue).mockResolvedValueOnce('show');
   const showReleaseNotes = 'releaseNotesBanner.show';
   render(ReleaseNotesBox);
   await tick();

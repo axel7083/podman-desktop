@@ -26,7 +26,7 @@ interface Props {
 let smileyRating = $state(0);
 let tellUsWhyFeedback = $state('');
 let contactInformation = $state('');
-let repository = $derived(await window.getAppRepository());
+let repository = $derived(await client.app.getAppRepository());
 let hasFeedback = $derived(
   (tellUsWhyFeedback && tellUsWhyFeedback.trim().length > 4) ||
     (contactInformation && contactInformation.trim().length > 4),

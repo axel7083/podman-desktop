@@ -34,11 +34,11 @@ async function openReleaseNotes(): Promise<void> {
 }
 
 async function updatePodmanDesktop(): Promise<void> {
-  await window.updatePodmanDesktop();
+  await client.app.update();
 }
 
 async function getInfoFromNotes(): Promise<void> {
-  const releaseNotes = await window.podmanDesktopGetReleaseNotes();
+  const releaseNotes = await client.app.getReleaseNotes();
   notesInfo = releaseNotes.notes;
   notesAvailable = notesInfo !== undefined;
   notesURL = releaseNotes.notesURL;
@@ -51,7 +51,7 @@ async function onClose(): Promise<void> {
 
 onMount(async () => {
   onDidChangeConfiguration.addEventListener('releaseNotesBanner.show', onDidChangeConfigurationCallback);
-  currentVersion = await window.getPodmanDesktopVersion();
+  currentVersion = await client.app.getVersion();
   showBanner =
     (await client.configuration.getValue({ key: `releaseNotesBanner.show` })) !== currentVersion ? true : false;
   await getInfoFromNotes();

@@ -11,7 +11,7 @@ import SearchButton from './SearchButton.svelte';
 
 let platform: string = $state('');
 
-const title = await window.getTitleBarText();
+const title = await client.app.getTitleBarText();
 let commandPaletteVisible = $state(false);
 
 onMount(async () => {
