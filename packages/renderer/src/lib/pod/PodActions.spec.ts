@@ -52,7 +52,6 @@ const podmanPod: PodInfoUI = {
 
 const listContainersMock = vi.fn();
 const getContributedMenusMock = vi.fn();
-const openExternalSpy = vi.fn();
 
 class ResizeObserver {
   observe = vi.fn();
@@ -69,7 +68,6 @@ beforeAll(() => {
   Object.defineProperty(window, 'restartPod', { value: vi.fn() });
   Object.defineProperty(window, 'removePod', { value: vi.fn() });
   Object.defineProperty(window, 'getContributedMenus', { value: getContributedMenusMock });
-  Object.defineProperty(window, 'openExternal', { value: openExternalSpy });
 });
 
 beforeEach(() => {

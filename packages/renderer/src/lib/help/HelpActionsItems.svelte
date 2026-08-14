@@ -3,6 +3,8 @@ import { ActionKind, type ItemAction, type ItemInfo } from '@podman-desktop/core
 import { DropdownMenu } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
+
 import HelpMenu from './HelpMenu.svelte';
 
 interface Props {
@@ -42,7 +44,7 @@ function onWindowClick(e: Event): void {
 async function onClick(action?: ItemAction): Promise<void> {
   toggleMenu();
   if (action?.kind === ActionKind.LINK) {
-    await window.openExternal(action.parameter).catch(console.error);
+    await client.system.openExternal({ link: action.parameter }).catch(console.error);
   } else if (action?.kind === ActionKind.COMMAND) {
     await window.executeCommand(action.parameter).catch(console.error);
   }

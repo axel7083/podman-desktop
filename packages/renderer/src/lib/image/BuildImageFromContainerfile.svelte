@@ -9,6 +9,7 @@ import { Button, Checkbox, Input } from '@podman-desktop/ui-svelte';
 import { onDestroy } from 'svelte';
 import { get, type Unsubscriber } from 'svelte/store';
 
+import { client } from '/@/client';
 import ContainerConnectionDropdown from '/@/lib/forms/ContainerConnectionDropdown.svelte';
 import EngineFormPage from '/@/lib/ui/EngineFormPage.svelte';
 import FileInput from '/@/lib/ui/FileInput.svelte';
@@ -117,10 +118,10 @@ async function buildSinglePlatformImage(): Promise<void> {
   buildImageInfo.buildRunning = true;
 
   // Extract the relative path from the containerFilePath and containerBuildContextDirectory
-  const relativeContainerfilePath = await window.pathRelative(
-    buildImageInfo.containerBuildContextDirectory,
-    buildImageInfo.containerFilePath,
-  );
+  const relativeContainerfilePath = await client.system.pathRelative({
+    from: buildImageInfo.containerBuildContextDirectory,
+    to: buildImageInfo.containerFilePath,
+  });
 
   buildImageInfo.cancellableTokenId = await window.getCancellableTokenSource();
 
@@ -173,10 +174,10 @@ async function buildMultiplePlatformImagesAndCreateManifest(): Promise<void> {
   let buildIDs = [];
 
   // Extract the relative path from the containerFilePath and containerBuildContextDirectory
-  const relativeContainerfilePath = await window.pathRelative(
-    buildImageInfo.containerBuildContextDirectory,
-    buildImageInfo.containerFilePath,
-  );
+  const relativeContainerfilePath = await client.system.pathRelative({
+    from: buildImageInfo.containerBuildContextDirectory,
+    to: buildImageInfo.containerFilePath,
+  });
 
   buildImageInfo.cancellableTokenId = await window.getCancellableTokenSource();
 

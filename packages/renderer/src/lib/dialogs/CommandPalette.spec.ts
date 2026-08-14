@@ -24,6 +24,7 @@ import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { commandsInfos } from '/@/stores/commands';
 import { containersInfos } from '/@/stores/containers';
 import { context } from '/@/stores/context';
@@ -42,8 +43,8 @@ const mockContainerInfo = {
 
 beforeAll(() => {
   vi.mocked(window.executeCommand).mockResolvedValue(undefined);
-  vi.mocked(window.openExternal).mockResolvedValue(undefined);
-  vi.mocked(window.getOsPlatform).mockResolvedValue('linux');
+  vi.mocked(client.system.openExternal).mockResolvedValue(undefined);
+  vi.mocked(client.system.getPlatform).mockResolvedValue('linux');
   vi.mocked(window.getDocumentationItems).mockResolvedValue([]);
 
   containersInfos.set([mockContainerInfo]);

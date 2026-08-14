@@ -110,9 +110,9 @@ $effect(() => {
 });
 
 onMount(async () => {
-  osMemory = await window.getOsMemory();
-  osCpu = await window.getOsCpu();
-  osFreeDisk = await window.getOsFreeDiskSize();
+  osMemory = await client.system.getHostMemory();
+  osCpu = await client.system.getHostCpu();
+  osFreeDisk = await client.system.getHostFreeDiskSize();
   contextsUnsubscribe = context.subscribe(value => {
     globalContext = value;
     loadConnectionParams().catch(() => console.error('unable to reload connection params'));

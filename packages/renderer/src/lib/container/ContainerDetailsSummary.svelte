@@ -4,6 +4,7 @@ import { ChevronExpander, Link, Tooltip } from '@podman-desktop/ui-svelte';
 import Fa from 'svelte-fa';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import DetailsCell from '/@/lib/details/DetailsCell.svelte';
 import DetailsTable from '/@/lib/details/DetailsTable.svelte';
 import DetailsTitle from '/@/lib/details/DetailsTitle.svelte';
@@ -27,7 +28,9 @@ function portUrl(port: number): string {
 }
 
 function openPort(port: number): void {
-  window.openExternal(portUrl(port)).catch((err: unknown) => console.error(`Error opening port ${port}`, err));
+  client.system
+    .openExternal({ link: portUrl(port) })
+    .catch((err: unknown) => console.error(`Error opening port ${port}`, err));
 }
 </script>
 

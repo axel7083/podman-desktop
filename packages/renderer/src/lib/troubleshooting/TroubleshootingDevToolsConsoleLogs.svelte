@@ -39,7 +39,7 @@ async function copyLogsToClipboard(): Promise<void> {
         : `${log.logType} : ${log.message}`,
     )
     .join('\n');
-  await window.clipboardWriteText(logsText);
+  await client.system.clipboardWriteText({ text: logsText });
 }
 </script>
 

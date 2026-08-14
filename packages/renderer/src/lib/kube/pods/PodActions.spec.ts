@@ -22,6 +22,7 @@ import type { V1Route } from '@podman-desktop/core-api';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import type { PodInfoContainerUI } from '/@/lib/pod/PodInfoUI';
 
 import PodActions from './PodActions.svelte';
@@ -69,7 +70,6 @@ beforeEach(() => {
   vi.mocked(window.kubernetesReadNamespacedPod).mockResolvedValue({ metadata: { labels: { app: 'foo' } } });
   vi.mocked(window.restartKubernetesPod).mockImplementation(restartMock);
   vi.mocked(window.kubernetesDeletePod).mockImplementation(deleteMock);
-  vi.mocked(window.openExternal).mockResolvedValue(undefined);
 });
 
 test('Check deleting pod', async () => {
@@ -119,7 +119,7 @@ test('Expect kubernetes route to be displayed', async () => {
 
   await fireEvent.click(openRouteButton);
 
-  expect(window.openExternal).toHaveBeenCalledWith(`http://${routeHost}`);
+  expect(client.system.openExternal).toHaveBeenCalledWith({ link: `http://${routeHost}` });
 });
 
 test('Expect kubernetes route to be displayed but disabled', async () => {

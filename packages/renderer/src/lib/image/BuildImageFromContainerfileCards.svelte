@@ -9,6 +9,7 @@ import {
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 import { type Component, onMount } from 'svelte';
 
+import { client } from '/@/client';
 import WebAssemblyIcon from '/@/lib/images/WebAssemblyIcon.svelte';
 
 import BuildImageFromContainerfileCard from './BuildImageFromContainerfileCard.svelte';
@@ -84,7 +85,7 @@ onMount(async () => {
   // need to sort the default cards by having the first card using the same arch than Podman Desktop
 
   // get current arch
-  let arch = await window.getOsArch();
+  let arch = await client.system.getArch();
   if (arch === 'x64') {
     arch = 'amd64';
   }

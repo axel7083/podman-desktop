@@ -30,7 +30,7 @@ function onDidChangeConfigurationCallback(e: Event): void {
 
 async function openReleaseNotes(): Promise<void> {
   if (!notesURL) return;
-  await window.openExternal(notesURL);
+  await client.system.openExternal({ link: notesURL });
 }
 
 async function updatePodmanDesktop(): Promise<void> {

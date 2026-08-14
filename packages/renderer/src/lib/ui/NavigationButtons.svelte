@@ -7,6 +7,7 @@ import type { Component } from 'svelte';
 import { onMount } from 'svelte';
 import { get } from 'svelte/store';
 
+import { client } from '/@/client';
 import { isDark } from '/@/stores/appearance';
 import {
   BACK,
@@ -61,7 +62,7 @@ const navButtons: NavButton[] = [
     canNavigate: (): boolean => canGoForward,
   },
 ];
-let isMac = $derived((await window.getOsPlatform()) === 'darwin');
+let isMac = $derived((await client.system.getPlatform()) === 'darwin');
 
 function resolveIcon(
   icon: HistoryEntryIcon | undefined,

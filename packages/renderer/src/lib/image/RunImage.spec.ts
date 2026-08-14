@@ -26,6 +26,7 @@ import { tick } from 'svelte';
 import { router } from 'tinro';
 import { afterEach, beforeAll, beforeEach, describe, expect, type Mock, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import RunImage from '/@/lib/image/RunImage.svelte';
 import { mockBreadcrumb } from '/@/stores/breadcrumb.spec';
 import { imagesInfos } from '/@/stores/images';
@@ -321,7 +322,7 @@ describe('RunImage', () => {
   });
 
   test('Expect to see an error if the container/host ranges have different size', async () => {
-    (window.isFreePort as Mock).mockResolvedValue(true);
+    vi.mocked(client.system.isPortFree).mockResolvedValue(true);
 
     await createRunImage(undefined, ['command1', 'command2']);
 
@@ -461,7 +462,7 @@ describe('RunImage', () => {
       shouldAdvanceTime: true,
     });
 
-    vi.mocked(window.isFreePort).mockRejectedValue(new Error('Port 8080 is already in use.'));
+    vi.mocked(client.system.isPortFree).mockRejectedValue(new Error('Port 8080 is already in use.'));
     router.goto('/basic');
 
     await createRunImage(undefined, ['command1', 'command2']);
@@ -489,7 +490,7 @@ describe('RunImage', () => {
   });
 
   test('Expect "start container" button to be disabled when port is not free', async () => {
-    (window.isFreePort as Mock).mockRejectedValue(new Error('Error Message'));
+    vi.mocked(client.system.isPortFree).mockRejectedValue(new Error('Error Message'));
     router.goto('/basic');
 
     await createRunImage(undefined, ['command1', 'command2']);

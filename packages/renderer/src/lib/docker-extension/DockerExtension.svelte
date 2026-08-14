@@ -1,6 +1,7 @@
 <script lang="ts">
 import { afterUpdate, onMount } from 'svelte';
 
+import { client } from '/@/client';
 import Route from '/@/Route.svelte';
 import { contributions } from '/@/stores/contribs';
 
@@ -22,9 +23,9 @@ afterUpdate(() => {
 
 onMount(async () => {
   // grab hostname, arch and platform
-  arch = await window.getOsArch();
-  hostname = await window.getOsHostname();
-  platform = await window.getOsPlatform();
+  arch = await client.system.getArch();
+  hostname = await client.system.getHostname();
+  platform = await client.system.getPlatform();
   preloadPath = await window.getDDPreloadPath();
   source = currentContrib?.uiUri;
 });

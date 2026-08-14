@@ -1462,13 +1462,6 @@ export function initExposure(): void {
     return ipcInvoke('command-registry:executeCommand', command, ...args);
   });
 
-  contextBridge.exposeInMainWorld(
-    'clipboardWriteText',
-    async (text: string, type?: 'selection' | 'clipboard'): Promise<void> => {
-      return ipcInvoke('clipboard:writeText', text, type);
-    },
-  );
-
   let onDidUpdateProviderStatusId = 0;
   const onDidUpdateProviderStatuses = new Map<number, (providerInfo: ProviderInfo) => void>();
 
@@ -1490,13 +1483,6 @@ export function initExposure(): void {
       if (callback) {
         callback(providerInfo);
       }
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'createHash',
-    async (input: string, algorithm: string = 'sha512'): Promise<string> => {
-      return ipcInvoke('util:createHash', algorithm, input);
     },
   );
 
@@ -1522,14 +1508,6 @@ export function initExposure(): void {
 
   contextBridge.exposeInMainWorld('getWelcomeMessages', async (): Promise<WelcomeMessages> => {
     return ipcInvoke('welcome:getWelcomeMessages');
-  });
-
-  contextBridge.exposeInMainWorld('getUrlProtocol', async (): Promise<string> => {
-    return ipcInvoke('product:getUrlProtocol');
-  });
-
-  contextBridge.exposeInMainWorld('openExternal', async (link: string): Promise<void> => {
-    return ipcInvoke('shell:openExternal', link);
   });
 
   contextBridge.exposeInMainWorld('listContributions', async (): Promise<ContributionInfo[]> => {
@@ -1633,18 +1611,6 @@ export function initExposure(): void {
       return handle.deferred.promise as Promise<containerDesktopAPI.Uri | undefined>;
     },
   );
-
-  contextBridge.exposeInMainWorld('getFreePort', async (port: number): Promise<number> => {
-    return ipcInvoke('system:get-free-port', port);
-  });
-
-  contextBridge.exposeInMainWorld('getFreePortRange', async (rangeSize: number): Promise<string> => {
-    return ipcInvoke('system:get-free-port-range', rangeSize);
-  });
-
-  contextBridge.exposeInMainWorld('isFreePort', async (port: number): Promise<boolean> => {
-    return ipcInvoke('system:is-port-free', port);
-  });
 
   type LogFunction = (...data: unknown[]) => void;
 
@@ -2212,36 +2178,12 @@ export function initExposure(): void {
     return ipcInvoke('container-provider-registry:pruneImages', engine, all);
   });
 
-  contextBridge.exposeInMainWorld('getOsPlatform', async (): Promise<string> => {
-    return ipcInvoke('os:getPlatform');
-  });
-
-  contextBridge.exposeInMainWorld('getOsArch', async (): Promise<string> => {
-    return ipcInvoke('os:getArch');
-  });
-
-  contextBridge.exposeInMainWorld('getOsHostname', async (): Promise<string> => {
-    return ipcInvoke('os:getHostname');
-  });
-
   contextBridge.exposeInMainWorld('getCancellableTokenSource', async (): Promise<number> => {
     return ipcInvoke('cancellableTokenSource:create');
   });
 
   contextBridge.exposeInMainWorld('cancelToken', async (id: number): Promise<void> => {
     return ipcInvoke('cancellableToken:cancel', id);
-  });
-
-  contextBridge.exposeInMainWorld('getOsFreeDiskSize', async (): Promise<string> => {
-    return ipcInvoke('os:getHostFreeDiskSize');
-  });
-
-  contextBridge.exposeInMainWorld('getOsMemory', async (): Promise<string> => {
-    return ipcInvoke('os:getHostMemory');
-  });
-
-  contextBridge.exposeInMainWorld('getOsCpu', async (): Promise<string> => {
-    return ipcInvoke('os:getHostCpu');
   });
 
   contextBridge.exposeInMainWorld('sendFeedback', async (feedback: FeedbackProperties): Promise<void> => {
@@ -2373,16 +2315,6 @@ export function initExposure(): void {
     return ipcInvoke('contextRegistry:getContext', extensionId);
   });
 
-  contextBridge.exposeInMainWorld('windowMinimize', async (): Promise<void> => {
-    return ipcInvoke('window:minimize');
-  });
-  contextBridge.exposeInMainWorld('windowMaximize', async (): Promise<void> => {
-    return ipcInvoke('window:maximize');
-  });
-  contextBridge.exposeInMainWorld('windowClose', async (): Promise<void> => {
-    return ipcInvoke('window:close');
-  });
-
   contextBridge.exposeInMainWorld('listOnboarding', async (): Promise<OnboardingInfo[]> => {
     return ipcInvoke('onboardingRegistry:listOnboarding');
   });
@@ -2453,10 +2385,6 @@ export function initExposure(): void {
       return ipcInvoke('docker-compatibility:getSystemDockerSocketMappingStatus');
     },
   );
-
-  contextBridge.exposeInMainWorld('pathRelative', async (from: string, to: string): Promise<string> => {
-    return ipcInvoke('path:relative', from, to);
-  });
 
   contextBridge.exposeInMainWorld(
     'kubernetesGetTroubleshootingInformation',

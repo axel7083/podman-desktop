@@ -23,6 +23,8 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import { router } from 'tinro';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import ExploreFeatureCard from './ExploreFeatureCard.svelte';
 
 vi.mock(import('tinro'));
@@ -93,7 +95,7 @@ test('Click on learn more link', async () => {
 
   await fireEvent.click(learnMoreLink);
 
-  expect(window.openExternal).toHaveBeenCalledWith(featureMock.learnMore);
+  expect(client.system.openExternal).toHaveBeenCalledWith({ link: featureMock.learnMore });
 });
 
 test('Click on primary button', async () => {
@@ -121,5 +123,5 @@ test('Click on tutorial button', async () => {
 
   await fireEvent.click(tutorialButton);
 
-  expect(window.openExternal).toHaveBeenCalledWith('/link/to/tutorial');
+  expect(client.system.openExternal).toHaveBeenCalledWith({ link: '/link/to/tutorial' });
 });

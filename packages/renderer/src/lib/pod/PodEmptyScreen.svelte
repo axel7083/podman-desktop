@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Button, EmptyScreen } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
 import PodIcon from '/@/lib/images/PodIcon.svelte';
 import { providerInfos } from '/@/stores/providers';
 
@@ -61,7 +62,7 @@ async function startPod(): Promise<void> {
   title="No pods"
   message="Run a first pod using the following command line:"
   commandline={commandLine}
-  onclick={(): Promise<void> => window.clipboardWriteText(commandLine)}>
+  onclick={(): Promise<void> => client.system.clipboardWriteText({ text: commandLine })}>
   {#snippet upperContent()}
     <div class="flex gap-2 justify-center p-3">
       <Button title="Start your first pod" type="primary" inProgress={inProgress} on:click={startPod}

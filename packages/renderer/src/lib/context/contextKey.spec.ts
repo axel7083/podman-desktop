@@ -24,6 +24,8 @@
 
 import { assert, expect, suite, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { ContextKeyExpr, type ContextKeyExpression, implies, initContextKeysPlatform } from './contextKey.js';
 
 function createContext(ctx: any): { getValue: (key: string) => any } {
@@ -167,9 +169,7 @@ suite('ContextKeyExpr', () => {
   });
 
   test('false, true', async () => {
-    const getOsPlatformMock = vi.fn();
-    (window as any).getOsPlatform = getOsPlatformMock;
-    getOsPlatformMock.mockResolvedValue('darwin');
+    vi.mocked(client.system.getPlatform).mockResolvedValue('darwin');
     await initContextKeysPlatform();
 
     function testNormalize(expr: string, expected: string): void {

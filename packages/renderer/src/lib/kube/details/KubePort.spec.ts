@@ -22,14 +22,15 @@ import { type ForwardConfig, WorkloadKind } from '@podman-desktop/core-api';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import KubePort from './KubePort.svelte';
 
 beforeEach(() => {
   vi.resetAllMocks();
 
-  (window.getFreePort as unknown) = vi.fn().mockResolvedValue(55_001);
+  vi.mocked(client.system.getFreePort).mockResolvedValue(55_001);
   (window.createKubernetesPortForward as unknown) = vi.fn();
-  (window.openExternal as unknown) = vi.fn();
   (window.deleteKubernetesPortForward as unknown) = vi.fn();
 });
 
@@ -79,7 +80,7 @@ describe('port forwarding', () => {
     await fireEvent.click(forwardBtn);
 
     await vi.waitFor(() => {
-      expect(window.getFreePort).toHaveBeenCalled();
+      expect(client.system.getFreePort).toHaveBeenCalled();
       expect(window.createKubernetesPortForward).toHaveBeenCalledWith({
         forward: {
           localPort: 55001,
@@ -129,7 +130,7 @@ describe('port forwarding', () => {
     await fireEvent.click(openBtn);
 
     await vi.waitFor(() => {
-      expect(window.openExternal).toHaveBeenCalledWith('http://localhost:55076');
+      expect(client.system.openExternal).toHaveBeenCalledWith({ link: 'http://localhost:55076' });
     });
   });
 
@@ -254,8 +255,6 @@ describe('port forwarding', () => {
   });
 
   test('existing forward should display localhost port and copy', async () => {
-    const clipboardWriteTextMock = vi.fn().mockImplementation(() => {});
-    Object.defineProperty(window, 'clipboardWriteText', { value: clipboardWriteTextMock });
     const { getByTitle, getByRole } = render(KubePort, {
       namespace: 'dummy-ns',
       port: {
@@ -279,6 +278,6 @@ describe('port forwarding', () => {
 
     await fireEvent.click(button);
 
-    expect(clipboardWriteTextMock).toBeCalledWith(expected);
+    expect(client.system.clipboardWriteText).toBeCalledWith({ text: expected });
   });
 });

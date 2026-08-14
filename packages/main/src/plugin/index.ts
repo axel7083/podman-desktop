@@ -20,7 +20,6 @@
  * @module preload
  */
 import { EventEmitter } from 'node:events';
-import * as os from 'node:os';
 import * as path from 'node:path';
 
 import type {
@@ -132,7 +131,6 @@ import type {
   PlayKubeInfo,
 } from '@podman-desktop/core-api/libpod';
 import type { PinOption } from '@podman-desktop/core-api/status-bar';
-import checkDiskSpacePkg from 'check-disk-space';
 import type Dockerode from 'dockerode';
 import type { IpcMainEvent, WebContents } from 'electron';
 import { app, BrowserWindow, clipboard, ipcMain, shell } from 'electron';
@@ -158,7 +156,7 @@ import { Updater } from '/@/plugin/updater.js';
 import { Welcome } from '/@/plugin/welcome.js';
 import { securityRestrictionCurrentHandler } from '/@/security-restrictions-handler.js';
 import { TrayMenu } from '/@/tray-menu.js';
-import { createHash, isMac } from '/@/util.js';
+import { isMac } from '/@/util.js';
 import product from '/@product.json' with { type: 'json' };
 
 // eslint-disable-next-line no-restricted-imports
@@ -238,17 +236,11 @@ import { TrayVisibility } from './tray-visibility.js';
 import { Troubleshooting } from './troubleshooting.js';
 import { DirectoryStrategy } from './util/directory-strategy.js';
 import { Exec } from './util/exec.js';
-import { getFreePort, getFreePortRange, isFreePort } from './util/port.js';
 import { TaskConnectionUtils } from './util/task-connection-utils.js';
 import { ViewRegistry } from './view-registry.js';
 import { DevToolsManager } from './webview/devtools-manager.js';
 import { WebviewRegistry } from './webview/webview-registry.js';
 import { WelcomeInit } from './welcome/welcome-init.js';
-
-// workaround for ESM
-const checkDiskSpace: (path: string) => Promise<{ free: number }> = checkDiskSpacePkg as unknown as (
-  path: string,
-) => Promise<{ free: number }>;
 
 export const UPDATER_UPDATE_AVAILABLE_ICON = 'fa fa-exclamation-triangle';
 
@@ -1927,10 +1919,6 @@ export class PluginSystem {
       },
     );
 
-    this.ipcHandle('clipboard:writeText', async (_, text: string, type?: 'selection' | 'clipboard'): Promise<void> => {
-      return clipboard.writeText(text, type);
-    });
-
     this.ipcHandle(
       'provider-registry:onDidUpdateProviderStatus',
       async (_, providerInternalId: string, onDidUpdateProviderStatusCallbackIdnumber: number): Promise<void> => {
@@ -2007,18 +1995,6 @@ export class PluginSystem {
 
     this.ipcHandle('provider-registry:initializeProvider', async (_, providerInternalId: string): Promise<void> => {
       return providerRegistry.initializeProvider(providerInternalId);
-    });
-
-    this.ipcHandle('system:get-free-port', async (_, port: number): Promise<number> => {
-      return getFreePort(port);
-    });
-
-    this.ipcHandle('system:get-free-port-range', async (_, rangeSize: number): Promise<string> => {
-      return getFreePortRange(rangeSize);
-    });
-
-    this.ipcHandle('system:is-port-free', async (_, port: number): Promise<boolean> => {
-      return isFreePort(port);
     });
 
     this.ipcHandle(
@@ -2106,13 +2082,6 @@ export class PluginSystem {
       },
     );
 
-    this.ipcHandle(
-      'util:createHash',
-      async (_listener, input: string, algorithm: string = 'sha512'): Promise<string> => {
-        return createHash(algorithm, input);
-      },
-    );
-
     this.ipcHandle('customPick:values', async (_listener, id: number, indexes: number[]): Promise<void> => {
       return customPickRegistry.onConfirmSelection(id, indexes);
     });
@@ -2168,36 +2137,6 @@ export class PluginSystem {
 
     this.ipcHandle('commands:getCommandPaletteSearchOptions', async (): Promise<CommandPaletteSearchOption[]> => {
       return commandRegistry.getCommandPaletteSearchOptions();
-    });
-
-    this.ipcHandle(
-      'shell:openExternal',
-      async (_listener: Electron.IpcMainInvokeEvent, link: string): Promise<void> => {
-        if (securityRestrictionCurrentHandler.handler) {
-          await securityRestrictionCurrentHandler.handler(link);
-        } else {
-          await shell.openExternal(link);
-        }
-      },
-    );
-
-    this.ipcHandle('os:getPlatform', async (): Promise<string> => {
-      return os.platform();
-    });
-    this.ipcHandle('os:getArch', async (): Promise<string> => {
-      return os.arch();
-    });
-    this.ipcHandle('os:getHostname', async (): Promise<string> => {
-      return os.hostname();
-    });
-    this.ipcHandle('os:getHostFreeDiskSize', async (): Promise<number> => {
-      return (await checkDiskSpace(os.homedir())).free;
-    });
-    this.ipcHandle('os:getHostMemory', async (): Promise<number> => {
-      return os.totalmem();
-    });
-    this.ipcHandle('os:getHostCpu', async (): Promise<number> => {
-      return os.cpus().length;
     });
 
     this.ipcHandle(
@@ -2921,40 +2860,8 @@ export class PluginSystem {
       return viewRegistry.fetchViewsContributions(id);
     });
 
-    this.ipcHandle('window:minimize', async (): Promise<void> => {
-      const window = BrowserWindow.getAllWindows().find(w => !w.isDestroyed());
-      if (!window) {
-        return;
-      }
-      window.minimize();
-    });
-
-    this.ipcHandle('window:maximize', async (): Promise<void> => {
-      const window = BrowserWindow.getAllWindows().find(w => !w.isDestroyed());
-      if (!window) {
-        return;
-      }
-      if (window.isMaximized()) {
-        window.unmaximize();
-        return;
-      }
-      window.maximize();
-    });
-
-    this.ipcHandle('window:close', async (): Promise<void> => {
-      const window = BrowserWindow.getAllWindows().find(w => !w.isDestroyed());
-      if (!window) {
-        return;
-      }
-      window.close();
-    });
-
     this.ipcHandle('welcome:getWelcomeMessages', async (): Promise<WelcomeMessages> => {
       return welcome.getWelcomeMessages();
-    });
-
-    this.ipcHandle('product:getUrlProtocol', async (): Promise<string> => {
-      return product.urlProtocol;
     });
 
     this.ipcHandle(
@@ -3043,10 +2950,6 @@ export class PluginSystem {
         return dockerCompatibility.getSystemDockerSocketMappingStatus();
       },
     );
-
-    this.ipcHandle('path:relative', async (_listener, from: string, to: string): Promise<string> => {
-      return path.relative(from, to);
-    });
 
     this.ipcHandle(
       'kubernetes:getTroubleshootingInformation',

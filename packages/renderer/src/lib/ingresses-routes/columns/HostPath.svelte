@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Link } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
 import { IngressRouteUtils } from '/@/lib/ingresses-routes/ingress-route-utils';
 
 import type { Props } from './props';
@@ -17,7 +18,7 @@ const ingressRouteUtils = new IngressRouteUtils();
         aria-label={hostPath.label}
         on:click={async (): Promise<void> => {
           if (hostPath.url) {
-            await window.openExternal(hostPath.url);
+            await client.system.openExternal({ link: hostPath.url });
           }
         }}>
         {hostPath.label}

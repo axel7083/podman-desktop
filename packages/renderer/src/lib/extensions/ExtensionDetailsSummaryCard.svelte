@@ -3,6 +3,8 @@ import { faCodeBranch, faExternalLink } from '@fortawesome/free-solid-svg-icons'
 import { Tooltip } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
+
 import type { ExtensionDetailsUI } from './extension-details-ui';
 import ExtensionDetailsSummaryCardEntry from './InstalledExtensionDetailsSummaryCardEntry.svelte';
 
@@ -50,7 +52,7 @@ const hasResources = $derived(Boolean(repositoryUrl) || Boolean(extensionDetails
             <a
               href={repositoryUrl}
               class="text-[var(--pd-link)] hover:bg-[var(--pd-link-hover-bg)] transition-all rounded-[4px] p-0.5 no-underline cursor-pointer flex flex-row items-center gap-1 text-sm"
-              onclick={async (): Promise<void> => window.openExternal(repositoryUrl)}>
+              onclick={async (): Promise<void> => client.system.openExternal({ link: repositoryUrl })}>
               <span aria-hidden="true">
                 <Icon icon={faCodeBranch} size="sm" />
               </span>
@@ -65,7 +67,7 @@ const hasResources = $derived(Boolean(repositoryUrl) || Boolean(extensionDetails
             <a
               href={homepageUrl}
               class="text-[var(--pd-link)] hover:bg-[var(--pd-link-hover-bg)] transition-all rounded-[4px] p-0.5 no-underline cursor-pointer flex flex-row items-center gap-1 text-sm"
-              onclick={async (): Promise<void> => window.openExternal(homepageUrl)}>
+              onclick={async (): Promise<void> => client.system.openExternal({ link: homepageUrl })}>
               <span aria-hidden="true">
                 <Icon icon={faExternalLink} size="sm" />
               </span>

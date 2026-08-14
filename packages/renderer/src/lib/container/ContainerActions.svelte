@@ -17,6 +17,7 @@ import { DropdownMenu } from '@podman-desktop/ui-svelte';
 import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 import type { Unsubscriber } from 'svelte/store';
 
+import { client } from '/@/client';
 import ContributionActions from '/@/lib/actions/ContributionActions.svelte';
 import { ContextUI } from '/@/lib/context/context';
 import { withConfirmation } from '/@/lib/dialogs/messagebox-utils';
@@ -123,8 +124,8 @@ function openBrowser(): void {
   if (!container.openingUrl) {
     return;
   }
-  window
-    .openExternal(container.openingUrl)
+  client.system
+    .openExternal({ link: container.openingUrl })
     .catch((err: unknown) => console.error(`Error opening URL ${container.openingUrl}`, err));
 }
 

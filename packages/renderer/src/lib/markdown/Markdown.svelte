@@ -4,6 +4,7 @@ import { micromark } from 'micromark';
 import { directive, directiveHtml } from 'micromark-extension-directive';
 import { onDestroy, onMount } from 'svelte';
 
+import { client } from '/@/client';
 import { isDark } from '/@/stores/appearance';
 
 import { button } from './micromark-button-directive';
@@ -94,7 +95,7 @@ function decode(htmlString: string): string {
 }
 
 onMount(async () => {
-  urlProtocol = await window.getUrlProtocol();
+  urlProtocol = await client.system.getUrlProtocol();
   // We create a click listener in order to execute any internal micromark commands
   // We add the clickListener here since we're unable to add it in the directive typescript file.
   const clickListener = createListener(inProgressMarkdownCommandExecutionCallback);

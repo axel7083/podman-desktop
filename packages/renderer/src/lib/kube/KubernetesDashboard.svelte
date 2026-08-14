@@ -4,6 +4,7 @@ import type { IDisposable, ResourceCount } from '@podman-desktop/core-api';
 import { Expandable, Link } from '@podman-desktop/ui-svelte';
 import { onDestroy, onMount } from 'svelte';
 
+import { client } from '/@/client';
 import { listenActiveResourcesCount } from '/@/lib/kube/active-resources-count-listen';
 import KubernetesCurrentContextConnectionBadge from '/@/lib/ui/KubernetesCurrentContextConnectionBadge.svelte';
 import { containersInfos } from '/@/stores/containers';
@@ -172,7 +173,7 @@ const activeCounts = $derived.by(() => {
 });
 
 async function openKubernetesDocumentation(): Promise<void> {
-  await window.openExternal('https://podman-desktop.io/docs/kubernetes');
+  await client.system.openExternal({ link: 'https://podman-desktop.io/docs/kubernetes' });
 }
 </script>
 

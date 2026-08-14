@@ -14,6 +14,7 @@ import { DropdownMenu } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import ContributionActions from '/@/lib/actions/ContributionActions.svelte';
 import { ContainerUtils } from '/@/lib/container/container-utils';
 import { withConfirmation } from '/@/lib/dialogs/messagebox-utils';
@@ -185,7 +186,7 @@ const MenuComponent = $derived(dropdownMenu ? DropdownMenu : FlatMenu);
   {:else if openingUrls.length === 1}
     <ListItemButtonIcon
       title="Open {extractPort(openingUrls[0])}"
-      onClick={(): Promise<void> => window.openExternal(openingUrls[0])}
+      onClick={(): Promise<void> => client.system.openExternal({ link: openingUrls[0] })}
       menu={dropdownMenu}
       enabled={pod.status === 'RUNNING'}
       hidden={dropdownMenu}
@@ -196,7 +197,7 @@ const MenuComponent = $derived(dropdownMenu ? DropdownMenu : FlatMenu);
       {#each openingUrls as url, index (index)}
         <ListItemButtonIcon
           title="Open {extractPort(url)}"
-          onClick={(): Promise<void> => window.openExternal(url)}
+          onClick={(): Promise<void> => client.system.openExternal({ link: url })}
           menu={!dropdownMenu}
           enabled={pod.status === 'RUNNING'}
           hidden={dropdownMenu}

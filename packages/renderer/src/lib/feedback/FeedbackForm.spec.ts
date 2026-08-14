@@ -23,6 +23,8 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import FeedbackForm from './FeedbackForm.svelte';
 
 test('something', () => {
@@ -60,5 +62,5 @@ test('Expect privacy statement is included when it exists', async () => {
   expect(privacyLink.textContent).toEqual(telem.privacy?.link);
 
   await fireEvent.click(privacyLink);
-  await vi.waitFor(() => expect(vi.mocked(window.openExternal)).toBeCalledWith(telem.privacy?.url));
+  await vi.waitFor(() => expect(vi.mocked(client.system.openExternal)).toBeCalledWith({ link: telem.privacy?.url }));
 });

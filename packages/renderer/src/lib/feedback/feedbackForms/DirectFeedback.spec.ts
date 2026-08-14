@@ -22,12 +22,11 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import DirectFeedback from './DirectFeedback.svelte';
 
 beforeAll(() => {
-  Object.defineProperty(window, 'openExternal', {
-    value: vi.fn(),
-  });
   Object.defineProperty(window, 'telemetryTrack', {
     value: vi.fn(),
   });
@@ -174,7 +173,7 @@ test('Expect GitHub dialog visible when very-happy-smiley selected', async () =>
 
   await vi.waitFor(() => {
     expect(window.telemetryTrack).toHaveBeenCalledWith('feedback.openGitHub');
-    expect(window.openExternal).toHaveBeenCalledWith('https://github.com/test/test-repo');
+    expect(client.system.openExternal).toHaveBeenCalledWith({ link: 'https://github.com/test/test-repo' });
   });
 
   expect(onCloseFormMock).not.toHaveBeenCalled();

@@ -4,6 +4,7 @@ import { Button, CloseButton, Dropdown, Link, Modal } from '@podman-desktop/ui-s
 import { onMount } from 'svelte';
 import { SvelteMap } from 'svelte/reactivity';
 
+import { client } from '/@/client';
 import FeedbackForm from '/@/lib/feedback/FeedbackForm.svelte';
 
 import DirectFeedback from './feedbackForms/DirectFeedback.svelte';
@@ -99,7 +100,7 @@ onMount(async () => {
         <svelte:fragment slot="content">
           <p class="block mt-4 mb-4 text-sm font-medium text-[var(--pd-modal-text)]">Could not find the right category? Take a look at these additional options:</p>
           {#each Object.entries(feedbackLinks) as [category, link] (category)}
-            <Link aria-label={`${category} link`} class="block mt-1" onclick={(): Promise<void> => window.openExternal(link)}>{category}</Link>
+            <Link aria-label={`${category} link`} class="block mt-1" onclick={(): Promise<void> => client.system.openExternal({ link })}>{category}</Link>
           {/each}
         </svelte:fragment>
         <svelte:fragment slot="buttons">

@@ -114,7 +114,7 @@ test('Expect that telemetry link opens url', async () => {
   expect(infoLink).toBeInTheDocument();
 
   await fireEvent.click(infoLink);
-  await vi.waitFor(() => expect(vi.mocked(window.openExternal)).toBeCalledWith(telem.info?.url));
+  await vi.waitFor(() => expect(vi.mocked(client.system.openExternal)).toBeCalledWith({ link: telem.info?.url }));
 });
 
 test('Expect that telemetry link is missing when info is not provided', async () => {

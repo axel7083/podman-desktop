@@ -4,6 +4,7 @@ import type { IConfigurationPropertyRecordedSchema } from '@podman-desktop/core-
 import { Button } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
 import Markdown from '/@/lib/markdown/Markdown.svelte';
 import { getInitialValue } from '/@/lib/preferences/Util';
 import Label from '/@/lib/ui/Label.svelte';
@@ -80,7 +81,7 @@ function doResetToDefault(): void {
 async function openGitHubDiscussion(): Promise<void> {
   if (!recordUI.experimental?.githubDiscussionLink) return;
 
-  return window.openExternal(recordUI.experimental.githubDiscussionLink);
+  return client.system.openExternal({ link: recordUI.experimental.githubDiscussionLink });
 }
 </script>
 

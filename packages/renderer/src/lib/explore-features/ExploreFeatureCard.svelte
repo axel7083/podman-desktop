@@ -5,6 +5,8 @@ import { Button, CloseButton, Link } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
+
 interface Props {
   feature: ExploreFeature;
   closeFeature: (featureId: string) => void;
@@ -13,11 +15,11 @@ interface Props {
 let { feature, closeFeature }: Props = $props();
 
 async function openLearnMore(): Promise<void> {
-  if (feature.learnMore) await window.openExternal(feature.learnMore);
+  if (feature.learnMore) await client.system.openExternal({ link: feature.learnMore });
 }
 
 async function openTutorial(): Promise<void> {
-  if (feature.tutorialLink) await window.openExternal(feature.tutorialLink);
+  if (feature.tutorialLink) await client.system.openExternal({ link: feature.tutorialLink });
 }
 
 async function closeCard(): Promise<void> {

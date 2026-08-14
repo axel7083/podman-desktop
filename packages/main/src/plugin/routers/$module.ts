@@ -27,6 +27,7 @@ import { NotificationRouter } from '/@/plugin/routers/notification.router.js';
 import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
 import { ProxyRouter } from '/@/plugin/routers/proxy.router.js';
 import { RpcHandler } from '/@/plugin/routers/rpc-handler.js';
+import { SystemRouter } from '/@/plugin/routers/system.router.js';
 import { TasksRouter } from '/@/plugin/routers/tasks.router.js';
 
 const routersModule = new ContainerModule(options => {
@@ -38,6 +39,7 @@ const routersModule = new ContainerModule(options => {
   options.bind<NotificationRouter>(NotificationRouter).toSelf().inSingletonScope();
   options.bind<PlanetRouter>(PlanetRouter).toSelf().inSingletonScope();
   options.bind<ProxyRouter>(ProxyRouter).toSelf().inSingletonScope();
+  options.bind<SystemRouter>(SystemRouter).toSelf().inSingletonScope();
   options.bind<TasksRouter>(TasksRouter).toSelf().inSingletonScope();
   options.bind<RpcHandler>(RpcHandler).toSelf().inSingletonScope();
 });

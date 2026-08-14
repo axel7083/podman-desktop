@@ -30,7 +30,6 @@ import ReleaseNotesBox from './ReleaseNotesBox.svelte';
 
 const podmanDesktopUpdateAvailableMock = vi.fn();
 const getPodmanDesktopVersionMock = vi.fn();
-const openExternalMock = vi.fn();
 const updatePodmanDesktopMock = vi.fn();
 const updateConfigurationValueMock = vi.fn();
 const getConfigurationValueMock = vi.fn();
@@ -40,7 +39,6 @@ const responseJSON = { image: 'image1.png', title: 'Release 1.1', summary: 'some
 beforeAll(() => {
   Object.defineProperty(window, 'podmanDesktopUpdateAvailable', { value: podmanDesktopUpdateAvailableMock });
   Object.defineProperty(window, 'getPodmanDesktopVersion', { value: getPodmanDesktopVersionMock });
-  Object.defineProperty(window, 'openExternal', { value: openExternalMock });
   Object.defineProperty(window, 'podmanDesktopGetReleaseNotes', { value: podmanDesktopGetReleaseNotesMock });
   Object.defineProperty(window, 'updatePodmanDesktop', { value: updatePodmanDesktopMock });
   Object.defineProperty(window, 'updateConfigurationValue', { value: updateConfigurationValueMock });

@@ -7,6 +7,7 @@ import * as jsYaml from 'js-yaml';
 import { onDestroy, onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import MonacoEditor from '/@/lib/editor/MonacoEditor.svelte';
 import { ensureRestrictedSecurityContext } from '/@/lib/pod/pod-utils';
 import EngineFormPage from '/@/lib/ui/EngineFormPage.svelte';
@@ -115,7 +116,7 @@ async function openOpenshiftConsole(): Promise<void> {
   // build link to openOpenshiftConsole
   if (createdPod?.metadata?.name) {
     const linkToOpen = `${openshiftConsoleURL}/k8s/ns/${currentNamespace}/pods/${createdPod.metadata.name}`;
-    await window.openExternal(linkToOpen);
+    await client.system.openExternal({ link: linkToOpen });
   }
 }
 
@@ -167,7 +168,7 @@ async function openPodDetails(): Promise<void> {
 }
 
 async function openRoute(route: V1Route): Promise<void> {
-  await window.openExternal(`https://${route.spec.host}`);
+  await client.system.openExternal({ link: `https://${route.spec.host}` });
 }
 
 async function deployToKube(): Promise<void> {
@@ -465,7 +466,7 @@ let kubeDetails: string = $derived.by(() => {
         required>
         Update Kubernetes manifest to respect the Pod security <Link
           on:click={(): Promise<void> =>
-            window.openExternal('https://kubernetes.io/docs/concepts/security/pod-security-standards#restricted')}
+            client.system.openExternal({ link: 'https://kubernetes.io/docs/concepts/security/pod-security-standards#restricted' })}
           >restricted profile</Link
         >.</Checkbox>
     </div>

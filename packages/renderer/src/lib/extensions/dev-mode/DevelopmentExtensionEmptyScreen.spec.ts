@@ -59,5 +59,5 @@ test('Should show button when extension development link is configured and open 
   expect(button).toBeInTheDocument();
 
   await userEvent.click(button);
-  expect(window.openExternal).toHaveBeenCalledWith(testLink);
+  expect(client.system.openExternal).toHaveBeenCalledWith({ link: testLink });
 });

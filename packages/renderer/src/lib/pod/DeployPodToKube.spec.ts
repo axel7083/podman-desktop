@@ -27,6 +27,7 @@ import { tick } from 'svelte';
 import { router } from 'tinro';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { lastPage } from '/@/stores/breadcrumb';
 import { registeredFeatures } from '/@/stores/registered-features';
 
@@ -190,7 +191,7 @@ test('Expect to create routes with OpenShift and open Link', async () => {
   await fireEvent.click(openRouteButton);
 
   // expect the router to be called with the correct url
-  expect(window.openExternal).toBeCalledWith('https://my-spec-host');
+  expect(client.system.openExternal).toBeCalledWith({ link: 'https://my-spec-host' });
 });
 
 test('Expect to send telemetry event', async () => {

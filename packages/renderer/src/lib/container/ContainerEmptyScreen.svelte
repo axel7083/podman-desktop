@@ -2,6 +2,7 @@
 import { Button, EmptyScreen } from '@podman-desktop/ui-svelte';
 import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
 import { providerInfos } from '/@/stores/providers';
 
 interface Props {
@@ -94,7 +95,7 @@ async function runContainer(commandLine: string): Promise<void> {
   title={title}
   message={messageCommandLine}
   commandline={commandLine}
-  onclick={(): Promise<void> => window.clipboardWriteText(commandLine)}>
+  onclick={(): Promise<void> => client.system.clipboardWriteText({ text: commandLine })}>
   {#snippet upperContent()}
   <div hidden={stoppedOnly}>
     <span class="text-[var(--pd-details-empty-sub-header)] max-w-[800px] text-pretty mx-2">{messageButton}</span>

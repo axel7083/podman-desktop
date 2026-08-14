@@ -12,6 +12,7 @@ import type { DirectFeedbackCategory, FeedbackProperties } from '@podman-desktop
 import { Button, ErrorMessage, Link } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
 import FeedbackForm from '/@/lib/feedback/FeedbackForm.svelte';
 import WarningMessage from '/@/lib/ui/WarningMessage.svelte';
 
@@ -73,7 +74,7 @@ async function sendFeedback(): Promise<void> {
 async function openGitHub(): Promise<void> {
   if (repository) {
     await window.telemetryTrack('feedback.openGitHub');
-    await window.openExternal(repository);
+    await client.system.openExternal({ link: repository });
   }
 }
 </script>

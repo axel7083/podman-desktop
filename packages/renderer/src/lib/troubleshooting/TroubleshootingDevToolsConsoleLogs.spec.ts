@@ -24,16 +24,16 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { beforeAll, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import TroubleshootingDevToolsConsoleLogs from './TroubleshootingDevToolsConsoleLogs.svelte';
 
 const getDevtoolsConsoleLogsMock = vi.fn();
-const clipboardWriteTextMock = vi.fn();
 const getConfigurationValueMock = vi.fn();
 const updateConfigurationValueMock = vi.fn();
 
 beforeAll(() => {
   (window as any).getDevtoolsConsoleLogs = getDevtoolsConsoleLogsMock;
-  (window as any).clipboardWriteText = clipboardWriteTextMock;
   (window as any).getConfigurationValue = getConfigurationValueMock;
   (window as any).updateConfigurationValue = updateConfigurationValueMock;
   getConfigurationValueMock.mockResolvedValue(false);
@@ -78,7 +78,7 @@ test('Check logs are displayed with clipboard button', async () => {
   await fireEvent.click(clipboardButton);
 
   // timestamps are hidden by default, so clipboard should not include them
-  expect(clipboardWriteTextMock).toHaveBeenCalledWith('log : test1\nerror : test2');
+  expect(client.system.clipboardWriteText).toHaveBeenCalledWith({ text: 'log : test1\nerror : test2' });
 });
 
 test('Timestamps are hidden by default and shown after toggle', async () => {
@@ -138,5 +138,7 @@ test('Clipboard includes timestamps when toggle is enabled', async () => {
   const clipboardButton = screen.getByRole('button', { name: 'Copy To Clipboard' });
   await fireEvent.click(clipboardButton);
 
-  expect(clipboardWriteTextMock).toHaveBeenCalledWith('14:30:45 log : test1\n14:30:45 error : test2');
+  expect(client.system.clipboardWriteText).toHaveBeenCalledWith({
+    text: '14:30:45 log : test1\n14:30:45 error : test2',
+  });
 });

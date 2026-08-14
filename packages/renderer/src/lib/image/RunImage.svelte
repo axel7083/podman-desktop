@@ -15,6 +15,7 @@ import { Button, Checkbox, Dropdown, ErrorMessage, Input, NumberInput, Tab } fro
 import { onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import { ContainerUtils } from '/@/lib/container/container-utils';
 import type { ContainerInfoUI } from '/@/lib/container/ContainerInfoUI';
 import { ImageUtils } from '/@/lib/image/image-utils';
@@ -226,7 +227,7 @@ async function getPortRange(portDescriptor: string): Promise<string | undefined>
   const rangeSize = rangeValues.endRange + 1 - rangeValues.startRange;
   try {
     // if free port range fails, return undefined
-    return await window.getFreePortRange(rangeSize);
+    return await client.system.getFreePortRange({ rangeSize });
   } catch (e) {
     console.error(e);
     return undefined;
@@ -246,7 +247,7 @@ async function getPort(portDescriptor: string): Promise<number | undefined> {
   }
   try {
     // if getFreePort fails, it returns undefined
-    return await window.getFreePort(port);
+    return await client.system.getFreePort({ port });
   } catch (e) {
     console.error(e);
     return undefined;
@@ -615,8 +616,8 @@ function onPortInput(event: Event, portInfo: PortInfo): void {
   // convert string to number
   const _value: number = Number(target.value);
   onPortInputTimeout = setTimeout(() => {
-    window
-      .isFreePort(_value)
+    client.system
+      .isPortFree({ port: _value })
       .then(_ => {
         portInfo.error = '';
       })

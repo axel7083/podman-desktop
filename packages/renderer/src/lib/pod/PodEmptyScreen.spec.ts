@@ -22,6 +22,7 @@ import type { ImageInfo, ProviderContainerConnectionInfo, ProviderInfo } from '@
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { providerInfos } from '/@/stores/providers';
 
 import PodEmptyScreen from './PodEmptyScreen.svelte';
@@ -35,7 +36,6 @@ vi.mock(import('/@/stores/providers'), async () => {
 
 beforeAll(() => {
   Object.defineProperty(window, 'createPod', { value: vi.fn(), writable: true });
-  Object.defineProperty(window, 'clipboardWriteText', { value: vi.fn() });
   Object.defineProperty(window, 'pullImage', { value: vi.fn() });
   Object.defineProperty(window, 'listImages', { value: vi.fn() });
   Object.defineProperty(window, 'createAndStartContainer', { value: vi.fn(), writable: true });
@@ -138,5 +138,5 @@ test('button click shows error message if there is no active provider connection
 
 testComponent(`${copyToClipboard} button click puts starting pod command to clipboard`, async () => {
   await fireEvent.click(screen.getByTitle(copyToClipboard));
-  expect(window.clipboardWriteText).toBeCalledWith(podCreateCommand);
+  expect(client.system.clipboardWriteText).toBeCalledWith({ text: podCreateCommand });
 });

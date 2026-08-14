@@ -29,6 +29,7 @@ import { ImageRegistryRouter } from '/@/plugin/routers/image-registry.router.js'
 import { NotificationRouter } from '/@/plugin/routers/notification.router.js';
 import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
 import { ProxyRouter } from '/@/plugin/routers/proxy.router.js';
+import { SystemRouter } from '/@/plugin/routers/system.router.js';
 import { TasksRouter } from '/@/plugin/routers/tasks.router.js';
 
 export type OrpcContext = Context;
@@ -58,6 +59,8 @@ export class RpcHandler {
     readonly planet: PlanetRouter,
     @inject(ProxyRouter)
     readonly proxy: ProxyRouter,
+    @inject(SystemRouter)
+    readonly system: SystemRouter,
     @inject(TasksRouter)
     readonly tasks: TasksRouter,
   ) {
@@ -70,6 +73,7 @@ export class RpcHandler {
       notification: notification.router,
       planet: planet.router,
       proxy: proxy.router,
+      system: system.router,
       tasks: tasks.router,
     });
 

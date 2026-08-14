@@ -171,7 +171,7 @@ function startOnboardingQueue(): void {
               {#if telemetryMessages?.info}
                 <Link
                   on:click={async (): Promise<void> => {
-                    await window.openExternal(telemetryMessages.info?.url ?? '');
+                    await client.system.openExternal({ link: telemetryMessages.info?.url ?? '' });
                   }}>{telemetryMessages?.info.link}</Link>
               {/if}
             {/if}

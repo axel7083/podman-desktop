@@ -8,7 +8,7 @@ let extDevelopementLink = $derived(await client.extension.getDevelopmentDocsLink
 
 async function openExtensionDocumentation(): Promise<void> {
   if (extDevelopementLink) {
-    await window.openExternal(extDevelopementLink);
+    await client.system.openExternal({ link: extDevelopementLink });
   }
 }
 </script>

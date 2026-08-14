@@ -4,6 +4,7 @@ import type { CheckStatus, ProviderInfo } from '@podman-desktop/core-api';
 import { Button, CloseButton, Modal } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
 import IconImage from '/@/lib/appearance/IconImage.svelte';
 
 interface Props {
@@ -18,7 +19,7 @@ let { providerToBeInstalled, preflightChecks, closeCallback, doCreateNew }: Prop
 async function openLink(e: MouseEvent, url: string): Promise<void> {
   e.preventDefault();
   e.stopPropagation();
-  await window.openExternal(url);
+  await client.system.openExternal({ link: url });
 }
 </script>
 

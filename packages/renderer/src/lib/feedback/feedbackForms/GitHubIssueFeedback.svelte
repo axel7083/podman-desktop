@@ -3,6 +3,7 @@ import type { GitHubFeedbackCategory, GitHubIssue } from '@podman-desktop/core-a
 import { Button, Checkbox, ErrorMessage, Link } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import FeedbackForm from '/@/lib/feedback/FeedbackForm.svelte';
 
 interface Props {
@@ -46,7 +47,7 @@ onMount(async () => {
 
 async function openGitHubIssues(): Promise<void> {
   if (existingIssuesLink || categoryLinks.issues) {
-    await window.openExternal(existingIssuesLink ?? categoryLinks.issues);
+    await client.system.openExternal({ link: existingIssuesLink ?? categoryLinks.issues });
   }
 }
 

@@ -24,12 +24,12 @@ import { render, screen } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import TitleBar from './TitleBar.svelte';
 
-const getOsPlatformMock = vi.fn();
-
 beforeAll(() => {
-  Object.defineProperty(window, 'getOsPlatform', { value: getOsPlatformMock });
+  vi.resetAllMocks();
 });
 
 beforeEach(() => {
@@ -44,7 +44,7 @@ async function waitRender(customProperties: object): Promise<void> {
 
 describe('macOS', () => {
   beforeEach(() => {
-    getOsPlatformMock.mockReturnValue('darwin');
+    vi.mocked(client.system.getPlatform).mockResolvedValue('darwin');
   });
 
   test('Check no control buttons as it is provided by the system', async () => {
@@ -73,7 +73,7 @@ describe('macOS', () => {
 
 describe('linux', () => {
   beforeEach(() => {
-    getOsPlatformMock.mockReturnValue('linux');
+    vi.mocked(client.system.getPlatform).mockResolvedValue('linux');
   });
 
   test('Check control buttons are defined', async () => {
@@ -104,7 +104,7 @@ describe('linux', () => {
 
 describe('Windows', () => {
   beforeEach(() => {
-    getOsPlatformMock.mockReturnValue('win32');
+    vi.mocked(client.system.getPlatform).mockResolvedValue('win32');
   });
 
   test('Check control buttons are defined', async () => {

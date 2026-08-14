@@ -21,6 +21,7 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render } from '@testing-library/svelte';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import {
   getBackEntries,
   getForwardEntries,
@@ -39,7 +40,7 @@ beforeEach(() => {
   vi.useFakeTimers({ shouldAdvanceTime: true });
 
   vi.mocked(window.telemetryTrack).mockResolvedValue(undefined);
-  vi.mocked(window.getOsPlatform).mockResolvedValue('linux');
+  vi.mocked(client.system.getPlatform).mockResolvedValue('linux');
 });
 
 afterEach(() => {
@@ -170,7 +171,7 @@ describe('keyboard navigation - Windows/Linux', () => {
 
 describe('keyboard navigation - macOS', () => {
   test('Cmd+[ should trigger goBack', async () => {
-    vi.mocked(window.getOsPlatform).mockResolvedValue('darwin');
+    vi.mocked(client.system.getPlatform).mockResolvedValue('darwin');
     render(NavigationButtons);
 
     await vi.waitFor(async () => {
@@ -184,7 +185,7 @@ describe('keyboard navigation - macOS', () => {
   });
 
   test('Cmd+] should trigger goForward', async () => {
-    vi.mocked(window.getOsPlatform).mockResolvedValue('darwin');
+    vi.mocked(client.system.getPlatform).mockResolvedValue('darwin');
     render(NavigationButtons);
 
     await vi.waitFor(async () => {
@@ -198,7 +199,7 @@ describe('keyboard navigation - macOS', () => {
   });
 
   test('Cmd+Left should trigger goBack', async () => {
-    vi.mocked(window.getOsPlatform).mockResolvedValue('darwin');
+    vi.mocked(client.system.getPlatform).mockResolvedValue('darwin');
     render(NavigationButtons);
 
     await vi.waitFor(async () => {
@@ -212,7 +213,7 @@ describe('keyboard navigation - macOS', () => {
   });
 
   test('Cmd+Right should trigger goForward', async () => {
-    vi.mocked(window.getOsPlatform).mockResolvedValue('darwin');
+    vi.mocked(client.system.getPlatform).mockResolvedValue('darwin');
     render(NavigationButtons);
 
     await vi.waitFor(async () => {

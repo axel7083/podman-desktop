@@ -24,15 +24,15 @@ import userEvent from '@testing-library/user-event';
 import { type Component, type ComponentProps } from 'svelte';
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import GitHubIssueFeedback from './GitHubIssueFeedback.svelte';
 
-const openExternalMock = vi.fn();
 const previewOnGitHubMock = vi.fn();
 
 beforeAll(() => {
   Object.defineProperty(global, 'window', {
     value: {
-      openExternal: openExternalMock,
       previewOnGitHub: previewOnGitHubMock,
       telemetryTrack: vi.fn(),
       navigator: {
@@ -191,7 +191,7 @@ test.each([
   expect(existingIssues).toBeInTheDocument();
 
   await userEvent.click(existingIssues);
-  expect(openExternalMock).toHaveBeenCalledWith(link);
+  expect(client.system.openExternal).toHaveBeenCalledWith({ link });
 });
 
 test.each<GitHubFeedbackCategory>(['bug', 'feature'])(
@@ -445,6 +445,6 @@ test('Expect opening existing GitHub issues to not close the feedback window', a
 
   await userEvent.click(gitHubLink);
 
-  expect(window.openExternal).toHaveBeenCalled();
+  expect(client.system.openExternal).toHaveBeenCalled();
   expect(onCloseFormMock).not.toHaveBeenCalled();
 });

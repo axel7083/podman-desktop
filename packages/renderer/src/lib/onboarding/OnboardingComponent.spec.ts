@@ -79,9 +79,6 @@ async function waitRender(customProperties: object): Promise<void> {
 beforeAll(() => {
   Object.defineProperty(window, 'getConfigurationValue', { value: vi.fn() });
   Object.defineProperty(window, 'updateConfigurationValue', { value: vi.fn() });
-  Object.defineProperty(window, 'getOsMemory', { value: vi.fn() });
-  Object.defineProperty(window, 'getOsCpu', { value: vi.fn() });
-  Object.defineProperty(window, 'getOsFreeDiskSize', { value: vi.fn() });
   Object.defineProperty(window, 'getCancellableTokenSource', { value: vi.fn() });
   Object.defineProperty(window, 'auditConnectionParameters', { value: vi.fn() });
   Object.defineProperty(window, 'telemetryTrack', { value: vi.fn() });

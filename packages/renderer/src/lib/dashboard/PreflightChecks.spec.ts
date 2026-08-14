@@ -20,15 +20,11 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import PreflightChecks from './PreflightChecks.svelte';
 
 beforeEach(() => {
-  Object.defineProperty(global, 'window', {
-    value: {
-      openExternal: vi.fn(),
-    },
-    writable: true,
-  });
   vi.resetAllMocks();
 });
 
@@ -88,7 +84,7 @@ test('Expect preCheck to be displayed when having all props', async () => {
   // click on the button
   await fireEvent.click(docLinks);
   // check openExternal is called
-  expect(window.openExternal).toHaveBeenCalledWith('url');
+  expect(client.system.openExternal).toHaveBeenCalledWith({ link: 'url' });
 });
 
 test('Expect success icon to be displayed when check succeeded', async () => {

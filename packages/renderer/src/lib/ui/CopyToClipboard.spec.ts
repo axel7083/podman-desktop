@@ -19,16 +19,15 @@
 import '@testing-library/jest-dom/vitest';
 
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { expect, test, vi } from 'vitest';
+import { expect, test } from 'vitest';
+
+import { client } from '/@/client';
 
 import CopyToClipboard from './CopyToClipboard.svelte';
 
 test('Expect text to be copied to clipboard', async () => {
   const textToCopy = 'Podman Text';
   const title = 'Podman';
-
-  const clipboardWriteTextMock = vi.fn().mockImplementation(() => {});
-  Object.defineProperty(window, 'clipboardWriteText', { value: clipboardWriteTextMock });
 
   render(CopyToClipboard, { clipboardData: textToCopy, title });
 
@@ -42,5 +41,5 @@ test('Expect text to be copied to clipboard', async () => {
 
   await fireEvent.click(button);
 
-  expect(clipboardWriteTextMock).toBeCalledWith(textToCopy);
+  expect(client.system.clipboardWriteText).toBeCalledWith({ text: textToCopy });
 });

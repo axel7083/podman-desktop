@@ -21,6 +21,8 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { afterEach, beforeEach, expect, suite, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import GuideCard from './GuideCard.svelte';
 
 afterEach(() => {
@@ -55,7 +57,7 @@ suite('Guide card', () => {
   test('opens guide and sends telemetry', async () => {
     const cardButton = screen.getByRole('button', { name: 'Get started' });
     await fireEvent.click(cardButton);
-    expect(vi.mocked(window.openExternal)).toHaveBeenCalledWith('url');
+    expect(vi.mocked(client.system.openExternal)).toHaveBeenCalledWith({ link: 'url' });
     expect(vi.mocked(window.telemetryTrack)).toHaveBeenCalledWith('openLearningCenterGuide', {
       guideId: 'id',
     });

@@ -13,6 +13,7 @@ import { Button, Input } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 import { type Component, onMount, tick } from 'svelte';
 
+import { client } from '/@/client';
 import ArrowDownIcon from '/@/lib/images/ArrowDownIcon.svelte';
 import ArrowUpIcon from '/@/lib/images/ArrowUpIcon.svelte';
 import EnterIcon from '/@/lib/images/EnterIcon.svelte';
@@ -121,7 +122,7 @@ let filteredItems = $derived.by(() => {
 });
 
 onMount(async () => {
-  const platform = await window.getOsPlatform();
+  const platform = await client.system.getPlatform();
   isMac = platform === 'darwin';
   documentationItems = await window.getDocumentationItems();
   searchOptions = await window.getCommandPaletteSearchOptions();
@@ -245,7 +246,7 @@ async function executeAction(index: number): Promise<void> {
     // Documentation item
     if (item.url) {
       try {
-        await window.openExternal(item.url);
+        await client.system.openExternal({ link: item.url });
       } catch (error) {
         console.error('Error opening documentation URL', error);
       }
@@ -265,7 +266,7 @@ async function executeAction(index: number): Promise<void> {
       }
     }
     itemType = 'Command';
-    commandHash = await window.createHash(item.title ?? 'Unknown command');
+    commandHash = await client.system.createHash({ input: item.title ?? 'Unknown command' });
   }
 
   const telemetryOptions = {
@@ -450,7 +451,7 @@ function getIcon(item: CommandInfo | DocumentationInfo | GoToInfo): IconDefiniti
             <div class='text-lg font-bold'>No results matching '{inputValue}' found</div>
             {#if searchOptionsSelectedIndex === 2}
               <div class='text-md'>Not what you expected? Double-check your spelling or try searching for:</div>
-              <Button icon={faChevronRight} type='link' onclick={(): Promise<void> => window.openExternal('https://podman-desktop.io/docs')}>Browse All Documentation</Button>
+              <Button icon={faChevronRight} type='link' onclick={(): Promise<void> => client.system.openExternal({ link: 'https://podman-desktop.io/docs' })}>Browse All Documentation</Button>
             {/if}
           </div>
         {/if}
