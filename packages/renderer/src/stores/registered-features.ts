@@ -18,6 +18,8 @@
 
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = ['feature-registry:features-updated'];
@@ -31,7 +33,7 @@ export const registeredFeatures: Writable<string[]> = writable([]);
 
 // use helper here as window methods are initialized after the store in tests
 const getRegisteredFeatures = async (): Promise<string[]> => {
-  return window.getRegisteredFeatures();
+  return client.uiRegistry.getRegisteredFeatures();
 };
 
 export const registeredFeaturesEventStore = new EventStore<string[]>(

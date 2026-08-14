@@ -42,7 +42,6 @@ import type {
 } from '@kubernetes/client-node';
 import type * as containerDesktopAPI from '@podman-desktop/api';
 import type {
-  ColorInfo,
   CommandInfo,
   CommandPaletteSearchOption,
   ContainerCreateOptions,
@@ -55,7 +54,6 @@ import type {
   ContextGeneralState,
   ContextHealth,
   ContextPermission,
-  ContributionInfo,
   DocumentationInfo,
   ExploreFeature,
   FeedbackMessages,
@@ -64,7 +62,6 @@ import type {
   ForwardOptions,
   GitHubIssue,
   HistoryInfo,
-  IconInfo,
   IDisposable,
   ImageInfo,
   ImageInspectInfo,
@@ -107,7 +104,6 @@ import type {
   SystemOverviewStatusInfo,
   TelemetryMessages,
   V1Route,
-  ViewInfoUI,
   VolumeCreateOptions,
   VolumeInspectInfo,
   VolumeListInfo,
@@ -1479,25 +1475,6 @@ export function initExposure(): void {
     return ipcInvoke('welcome:getWelcomeMessages');
   });
 
-  contextBridge.exposeInMainWorld('listContributions', async (): Promise<ContributionInfo[]> => {
-    return ipcInvoke('contributions:listContributions');
-  });
-
-  contextBridge.exposeInMainWorld('listIcons', async (): Promise<IconInfo[]> => {
-    return ipcInvoke('iconRegistry:listIcons');
-  });
-
-  contextBridge.exposeInMainWorld('listColors', async (themeId: string): Promise<ColorInfo[]> => {
-    return ipcInvoke('colorRegistry:listColors', themeId);
-  });
-
-  contextBridge.exposeInMainWorld(
-    'getThemeInfo',
-    async (themeId: string): Promise<{ isDark: boolean; isHighContrast: boolean }> => {
-      return ipcInvoke('colorRegistry:getThemeInfo', themeId);
-    },
-  );
-
   // Handle callback to open devtools for extensions
   // by delegating to the renderer process
   ipcRenderer.on('dev-tools:open-extension', (_, extensionId: string) => {
@@ -2129,9 +2106,6 @@ export function initExposure(): void {
     return ipcInvoke('app:getVersion');
   });
 
-  contextBridge.exposeInMainWorld('listViewsContributions', async (): Promise<ViewInfoUI[]> => {
-    return ipcInvoke('viewRegistry:listViewsContributions');
-  });
   contextBridge.exposeInMainWorld('listWebviews', async (): Promise<WebviewInfo[]> => {
     return ipcInvoke('webviewRegistry:listWebviews');
   });
@@ -2146,13 +2120,6 @@ export function initExposure(): void {
   contextBridge.exposeInMainWorld('cleanupWebviewDevTools', async (webcontentId: number): Promise<void> => {
     return ipcInvoke('webview:devtools:cleanup', webcontentId);
   });
-
-  contextBridge.exposeInMainWorld(
-    'fetchExtensionViewsContributions',
-    async (extensionId: string): Promise<ViewInfoUI[]> => {
-      return ipcInvoke('viewRegistry:fetchViewsContributions', extensionId);
-    },
-  );
 
   contextBridge.exposeInMainWorld('listContexts', async (): Promise<ContextInfo[]> => {
     return ipcInvoke('contextRegistry:listContexts');
@@ -2216,14 +2183,6 @@ export function initExposure(): void {
 
   contextBridge.exposeInMainWorld('helpMenuGetItems', async (): Promise<ItemInfo[]> => {
     return ipcInvoke('help-menu:getItems');
-  });
-
-  contextBridge.exposeInMainWorld('getRegisteredFeatures', async (): Promise<string[]> => {
-    return ipcInvoke('feature-registry:getRegisteredFeatures');
-  });
-
-  contextBridge.exposeInMainWorld('contextCollectAllValues', async (): Promise<Record<string, unknown>> => {
-    return ipcInvoke('context:collectAllValues');
   });
 
   contextBridge.exposeInMainWorld(

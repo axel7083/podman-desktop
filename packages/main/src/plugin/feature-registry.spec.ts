@@ -35,13 +35,11 @@ beforeEach(() => {
   vi.resetAllMocks();
 });
 
-const ipcHandleMock = vi.fn();
-
 describe('FeatureRegistry', () => {
   let featureRegistry: TestFeatureRegistry;
 
   beforeEach(() => {
-    featureRegistry = new TestFeatureRegistry(ipcHandleMock, apiSenderMock);
+    featureRegistry = new TestFeatureRegistry(apiSenderMock);
   });
 
   test('should list registered features', () => {
@@ -55,10 +53,8 @@ describe('FeatureRegistry', () => {
     expect(featureRegistry.listFeatures()).toEqual([]);
   });
 
-  test('init registers ipc handler and sends apiSender events on feature changes', () => {
+  test('init sends apiSender events on feature changes', () => {
     featureRegistry.init();
-
-    expect(ipcHandleMock).toHaveBeenCalledWith('feature-registry:getRegisteredFeatures', expect.any(Function));
 
     featureRegistry.registerFeatures('ext1', ['feat1']);
     expect(apiSenderMock.send).toHaveBeenCalledWith('feature-registry:features-updated', ['feat1']);

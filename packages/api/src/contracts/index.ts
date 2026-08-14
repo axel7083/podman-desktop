@@ -32,6 +32,7 @@ import { systemContract } from '/@/contracts/system/system.contract.js';
 import { tasksContract } from '/@/contracts/tasks/tasks.contract.js';
 import { tempFileContract } from '/@/contracts/temp-file/temp-file.contract.js';
 import { troubleshootingContract } from '/@/contracts/troubleshooting/troubleshooting.contract.js';
+import { uiRegistryContract } from '/@/contracts/ui-registry/ui-registry.contract.js';
 
 export * from './constants.js';
 
@@ -52,4 +53,5 @@ export const contracts = {
   tasks: tasksContract,
   tempFile: tempFileContract,
   troubleshooting: troubleshootingContract,
+  uiRegistry: uiRegistryContract,
 };

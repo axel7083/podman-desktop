@@ -59,7 +59,7 @@ function updateAppearance(appearance: string): void {
     isDark.set(true);
     isHighContrast.set(true);
   } else {
-    window.getThemeInfo(appearance).then(
+    client.uiRegistry.getThemeInfo({ themeId: appearance }).then(
       info => {
         isDark.set(info.isDark);
         isHighContrast.set(info.isHighContrast);

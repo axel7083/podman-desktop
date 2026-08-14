@@ -115,6 +115,16 @@ vi.mock('/@/client', () => ({
       customPickClose: vi.fn(),
     },
     troubleshooting: { getDockerSocketMappingStatus: vi.fn() },
+    uiRegistry: {
+      listContributions: vi.fn(),
+      listIcons: vi.fn(),
+      listColors: vi.fn(),
+      getThemeInfo: vi.fn(),
+      listViews: vi.fn(),
+      fetchViews: vi.fn(),
+      collectAllContextValues: vi.fn(),
+      getRegisteredFeatures: vi.fn(),
+    },
   },
 }));
 

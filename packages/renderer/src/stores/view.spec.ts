@@ -20,6 +20,8 @@ import type { ViewInfoUI } from '@podman-desktop/core-api';
 import { get } from 'svelte/store';
 import { assert, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { fetchViews, viewsContributions, viewsEventStore } from './views';
 
 const callbacks = new Map<string, (data?: unknown) => void | Promise<void>>();
@@ -35,7 +37,7 @@ beforeEach(() => {
 
 test('views should be updated in case of an extension is stopped', async () => {
   // initial view
-  vi.mocked(window.listViewsContributions).mockResolvedValue([
+  vi.mocked(client.uiRegistry.listViews).mockResolvedValue([
     {
       extensionId: 'extension',
       viewId: 'view',
@@ -57,7 +59,7 @@ test('views should be updated in case of an extension is stopped', async () => {
   expect(views[0].extensionId).toEqual('extension');
 
   // ok now mock the listVolumes function to return an empty list
-  vi.mocked(window.listViewsContributions).mockResolvedValue([]);
+  vi.mocked(client.uiRegistry.listViews).mockResolvedValue([]);
 
   // call 'container-removed-event' event
   const extensionStoppedCallback = callbacks.get('extension-stopped');

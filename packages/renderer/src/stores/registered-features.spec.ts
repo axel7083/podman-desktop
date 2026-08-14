@@ -19,6 +19,8 @@
 import { get } from 'svelte/store';
 import { assert, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import {
   onDidChangeRegisteredFeatures,
   registeredFeatures,
@@ -39,7 +41,7 @@ beforeEach(() => {
 
 describe('registeredFeaturesEventStore', () => {
   test('registered features should be updated after fetch', async () => {
-    vi.mocked(window.getRegisteredFeatures).mockResolvedValue(['kubernetes-contexts-manager']);
+    vi.mocked(client.uiRegistry.getRegisteredFeatures).mockResolvedValue(['kubernetes-contexts-manager']);
     registeredFeaturesEventStore.setup();
 
     let features = get(registeredFeatures);
@@ -52,13 +54,16 @@ describe('registeredFeaturesEventStore', () => {
   });
 
   test('registered features should be updated when feature-registry:features-updated fires', async () => {
-    vi.mocked(window.getRegisteredFeatures).mockResolvedValue(['kubernetes-contexts-manager']);
+    vi.mocked(client.uiRegistry.getRegisteredFeatures).mockResolvedValue(['kubernetes-contexts-manager']);
     registeredFeaturesEventStore.setup();
 
     await registeredFeaturesEventStoreInfo.fetch();
     expect(get(registeredFeatures)).toEqual(['kubernetes-contexts-manager']);
 
-    vi.mocked(window.getRegisteredFeatures).mockResolvedValue(['kubernetes-contexts-manager', 'another-feature']);
+    vi.mocked(client.uiRegistry.getRegisteredFeatures).mockResolvedValue([
+      'kubernetes-contexts-manager',
+      'another-feature',
+    ]);
 
     const updatedCallback = callbacks.get('feature-registry:features-updated');
     assert(updatedCallback);
@@ -68,7 +73,7 @@ describe('registeredFeaturesEventStore', () => {
   });
 
   test('new subscriber should receive current features after initial fetch', async () => {
-    vi.mocked(window.getRegisteredFeatures).mockResolvedValue(['kubernetes-contexts-manager']);
+    vi.mocked(client.uiRegistry.getRegisteredFeatures).mockResolvedValue(['kubernetes-contexts-manager']);
     registeredFeaturesEventStore.setup();
     await registeredFeaturesEventStoreInfo.fetch();
 

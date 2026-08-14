@@ -39,7 +39,7 @@ vi.mock(import('tinro'));
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(window.listPods).mockResolvedValue([]);
-  vi.mocked(window.listViewsContributions).mockResolvedValue([]);
+  vi.mocked(client.uiRegistry.listViews).mockResolvedValue([]);
   vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
   vi.mocked(client.configuration.getValue).mockResolvedValue(false);
   vi.mocked(window.onDidUpdateProviderStatus).mockResolvedValue(undefined);

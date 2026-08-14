@@ -42,7 +42,6 @@ import type {
 } from '@kubernetes/client-node';
 import type * as containerDesktopAPI from '@podman-desktop/api';
 import type {
-  ColorInfo,
   CommandInfo,
   CommandPaletteSearchOption,
   ContainerCreateOptions,
@@ -54,7 +53,6 @@ import type {
   ContextGeneralState,
   ContextHealth,
   ContextPermission,
-  ContributionInfo,
   DocumentationInfo,
   ExtensionInfo,
   FeedbackMessages,
@@ -63,7 +61,6 @@ import type {
   ForwardOptions,
   GitHubIssue,
   HistoryInfo,
-  IconInfo,
   IDisposable,
   ImageInfo,
   ImageInspectInfo,
@@ -102,9 +99,7 @@ import type {
   SecretInfo,
   SimpleContainerInfo,
   TelemetryMessages,
-  ThemeInfo,
   V1Route,
-  ViewInfoUI,
   VolumeCreateOptions,
   VolumeCreateResponseInfo,
   VolumeInspectInfo,
@@ -801,17 +796,14 @@ export class PluginSystem {
 
     // setup security restrictions on links
     const messageBox = container.get<MessageBox>(MessageBox);
-    const viewRegistry = container.get<ViewRegistry>(ViewRegistry);
     const feedback = container.get<FeedbackHandler>(FeedbackHandler);
     const cancellationTokenRegistry = container.get<CancellationTokenRegistry>(CancellationTokenRegistry);
     const cliToolRegistry = container.get<CliToolRegistry>(CliToolRegistry);
     const troubleshooting = container.get<Troubleshooting>(Troubleshooting);
     troubleshooting.init();
     const contributionManager = container.get<ContributionManager>(ContributionManager);
-    const iconRegistry = container.get<IconRegistry>(IconRegistry);
     const onboardingRegistry = container.get<OnboardingRegistry>(OnboardingRegistry);
     const directories = container.get<Directories>(Directories);
-    const context = container.get<Context>(Context);
     const imageRegistry = container.get<ImageRegistry>(ImageRegistry);
     container.bind<ExperimentalFeatureFeedbackHandler>(ExperimentalFeatureFeedbackHandler).toSelf().inSingletonScope();
     const experimentalFeatureFeedbackHandler = container.get<ExperimentalFeatureFeedbackHandler>(
@@ -2032,10 +2024,6 @@ export class PluginSystem {
       },
     );
 
-    this.ipcHandle('contributions:listContributions', async (): Promise<ContributionInfo[]> => {
-      return contributionManager.listContributions();
-    });
-
     this.ipcHandle('documentation:getItems', async (): Promise<DocumentationInfo[]> => {
       return documentationService.getDocumentationItems();
     });
@@ -2728,22 +2716,6 @@ export class PluginSystem {
       return app.getVersion();
     });
 
-    this.ipcHandle('iconRegistry:listIcons', async (): Promise<IconInfo[]> => {
-      return iconRegistry.listIcons();
-    });
-
-    this.ipcHandle('colorRegistry:listColors', async (_listener, themeId: string): Promise<ColorInfo[]> => {
-      return colorRegistry.listColors(themeId);
-    });
-
-    this.ipcHandle('colorRegistry:getThemeInfo', async (_listener, themeId: string): Promise<ThemeInfo> => {
-      return colorRegistry.getThemeInfo(themeId);
-    });
-
-    this.ipcHandle('viewRegistry:listViewsContributions', async (_listener): Promise<ViewInfoUI[]> => {
-      return viewRegistry.listViewsContributions();
-    });
-
     this.ipcHandle('webview:devtools:register', async (_listener, webcontentId: number): Promise<void> => {
       return webviewRegistry.registerWebviewDevTools(webcontentId);
     });
@@ -2767,10 +2739,6 @@ export class PluginSystem {
 
     this.ipcHandle('webviewRegistry:makeDefaultWebviewVisible', async (_listener, webviewId: string): Promise<void> => {
       return webviewRegistry.makeDefaultWebviewVisible(webviewId);
-    });
-
-    this.ipcHandle('viewRegistry:fetchViewsContributions', async (_listener, id: string): Promise<ViewInfoUI[]> => {
-      return viewRegistry.fetchViewsContributions(id);
     });
 
     this.ipcHandle('welcome:getWelcomeMessages', async (): Promise<WelcomeMessages> => {
@@ -2833,11 +2801,6 @@ export class PluginSystem {
     this.ipcHandle('explore-features:closeFeatureCard', async (_listener, featureId: string): Promise<void> => {
       return exploreFeatures.closeFeatureCard(featureId);
     });
-
-    this.ipcHandle(
-      'context:collectAllValues',
-      async (): Promise<Record<string, unknown>> => context.collectAllValues(),
-    );
 
     this.ipcHandle(
       'kubernetes:getTroubleshootingInformation',

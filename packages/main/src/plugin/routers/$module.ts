@@ -35,6 +35,7 @@ import { SystemRouter } from '/@/plugin/routers/system.router.js';
 import { TasksRouter } from '/@/plugin/routers/tasks.router.js';
 import { TempFileRouter } from '/@/plugin/routers/temp-file.router.js';
 import { TroubleshootingRouter } from '/@/plugin/routers/troubleshooting.router.js';
+import { UiRegistryRouter } from '/@/plugin/routers/ui-registry.router.js';
 
 const routersModule = new ContainerModule(options => {
   options.bind<AuthenticationRouter>(AuthenticationRouter).toSelf().inSingletonScope();
@@ -53,6 +54,7 @@ const routersModule = new ContainerModule(options => {
   options.bind<TasksRouter>(TasksRouter).toSelf().inSingletonScope();
   options.bind<TempFileRouter>(TempFileRouter).toSelf().inSingletonScope();
   options.bind<TroubleshootingRouter>(TroubleshootingRouter).toSelf().inSingletonScope();
+  options.bind<UiRegistryRouter>(UiRegistryRouter).toSelf().inSingletonScope();
   options.bind<RpcHandler>(RpcHandler).toSelf().inSingletonScope();
 });
 

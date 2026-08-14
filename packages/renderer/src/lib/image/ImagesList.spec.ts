@@ -42,7 +42,7 @@ beforeEach(() => {
   imagesInfos.set([]);
   viewsContributions.set([]);
   vi.mocked(client.imageRegistry.hasAuthconfigForImage).mockResolvedValue(false);
-  vi.mocked(window.listViewsContributions).mockResolvedValue([]);
+  vi.mocked(client.uiRegistry.listViews).mockResolvedValue([]);
   vi.mocked(client.configuration.getProperties).mockResolvedValue({});
   vi.mocked(client.configuration.getValue).mockResolvedValue(false);
   vi.mocked(window.onDidUpdateProviderStatus).mockResolvedValue(undefined);
@@ -319,8 +319,8 @@ describe('Contributions', () => {
         },
       ];
 
-      vi.mocked(window.listViewsContributions).mockReset();
-      vi.mocked(window.listViewsContributions).mockResolvedValue(contribs);
+      vi.mocked(client.uiRegistry.listViews).mockReset();
+      vi.mocked(client.uiRegistry.listViews).mockResolvedValue(contribs);
       // set viewsContributions
       viewsContributions.set(contribs);
 
@@ -400,8 +400,8 @@ describe('Contributions', () => {
         },
       ];
 
-      vi.mocked(window.listViewsContributions).mockReset();
-      vi.mocked(window.listViewsContributions).mockResolvedValue(contribs);
+      vi.mocked(client.uiRegistry.listViews).mockReset();
+      vi.mocked(client.uiRegistry.listViews).mockResolvedValue(contribs);
       // set viewsContributions
       viewsContributions.set(contribs);
 
