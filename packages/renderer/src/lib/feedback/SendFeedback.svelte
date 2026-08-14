@@ -59,7 +59,7 @@ function handleUpdate(e: boolean): void {
 }
 
 onMount(async () => {
-  categoryGitHubLinks = await window.getGitHubFeedbackLinks();
+  categoryGitHubLinks = await client.feedback.getGitHubFeedbackLinks();
   if (categoryGitHubLinks && (categoryGitHubLinks.feature || categoryGitHubLinks.bug)) {
     if (categoryGitHubLinks.feature) {
       feedbackCategories.set('feature', '🚀 Feature request');
@@ -68,7 +68,7 @@ onMount(async () => {
       feedbackCategories.set('bug', '🪲 Bug');
     }
   } else {
-    feedbackLinks = (await window.getFeedbackLinks()) ?? {};
+    feedbackLinks = (await client.feedback.getFeedbackLinks()) ?? {};
     if (Object.keys(feedbackLinks).length > 0) {
       feedbackCategories.set('other', '❓ Other');
     }

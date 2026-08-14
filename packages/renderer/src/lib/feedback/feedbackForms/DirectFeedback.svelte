@@ -40,7 +40,7 @@ function selectSmiley(item: number): void {
   smileyRating = item;
 }
 
-let feedbackMessages = $derived(await window.getFeedbackMessages());
+let feedbackMessages = $derived(await client.feedback.getFeedbackMessages());
 
 async function sendFeedback(): Promise<void> {
   const properties: FeedbackProperties = {
@@ -57,7 +57,7 @@ async function sendFeedback(): Promise<void> {
   }
 
   // 1. send the feedback
-  await window.sendFeedback(properties);
+  await client.feedback.send({ properties });
 
   // 2. close the form without confirmation
   onCloseForm(false);

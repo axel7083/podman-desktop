@@ -30,14 +30,11 @@ beforeAll(() => {
   Object.defineProperty(window, 'telemetryTrack', {
     value: vi.fn(),
   });
-  Object.defineProperty(window, 'sendFeedback', {
-    value: vi.fn(),
-  });
 });
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.getFeedbackMessages).mockResolvedValue({
+  vi.mocked(client.feedback.getFeedbackMessages).mockResolvedValue({
     experienceLabel: 'How was your experience with Podman Desktop',
     thankYouMessage: 'Your input is valuable in helping us better understand and tailor Podman Desktop.',
     gitHubStarsMessage: 'Like Podman Desktop? Give us a star on GitHub',
@@ -194,9 +191,11 @@ test('Expect category to be sent', async () => {
   await fireEvent.click(button);
 
   await vi.waitFor(() => {
-    expect(window.sendFeedback).toHaveBeenCalledWith({
-      category: 'developers',
-      rating: 4,
+    expect(client.feedback.send).toHaveBeenCalledWith({
+      properties: {
+        category: 'developers',
+        rating: 4,
+      },
     });
   });
 
@@ -227,9 +226,11 @@ test('Expect design category to be sent when design category is used', async () 
   await fireEvent.click(button);
 
   await vi.waitFor(() => {
-    expect(window.sendFeedback).toHaveBeenCalledWith({
-      category: 'design',
-      rating: 4,
+    expect(client.feedback.send).toHaveBeenCalledWith({
+      properties: {
+        category: 'design',
+        rating: 4,
+      },
     });
   });
 

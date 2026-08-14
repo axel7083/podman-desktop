@@ -56,11 +56,8 @@ import type {
   ContextPermission,
   DocumentationInfo,
   ExploreFeature,
-  FeedbackMessages,
-  FeedbackProperties,
   ForwardConfig,
   ForwardOptions,
-  GitHubIssue,
   HistoryInfo,
   IDisposable,
   ImageInfo,
@@ -112,7 +109,6 @@ import type {
 } from '@podman-desktop/core-api';
 import { NavigationPage, ORPC_START_CHANNEL } from '@podman-desktop/core-api';
 import type { ApiSenderType } from '@podman-desktop/core-api/api-sender';
-import type { ContextInfo } from '@podman-desktop/core-api/context';
 import type {
   GenerateKubeResult,
   KubernetesGeneratorArgument,
@@ -2010,29 +2006,6 @@ export function initExposure(): void {
     return ipcInvoke('cancellableToken:cancel', id);
   });
 
-  contextBridge.exposeInMainWorld('sendFeedback', async (feedback: FeedbackProperties): Promise<void> => {
-    return ipcInvoke('feedback:send', feedback);
-  });
-
-  contextBridge.exposeInMainWorld('previewOnGitHub', async (feedback: GitHubIssue): Promise<void> => {
-    return ipcInvoke('feedback:GitHubPreview', feedback);
-  });
-
-  contextBridge.exposeInMainWorld(
-    'getGitHubFeedbackLinks',
-    async (): Promise<{ [category: string]: string } | undefined> => {
-      return ipcInvoke('feedback:getGitHubFeedbackLinks');
-    },
-  );
-
-  contextBridge.exposeInMainWorld('getFeedbackLinks', async (): Promise<{ [category: string]: string } | undefined> => {
-    return ipcInvoke('feedback:getFeedbackLinks');
-  });
-
-  contextBridge.exposeInMainWorld('getFeedbackMessages', async (): Promise<FeedbackMessages> => {
-    return ipcInvoke('feedback:getFeedbackMessages');
-  });
-
   contextBridge.exposeInMainWorld('getTelemetryMessages', async (): Promise<TelemetryMessages> => {
     return ipcInvoke('telemetry:getTelemetryMessages');
   });
@@ -2119,14 +2092,6 @@ export function initExposure(): void {
 
   contextBridge.exposeInMainWorld('cleanupWebviewDevTools', async (webcontentId: number): Promise<void> => {
     return ipcInvoke('webview:devtools:cleanup', webcontentId);
-  });
-
-  contextBridge.exposeInMainWorld('listContexts', async (): Promise<ContextInfo[]> => {
-    return ipcInvoke('contextRegistry:listContexts');
-  });
-
-  contextBridge.exposeInMainWorld('getContext', async (extensionId: string): Promise<ContextInfo> => {
-    return ipcInvoke('contextRegistry:getContext', extensionId);
   });
 
   contextBridge.exposeInMainWorld('listOnboarding', async (): Promise<OnboardingInfo[]> => {

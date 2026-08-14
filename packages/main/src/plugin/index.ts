@@ -55,11 +55,9 @@ import type {
   ContextPermission,
   DocumentationInfo,
   ExtensionInfo,
-  FeedbackMessages,
   FeedbackProperties,
   ForwardConfig,
   ForwardOptions,
-  GitHubIssue,
   HistoryInfo,
   IDisposable,
   ImageInfo,
@@ -796,7 +794,6 @@ export class PluginSystem {
 
     // setup security restrictions on links
     const messageBox = container.get<MessageBox>(MessageBox);
-    const feedback = container.get<FeedbackHandler>(FeedbackHandler);
     const cancellationTokenRegistry = container.get<CancellationTokenRegistry>(CancellationTokenRegistry);
     const cliToolRegistry = container.get<CliToolRegistry>(CliToolRegistry);
     const troubleshooting = container.get<Troubleshooting>(Troubleshooting);
@@ -2653,32 +2650,6 @@ export class PluginSystem {
 
     this.ipcHandle('kubernetes-client:refreshContextState', async (_listener, context: string): Promise<void> => {
       return kubernetesClient.refreshContextState(context);
-    });
-
-    this.ipcHandle('feedback:send', async (_listener, feedbackProperties: FeedbackProperties): Promise<void> => {
-      return telemetry.sendFeedback(feedbackProperties);
-    });
-
-    this.ipcHandle('feedback:GitHubPreview', async (_listener, properties: GitHubIssue): Promise<void> => {
-      return feedback.openGitHubIssue(properties);
-    });
-
-    this.ipcHandle(
-      'feedback:getGitHubFeedbackLinks',
-      async (_listener): Promise<{ [category: string]: string } | undefined> => {
-        return feedback.getGitHubFeedbackLinks();
-      },
-    );
-
-    this.ipcHandle(
-      'feedback:getFeedbackLinks',
-      async (_listener): Promise<{ [category: string]: string } | undefined> => {
-        return feedback.getFeedbackLinks();
-      },
-    );
-
-    this.ipcHandle('feedback:getFeedbackMessages', async (): Promise<FeedbackMessages> => {
-      return feedback.getFeedbackMessages();
     });
 
     this.ipcHandle('cancellableTokenSource:create', async (): Promise<number> => {

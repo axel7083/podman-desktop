@@ -26,6 +26,7 @@ import { CliToolRouter } from '/@/plugin/routers/cli-tool.router.js';
 import { ConfigurationRouter } from '/@/plugin/routers/configuration.router.js';
 import { DialogRouter } from '/@/plugin/routers/dialog.router.js';
 import { ExtensionRouter } from '/@/plugin/routers/extension.router.js';
+import { FeedbackRouter } from '/@/plugin/routers/feedback.router.js';
 import { ImageRegistryRouter } from '/@/plugin/routers/image-registry.router.js';
 import { MenuRouter } from '/@/plugin/routers/menu.router.js';
 import { NotificationRouter } from '/@/plugin/routers/notification.router.js';
@@ -60,6 +61,8 @@ export class RpcHandler {
     readonly dialog: DialogRouter,
     @inject(ExtensionRouter)
     readonly extension: ExtensionRouter,
+    @inject(FeedbackRouter)
+    readonly feedback: FeedbackRouter,
     @inject(ImageRegistryRouter)
     readonly imageRegistry: ImageRegistryRouter,
     @inject(MenuRouter)
@@ -91,6 +94,7 @@ export class RpcHandler {
       configuration: configuration.router,
       dialog: dialog.router,
       extension: extension.router,
+      feedback: feedback.router,
       imageRegistry: imageRegistry.router,
       menu: menu.router,
       notification: notification.router,

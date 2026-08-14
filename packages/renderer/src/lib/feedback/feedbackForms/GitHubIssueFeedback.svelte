@@ -61,8 +61,8 @@ async function previewOnGitHub(): Promise<void> {
   };
   let telemetryEventProperties: { [property: string]: unknown } = { feedbackCategory: category };
 
-  window
-    .previewOnGitHub(issueProperties)
+  client.feedback
+    .githubPreview({ properties: issueProperties })
     .then(() => {
       onCloseForm(false);
     })

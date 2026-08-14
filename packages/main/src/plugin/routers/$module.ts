@@ -23,6 +23,7 @@ import { CliToolRouter } from '/@/plugin/routers/cli-tool.router.js';
 import { ConfigurationRouter } from '/@/plugin/routers/configuration.router.js';
 import { DialogRouter } from '/@/plugin/routers/dialog.router.js';
 import { ExtensionRouter } from '/@/plugin/routers/extension.router.js';
+import { FeedbackRouter } from '/@/plugin/routers/feedback.router.js';
 import { ImageRegistryRouter } from '/@/plugin/routers/image-registry.router.js';
 import { MenuRouter } from '/@/plugin/routers/menu.router.js';
 import { NotificationRouter } from '/@/plugin/routers/notification.router.js';
@@ -43,6 +44,7 @@ const routersModule = new ContainerModule(options => {
   options.bind<ConfigurationRouter>(ConfigurationRouter).toSelf().inSingletonScope();
   options.bind<DialogRouter>(DialogRouter).toSelf().inSingletonScope();
   options.bind<ExtensionRouter>(ExtensionRouter).toSelf().inSingletonScope();
+  options.bind<FeedbackRouter>(FeedbackRouter).toSelf().inSingletonScope();
   options.bind<ImageRegistryRouter>(ImageRegistryRouter).toSelf().inSingletonScope();
   options.bind<MenuRouter>(MenuRouter).toSelf().inSingletonScope();
   options.bind<NotificationRouter>(NotificationRouter).toSelf().inSingletonScope();

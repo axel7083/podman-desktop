@@ -28,12 +28,9 @@ import { client } from '/@/client';
 
 import GitHubIssueFeedback from './GitHubIssueFeedback.svelte';
 
-const previewOnGitHubMock = vi.fn();
-
 beforeAll(() => {
   Object.defineProperty(global, 'window', {
     value: {
-      previewOnGitHub: previewOnGitHubMock,
       telemetryTrack: vi.fn(),
       navigator: {
         clipboard: {
@@ -48,7 +45,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.previewOnGitHub).mockResolvedValue(undefined);
+  vi.mocked(client.feedback.githubPreview).mockResolvedValue(undefined);
   vi.mocked(window.telemetryTrack).mockResolvedValue(undefined);
 });
 
@@ -220,11 +217,11 @@ test.each<GitHubFeedbackCategory>(['bug', 'feature'])(
     // preview
     await userEvent.click(preview);
 
-    expect(previewOnGitHubMock).toHaveBeenCalledWith(
-      expect.objectContaining({
+    expect(client.feedback.githubPreview).toHaveBeenCalledWith({
+      properties: expect.objectContaining({
         category: category,
       }),
-    );
+    });
 
     expect(onCloseFormMock).toHaveBeenCalled();
   },
@@ -283,11 +280,11 @@ describe('includeSystemInfo', () => {
     // open in GitHub
     await userEvent.click(preview);
 
-    expect(previewOnGitHubMock).toHaveBeenCalledWith(
-      expect.objectContaining({
+    expect(client.feedback.githubPreview).toHaveBeenCalledWith({
+      properties: expect.objectContaining({
         includeSystemInfo: false,
       }),
-    );
+    });
   });
 });
 
@@ -344,11 +341,11 @@ describe('includeExtensionInfo', () => {
     // open in GitHub
     await userEvent.click(preview);
 
-    expect(previewOnGitHubMock).toHaveBeenCalledWith(
-      expect.objectContaining({
+    expect(client.feedback.githubPreview).toHaveBeenCalledWith({
+      properties: expect.objectContaining({
         includeExtensionInfo: false,
       }),
-    );
+    });
   });
 });
 
@@ -382,7 +379,7 @@ test.each<GitHubFeedbackCategory>(['bug', 'feature'])(
 test.each<GitHubFeedbackCategory>(['bug', 'feature'])(
   'Expect %s to have specific telemetry track events with error if the preview on GitHub fails',
   async category => {
-    vi.mocked(window.previewOnGitHub).mockRejectedValue('error: unable to preview on GitHub');
+    vi.mocked(client.feedback.githubPreview).mockRejectedValue('error: unable to preview on GitHub');
     const { title, description, preview } = renderGitHubIssueFeedback({
       category: category,
       onCloseForm: vi.fn(),

@@ -114,6 +114,13 @@ vi.mock('/@/client', () => ({
       customPickValues: vi.fn(),
       customPickClose: vi.fn(),
     },
+    feedback: {
+      send: vi.fn(),
+      githubPreview: vi.fn(),
+      getGitHubFeedbackLinks: vi.fn(),
+      getFeedbackLinks: vi.fn(),
+      getFeedbackMessages: vi.fn(),
+    },
     troubleshooting: { getDockerSocketMappingStatus: vi.fn() },
     uiRegistry: {
       listContributions: vi.fn(),
