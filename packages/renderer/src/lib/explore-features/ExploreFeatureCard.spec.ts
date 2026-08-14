@@ -81,7 +81,7 @@ test('Click on close card', async () => {
   await fireEvent.click(closeButton);
 
   expect(closeFeature).toHaveBeenCalledWith('feature1');
-  expect(window.closeFeatureCard).toHaveBeenCalledWith('feature1');
+  expect(client.exploreFeatures.closeFeatureCard).toHaveBeenCalledWith({ featureId: 'feature1' });
   expect(vi.mocked(client.telemetry.track)).toHaveBeenCalledWith({
     event: 'dashboard.exploreFeatureDismissed',
     eventProperties: {

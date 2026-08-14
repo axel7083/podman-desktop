@@ -24,7 +24,7 @@ async function openTutorial(): Promise<void> {
 
 async function closeCard(): Promise<void> {
   closeFeature(feature.id);
-  await window.closeFeatureCard(feature.id);
+  await client.exploreFeatures.closeFeatureCard({ featureId: feature.id });
   await client.telemetry.track({
     event: 'dashboard.exploreFeatureDismissed',
     eventProperties: {
