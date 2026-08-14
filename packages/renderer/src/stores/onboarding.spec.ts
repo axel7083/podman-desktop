@@ -20,6 +20,8 @@ import type { OnboardingInfo } from '@podman-desktop/core-api';
 import { get } from 'svelte/store';
 import { assert, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { fetchOnboarding, onboardingEventStore, onboardingList } from './onboarding';
 
 const callbacks = new Map<string, (data?: unknown) => void | Promise<void>>();
@@ -35,7 +37,7 @@ beforeEach(() => {
 
 test('onboarding should be updated in case of an extension is stopped', async () => {
   // initial view
-  vi.mocked(window.listOnboarding).mockResolvedValue([
+  vi.mocked(client.onboarding.listOnboarding).mockResolvedValue([
     {
       extension: 'extension',
       title: 'title',
@@ -57,7 +59,7 @@ test('onboarding should be updated in case of an extension is stopped', async ()
   expect(onboardingList1[0].extension).toEqual('extension');
 
   // ok now mock the listOnboarding function to return an empty list
-  vi.mocked(window.listOnboarding).mockResolvedValue([]);
+  vi.mocked(client.onboarding.listOnboarding).mockResolvedValue([]);
 
   // call 'extension-stopped' event
   const extensionStoppedCallback = callbacks.get('extension-stopped');
@@ -74,7 +76,7 @@ test('onboarding should be updated in case of an extension is stopped', async ()
 
 test('onboarding should be updated in case of an extension is started', async () => {
   // mock the listOnboarding function to return an empty list
-  vi.mocked(window.listOnboarding).mockResolvedValue([]);
+  vi.mocked(client.onboarding.listOnboarding).mockResolvedValue([]);
 
   onboardingEventStore.setup();
 
@@ -89,7 +91,7 @@ test('onboarding should be updated in case of an extension is started', async ()
   expect(onboardingList1.length).toBe(0);
 
   // now add a new thing
-  vi.mocked(window.listOnboarding).mockResolvedValue([
+  vi.mocked(client.onboarding.listOnboarding).mockResolvedValue([
     {
       extension: 'extension',
       title: 'title',

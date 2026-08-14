@@ -20,6 +20,8 @@ import type { OnboardingInfo } from '@podman-desktop/core-api';
 import type { Writable } from 'svelte/store';
 import { writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = ['extension-stopped', 'extension-started', 'extensions-started'];
@@ -39,7 +41,7 @@ export const onboardingList: Writable<OnboardingInfo[]> = writable([]);
 
 // use helper here as window methods are initialized after the store in tests
 const listOnboarding = (): Promise<OnboardingInfo[]> => {
-  return window.listOnboarding();
+  return client.onboarding.listOnboarding();
 };
 
 export const onboardingEventStore = new EventStore<OnboardingInfo[]>(
