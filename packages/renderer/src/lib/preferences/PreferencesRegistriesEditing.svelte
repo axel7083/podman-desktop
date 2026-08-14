@@ -200,7 +200,7 @@ async function loginToRegistry(registry: containerDesktopAPI.Registry): Promise<
         error.message.includes('self signed certificate in certificate chain'))
     ) {
       showNewRegistryForm = false;
-      const result = await window.showMessageBox({
+      const result = await client.dialog.showMessageBox({
         title: 'Add Untrusted Registry?',
         type: 'warning',
         message: 'The certificate for this registry is not trusted / verifiable. Would you like to still add it?',

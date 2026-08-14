@@ -45,10 +45,9 @@ beforeEach(() => {
 
   vi.mocked(kubeContextStore).kubernetesCurrentContextPortForwards = readable([MOCKED_USER_FORWARD_CONFIG]);
   (window.deleteKubernetesPortForward as unknown) = vi.fn();
-  (window.showMessageBox as unknown) = vi.fn();
 
   // mock resolved `Delete`
-  vi.mocked(window.showMessageBox).mockResolvedValue({
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({
     response: 'Delete',
   });
 });

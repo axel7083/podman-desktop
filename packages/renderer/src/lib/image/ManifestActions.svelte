@@ -2,6 +2,7 @@
 import { faArrowUp, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { createEventDispatcher } from 'svelte';
 
+import { client } from '/@/client';
 import { withConfirmation } from '/@/lib/dialogs/messagebox-utils';
 import ListItemButtonIcon from '/@/lib/ui/ListItemButtonIcon.svelte';
 
@@ -34,7 +35,7 @@ async function deleteManifest(): Promise<void> {
 }
 
 async function onError(error: string): Promise<void> {
-  await window.showMessageBox({
+  await client.dialog.showMessageBox({
     title: 'Delete Manifest Failed',
     message: error,
     type: 'error',

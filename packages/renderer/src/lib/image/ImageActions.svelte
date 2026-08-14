@@ -97,7 +97,7 @@ async function showLayersImage(): Promise<void> {
 }
 
 async function onError(error: string, title = 'Image Operation Failed'): Promise<void> {
-  await window.showMessageBox({
+  await client.dialog.showMessageBox({
     title,
     message: error,
     type: 'error',

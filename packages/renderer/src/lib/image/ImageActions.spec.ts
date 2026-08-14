@@ -82,7 +82,7 @@ beforeEach(() => {
 
 test('Expect error dialog with correct message when image deletion fails', async () => {
   vi.mocked(withConfirmation).mockImplementation(f => f());
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Dismiss' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Dismiss' });
   vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 
   const image: ImageInfoUI = new Image('dummy', 'UNUSED') as unknown as ImageInfoUI;
@@ -97,10 +97,10 @@ test('Expect error dialog with correct message when image deletion fails', async
   await fireEvent.click(button);
 
   await waitFor(() => {
-    expect(window.showMessageBox).toHaveBeenCalledOnce();
+    expect(client.dialog.showMessageBox).toHaveBeenCalledOnce();
   });
 
-  expect(window.showMessageBox).toHaveBeenCalledWith(
+  expect(client.dialog.showMessageBox).toHaveBeenCalledWith(
     expect.objectContaining({
       title: 'Delete Image Failed',
       message: 'Error while deleting image: Cannot delete image in test',

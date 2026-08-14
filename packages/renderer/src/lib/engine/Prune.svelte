@@ -2,6 +2,8 @@
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { Button } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
+
 import type { EngineInfoUI } from './EngineInfoUI';
 
 interface Props {
@@ -38,7 +40,7 @@ async function openPruneDialog(): Promise<void> {
     buttons.push('Prune');
   }
 
-  const result = await window.showMessageBox({
+  const result = await client.dialog.showMessageBox({
     title: `Prune ${type.charAt(0).toUpperCase() + type.slice(1)}?`,
     type: 'danger',
     message: message,

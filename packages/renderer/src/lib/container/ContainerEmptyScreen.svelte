@@ -71,7 +71,7 @@ async function runContainer(commandLine: string): Promise<void> {
       if (image) {
         await window.createAndStartContainer(image.engineId, { Image: helloImage });
       } else {
-        await window.showMessageBox({
+        await client.dialog.showMessageBox({
           title: 'Run Container Failed',
           message: `Could not find ${helloImage} in images`,
           buttons: ['Dismiss'],
@@ -80,7 +80,7 @@ async function runContainer(commandLine: string): Promise<void> {
       await window.telemetryTrack('startFirstContainerByButton');
     }
   } catch (err) {
-    await window.showMessageBox({
+    await client.dialog.showMessageBox({
       title: 'Run Container Failed',
       message: `Error while executing ${commandLine}: ${err instanceof Error ? err.message : String(err)}`,
       buttons: ['Dismiss'],

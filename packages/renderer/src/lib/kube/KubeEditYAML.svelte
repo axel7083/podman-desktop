@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Button, Tooltip } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
 import MonacoEditor from '/@/lib/editor/MonacoEditor.svelte';
 
 interface Props {
@@ -57,7 +58,7 @@ async function applyToCluster(): Promise<void> {
   try {
     inProgress = true;
     await window.kubernetesApplyResourcesFromYAML(contextName, editorContent);
-    await window.showMessageBox({
+    await client.dialog.showMessageBox({
       title: 'Apply Kubernetes YAML',
       type: 'info',
       message: 'Successfully applied Kubernetes YAML',
@@ -70,7 +71,7 @@ async function applyToCluster(): Promise<void> {
     changesDetected = false;
   } catch (error) {
     console.error('error playing kube file', error);
-    await window.showMessageBox({
+    await client.dialog.showMessageBox({
       title: 'Apply Kubernetes YAML Failed',
       type: 'error',
       message: 'Could not apply Kubernetes YAML: ' + error,

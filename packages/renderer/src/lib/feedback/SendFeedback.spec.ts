@@ -22,6 +22,8 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import DirectFeedback from './feedbackForms/DirectFeedback.svelte';
 import GitHubIssueFeedback from './feedbackForms/GitHubIssueFeedback.svelte';
 import SendFeedback from './SendFeedback.svelte';
@@ -76,7 +78,7 @@ test('Expect confirmation dialog to be displayed if content changed', async () =
   onCloseForm(true);
 
   // expect confirm dialog
-  expect(window.showMessageBox).toHaveBeenCalledWith({
+  expect(client.dialog.showMessageBox).toHaveBeenCalledWith({
     title: 'Close Feedback Form?',
     message: 'Do you want to close the Feedback form?\nClosing will erase your input.',
     type: 'warning',
@@ -101,7 +103,7 @@ test('Expect no confirmation dialog to be displayed if content has not changed',
   onCloseForm(true);
 
   // expect no confirm dialog
-  expect(window.showMessageBox).not.toHaveBeenCalled();
+  expect(client.dialog.showMessageBox).not.toHaveBeenCalled();
 });
 
 test('Expect DirectFeedback form to be rendered when design category is selected', async () => {

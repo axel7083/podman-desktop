@@ -22,6 +22,7 @@ import { render } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import KubeActions from '/@/lib/kube/KubeActions.svelte';
 
 // mock the router
@@ -38,7 +39,6 @@ beforeAll(() => {
       },
       // needed for the test
       kubernetesGetCurrentContextName: vi.fn(),
-      openDialog: vi.fn(),
     },
     writable: true,
   });
@@ -59,7 +59,7 @@ test('KubeApplyYAMLButton should redirect to', async () => {
   await userEvent.click(applyYAMLBtn);
 
   await vi.waitFor(() => {
-    expect(window.openDialog).toHaveBeenCalledWith(
+    expect(client.dialog.openDialog).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Select a .yaml file to apply',
       }),

@@ -26,6 +26,7 @@ import { get } from 'svelte/store';
 /* eslint-enable import/no-duplicates */
 import { beforeAll, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { containersInfos } from '/@/stores/containers';
 import { providerInfos } from '/@/stores/providers';
 
@@ -33,7 +34,7 @@ import ContainerList from './ContainerList.svelte';
 
 // Mocked window methods
 beforeAll(() => {
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   vi.mocked(window.listViewsContributions).mockResolvedValue([]);
   vi.mocked(window.onDidUpdateProviderStatus).mockResolvedValue(undefined);
   vi.mocked(window.events.receive).mockImplementation((_channel, func) => {

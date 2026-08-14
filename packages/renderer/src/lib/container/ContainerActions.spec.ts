@@ -143,7 +143,7 @@ test('Expect no error and status restarting container', async () => {
 
 test('Expect no error and status deleting container', async () => {
   // Mock the showMessageBox to return 'Delete' (confirmed)
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   render(ContainerActions, { container, onUpdate: updateMock });
 
   // click on delete button

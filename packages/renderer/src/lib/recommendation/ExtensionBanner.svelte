@@ -33,7 +33,7 @@ $effect(() => {
 async function onClose(): Promise<void> {
   let result: MessageBoxReturnValue = { response: undefined };
   try {
-    result = await window.showMessageBox({
+    result = await client.dialog.showMessageBox({
       title: 'Hide Extension Recommendations?',
       message: 'Do you want to hide extension recommendation banners?',
       type: 'warning',

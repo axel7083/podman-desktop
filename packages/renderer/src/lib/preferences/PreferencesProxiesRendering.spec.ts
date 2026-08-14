@@ -533,7 +533,7 @@ describe('manual proxy settings persistence', () => {
     });
     vi.mocked(client.proxy.setState).mockResolvedValue(undefined);
     vi.mocked(client.proxy.updateSettings).mockResolvedValue(undefined);
-    vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Dismiss' });
+    vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Dismiss' });
 
     manualProxySettings.settings = undefined;
 
@@ -560,7 +560,7 @@ describe('manual proxy settings persistence', () => {
 
 describe('proxy update message', () => {
   beforeEach(() => {
-    vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Dismiss' });
+    vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Dismiss' });
   });
 
   async function clickUpdate(getByRole: (role: string, options?: object) => HTMLElement): Promise<void> {
@@ -574,7 +574,7 @@ describe('proxy update message', () => {
     await clickUpdate(getByRole);
 
     await vi.waitFor(() => {
-      expect(window.showMessageBox).toHaveBeenCalledWith(
+      expect(client.dialog.showMessageBox).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'info',
           message: 'Proxy settings have been applied.',
@@ -595,7 +595,7 @@ describe('proxy update message', () => {
     await clickUpdate(getByRole);
 
     await vi.waitFor(() => {
-      expect(window.showMessageBox).toHaveBeenCalledWith(
+      expect(client.dialog.showMessageBox).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'warning',
           message: expect.stringContaining('restart the Podman machine'),
@@ -616,7 +616,7 @@ describe('proxy update message', () => {
     await clickUpdate(getByRole);
 
     await vi.waitFor(() => {
-      expect(window.showMessageBox).toHaveBeenCalledWith(
+      expect(client.dialog.showMessageBox).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'warning',
           message: expect.stringContaining('Running containers will need to be restarted'),
@@ -640,7 +640,7 @@ describe('proxy update message', () => {
     await clickUpdate(getByRole);
 
     await vi.waitFor(() => {
-      const call = vi.mocked(window.showMessageBox).mock.calls[0]?.[0];
+      const call = vi.mocked(client.dialog.showMessageBox).mock.calls[0]?.[0];
       expect(call?.type).toBe('warning');
       expect(call?.message).toContain('restart the Podman machine');
       expect(call?.message).toContain('Running containers will need to be restarted');
@@ -659,7 +659,7 @@ describe('proxy update message', () => {
     await clickUpdate(getByRole);
 
     await vi.waitFor(() => {
-      expect(window.showMessageBox).toHaveBeenCalledWith(
+      expect(client.dialog.showMessageBox).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'info',
           message: 'Proxy settings have been applied.',

@@ -23,6 +23,7 @@ import { render, screen, waitFor } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import ExtensionBanner from '/@/lib/recommendation/ExtensionBanner.svelte';
 
 const baseBanner: IExtensionBanner = {
@@ -145,7 +146,7 @@ describe('backgrounds', () => {
 });
 
 test('opening messageBox and hiding banner', async () => {
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Hide' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Hide' });
 
   render(ExtensionBanner, {
     banner: gradientBackground,
@@ -159,7 +160,7 @@ test('opening messageBox and hiding banner', async () => {
   const closeButton = screen.getByLabelText('Close');
   closeButton.click();
 
-  expect(window.showMessageBox).toBeCalledWith({
+  expect(client.dialog.showMessageBox).toBeCalledWith({
     title: 'Hide Extension Recommendations?',
     message: 'Do you want to hide extension recommendation banners?',
     type: 'warning',
@@ -174,7 +175,7 @@ test('opening messageBox and hiding banner', async () => {
 });
 
 test('opening messageBox and keeping banner', async () => {
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Keep' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Keep' });
 
   render(ExtensionBanner, {
     banner: gradientBackground,
@@ -188,7 +189,7 @@ test('opening messageBox and keeping banner', async () => {
   const closeButton = screen.getByLabelText('Close');
   closeButton.click();
 
-  expect(window.showMessageBox).toBeCalledWith({
+  expect(client.dialog.showMessageBox).toBeCalledWith({
     title: 'Hide Extension Recommendations?',
     message: 'Do you want to hide extension recommendation banners?',
     type: 'warning',

@@ -24,6 +24,7 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { providerInfos } from '/@/stores/providers';
 
 import ImageEmptyScreen from './ImageEmptyScreen.svelte';
@@ -96,7 +97,7 @@ test('expect error to show up in message box when pull has an error', async () =
 
   await userEvent.click(pullButton);
 
-  expect(window.showMessageBox).toBeCalledWith({
+  expect(client.dialog.showMessageBox).toBeCalledWith({
     title: 'Pull Image Failed',
     message: `Error while pulling image from test: Cannot pull image`,
     type: 'error',
@@ -112,7 +113,7 @@ test('expect error to show up in message box with no providers', async () => {
 
   await userEvent.click(pullButton);
 
-  expect(window.showMessageBox).toBeCalledWith({
+  expect(client.dialog.showMessageBox).toBeCalledWith({
     title: 'Pull Image Failed',
     message: `No provider connections found`,
     type: 'error',
@@ -129,5 +130,5 @@ test('expect image to be pulled successfully', async () => {
   await userEvent.click(pullButton);
 
   expect(pullImageMock).toBeCalled();
-  expect(window.showMessageBox).not.toBeCalled();
+  expect(client.dialog.showMessageBox).not.toBeCalled();
 });

@@ -19,20 +19,11 @@
 import '@testing-library/jest-dom/vitest';
 
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+
+import { client } from '/@/client';
 
 import Prune from './Prune.svelte';
-
-beforeAll(() => {
-  Object.defineProperty(global, 'window', {
-    value: {
-      showMessageBox: vi.fn(),
-      pruneContainers: vi.fn(),
-      pruneImages: vi.fn(),
-    },
-    writable: true,
-  });
-});
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -50,7 +41,7 @@ describe('containers', () => {
       ],
     });
 
-    vi.mocked(window.showMessageBox).mockResolvedValue({
+    vi.mocked(client.dialog.showMessageBox).mockResolvedValue({
       response: 'Prune',
     });
 
@@ -60,7 +51,7 @@ describe('containers', () => {
     await fireEvent.click(button);
 
     // check if the showMessageBox method was called with all the right parameters
-    expect(window.showMessageBox).toHaveBeenCalledWith({
+    expect(client.dialog.showMessageBox).toHaveBeenCalledWith({
       buttons: ['Cancel', 'Prune'],
       title: 'Prune Containers?',
       type: 'danger',
@@ -93,7 +84,7 @@ describe('images', () => {
   test('prune all untagged images', async () => {
     imageRender();
 
-    vi.mocked(window.showMessageBox).mockResolvedValue({
+    vi.mocked(client.dialog.showMessageBox).mockResolvedValue({
       response: ALL_UNTAGGED_IMAGES,
     });
 
@@ -103,7 +94,7 @@ describe('images', () => {
     await fireEvent.click(button);
 
     // check if the showMessageBox method was called with all the right parameters
-    expect(window.showMessageBox).toHaveBeenCalledWith({
+    expect(client.dialog.showMessageBox).toHaveBeenCalledWith({
       buttons: IMAGE_BUTTONS,
       title: 'Prune Images?',
       type: 'danger',
@@ -116,7 +107,7 @@ describe('images', () => {
   test('prune all unused images', async () => {
     imageRender();
 
-    vi.mocked(window.showMessageBox).mockResolvedValue({
+    vi.mocked(client.dialog.showMessageBox).mockResolvedValue({
       response: ALL_UNUSED_IMAGES,
     });
 
@@ -126,7 +117,7 @@ describe('images', () => {
     await fireEvent.click(button);
 
     // check if the showMessageBox method was called with all the right parameters
-    expect(window.showMessageBox).toHaveBeenCalledWith({
+    expect(client.dialog.showMessageBox).toHaveBeenCalledWith({
       buttons: IMAGE_BUTTONS,
       title: 'Prune Images?',
       type: 'danger',
@@ -139,7 +130,7 @@ describe('images', () => {
   test('prune nothing (click cancel)', async () => {
     imageRender();
 
-    vi.mocked(window.showMessageBox).mockResolvedValue({
+    vi.mocked(client.dialog.showMessageBox).mockResolvedValue({
       response: CANCEL_BUTTON,
     });
 
@@ -149,7 +140,7 @@ describe('images', () => {
     await fireEvent.click(button);
 
     // check if the showMessageBox method was called with all the right parameters
-    expect(window.showMessageBox).toHaveBeenCalledWith({
+    expect(client.dialog.showMessageBox).toHaveBeenCalledWith({
       buttons: IMAGE_BUTTONS,
       title: 'Prune Images?',
       type: 'danger',

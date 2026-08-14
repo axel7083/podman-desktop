@@ -164,7 +164,7 @@ test('Test that context-name2 is the current context', async () => {
 test('when deleting the current context, a popup should ask confirmation', async () => {
   vi.mocked(kubernetesContextsState).kubernetesContextsState = readable<Map<string, ContextGeneralState>>(new Map());
   vi.mocked(kubernetesContextsState).kubernetesContextsCheckingStateDelayed = readable<Map<string, boolean>>(new Map());
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 
   render(PreferencesKubernetesContextsRendering, {});
   const currentContext = screen.getAllByRole('row')[1];
@@ -176,13 +176,13 @@ test('when deleting the current context, a popup should ask confirmation', async
   const deleteBtn = within(currentContext).getByRole('button', { name: 'Delete Context' });
   expect(deleteBtn).toBeInTheDocument();
   await fireEvent.click(deleteBtn);
-  expect(window.showMessageBox).toHaveBeenCalledOnce();
+  expect(client.dialog.showMessageBox).toHaveBeenCalledOnce();
 });
 
 test('when deleting the non current context, no popup should ask confirmation', async () => {
   vi.mocked(kubernetesContextsState).kubernetesContextsState = readable<Map<string, ContextGeneralState>>(new Map());
   vi.mocked(kubernetesContextsState).kubernetesContextsCheckingStateDelayed = readable<Map<string, boolean>>(new Map());
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 
   render(PreferencesKubernetesContextsRendering, {});
   const currentContext = screen.getAllByRole('row')[0];
@@ -194,7 +194,7 @@ test('when deleting the non current context, no popup should ask confirmation', 
   const deleteBtn = within(currentContext).getByRole('button', { name: 'Delete Context' });
   expect(deleteBtn).toBeInTheDocument();
   await fireEvent.click(deleteBtn);
-  expect(window.showMessageBox).not.toHaveBeenCalled();
+  expect(client.dialog.showMessageBox).not.toHaveBeenCalled();
 });
 
 test('when editing context a modal dialog should be oppened', async () => {

@@ -2,6 +2,7 @@
 import type { KubernetesObject } from '@kubernetes/client-node';
 import { Button } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
 import SolidKubeIcon from '/@/lib/images/SolidKubeIcon.svelte';
 
 let inProgress = false;
@@ -12,7 +13,7 @@ async function kubeApply(): Promise<void> {
     return;
   }
 
-  const result = await window.openDialog({
+  const result = await client.dialog.openDialog({
     title: 'Select a .yaml file to apply',
     selectors: ['openFile', 'multiSelections'],
     filters: [
@@ -32,14 +33,14 @@ async function kubeApply(): Promise<void> {
     const namespace = await window.kubernetesGetCurrentNamespace();
     let objects: KubernetesObject[] = await window.kubernetesApplyResourcesFromFile(contextName, result, namespace);
     if (objects.length === 0) {
-      await window.showMessageBox({
+      await client.dialog.showMessageBox({
         title: 'Apply Kubernetes YAML',
         type: 'warning',
         message: 'No resource(s) were applied.',
         buttons: ['Dismiss'],
       });
     } else if (objects.length === 1) {
-      await window.showMessageBox({
+      await client.dialog.showMessageBox({
         title: 'Apply Kubernetes YAML',
         type: 'info',
         message: `Successfully applied 1 ${objects[0].kind ?? 'unknown resource'}.`,
@@ -57,7 +58,7 @@ async function kubeApply(): Promise<void> {
         .map(obj => `${obj[1]} ${obj[0]}`)
         .join(', ');
 
-      await window.showMessageBox({
+      await client.dialog.showMessageBox({
         title: 'Apply Kubernetes YAML',
         type: 'info',
         message: `Successfully applied ${objects.length} resources (${resources}).`,
@@ -65,7 +66,7 @@ async function kubeApply(): Promise<void> {
       });
     }
   } catch (error) {
-    await window.showMessageBox({
+    await client.dialog.showMessageBox({
       title: 'Apply Kubernetes YAML Failed',
       type: 'error',
       message: 'Could not apply Kubernetes YAML: ' + error,

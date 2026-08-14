@@ -81,7 +81,7 @@ test('Check with empty', async () => {
   expect(vi.mocked(client.extension.refreshCatalog)).toHaveBeenCalled();
 
   // check error message is displayed
-  expect(window.showMessageBox).toHaveBeenCalledWith({
+  expect(client.dialog.showMessageBox).toHaveBeenCalledWith({
     detail: 'Error: fake error',
     message: 'Failed to refresh the catalog',
     title: 'Refresh Catalog Failed',

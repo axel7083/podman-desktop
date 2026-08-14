@@ -132,7 +132,7 @@ test('Expect setPodStatus called with RESTARTING when restarting pod', async () 
 
 test('Expect setPodStatus called with DELETING when deleting pod', async () => {
   // Mock the showMessageBox to return 'Delete' (confirmed)
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   listContainersMock.mockResolvedValue([]);
 
   render(PodActions, { pod: podmanPod });

@@ -8,6 +8,7 @@ import { onMount } from 'svelte';
 import { get } from 'svelte/store';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import ContainerConnectionDropdown from '/@/lib/forms/ContainerConnectionDropdown.svelte';
 import EngineFormPage from '/@/lib/ui/EngineFormPage.svelte';
 import { providerInfos } from '/@/stores/providers';
@@ -34,7 +35,7 @@ onMount(async () => {
 });
 
 async function addArchivesToLoad(): Promise<void> {
-  const archives = await window.openDialog({
+  const archives = await client.dialog.openDialog({
     title: 'Select Tar Archive(s) containing Image(s) to load',
     selectors: ['multiSelections', 'openFile'],
   });

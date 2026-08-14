@@ -24,6 +24,7 @@ import { get } from 'svelte/store';
 import { router } from 'tinro';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { lastPage } from '/@/stores/breadcrumb';
 import { networksListInfo } from '/@/stores/networks';
 
@@ -78,7 +79,7 @@ test('Expect to have network name and shortId and network actions in Details pag
 test('Expect redirect to previous page if current network is deleted', async () => {
   const routerGotoSpy = vi.spyOn(router, 'goto');
   // Mock the showMessageBox to return 0 (yes)
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   vi.mocked(window.listNetworks).mockResolvedValue([network1]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));

@@ -25,6 +25,7 @@ import userEvent from '@testing-library/user-event';
 import { router } from 'tinro';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { providerInfos } from '/@/stores/providers';
 
 import ImportContainersImages from './ImportContainersImages.svelte';
@@ -75,7 +76,7 @@ test('Expect import button to be disabled', async () => {
 
 test('Expect import button to be enabled when atleast one container image is selected', async () => {
   providerInfos.set([providerInfo]);
-  vi.mocked(window.openDialog).mockResolvedValue(['path/file.tar']);
+  vi.mocked(client.dialog.openDialog).mockResolvedValue(['path/file.tar']);
   render(ImportContainersImages);
   const btnAddImages = screen.getByRole('button', { name: 'Add images to import' });
   expect(btnAddImages).toBeInTheDocument();
@@ -85,7 +86,7 @@ test('Expect import button to be enabled when atleast one container image is sel
   expect(btnImportContainer).toBeInTheDocument();
   expect(btnImportContainer).toBeEnabled();
 
-  expect(vi.mocked(window.openDialog)).toBeCalledWith({
+  expect(vi.mocked(client.dialog.openDialog)).toBeCalledWith({
     selectors: ['multiSelections', 'openFile'],
     title: 'Select Containers Images to import',
   });
@@ -93,7 +94,7 @@ test('Expect import button to be enabled when atleast one container image is sel
 
 test('Expect import button to be enabled when atleast one container image is selected but there is no provider', async () => {
   providerInfos.set([]);
-  vi.mocked(window.openDialog).mockResolvedValue(['path/file.tar']);
+  vi.mocked(client.dialog.openDialog).mockResolvedValue(['path/file.tar']);
   render(ImportContainersImages);
   const btnAddImages = screen.getByRole('button', { name: 'Add images to import' });
   expect(btnAddImages).toBeInTheDocument();
@@ -106,7 +107,7 @@ test('Expect import button to be enabled when atleast one container image is sel
 
 test('Expect import call importContainer func', async () => {
   providerInfos.set([providerInfo]);
-  vi.mocked(window.openDialog).mockResolvedValue(['path/file.tar']);
+  vi.mocked(client.dialog.openDialog).mockResolvedValue(['path/file.tar']);
   vi.mocked(window.importContainer).mockResolvedValue();
   const goToMock = vi.spyOn(router, 'goto');
   render(ImportContainersImages);
@@ -129,7 +130,7 @@ test('Expect import call importContainer func', async () => {
 
 test('Expect error shown if import function fails', async () => {
   providerInfos.set([providerInfo]);
-  vi.mocked(window.openDialog).mockResolvedValue(['path/file.tar']);
+  vi.mocked(client.dialog.openDialog).mockResolvedValue(['path/file.tar']);
   vi.mocked(window.importContainer).mockRejectedValue('import failed');
   render(ImportContainersImages);
   const btnAddImages = screen.getByRole('button', { name: 'Add images to import' });

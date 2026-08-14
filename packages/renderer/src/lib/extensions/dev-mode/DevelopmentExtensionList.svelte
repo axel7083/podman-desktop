@@ -62,7 +62,7 @@ onDestroy(() => {
 
 async function addLocalFolderExtension(): Promise<void> {
   // call the openDialog
-  const result = await window.openDialog({
+  const result = await client.dialog.openDialog({
     selectors: ['openDirectory'],
     openLabel: 'Select folder',
     title: 'Track a new extension folder',
@@ -72,7 +72,7 @@ async function addLocalFolderExtension(): Promise<void> {
       await client.extension.addDevelopmentFolder({ path: result[0] });
     } catch (error: unknown) {
       // show error
-      await window.showMessageBox({
+      await client.dialog.showMessageBox({
         title: 'Add Extension Failed',
         message: String(error),
         type: 'error',

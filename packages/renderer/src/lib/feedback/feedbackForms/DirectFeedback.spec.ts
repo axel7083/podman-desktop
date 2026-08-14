@@ -201,7 +201,7 @@ test('Expect category to be sent', async () => {
   });
 
   // expect nice message to be displayed
-  expect(window.showMessageBox).toHaveBeenCalledWith({
+  expect(client.dialog.showMessageBox).toHaveBeenCalledWith({
     title: 'Feedback Submitted',
     message: 'Your input is valuable in helping us better understand and tailor Podman Desktop.',
     type: 'info',
@@ -234,7 +234,7 @@ test('Expect design category to be sent when design category is used', async () 
   });
 
   // expect nice message to be displayed
-  expect(window.showMessageBox).toHaveBeenCalledWith({
+  expect(client.dialog.showMessageBox).toHaveBeenCalledWith({
     title: 'Feedback Submitted',
     message: 'Your input is valuable in helping us better understand and tailor Podman Desktop.',
     type: 'info',

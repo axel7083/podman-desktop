@@ -79,8 +79,6 @@ import type {
   ManifestCreateOptions,
   ManifestInspectInfo,
   ManifestPushOptions,
-  MessageBoxOptions,
-  MessageBoxReturnValue,
   NetworkCreateOptions,
   NetworkCreateResult,
   NetworkInspectInfo,
@@ -2036,17 +2034,6 @@ export class PluginSystem {
       return inputQuickPickRegistry.onDidSelectQuickPickItem(id, selectedId);
     });
 
-    this.ipcHandle('showMessageBox', async (_listener, options: MessageBoxOptions): Promise<MessageBoxReturnValue> => {
-      return messageBox.showMessageBox(options);
-    });
-
-    this.ipcHandle(
-      'showMessageBox:onSelect',
-      async (_listener, id: number, index: number | undefined, dropdownIndex?: number): Promise<void> => {
-        return messageBox.onDidSelectButton(id, index, dropdownIndex);
-      },
-    );
-
     this.ipcHandle('customPick:values', async (_listener, id: number, indexes: number[]): Promise<void> => {
       return customPickRegistry.onConfirmSelection(id, indexes);
     });
@@ -2886,24 +2873,6 @@ export class PluginSystem {
       return exploreFeatures.closeFeatureCard(featureId);
     });
 
-    this.ipcHandle(
-      'dialog:openDialog',
-      async (_listener, dialogId: string, options: containerDesktopAPI.OpenDialogOptions): Promise<void> => {
-        dialogRegistry.openDialog(options, dialogId).catch((error: unknown) => {
-          console.error('Error opening dialog', error);
-        });
-      },
-    );
-    this.ipcHandle(
-      'dialog:saveDialog',
-      async (
-        _listener,
-        dialogId: string,
-        options: containerDesktopAPI.SaveDialogOptions,
-      ): Promise<containerDesktopAPI.Uri | undefined> => {
-        return dialogRegistry.saveDialog(options, dialogId);
-      },
-    );
     this.ipcHandle(
       'context:collectAllValues',
       async (): Promise<Record<string, unknown>> => context.collectAllValues(),

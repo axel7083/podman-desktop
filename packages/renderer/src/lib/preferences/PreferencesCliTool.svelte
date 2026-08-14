@@ -103,7 +103,7 @@ async function install(cliTool: CliToolInfo): Promise<void> {
 }
 
 async function uninstall(cliTool: CliToolInfo): Promise<void> {
-  const result = await window.showMessageBox({
+  const result = await client.dialog.showMessageBox({
     title: `Uninstall ${cliTool.displayName}?`,
     type: 'danger',
     message: `Uninstall ${cliTool.displayName} ${cliTool.version} ?`,

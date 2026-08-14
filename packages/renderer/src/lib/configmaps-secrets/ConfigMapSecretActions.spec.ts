@@ -21,6 +21,8 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { afterEach, beforeAll, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import ConfigMapSecretActions from './ConfigMapSecretActions.svelte';
 import type { ConfigMapSecretUI } from './ConfigMapSecretUI';
 
@@ -55,7 +57,7 @@ afterEach(() => {
 });
 
 test('Expect no error when deleting configmap', async () => {
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   render(ConfigMapSecretActions, { configMapSecret: fakeConfigMap });
 
   // click on delete button
@@ -67,7 +69,7 @@ test('Expect no error when deleting configmap', async () => {
 });
 
 test('Expect no error when deleting secret', async () => {
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   render(ConfigMapSecretActions, { configMapSecret: fakeSecret });
 
   // click on delete button

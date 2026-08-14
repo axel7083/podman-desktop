@@ -140,7 +140,7 @@ test('Expect no error and status restarting compose', async () => {
 
 test('Expect no error and status deleting compose', async () => {
   // Mock the showMessageBox to return 'Delete' (confirmed)
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
 
   render(ComposeActions, { compose, onUpdate: updateMock });
 

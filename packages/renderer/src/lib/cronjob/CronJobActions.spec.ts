@@ -21,6 +21,8 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import CronJobActions from './CronJobActions.svelte';
 import type { CronJobUI } from './CronJobUI';
 
@@ -45,7 +47,7 @@ beforeEach(() => {
 
 test('Expect no error and status deleting cronjob', async () => {
   // Mock the showMessageBox to return 'Delete' (confirmed)
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   render(CronJobActions, { cronjob, detailed: false });
 
   // click on delete button

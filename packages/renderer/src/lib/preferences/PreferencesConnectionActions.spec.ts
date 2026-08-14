@@ -26,6 +26,8 @@ import type {
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import PreferencesConnectionActions from './PreferencesConnectionActions.svelte';
 import type { IConnectionStatus } from './Util';
 
@@ -102,7 +104,7 @@ const connectionStatus: IConnectionStatus = {
 beforeEach(() => {
   vi.resetAllMocks();
 
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: undefined });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: undefined });
 });
 
 test('if container connection has start lifecycle method, start button has to be visible', () => {
@@ -166,7 +168,7 @@ describe('delete', () => {
     expect(button).toBeInTheDocument();
   });
 
-  test('delete button should call window.showMessageBox to ask confirmation', async () => {
+  test('delete button should call client.dialog.showMessageBox to ask confirmation', async () => {
     const { getByRole } = render(PreferencesConnectionActions, {
       connectionStatus,
       provider: containerProviderInfo,
@@ -179,7 +181,7 @@ describe('delete', () => {
     await fireEvent.click(button);
 
     await vi.waitFor(() => {
-      expect(window.showMessageBox).toHaveBeenCalledExactlyOnceWith({
+      expect(client.dialog.showMessageBox).toHaveBeenCalledExactlyOnceWith({
         title: 'Delete Connection?',
         message: `Are you sure you want to delete ${containerConnection.name}?`,
         buttons: ['Delete', 'Cancel'],
@@ -194,7 +196,7 @@ describe('delete', () => {
       status: 'stopped',
     };
     // mock Yes
-    vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+    vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
 
     const { getByRole } = render(PreferencesConnectionActions, {
       connectionStatus,

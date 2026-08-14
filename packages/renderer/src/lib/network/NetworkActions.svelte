@@ -1,6 +1,7 @@
 <script lang="ts">
 import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 
+import { client } from '/@/client';
 import { withConfirmation } from '/@/lib/dialogs/messagebox-utils';
 import ListItemButtonIcon from '/@/lib/ui/ListItemButtonIcon.svelte';
 
@@ -24,7 +25,7 @@ async function removeNetwork(): Promise<void> {
     await window.removeNetwork(object.engineId, object.id);
   } catch (error) {
     object.status = oldStatus;
-    await window.showMessageBox({
+    await client.dialog.showMessageBox({
       title: 'Delete Network Failed',
       message: `Error while deleting network ${object.name}: ${error instanceof Error ? error.message : String(error)}`,
       type: 'error',

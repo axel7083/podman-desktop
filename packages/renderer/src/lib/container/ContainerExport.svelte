@@ -4,6 +4,7 @@ import { NavigationPage } from '@podman-desktop/core-api';
 import { Button, ErrorMessage, Input } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import { ContainerUtils } from '/@/lib/container/container-utils';
 import EngineFormPage from '/@/lib/ui/EngineFormPage.svelte';
 import { Uri } from '/@/lib/uri/Uri';
@@ -46,7 +47,7 @@ onMount(() => {
 async function selectFolderPath(): Promise<void> {
   if (!container) return;
 
-  const result = await window.saveDialog({
+  const result = await client.dialog.saveDialog({
     title: 'Select the directory where to export the container content',
     defaultUri: {
       fsPath: `${container.name}.tar`,

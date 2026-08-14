@@ -81,8 +81,6 @@ import type {
   ManifestCreateOptions,
   ManifestInspectInfo,
   ManifestPushOptions,
-  MessageBoxOptions,
-  MessageBoxReturnValue,
   NavigationRequest,
   NetworkCreateOptions,
   NetworkCreateResult,
@@ -131,8 +129,6 @@ import type {
   PlayKubeInfo,
 } from '@podman-desktop/core-api/libpod';
 import { contextBridge, ipcRenderer } from 'electron';
-
-export type OpenSaveDialogResultCallback = (result: string | string[] | undefined) => void;
 
 const originalConsole = console;
 const memoryLogs: { logType: LogType; date: Date; message: string }[] = [];
@@ -1518,73 +1514,6 @@ export function initExposure(): void {
     apiSender.send('context-menu:visible', visible);
   });
 
-  // Handle callback on dialogs by calling the callback once we get the answer
-  ipcRenderer.on('dialog:open-save-dialog-response', (_, dialogId: string, result: string | string[] | undefined) => {
-    // grab from stored map
-    const callback = openSaveDialogResponses.get(dialogId);
-    if (callback) {
-      callback(result);
-
-      // remove callback
-      openSaveDialogResponses.delete(dialogId);
-    } else {
-      console.error('Got response for an unknown dialog id', dialogId);
-    }
-  });
-
-  let idOpenSaveDialog = 0;
-
-  const openSaveDialogResponses = new Map<string, OpenSaveDialogResultCallback>();
-
-  const deferedHandleDialog = (): {
-    id: string;
-    deferred: PromiseWithResolvers<containerDesktopAPI.Uri | string | string[] | undefined>;
-  } => {
-    // generate id
-    const dialogId = idOpenSaveDialog;
-    idOpenSaveDialog++;
-
-    // create defer object
-    const deferred = Promise.withResolvers<containerDesktopAPI.Uri | string | string[] | undefined>();
-
-    // store the dialogID
-    openSaveDialogResponses.set(`${dialogId}`, (result: containerDesktopAPI.Uri | string | string[] | undefined) => {
-      deferred.resolve(result);
-    });
-
-    return { deferred: deferred, id: `${dialogId}` };
-  };
-
-  contextBridge.exposeInMainWorld(
-    'openDialog',
-    async (options?: containerDesktopAPI.OpenDialogOptions): Promise<string[] | undefined> => {
-      const handle = deferedHandleDialog();
-
-      // ask to open file dialog
-      ipcInvoke('dialog:openDialog', handle.id, options).catch((error: unknown) => {
-        handle.deferred.reject(error);
-      });
-
-      // wait for response
-      return handle.deferred.promise as Promise<string[] | undefined>;
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'saveDialog',
-    async (options?: containerDesktopAPI.SaveDialogOptions): Promise<containerDesktopAPI.Uri | undefined> => {
-      const handle = deferedHandleDialog();
-
-      // ask to open file dialog
-      ipcInvoke('dialog:saveDialog', handle.id, options).catch((error: unknown) => {
-        handle.deferred.reject(error);
-      });
-
-      // wait for response
-      return handle.deferred.promise as Promise<containerDesktopAPI.Uri | undefined>;
-    },
-  );
-
   type LogFunction = (...data: unknown[]) => void;
 
   let onDataCallbacksStartReceiveLogsId = 0;
@@ -1669,19 +1598,6 @@ export function initExposure(): void {
     'sendShowQuickPickOnSelect',
     async (inputBoxId: number, selectedIndex: number): Promise<void> => {
       return ipcInvoke('showQuickPick:onSelect', inputBoxId, selectedIndex);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'showMessageBox',
-    async (messageBoxOptions: MessageBoxOptions): Promise<MessageBoxReturnValue> => {
-      return ipcInvoke('showMessageBox', messageBoxOptions);
-    },
-  );
-  contextBridge.exposeInMainWorld(
-    'sendShowMessageBoxOnSelect',
-    async (messageBoxId: number, selectedIndex?: number, dropdownIndex?: number): Promise<void> => {
-      return ipcInvoke('showMessageBox:onSelect', messageBoxId, selectedIndex, dropdownIndex);
     },
   );
 

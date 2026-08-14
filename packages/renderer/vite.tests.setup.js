@@ -27,6 +27,12 @@ vi.mock('/@/client', () => ({
   client: {
     authentication: { getProvidersInfo: vi.fn(), signOut: vi.fn(), signIn: vi.fn() },
     cliTool: { getInfos: vi.fn(), selectVersionToUpdate: vi.fn(), selectVersionToInstall: vi.fn() },
+    dialog: {
+      showMessageBox: vi.fn(),
+      sendShowMessageBoxOnSelect: vi.fn(),
+      openDialog: vi.fn(),
+      saveDialog: vi.fn(),
+    },
     configuration: {
       getProperties: vi.fn(),
       getValue: vi.fn(),

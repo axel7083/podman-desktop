@@ -24,6 +24,7 @@ import { get } from 'svelte/store';
 import { router } from 'tinro';
 import { beforeAll, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { lastPage } from '/@/stores/breadcrumb';
 import { volumeListInfos } from '/@/stores/volumes';
 
@@ -62,7 +63,7 @@ beforeAll(() => {
 
 test('Expect redirect to previous page if volume is deleted', async () => {
   // Mock the showMessageBox to return 0 (yes)
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   const routerGotoSpy = vi.spyOn(router, 'goto');
   listVolumesMock.mockResolvedValue([myVolume]);
   window.dispatchEvent(new CustomEvent('extensions-already-started'));

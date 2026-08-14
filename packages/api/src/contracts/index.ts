@@ -19,6 +19,7 @@
 import { authenticationContract } from '/@/contracts/authentication/authentication.contract.js';
 import { cliToolContract } from '/@/contracts/cli-tool/cli-tool.contract.js';
 import { configurationContract } from '/@/contracts/configuration/configuration.contract.js';
+import { dialogContract } from '/@/contracts/dialog/dialog.contract.js';
 import { extensionContract } from '/@/contracts/extension/extension.contract.js';
 import { imageRegistryContract } from '/@/contracts/image-registry/image-registry.contract.js';
 import { menuContract } from '/@/contracts/menu/menu.contract.js';
@@ -37,6 +38,7 @@ export const contracts = {
   authentication: authenticationContract,
   cliTool: cliToolContract,
   configuration: configurationContract,
+  dialog: dialogContract,
   extension: extensionContract,
   imageRegistry: imageRegistryContract,
   menu: menuContract,

@@ -19,21 +19,12 @@
 import '@testing-library/jest-dom/vitest';
 
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 
 import { client } from '/@/client';
 import { type TaskInfoUI, tasksInfo } from '/@/stores/tasks';
 
 import TaskManagerBulkDeleteButton from './TaskManagerBulkDeleteButton.svelte';
-
-beforeAll(() => {
-  Object.defineProperty(global, 'window', {
-    value: {
-      showMessageBox: vi.fn(),
-    },
-    writable: true,
-  });
-});
 
 // set 3 tasks
 const selectedTask1: TaskInfoUI = {
@@ -69,7 +60,7 @@ beforeEach(() => {
 
 test('Expect bulk button is bringing confirmation but not deleting anything', async () => {
   // return No for the confirmation
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 
   render(TaskManagerBulkDeleteButton, { title, bulkOperationTitle });
   // expect the button is there
@@ -78,7 +69,7 @@ test('Expect bulk button is bringing confirmation but not deleting anything', as
   // click the button
   await fireEvent.click(bulkButton);
 
-  expect(window.showMessageBox).toHaveBeenCalledWith({
+  expect(client.dialog.showMessageBox).toHaveBeenCalledWith({
     buttons: ['Delete', 'Cancel'],
     message: 'Are you sure you want to bulk delete operation?',
     title: 'Delete Tasks?',
@@ -90,7 +81,7 @@ test('Expect bulk button is bringing confirmation but not deleting anything', as
 
 test('Expect delete is called after confirming', async () => {
   // return Yes for the confirmation
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
 
   render(TaskManagerBulkDeleteButton, { title, bulkOperationTitle });
   // expect the button is there

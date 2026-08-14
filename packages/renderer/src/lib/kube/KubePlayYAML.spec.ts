@@ -81,7 +81,7 @@ beforeEach(() => {
     return { dispose: vi.fn() };
   });
 
-  vi.mocked(window.openDialog).mockResolvedValue(['Containerfile']);
+  vi.mocked(client.dialog.openDialog).mockResolvedValue(['Containerfile']);
   vi.mocked(window.telemetryPage).mockResolvedValue(undefined);
   vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);
 });

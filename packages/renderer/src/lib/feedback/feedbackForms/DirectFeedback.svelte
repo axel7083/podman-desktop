@@ -63,7 +63,7 @@ async function sendFeedback(): Promise<void> {
   onCloseForm(false);
 
   // 3. Display confirmation dialog
-  await window.showMessageBox({
+  await client.dialog.showMessageBox({
     title: 'Feedback Submitted',
     message: feedbackMessages?.thankYouMessage ?? '',
     type: 'info',

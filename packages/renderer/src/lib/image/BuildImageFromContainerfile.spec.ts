@@ -36,7 +36,7 @@ import { recommendedRegistries } from '/@/stores/recommendedRegistries';
 vi.mock(import('@xterm/xterm'));
 
 beforeAll(() => {
-  vi.mocked(window.openDialog).mockResolvedValue(['Containerfile']);
+  vi.mocked(client.dialog.openDialog).mockResolvedValue(['Containerfile']);
   vi.mocked(window.getCancellableTokenSource).mockResolvedValue(1234);
 });
 

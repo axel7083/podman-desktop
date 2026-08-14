@@ -41,7 +41,7 @@ async function hideModal(confirm = true): Promise<void> {
     return;
   }
 
-  const result = await window.showMessageBox({
+  const result = await client.dialog.showMessageBox({
     title: 'Close Feedback Form?',
     message: 'Do you want to close the Feedback form?\nClosing will erase your input.',
     type: 'warning',

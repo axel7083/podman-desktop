@@ -6,6 +6,7 @@ import { Button, type ButtonType, Dropdown } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 import { onDestroy, onMount } from 'svelte';
 
+import { client } from '/@/client';
 import Markdown from '/@/lib/markdown/Markdown.svelte';
 
 import Dialog from './Dialog.svelte';
@@ -96,12 +97,15 @@ function cleanup(): void {
 
 async function clickButton(index?: number, dropdownIndex?: number): Promise<void> {
   cleanup();
-  await window.sendShowMessageBoxOnSelect(currentId, index, dropdownIndex);
+  await client.dialog.sendShowMessageBoxOnSelect({ id: currentId, selectedIndex: index, dropdownIndex });
 }
 
 async function onClose(): Promise<void> {
   cleanup();
-  await window.sendShowMessageBoxOnSelect(currentId, cancelId >= 0 ? cancelId : undefined);
+  await client.dialog.sendShowMessageBoxOnSelect({
+    id: currentId,
+    selectedIndex: cancelId >= 0 ? cancelId : undefined,
+  });
 }
 
 function getButtonType(b: boolean): ButtonType {

@@ -23,6 +23,8 @@ import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import NetworkActions from './NetworkActions.svelte';
 import type { NetworkInfoUI } from './NetworkInfoUI';
 
@@ -61,7 +63,7 @@ beforeEach(() => {
 });
 
 test('Expect non-podman unused network to have delete option and disabled edit', async () => {
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   render(NetworkActions, { object: network1 });
 
   expect(screen.queryByTitle('Delete Network')).toBeInTheDocument();
@@ -75,7 +77,7 @@ test('Expect non-podman unused network to have delete option and disabled edit',
 
 test('Expect error dialog when network deletion fails', async () => {
   const errorMessage = 'default network podman cannot be removed';
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   vi.mocked(window.removeNetwork).mockRejectedValueOnce(new Error(errorMessage));
 
   const network: NetworkInfoUI = { ...network1, status: 'UNUSED' };
@@ -85,7 +87,7 @@ test('Expect error dialog when network deletion fails', async () => {
   await fireEvent.click(deleteButton);
 
   await waitFor(() => {
-    expect(window.showMessageBox).toHaveBeenCalledWith(
+    expect(client.dialog.showMessageBox).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Delete Network Failed',
         message: `Error while deleting network ${network1.name}: ${errorMessage}`,

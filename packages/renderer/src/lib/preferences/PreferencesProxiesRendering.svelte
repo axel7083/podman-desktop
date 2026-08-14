@@ -114,7 +114,7 @@ async function updateProxySettings(): Promise<void> {
     type = 'warning';
   }
 
-  await window.showMessageBox({
+  await client.dialog.showMessageBox({
     title: 'Proxy Settings Updated',
     type: type,
     message: message,

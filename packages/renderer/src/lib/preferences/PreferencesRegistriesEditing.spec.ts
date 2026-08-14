@@ -307,14 +307,14 @@ describe('PreferencesRegistriesEditing', () => {
     vi.mocked(client.imageRegistry.checkCredentials)
       .mockRejectedValueOnce(new Error('unable to verify the first certificate'))
       .mockRejectedValueOnce(new Error('self signed certificate in certificate chain'));
-    vi.mocked(window.showMessageBox)
+    vi.mocked(client.dialog.showMessageBox)
       .mockResolvedValueOnce({ response: 'Cancel' })
       .mockResolvedValueOnce({ response: 'Add' });
     await userEvent.click(button);
     button = screen.getByRole('button', { name: 'Add' });
     await waitFor(() => expect(button).toBeEnabled());
     await userEvent.click(button);
-    expect(window.showMessageBox).toHaveBeenCalledTimes(2);
+    expect(client.dialog.showMessageBox).toHaveBeenCalledTimes(2);
     expect(client.imageRegistry.createRegistry).toHaveBeenCalledOnce();
     expect(client.imageRegistry.createRegistry).toHaveBeenLastCalledWith({
       providerName: undefined,

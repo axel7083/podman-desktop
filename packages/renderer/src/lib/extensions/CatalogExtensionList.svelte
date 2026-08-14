@@ -17,7 +17,7 @@ async function fetchCatalog(): Promise<void> {
   try {
     await client.extension.refreshCatalog();
   } catch (error) {
-    await window.showMessageBox({
+    await client.dialog.showMessageBox({
       type: 'error',
       title: 'Refresh Catalog Failed',
       message: 'Failed to refresh the catalog',

@@ -52,7 +52,7 @@ beforeAll(() => {
 test('Expect prompt dialog and deletion', async () => {
   vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
   // Mock the showMessageBox to return 0 (yes)
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
 
   const volume: VolumeInfoUI = new VolumeInfoUIImpl('dummy', 'UNUSED') as unknown as VolumeInfoUI;
 
@@ -64,7 +64,7 @@ test('Expect prompt dialog and deletion', async () => {
   await fireEvent.click(button);
 
   await waitFor(() => {
-    expect(window.showMessageBox).toHaveBeenCalledOnce();
+    expect(client.dialog.showMessageBox).toHaveBeenCalledOnce();
   });
 
   expect(volume.status).toBe('DELETING');

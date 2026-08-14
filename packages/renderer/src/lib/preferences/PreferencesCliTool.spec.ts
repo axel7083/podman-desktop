@@ -389,7 +389,7 @@ describe('CLI Tool item', () => {
   });
 
   test('cancelling uninstall confirmation should not call uninstallCliTool', async () => {
-    vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
+    vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 
     render(PreferencesCliTool, {
       cliTool: cliToolInfoItem7,
@@ -398,7 +398,7 @@ describe('CLI Tool item', () => {
     const uninstallButton = screen.getByRole('button', { name: 'Uninstall' });
     await fireEvent.click(uninstallButton);
 
-    expect(window.showMessageBox).toHaveBeenCalledOnce();
+    expect(client.dialog.showMessageBox).toHaveBeenCalledOnce();
     expect(window.uninstallCliTool).not.toHaveBeenCalled();
   });
 });

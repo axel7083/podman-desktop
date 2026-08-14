@@ -41,7 +41,7 @@ beforeEach(() => {
 });
 
 test('Expect delete button to be visible and trigger confirmation', async () => {
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
 
   const { getByTitle } = render(SecretActions, { object: secret });
 
@@ -51,7 +51,7 @@ test('Expect delete button to be visible and trigger confirmation', async () => 
   await fireEvent.click(deleteButton);
 
   await waitFor(() => {
-    expect(window.showMessageBox).toHaveBeenCalledOnce();
+    expect(client.dialog.showMessageBox).toHaveBeenCalledOnce();
   });
 
   expect(window.removeSecret).toHaveBeenCalledWith(secret.engineId, secret.Id);
