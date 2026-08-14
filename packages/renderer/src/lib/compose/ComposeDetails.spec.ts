@@ -53,7 +53,7 @@ beforeEach(() => {
   vi.mocked(window.initializeProvider).mockResolvedValue([]);
   vi.mocked(window.getContainerInspect).mockResolvedValue(containerInspectInfo);
   vi.mocked(window.listNetworks).mockResolvedValue([]);
-  vi.mocked(window.getContributedMenus).mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
   vi.mocked(window.getProviderInfos).mockResolvedValue([]);
   vi.mocked(window.onDidUpdateProviderStatus).mockResolvedValue(undefined);
 });

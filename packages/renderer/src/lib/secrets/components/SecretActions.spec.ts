@@ -22,6 +22,8 @@ import type { SecretInfo } from '@podman-desktop/core-api';
 import { fireEvent, render, waitFor } from '@testing-library/svelte';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import SecretActions from './SecretActions.svelte';
 
 const secret: SecretInfo = {
@@ -35,7 +37,7 @@ const secret: SecretInfo = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.getContributedMenus).mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 });
 
 test('Expect delete button to be visible and trigger confirmation', async () => {
@@ -60,12 +62,12 @@ describe('contributions', () => {
     render(SecretActions, { object: secret });
 
     await waitFor(() => {
-      expect(window.getContributedMenus).toHaveBeenCalledWith('dashboard/secret');
+      expect(client.menu.getContributedMenus).toHaveBeenCalledWith({ context: 'dashboard/secret' });
     });
   });
 
   test('Expect contributed menus to be visible', async () => {
-    vi.mocked(window.getContributedMenus).mockResolvedValue([
+    vi.mocked(client.menu.getContributedMenus).mockResolvedValue([
       {
         command: 'foo',
         title: 'Open foo',

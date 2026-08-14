@@ -6,6 +6,7 @@ import { DropdownMenu } from '@podman-desktop/ui-svelte';
 import { createEventDispatcher, onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import ContributionActions from '/@/lib/actions/ContributionActions.svelte';
 import { withConfirmation } from '/@/lib/dialogs/messagebox-utils';
 import FlatMenu from '/@/lib/ui/FlatMenu.svelte';
@@ -35,7 +36,7 @@ const composeLabel = 'com.docker.compose.project';
 
 let contributions: Menu[] = $state([]);
 onMount(async () => {
-  contributions = await window.getContributedMenus(MenuContext.DASHBOARD_COMPOSE);
+  contributions = await client.menu.getContributedMenus({ context: MenuContext.DASHBOARD_COMPOSE });
 });
 
 let hideStartForStop = $state(false);

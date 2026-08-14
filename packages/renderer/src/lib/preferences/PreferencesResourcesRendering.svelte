@@ -196,7 +196,9 @@ onMount(async () => {
     globalContext = value;
   });
 
-  contributionsContainerConnection = await window.getContributedMenus(MenuContext.DASHBOARD_CONTAINER_CONNECTION);
+  contributionsContainerConnection = await client.menu.getContributedMenus({
+    context: MenuContext.DASHBOARD_CONTAINER_CONNECTION,
+  });
 });
 
 function getContainerRestarting(provider: string, container: string): IConnectionRestart {

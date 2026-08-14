@@ -69,6 +69,7 @@ vi.mock('/@/client', () => ({
       removeDevelopmentFolder: vi.fn(),
       getDevelopmentDocsLink: vi.fn(),
     },
+    menu: { getContributedMenus: vi.fn() },
     notification: { list: vi.fn(), add: vi.fn(), remove: vi.fn(), clearAll: vi.fn() },
     proxy: { updateSettings: vi.fn(), getSettings: vi.fn(), getState: vi.fn(), setState: vi.fn() },
     system: {

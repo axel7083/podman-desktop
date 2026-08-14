@@ -764,7 +764,7 @@ describe('container provider connections', () => {
         when: 'selectedProviderConnectionStatus.status === "stopped"',
       },
     ];
-    vi.mocked(window.getContributedMenus).mockResolvedValue(menus);
+    vi.mocked(client.menu.getContributedMenus).mockResolvedValue(menus);
     render(PreferencesResourcesRendering, {});
 
     const kebabMenuButton = screen.getByRole('button', { name: 'kebab menu' });

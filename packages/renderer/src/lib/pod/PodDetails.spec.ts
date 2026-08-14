@@ -52,7 +52,7 @@ const myPod: PodInfo = {
 beforeEach(() => {
   vi.resetAllMocks();
 
-  vi.mocked(window.getContributedMenus).mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
   vi.mocked(window.listContainers).mockResolvedValue([]);
   vi.mocked(client.configuration.getProperties).mockResolvedValue({});
   vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);

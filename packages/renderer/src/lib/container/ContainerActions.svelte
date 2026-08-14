@@ -41,7 +41,7 @@ export let onUpdate: (update: ContainerInfoUI) => void = update => {
 };
 let contributions: Menu[] = [];
 onMount(async () => {
-  contributions = await window.getContributedMenus(MenuContext.DASHBOARD_CONTAINER);
+  contributions = await client.menu.getContributedMenus({ context: MenuContext.DASHBOARD_CONTAINER });
   contextsUnsubscribe = context.subscribe(value => {
     // Copy context, do not use reference
     globalContext = new ContextUI();

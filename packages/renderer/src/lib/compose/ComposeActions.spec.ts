@@ -22,6 +22,7 @@ import { within } from '@testing-library/dom';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { afterEach, beforeAll, beforeEach, expect, type Mock, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import type { ContainerInfoUI } from '/@/lib/container/ContainerInfoUI';
 
 import ComposeActions from './ComposeActions.svelte';
@@ -62,7 +63,6 @@ const compose: ComposeInfoUI = new ComposeInfoUIImpl(
   ],
 );
 
-const getContributedMenusMock = vi.fn();
 const updateMock = vi.fn();
 
 type Deferred<T = void> = {
@@ -85,12 +85,10 @@ beforeAll(() => {
   Object.defineProperty(window, 'stopContainersByLabel', { value: vi.fn() });
   Object.defineProperty(window, 'restartContainersByLabel', { value: vi.fn() });
   Object.defineProperty(window, 'deleteContainersByLabel', { value: vi.fn() });
-
-  Object.defineProperty(window, 'getContributedMenus', { value: getContributedMenusMock });
 });
 
 beforeEach(() => {
-  getContributedMenusMock.mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 });
 
 afterEach(() => {

@@ -43,7 +43,6 @@ import { providerInfos } from '/@/stores/providers';
 const getProvidersInfoMock = vi.fn();
 const listPodsMock = vi.fn();
 const listContainersMock = vi.fn();
-const getContributedMenusMock = vi.fn();
 const kubernetesGetCurrentNamespaceMock = vi.fn();
 
 const provider: ProviderInfo = {
@@ -255,8 +254,7 @@ beforeAll(() => {
     return { dispose: vi.fn() };
   });
 
-  (window as any).getContributedMenus = getContributedMenusMock;
-  getContributedMenusMock.mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 });
 
 async function waitRender(customProperties: object): Promise<void> {

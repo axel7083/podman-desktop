@@ -5,6 +5,7 @@ import { MenuContext, NavigationPage } from '@podman-desktop/core-api';
 import { createEventDispatcher, onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import ContributionActions from '/@/lib/actions/ContributionActions.svelte';
 import { ContextUI } from '/@/lib/context/context';
 import { withConfirmation } from '/@/lib/dialogs/messagebox-utils';
@@ -55,7 +56,7 @@ let globalContext: ContextUI = $derived.by(() => {
 const dispatch = createEventDispatcher<{ update: ImageInfoUI }>();
 
 onMount(async () => {
-  contributions = await window.getContributedMenus(MenuContext.DASHBOARD_IMAGE);
+  contributions = await client.menu.getContributedMenus({ context: MenuContext.DASHBOARD_IMAGE });
 });
 
 async function runImage(): Promise<void> {

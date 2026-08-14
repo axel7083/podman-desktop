@@ -22,6 +22,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { router } from 'tinro';
 import { afterEach, beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import ContributionActions from '/@/lib/actions/ContributionActions.svelte';
 import { ContextUI } from '/@/lib/context/context';
 import { context } from '/@/stores/context';
@@ -48,7 +49,6 @@ const container: ContainerInfoUI = new ContainerInfoUIImpl(
   'container-engine-id',
 ) as unknown as ContainerInfoUI;
 
-const getContributedMenusMock = vi.fn();
 const updateMock = vi.fn();
 
 vi.mock(import('/@/lib/actions/ContributionActions.svelte'));
@@ -59,12 +59,10 @@ beforeAll(() => {
   Object.defineProperty(window, 'stopContainer', { value: vi.fn() });
   Object.defineProperty(window, 'restartContainer', { value: vi.fn() });
   Object.defineProperty(window, 'deleteContainer', { value: vi.fn() });
-
-  Object.defineProperty(window, 'getContributedMenus', { value: getContributedMenusMock });
 });
 
 beforeEach(() => {
-  getContributedMenusMock.mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 });
 
 afterEach(() => {

@@ -34,7 +34,7 @@ let { pod, dropdownMenu = false, detailed = false }: Props = $props();
 
 let contributions = $state<Menu[]>([]);
 onMount(async () => {
-  contributions = await window.getContributedMenus(MenuContext.DASHBOARD_POD);
+  contributions = await client.menu.getContributedMenus({ context: MenuContext.DASHBOARD_POD });
 });
 
 let urls: Array<string> = $state([]);

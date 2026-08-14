@@ -24,14 +24,13 @@ import userEvent from '@testing-library/user-event';
 import { router } from 'tinro';
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { withConfirmation } from '/@/lib/dialogs/messagebox-utils';
 import ImageActions from '/@/lib/image/ImageActions.svelte';
 import type { ImageInfoUI } from '/@/lib/image/ImageInfoUI';
 import { handleNavigation } from '/@/navigation';
 
 import { ImageUtils } from './image-utils';
-
-const getContributedMenusMock = vi.fn();
 
 vi.mock(import('/@/navigation'));
 vi.mock(import('./image-utils'));
@@ -47,7 +46,6 @@ class ResizeObserver {
 beforeAll(() => {
   Object.defineProperty(window, 'ResizeObserver', { value: ResizeObserver });
 
-  Object.defineProperty(window, 'getContributedMenus', { value: getContributedMenusMock });
   Object.defineProperty(window, 'hasAuthconfigForImage', {
     value: vi.fn().mockResolvedValue(false),
   });
@@ -85,7 +83,7 @@ beforeEach(() => {
 test('Expect error dialog with correct message when image deletion fails', async () => {
   vi.mocked(withConfirmation).mockImplementation(f => f());
   vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Dismiss' });
-  getContributedMenusMock.mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 
   const image: ImageInfoUI = new Image('dummy', 'UNUSED') as unknown as ImageInfoUI;
 
@@ -115,7 +113,7 @@ test('Expect error dialog with correct message when image deletion fails', async
 
 test('Expect no dropdown when one contribution and dropdownMenu off', async () => {
   // Since we only have one contribution, we do not use a dropdown
-  getContributedMenusMock.mockImplementation(_context =>
+  vi.mocked(client.menu.getContributedMenus).mockImplementation(_context =>
     Promise.resolve([{ command: 'valid-command', title: 'dummy-contrib' }]),
   );
 
@@ -128,7 +126,7 @@ test('Expect no dropdown when one contribution and dropdownMenu off', async () =
     groupContributions: true,
   });
 
-  expect(getContributedMenusMock).toHaveBeenCalled();
+  expect(client.menu.getContributedMenus).toHaveBeenCalled();
 
   await waitFor(() => {
     const div = screen.getByTitle('dummy-contrib').parentElement;
@@ -139,7 +137,7 @@ test('Expect no dropdown when one contribution and dropdownMenu off', async () =
 
 test('Expect contribution in dropdown when several contributions and dropdownMenu off', async () => {
   // Since we have more than one contribution we group them in a dropdown
-  getContributedMenusMock.mockImplementation(_context =>
+  vi.mocked(client.menu.getContributedMenus).mockImplementation(_context =>
     Promise.resolve([
       { command: 'valid-command', title: 'dummy-contrib' },
       { command: 'valid-command-2', title: 'dummy-contrib-2' },
@@ -155,7 +153,7 @@ test('Expect contribution in dropdown when several contributions and dropdownMen
     groupContributions: true,
   });
 
-  expect(getContributedMenusMock).toHaveBeenCalled();
+  expect(client.menu.getContributedMenus).toHaveBeenCalled();
 
   await waitFor(() => {
     const button = screen.getByLabelText('kebab menu');
@@ -167,7 +165,7 @@ test('Expect contribution in dropdown when several contributions and dropdownMen
 
 test('Expect no dropdown when several contributions and dropdownMenu mode on', async () => {
   // Simulate with multiple contributions
-  getContributedMenusMock.mockImplementation(_context =>
+  vi.mocked(client.menu.getContributedMenus).mockImplementation(_context =>
     Promise.resolve([
       { command: 'valid-command', title: 'dummy-contrib' },
       { command: 'valid-command-2', title: 'dummy-contrib-2' },
@@ -183,7 +181,7 @@ test('Expect no dropdown when several contributions and dropdownMenu mode on', a
     groupContributions: false, // we do not group them since we are in a dropdown
   });
 
-  expect(getContributedMenusMock).toHaveBeenCalled();
+  expect(client.menu.getContributedMenus).toHaveBeenCalled();
 
   await fireEvent.click(screen.getByLabelText('kebab menu'));
 
@@ -203,7 +201,7 @@ test('Expect no dropdown when several contributions and dropdownMenu mode on', a
 });
 
 test('Expect Push image to be there', async () => {
-  getContributedMenusMock.mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 
   const image: ImageInfoUI = {
     name: 'dummy',
@@ -221,7 +219,7 @@ test('Expect Push image to be there', async () => {
 });
 
 test('Expect Save image to be there', async () => {
-  getContributedMenusMock.mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
   const goToMock = vi.spyOn(router, 'goto');
 
   const image: ImageInfoUI = {
@@ -244,7 +242,7 @@ test('Expect Save image to be there', async () => {
 });
 
 test('Expect withConfirmation to indicate image name and tag', async () => {
-  getContributedMenusMock.mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 
   const image: ImageInfoUI = {
     name: 'image-name',
@@ -279,7 +277,7 @@ describe('run', () => {
   } as ImageInfoUI;
 
   beforeEach(() => {
-    getContributedMenusMock.mockResolvedValue([]);
+    vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
   });
 
   test('Expect Run image to be there', async () => {

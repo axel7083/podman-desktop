@@ -22,6 +22,7 @@ import type { ContainerInfo, Port } from '@podman-desktop/api';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { setPodStatus } from '/@/stores/pods';
 
 import PodActions from './PodActions.svelte';
@@ -51,7 +52,6 @@ const podmanPod: PodInfoUI = {
 };
 
 const listContainersMock = vi.fn();
-const getContributedMenusMock = vi.fn();
 
 class ResizeObserver {
   observe = vi.fn();
@@ -67,7 +67,6 @@ beforeAll(() => {
   Object.defineProperty(window, 'stopPod', { value: vi.fn() });
   Object.defineProperty(window, 'restartPod', { value: vi.fn() });
   Object.defineProperty(window, 'removePod', { value: vi.fn() });
-  Object.defineProperty(window, 'getContributedMenus', { value: getContributedMenusMock });
 });
 
 beforeEach(() => {
@@ -77,7 +76,7 @@ beforeEach(() => {
     { Id: 'pod', Ports: [{ PublicPort: 8080 } as Port] as Port[] } as ContainerInfo,
   ]);
 
-  getContributedMenusMock.mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 });
 
 test('Expect setPodStatus called with STARTING when starting pod', async () => {

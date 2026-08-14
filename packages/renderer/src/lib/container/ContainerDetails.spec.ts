@@ -24,6 +24,7 @@ import { get } from 'svelte/store';
 import { router } from 'tinro';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { lastPage } from '/@/stores/breadcrumb';
 import { containersInfos } from '/@/stores/containers';
 
@@ -55,7 +56,7 @@ const getConfigurationValueMock = vi.fn().mockReturnValue(12);
 beforeEach(() => {
   vi.restoreAllMocks();
   vi.resetAllMocks();
-  vi.mocked(window.getContributedMenus).mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 });
 
 test('Expect logs when tty is not enabled', async () => {

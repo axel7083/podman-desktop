@@ -21,6 +21,7 @@ import { cliToolContract } from '/@/contracts/cli-tool/cli-tool.contract.js';
 import { configurationContract } from '/@/contracts/configuration/configuration.contract.js';
 import { extensionContract } from '/@/contracts/extension/extension.contract.js';
 import { imageRegistryContract } from '/@/contracts/image-registry/image-registry.contract.js';
+import { menuContract } from '/@/contracts/menu/menu.contract.js';
 import { notificationContract } from '/@/contracts/notification/notification.contract.js';
 import { planetContract } from '/@/contracts/planet/planet.contract.js';
 import { proxyContract } from '/@/contracts/proxy/proxy.contract.js';
@@ -38,6 +39,7 @@ export const contracts = {
   configuration: configurationContract,
   extension: extensionContract,
   imageRegistry: imageRegistryContract,
+  menu: menuContract,
   notification: notificationContract,
   planet: planetContract,
   proxy: proxyContract,

@@ -79,7 +79,6 @@ import type {
   ManifestCreateOptions,
   ManifestInspectInfo,
   ManifestPushOptions,
-  Menu,
   MessageBoxOptions,
   MessageBoxReturnValue,
   NetworkCreateOptions,
@@ -810,7 +809,6 @@ export class PluginSystem {
     const cliToolRegistry = container.get<CliToolRegistry>(CliToolRegistry);
     const troubleshooting = container.get<Troubleshooting>(Troubleshooting);
     troubleshooting.init();
-    const menuRegistry = container.get<MenuRegistry>(MenuRegistry);
     const contributionManager = container.get<ContributionManager>(ContributionManager);
     const iconRegistry = container.get<IconRegistry>(IconRegistry);
     const onboardingRegistry = container.get<OnboardingRegistry>(OnboardingRegistry);
@@ -1871,10 +1869,6 @@ export class PluginSystem {
           });
       },
     );
-
-    this.ipcHandle('menu-registry:getContributedMenus', async (_, context: string): Promise<Menu[]> => {
-      return menuRegistry.getContributedMenus(context);
-    });
 
     this.ipcHandle(
       'kube-generator-registry:getKubeGeneratorsInfos',

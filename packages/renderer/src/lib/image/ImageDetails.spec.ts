@@ -24,6 +24,7 @@ import { get } from 'svelte/store';
 import { router } from 'tinro';
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import {
   IMAGE_DETAILS_VIEW_BADGES,
   IMAGE_DETAILS_VIEW_ICONS,
@@ -41,7 +42,6 @@ import { viewsContributions } from '/@/stores/views';
 import ImageDetails from './ImageDetails.svelte';
 
 const listImagesMock = vi.fn();
-const getContributedMenusMock = vi.fn();
 
 const myImage: ImageInfo = {
   Id: 'myImage',
@@ -76,13 +76,12 @@ beforeAll(() => {
   Object.defineProperty(window, 'listViewsContributions', { value: vi.fn().mockResolvedValue([]) });
   Object.defineProperty(window, 'getImageFilesProviders', { value: vi.fn().mockResolvedValue([]) });
   Object.defineProperty(window, 'getConfigurationProperties', { value: vi.fn().mockResolvedValue({}) });
-  Object.defineProperty(window, 'getContributedMenus', { value: getContributedMenusMock });
 });
 
 beforeEach(() => {
   imagesInfos.set([]);
   viewsContributions.set([]);
-  getContributedMenusMock.mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 });
 
 afterEach(() => {

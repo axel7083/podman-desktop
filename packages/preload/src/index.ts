@@ -81,7 +81,6 @@ import type {
   ManifestCreateOptions,
   ManifestInspectInfo,
   ManifestPushOptions,
-  Menu,
   MessageBoxOptions,
   MessageBoxReturnValue,
   NavigationRequest,
@@ -1423,10 +1422,6 @@ export function initExposure(): void {
 
   contextBridge.exposeInMainWorld('troubleshootingSaveLogs', async (): Promise<string[]> => {
     return ipcInvoke('troubleshooting:saveLogs', memoryLogs);
-  });
-
-  contextBridge.exposeInMainWorld('getContributedMenus', async (context: string): Promise<Menu[]> => {
-    return ipcInvoke('menu-registry:getContributedMenus', context);
   });
 
   contextBridge.exposeInMainWorld(

@@ -22,15 +22,15 @@ import type { ContainerInfo, Port } from '@podman-desktop/api';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { afterEach, beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import PodColumnActions from './PodColumnActions.svelte';
 import type { PodInfoUI } from './PodInfoUI';
 
 const listContainersMock = vi.fn();
-const getContributedMenusMock = vi.fn();
 
 beforeAll(() => {
   Object.defineProperty(window, 'listContainers', { value: listContainersMock });
-  Object.defineProperty(window, 'getContributedMenus', { value: getContributedMenusMock });
 });
 
 beforeEach(() => {
@@ -38,7 +38,7 @@ beforeEach(() => {
     { Id: 'pod', Ports: [{ PublicPort: 8080 } as Port] as Port[] } as ContainerInfo,
   ]);
 
-  getContributedMenusMock.mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 });
 
 afterEach(() => {

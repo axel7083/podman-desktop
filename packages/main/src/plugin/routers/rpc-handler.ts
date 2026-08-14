@@ -26,6 +26,7 @@ import { CliToolRouter } from '/@/plugin/routers/cli-tool.router.js';
 import { ConfigurationRouter } from '/@/plugin/routers/configuration.router.js';
 import { ExtensionRouter } from '/@/plugin/routers/extension.router.js';
 import { ImageRegistryRouter } from '/@/plugin/routers/image-registry.router.js';
+import { MenuRouter } from '/@/plugin/routers/menu.router.js';
 import { NotificationRouter } from '/@/plugin/routers/notification.router.js';
 import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
 import { ProxyRouter } from '/@/plugin/routers/proxy.router.js';
@@ -56,6 +57,8 @@ export class RpcHandler {
     readonly extension: ExtensionRouter,
     @inject(ImageRegistryRouter)
     readonly imageRegistry: ImageRegistryRouter,
+    @inject(MenuRouter)
+    readonly menu: MenuRouter,
     @inject(NotificationRouter)
     readonly notification: NotificationRouter,
     @inject(PlanetRouter)
@@ -79,6 +82,7 @@ export class RpcHandler {
       configuration: configuration.router,
       extension: extension.router,
       imageRegistry: imageRegistry.router,
+      menu: menu.router,
       notification: notification.router,
       planet: planet.router,
       proxy: proxy.router,
