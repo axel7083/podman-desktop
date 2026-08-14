@@ -19,15 +19,12 @@
 import '@testing-library/jest-dom/vitest';
 
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
+
+import { client } from '/@/client';
 
 import type { CatalogExtensionInfoUI } from './catalog-extension-info-ui';
 import CatalogExtensionList from './CatalogExtensionList.svelte';
-
-beforeAll(() => {
-  Object.defineProperty(window, 'extensionInstallFromImage', { value: vi.fn() });
-  Object.defineProperty(window, 'refreshCatalogExtensions', { value: vi.fn() });
-});
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -75,13 +72,13 @@ test('Check with empty', async () => {
   expect(refreshButton).toBeInTheDocument();
 
   // make the refresh throwing an error
-  vi.mocked(window.refreshCatalogExtensions).mockRejectedValue(new Error('fake error'));
+  vi.mocked(client.extension.refreshCatalog).mockRejectedValue(new Error('fake error'));
 
   // click on the button
   await fireEvent.click(refreshButton);
 
   // check the function was called
-  expect(window.refreshCatalogExtensions).toHaveBeenCalled();
+  expect(vi.mocked(client.extension.refreshCatalog)).toHaveBeenCalled();
 
   // check error message is displayed
   expect(window.showMessageBox).toHaveBeenCalledWith({

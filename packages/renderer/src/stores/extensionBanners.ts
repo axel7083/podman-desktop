@@ -19,6 +19,8 @@
 import type { ExtensionBanner } from '@podman-desktop/core-api/recommendations';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = [
@@ -40,7 +42,7 @@ export const extensionBannerInfos: Writable<ExtensionBanner[]> = writable([]);
 
 // use helper here as window methods are initialized after the store in tests
 const getExtensionBanners = (): Promise<ExtensionBanner[]> => {
-  return window.getExtensionBanners();
+  return client.extension.getBanners();
 };
 
 const extensionBannersEventStore = new EventStore<ExtensionBanner[]>(

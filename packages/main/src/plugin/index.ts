@@ -58,7 +58,6 @@ import type {
   ContributionInfo,
   DockerSocketMappingStatusInfo,
   DocumentationInfo,
-  ExtensionDevelopmentFolderInfo,
   ExtensionInfo,
   FeedbackMessages,
   FeedbackProperties,
@@ -122,8 +121,6 @@ import type {
 import type { ApiSenderChannelMap } from '@podman-desktop/core-api/api-sender';
 import { ApiSenderType } from '@podman-desktop/core-api/api-sender';
 import { IConfigurationRegistry } from '@podman-desktop/core-api/configuration';
-import type { CatalogExtension } from '@podman-desktop/core-api/extension-catalog';
-import type { FeaturedExtension } from '@podman-desktop/core-api/featured';
 import type {
   GenerateKubeResult,
   KubernetesGeneratorArgument,
@@ -134,7 +131,6 @@ import type {
   ContainerCreateOptions as PodmanContainerCreateOptions,
   PlayKubeInfo,
 } from '@podman-desktop/core-api/libpod';
-import type { ExtensionBanner, RecommendedRegistry } from '@podman-desktop/core-api/recommendations';
 import type { PinOption } from '@podman-desktop/core-api/status-bar';
 import checkDiskSpacePkg from 'check-disk-space';
 import type Dockerode from 'dockerode';
@@ -2158,30 +2154,6 @@ export class PluginSystem {
       return contributionManager.listContributions();
     });
 
-    this.ipcHandle('extension-loader:listExtensions', async (): Promise<ExtensionInfo[]> => {
-      return this.extensionLoader.listExtensions();
-    });
-
-    this.ipcHandle('featured:getFeaturedExtensions', async (): Promise<FeaturedExtension[]> => {
-      return featured.getFeaturedExtensions();
-    });
-
-    this.ipcHandle('recommended:getExtensionBanners', async (): Promise<ExtensionBanner[]> => {
-      return recommendationsRegistry.getExtensionBanners();
-    });
-
-    this.ipcHandle('recommended:getRegistries', async (): Promise<RecommendedRegistry[]> => {
-      return recommendationsRegistry.getRegistries();
-    });
-
-    this.ipcHandle('catalog:getExtensions', async (): Promise<CatalogExtension[]> => {
-      return extensionsCatalog.getExtensions();
-    });
-
-    this.ipcHandle('catalog:refreshExtensions', async (): Promise<void> => {
-      return extensionsCatalog.refreshCatalog();
-    });
-
     this.ipcHandle('documentation:getItems', async (): Promise<DocumentationInfo[]> => {
       return documentationService.getDocumentationItems();
     });
@@ -2197,38 +2169,6 @@ export class PluginSystem {
     this.ipcHandle('commands:getCommandPaletteSearchOptions', async (): Promise<CommandPaletteSearchOption[]> => {
       return commandRegistry.getCommandPaletteSearchOptions();
     });
-
-    this.ipcHandle(
-      'extension-loader:stopExtension',
-      async (_listener: Electron.IpcMainInvokeEvent, extensionId: string): Promise<void> => {
-        return this.extensionLoader.stopExtension(extensionId);
-      },
-    );
-    this.ipcHandle(
-      'extension-loader:startExtension',
-      async (_listener: Electron.IpcMainInvokeEvent, extensionId: string): Promise<void> => {
-        return this.extensionLoader.startExtension(extensionId);
-      },
-    );
-    this.ipcHandle(
-      'extension-updater:updateExtension',
-      async (_listener: Electron.IpcMainInvokeEvent, extensionId: string, ociUri: string): Promise<void> => {
-        return extensionsUpdater.updateExtension(extensionId, ociUri);
-      },
-    );
-    this.ipcHandle(
-      'extension-loader:removeExtension',
-      async (_listener: Electron.IpcMainInvokeEvent, extensionId: string): Promise<void> => {
-        return this.extensionLoader.removeExtensionPerUserRequest(extensionId);
-      },
-    );
-
-    this.ipcHandle(
-      'extension-loader:ensureExtensionIsEnabled',
-      async (_listener: Electron.IpcMainInvokeEvent, extensionId: string): Promise<void> => {
-        return this.extensionLoader.ensureExtensionIsEnabled(extensionId);
-      },
-    );
 
     this.ipcHandle(
       'shell:openExternal',
@@ -3107,34 +3047,6 @@ export class PluginSystem {
     this.ipcHandle('path:relative', async (_listener, from: string, to: string): Promise<string> => {
       return path.relative(from, to);
     });
-
-    this.ipcHandle(
-      'extension-development-folders:getDevelopmentFolders',
-      async (): Promise<ExtensionDevelopmentFolderInfo[]> => {
-        return extensionDevelopmentFolders.getDevelopmentFolders();
-      },
-    );
-
-    this.ipcHandle(
-      'extension-development-folders:addDevelopmentFolder',
-      async (_listener: unknown, path: string): Promise<void> => {
-        return extensionDevelopmentFolders.addDevelopmentFolder(path);
-      },
-    );
-
-    this.ipcHandle(
-      'extension-development-folders:removeDevelopmentFolder',
-      async (_listener: unknown, path: string): Promise<void> => {
-        return extensionDevelopmentFolders.removeDevelopmentFolder(path);
-      },
-    );
-
-    this.ipcHandle(
-      'extension-development:getExtensionDevelopmentDocsLink',
-      async (_listener): Promise<string | undefined> => {
-        return product.extensions.developmentDocumentation;
-      },
-    );
 
     this.ipcHandle(
       'kubernetes:getTroubleshootingInformation',

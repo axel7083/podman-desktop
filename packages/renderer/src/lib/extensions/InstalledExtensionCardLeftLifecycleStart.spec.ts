@@ -19,15 +19,12 @@
 import '@testing-library/jest-dom/vitest';
 
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { beforeAll, expect, test, vi } from 'vitest';
+import { expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import type { CombinedExtensionInfoUI } from '/@/stores/all-installed-extensions';
 
 import InstalledExtensionCardLeftLifecycleStart from './InstalledExtensionCardLeftLifecycleStart.svelte';
-
-beforeAll(() => {
-  Object.defineProperty(window, 'startExtension', { value: vi.fn() });
-});
 
 test('Expect to start dd Extension if stopped', async () => {
   const extension: CombinedExtensionInfoUI = {
@@ -55,7 +52,7 @@ test('Expect to start dd Extension if stopped', async () => {
   await fireEvent.click(button);
 
   // expect the start function to be called
-  expect(vi.mocked(window.startExtension)).toHaveBeenCalledWith('idExtension');
+  expect(vi.mocked(client.extension.start)).toHaveBeenCalledWith({ extensionId: 'idExtension' });
 });
 
 test('Expect to start pd Extension if stopped', async () => {
@@ -83,7 +80,7 @@ test('Expect to start pd Extension if stopped', async () => {
   await fireEvent.click(button);
 
   // expect the start function to be called
-  expect(vi.mocked(window.startExtension)).toHaveBeenCalledWith('idExtension');
+  expect(vi.mocked(client.extension.start)).toHaveBeenCalledWith({ extensionId: 'idExtension' });
 });
 
 test('Expect unable to start if already started', async () => {
@@ -133,5 +130,5 @@ test('Expect to start Extension if failed', async () => {
   await fireEvent.click(button);
 
   // expect the start function to be called
-  expect(vi.mocked(window.startExtension)).toHaveBeenCalledWith('idExtension');
+  expect(vi.mocked(client.extension.start)).toHaveBeenCalledWith({ extensionId: 'idExtension' });
 });

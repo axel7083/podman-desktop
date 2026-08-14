@@ -69,7 +69,7 @@ async function addLocalFolderExtension(): Promise<void> {
   });
   if (result?.[0]) {
     try {
-      await window.trackExtensionFolder(result[0]);
+      await client.extension.addDevelopmentFolder({ path: result[0] });
     } catch (error: unknown) {
       // show error
       await window.showMessageBox({

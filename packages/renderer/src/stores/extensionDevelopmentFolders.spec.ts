@@ -20,6 +20,8 @@ import type { IDisposable } from '@podman-desktop/core-api';
 import { get } from 'svelte/store';
 import { assert, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import {
   extensionDevelopmentFolders,
   extensionDevelopmentFoldersEventStore,
@@ -48,7 +50,7 @@ beforeEach(() => {
 
 test('should be updated in case of an extension is stopped', async () => {
   // initial view
-  vi.mocked(window.listExtensionDevelopmentFolders).mockResolvedValue([
+  vi.mocked(client.extension.getDevelopmentFolders).mockResolvedValue([
     {
       path: 'foo',
     },
@@ -69,7 +71,7 @@ test('should be updated in case of an extension is stopped', async () => {
   expect(extensionDevelopmentFoldersList1[0].path).toEqual('foo');
 
   // ok now mock the listExtensionDevelopmentFolders function to return an empty list
-  vi.mocked(window.listExtensionDevelopmentFolders).mockResolvedValue([]);
+  vi.mocked(client.extension.getDevelopmentFolders).mockResolvedValue([]);
 
   // call 'extension-stopped' event
   const extensionStoppedCallback = callbacks.get('extension-stopped');
@@ -86,7 +88,7 @@ test('should be updated in case of an extension is stopped', async () => {
 
 test('should be updated in case of an extension is started', async () => {
   // initial view
-  vi.mocked(window.listExtensionDevelopmentFolders).mockResolvedValue([
+  vi.mocked(client.extension.getDevelopmentFolders).mockResolvedValue([
     {
       path: 'foo',
     },
@@ -107,7 +109,7 @@ test('should be updated in case of an extension is started', async () => {
   expect(extensionDevelopmentFoldersList1[0].path).toEqual('foo');
 
   // ok now mock the listExtensionDevelopmentFolders function to return an empty list
-  vi.mocked(window.listExtensionDevelopmentFolders).mockResolvedValue([]);
+  vi.mocked(client.extension.getDevelopmentFolders).mockResolvedValue([]);
 
   // call 'extension-stopped' event
   const extensionStoppedCallback = callbacks.get('extension-started');

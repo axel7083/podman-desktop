@@ -2,6 +2,8 @@
 import { faPuzzlePiece } from '@fortawesome/free-solid-svg-icons';
 import { Button, EmptyScreen } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
+
 import type { CatalogExtensionInfoUI } from './catalog-extension-info-ui';
 import CatalogExtension from './CatalogExtension.svelte';
 
@@ -13,7 +15,7 @@ export let ondetails: (extensionId: string) => void = () => {};
 
 async function fetchCatalog(): Promise<void> {
   try {
-    await window.refreshCatalogExtensions();
+    await client.extension.refreshCatalog();
   } catch (error) {
     await window.showMessageBox({
       type: 'error',

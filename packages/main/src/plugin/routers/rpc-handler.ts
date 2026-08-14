@@ -24,6 +24,7 @@ import { IPCMainOn } from '/@/plugin/api.js';
 import { AuthenticationRouter } from '/@/plugin/routers/authentication.router.js';
 import { CliToolRouter } from '/@/plugin/routers/cli-tool.router.js';
 import { ConfigurationRouter } from '/@/plugin/routers/configuration.router.js';
+import { ExtensionRouter } from '/@/plugin/routers/extension.router.js';
 import { ImageRegistryRouter } from '/@/plugin/routers/image-registry.router.js';
 import { NotificationRouter } from '/@/plugin/routers/notification.router.js';
 import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
@@ -47,6 +48,8 @@ export class RpcHandler {
     readonly cliTool: CliToolRouter,
     @inject(ConfigurationRouter)
     readonly configuration: ConfigurationRouter,
+    @inject(ExtensionRouter)
+    readonly extension: ExtensionRouter,
     @inject(ImageRegistryRouter)
     readonly imageRegistry: ImageRegistryRouter,
     @inject(NotificationRouter)
@@ -62,6 +65,7 @@ export class RpcHandler {
       authentication: authentication.router,
       cliTool: cliTool.router,
       configuration: configuration.router,
+      extension: extension.router,
       imageRegistry: imageRegistry.router,
       notification: notification.router,
       planet: planet.router,

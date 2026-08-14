@@ -19,6 +19,8 @@
 import type { FeaturedExtension } from '@podman-desktop/core-api/featured';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = [
@@ -39,7 +41,7 @@ export const featuredExtensionInfos: Writable<FeaturedExtension[]> = writable([]
 
 // use helper here as window methods are initialized after the store in tests
 const getFeaturedExtensions = (): Promise<FeaturedExtension[]> => {
-  return window.getFeaturedExtensions();
+  return client.extension.getFeatured();
 };
 
 const featuredExtensionsEventStore = new EventStore<FeaturedExtension[]>(

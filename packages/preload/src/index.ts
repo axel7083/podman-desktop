@@ -59,8 +59,6 @@ import type {
   DockerSocketMappingStatusInfo,
   DocumentationInfo,
   ExploreFeature,
-  ExtensionDevelopmentFolderInfo,
-  ExtensionInfo,
   FeedbackMessages,
   FeedbackProperties,
   ForwardConfig,
@@ -124,8 +122,6 @@ import type {
 import { NavigationPage, ORPC_START_CHANNEL } from '@podman-desktop/core-api';
 import type { ApiSenderType } from '@podman-desktop/core-api/api-sender';
 import type { ContextInfo } from '@podman-desktop/core-api/context';
-import type { CatalogExtension } from '@podman-desktop/core-api/extension-catalog';
-import type { FeaturedExtension } from '@podman-desktop/core-api/featured';
 import type {
   GenerateKubeResult,
   KubernetesGeneratorArgument,
@@ -137,7 +133,6 @@ import type {
   ContainerCreateOptions as PodmanContainerCreateOptions,
   PlayKubeInfo,
 } from '@podman-desktop/core-api/libpod';
-import type { ExtensionBanner, RecommendedRegistry } from '@podman-desktop/core-api/recommendations';
 import type { PinOption } from '@podman-desktop/core-api/status-bar';
 import { contextBridge, ipcRenderer } from 'electron';
 
@@ -1509,26 +1504,6 @@ export function initExposure(): void {
     return ipcInvoke('authentication:showAccountsMenu', x, y);
   });
 
-  contextBridge.exposeInMainWorld('getFeaturedExtensions', async (): Promise<FeaturedExtension[]> => {
-    return ipcInvoke('featured:getFeaturedExtensions');
-  });
-
-  contextBridge.exposeInMainWorld('getExtensionBanners', async (): Promise<ExtensionBanner[]> => {
-    return ipcInvoke('recommended:getExtensionBanners');
-  });
-
-  contextBridge.exposeInMainWorld('getRecommendedRegistries', async (): Promise<RecommendedRegistry[]> => {
-    return ipcInvoke('recommended:getRegistries');
-  });
-
-  contextBridge.exposeInMainWorld('getCatalogExtensions', async (): Promise<CatalogExtension[]> => {
-    return ipcInvoke('catalog:getExtensions');
-  });
-
-  contextBridge.exposeInMainWorld('refreshCatalogExtensions', async (): Promise<void> => {
-    return ipcInvoke('catalog:refreshExtensions');
-  });
-
   contextBridge.exposeInMainWorld('getDocumentationItems', async (): Promise<DocumentationInfo[]> => {
     return ipcInvoke('documentation:getItems');
   });
@@ -1545,36 +1520,12 @@ export function initExposure(): void {
     return ipcInvoke('commands:getCommandPaletteSearchOptions');
   });
 
-  contextBridge.exposeInMainWorld('listExtensions', async (): Promise<ExtensionInfo[]> => {
-    return ipcInvoke('extension-loader:listExtensions');
-  });
-
   contextBridge.exposeInMainWorld('getWelcomeMessages', async (): Promise<WelcomeMessages> => {
     return ipcInvoke('welcome:getWelcomeMessages');
   });
 
   contextBridge.exposeInMainWorld('getUrlProtocol', async (): Promise<string> => {
     return ipcInvoke('product:getUrlProtocol');
-  });
-
-  contextBridge.exposeInMainWorld('stopExtension', async (extensionId: string): Promise<void> => {
-    return ipcInvoke('extension-loader:stopExtension', extensionId);
-  });
-
-  contextBridge.exposeInMainWorld('startExtension', async (extensionId: string): Promise<void> => {
-    return ipcInvoke('extension-loader:startExtension', extensionId);
-  });
-
-  contextBridge.exposeInMainWorld('updateExtension', async (extensionId: string, ociUri: string): Promise<void> => {
-    return ipcInvoke('extension-updater:updateExtension', extensionId, ociUri);
-  });
-
-  contextBridge.exposeInMainWorld('removeExtension', async (extensionId: string): Promise<void> => {
-    return ipcInvoke('extension-loader:removeExtension', extensionId);
-  });
-
-  contextBridge.exposeInMainWorld('ensureExtensionIsEnabled', async (extensionId: string): Promise<void> => {
-    return ipcInvoke('extension-loader:ensureExtensionIsEnabled', extensionId);
   });
 
   contextBridge.exposeInMainWorld('openExternal', async (link: string): Promise<void> => {
@@ -2505,25 +2456,6 @@ export function initExposure(): void {
 
   contextBridge.exposeInMainWorld('pathRelative', async (from: string, to: string): Promise<string> => {
     return ipcInvoke('path:relative', from, to);
-  });
-
-  contextBridge.exposeInMainWorld(
-    'listExtensionDevelopmentFolders',
-    async (): Promise<ExtensionDevelopmentFolderInfo[]> => {
-      return ipcInvoke('extension-development-folders:getDevelopmentFolders');
-    },
-  );
-
-  contextBridge.exposeInMainWorld('untrackExtensionFolder', async (path: string): Promise<void> => {
-    return ipcInvoke('extension-development-folders:removeDevelopmentFolder', path);
-  });
-
-  contextBridge.exposeInMainWorld('trackExtensionFolder', async (path: string): Promise<void> => {
-    return ipcInvoke('extension-development-folders:addDevelopmentFolder', path);
-  });
-
-  contextBridge.exposeInMainWorld('getExtensionDevelopmentDocsLink', async (): Promise<string | undefined> => {
-    return ipcInvoke('extension-development:getExtensionDevelopmentDocsLink');
   });
 
   contextBridge.exposeInMainWorld(

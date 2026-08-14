@@ -85,7 +85,7 @@ test('expect addLocalFolderExtension is working', async () => {
   await userEvent.click(addButton);
 
   // check it call trackExtensionFolder with the foo folder
-  await vi.waitFor(() => expect(window.trackExtensionFolder).toHaveBeenCalledWith('foo'));
+  await vi.waitFor(() => expect(client.extension.addDevelopmentFolder).toHaveBeenCalledWith({ path: 'foo' }));
 });
 
 test('expect report error of addLocalFolderExtension', async () => {
@@ -98,7 +98,7 @@ test('expect report error of addLocalFolderExtension', async () => {
   vi.mocked(window.openDialog).mockResolvedValue(['foo']);
 
   // mock trackExtensionFolder to throw an error
-  vi.mocked(window.trackExtensionFolder).mockRejectedValue(new Error('dummy error'));
+  vi.mocked(client.extension.addDevelopmentFolder).mockRejectedValue(new Error('dummy error'));
 
   // wait the button 'Add a local folder extension is there
   await vi.waitFor(() =>
@@ -109,7 +109,7 @@ test('expect report error of addLocalFolderExtension', async () => {
   await userEvent.click(addButton);
 
   // check it call trackExtensionFolder with the foo folder
-  await vi.waitFor(() => expect(window.trackExtensionFolder).toHaveBeenCalledWith('foo'));
+  await vi.waitFor(() => expect(client.extension.addDevelopmentFolder).toHaveBeenCalledWith({ path: 'foo' }));
 
   // expect the error to be displayed
   await vi.waitFor(() => expect(vi.mocked(window.showMessageBox).mock.calls[0][0].message).toContain('dummy error'));
