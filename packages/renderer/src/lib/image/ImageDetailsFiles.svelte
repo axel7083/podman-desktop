@@ -35,7 +35,7 @@ function onSelectedLayer(event: CustomEvent<ImageFilesystemLayerUI>): void {
 async function fetchImageLayers(provider: ImageFilesInfo, img: ImageInfo): Promise<void> {
   try {
     loading = true;
-    cancellableTokenId = await window.getCancellableTokenSource();
+    cancellableTokenId = await client.cancellation.createTokenSource();
     imageLayers = await client.imageRegistry.getFilesystemLayers({
       id: provider.id,
       image: $state.snapshot(img),
@@ -81,7 +81,7 @@ onMount(async () => {
 });
 
 onDestroy(async () => {
-  await window.cancelToken(cancellableTokenId);
+  await client.cancellation.cancelToken({ id: cancellableTokenId });
   filesProvidersUnsubscribe?.();
 });
 </script>

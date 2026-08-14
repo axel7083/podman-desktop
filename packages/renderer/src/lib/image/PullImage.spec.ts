@@ -85,8 +85,8 @@ beforeEach(() => {
   });
   console.error = vi.fn();
   vi.mocked(window.resolveShortnameImage).mockResolvedValue(['docker.io/test1']);
-  vi.mocked(window.getCancellableTokenSource).mockResolvedValue(1234);
-  vi.mocked(window.cancelToken).mockResolvedValue(undefined);
+  vi.mocked(client.cancellation.createTokenSource).mockResolvedValue(1234);
+  vi.mocked(client.cancellation.cancelToken).mockResolvedValue(undefined);
   vi.mocked(window.pullImage).mockResolvedValue(undefined);
   vi.mocked(client.imageRegistry.listImageTags).mockResolvedValue(['latest', 'other']);
   vi.mocked(window.listImages).mockResolvedValue([]);
@@ -255,7 +255,7 @@ describe('PullImage', () => {
 
   test('Expect cancel to request cancellation while pull is in progress', async () => {
     const pendingPull = Promise.withResolvers<void>();
-    vi.mocked(window.getCancellableTokenSource).mockResolvedValue(9876);
+    vi.mocked(client.cancellation.createTokenSource).mockResolvedValue(9876);
     vi.mocked(window.pullImage).mockReturnValue(pendingPull.promise);
 
     render(PullImage, { imageToPull: 'some-valid-image' });
@@ -273,7 +273,7 @@ describe('PullImage', () => {
 
     const cancelButton = screen.getByRole('button', { name: 'Cancel' });
     await userEvent.click(cancelButton);
-    expect(window.cancelToken).toHaveBeenCalledWith(9876);
+    expect(client.cancellation.cancelToken).toHaveBeenCalledWith({ id: 9876 });
 
     pendingPull.reject(new Error('The operation was aborted'));
     await vi.waitFor(() => {

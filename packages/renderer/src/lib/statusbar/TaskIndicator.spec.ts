@@ -21,6 +21,7 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import TaskIndicator from '/@/lib/statusbar/TaskIndicator.svelte';
 import { type TaskInfoUI, tasksInfo } from '/@/stores/tasks';
 
@@ -28,7 +29,6 @@ beforeAll(() => {
   Object.defineProperty(global, 'window', {
     value: {
       executeCommand: vi.fn(),
-      cancelToken: vi.fn(),
       events: {
         send: vi.fn(),
       },
@@ -178,7 +178,7 @@ test('cancellable task should display cancel button', async () => {
   await fireEvent.click(cancelButton);
 
   // expect the cancel token to be called
-  expect(window.cancelToken).toHaveBeenCalledWith(cancellableTask.cancellationTokenSourceId);
+  expect(client.cancellation.cancelToken).toHaveBeenCalledWith({ id: cancellableTask.cancellationTokenSourceId });
 });
 
 test('non cancellable task should not display cancel', async () => {

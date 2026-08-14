@@ -149,7 +149,7 @@ async function pullImage(): Promise<void> {
   pullInProgress = true;
   try {
     pullCancellationRequested = false;
-    pullCancellableTokenId = await window.getCancellableTokenSource();
+    pullCancellableTokenId = await client.cancellation.createTokenSource();
     const selectedProviderConnectionSnapshot = $state.snapshot(selectedProviderConnection);
     if (podmanFQN) {
       usePodmanFQN
@@ -246,7 +246,7 @@ async function cancelPullImage(): Promise<void> {
     return;
   }
   pullCancellationRequested = true;
-  await window.cancelToken(pullCancellableTokenId);
+  await client.cancellation.cancelToken({ id: pullCancellableTokenId });
 }
 
 async function gotoManageRegistries(): Promise<void> {

@@ -37,7 +37,7 @@ vi.mock(import('@xterm/xterm'));
 
 beforeAll(() => {
   vi.mocked(client.dialog.openDialog).mockResolvedValue(['Containerfile']);
-  vi.mocked(window.getCancellableTokenSource).mockResolvedValue(1234);
+  vi.mocked(client.cancellation.createTokenSource).mockResolvedValue(1234);
 });
 
 beforeEach(() => {

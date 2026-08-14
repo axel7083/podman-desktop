@@ -424,7 +424,7 @@ async function handleOnSubmit(e: SubmitEvent): Promise<void> {
     existingFormData = data;
 
     try {
-      tokenId = await window.getCancellableTokenSource();
+      tokenId = await client.cancellation.createTokenSource();
       // clear terminal
       logsTerminal?.clear();
       loggerHandlerKey = registerConnectionCallback(getLoggerHandler());
@@ -454,7 +454,7 @@ async function handleOnSubmit(e: SubmitEvent): Promise<void> {
 
 async function cancelCreation(): Promise<void> {
   if (tokenId) {
-    await window.cancelToken(tokenId);
+    await client.cancellation.cancelToken({ id: tokenId });
     operationCancelled = true;
     tokenId = undefined;
   }

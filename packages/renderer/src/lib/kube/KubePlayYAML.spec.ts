@@ -195,7 +195,7 @@ describe('cancel', () => {
 
   test('cancel action should call window#cancelToken', async () => {
     const CANCELLABLE_TOKEN_ID: number = 55;
-    vi.mocked(window.getCancellableTokenSource).mockResolvedValue(CANCELLABLE_TOKEN_ID);
+    vi.mocked(client.cancellation.createTokenSource).mockResolvedValue(CANCELLABLE_TOKEN_ID);
 
     const { promise } = Promise.withResolvers<PlayKubeInfo>();
     vi.mocked(window.playKube).mockReturnValue(promise);
@@ -223,7 +223,7 @@ describe('cancel', () => {
     await userEvent.click(cancelBtn);
 
     await vi.waitFor(() => {
-      expect(window.cancelToken).toHaveBeenCalledExactlyOnceWith(CANCELLABLE_TOKEN_ID);
+      expect(client.cancellation.cancelToken).toHaveBeenCalledExactlyOnceWith({ id: CANCELLABLE_TOKEN_ID });
     });
   });
 });

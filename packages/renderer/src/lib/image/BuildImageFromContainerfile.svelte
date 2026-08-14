@@ -123,7 +123,7 @@ async function buildSinglePlatformImage(): Promise<void> {
     to: buildImageInfo.containerFilePath,
   });
 
-  buildImageInfo.cancellableTokenId = await window.getCancellableTokenSource();
+  buildImageInfo.cancellableTokenId = await client.cancellation.createTokenSource();
 
   buildImagesInfo.update(map => {
     taskId = getNextTaskId();
@@ -179,7 +179,7 @@ async function buildMultiplePlatformImagesAndCreateManifest(): Promise<void> {
     to: buildImageInfo.containerFilePath,
   });
 
-  buildImageInfo.cancellableTokenId = await window.getCancellableTokenSource();
+  buildImageInfo.cancellableTokenId = await client.cancellation.createTokenSource();
 
   // We'll be using the same terminal for all builds (getTerminalCallback)
   // similar to how Podman CLI does it.
@@ -283,7 +283,7 @@ onDestroy(() => {
 
 async function abortBuild(): Promise<void> {
   if (buildImageInfo.cancellableTokenId) {
-    await window.cancelToken(buildImageInfo.cancellableTokenId);
+    await client.cancellation.cancelToken({ id: buildImageInfo.cancellableTokenId });
     buildImageInfo.cancellableTokenId = undefined;
   }
   buildImageInfo.buildRunning = false;

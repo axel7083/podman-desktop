@@ -50,7 +50,7 @@ async function callProviders(_providers: readonly ImageCheckerInfo[]): Promise<v
     state: 'running',
   }));
   const sortedProvidersIds = providers.map(p => p.info.id).toSorted();
-  cancellableTokenId = await window.getCancellableTokenSource();
+  cancellableTokenId = await client.cancellation.createTokenSource();
   remainingProviders = providers.length;
 
   providers.forEach(provider => {
@@ -120,7 +120,7 @@ async function handleAbort(): Promise<void> {
 
   if (cancellableTokenId !== 0 && remainingProviders > 0) {
     aborting = true;
-    await window.cancelToken(cancellableTokenId).finally(() => {
+    await client.cancellation.cancelToken({ id: cancellableTokenId }).finally(() => {
       aborting = false;
     });
     // reset token

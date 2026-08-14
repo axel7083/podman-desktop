@@ -80,7 +80,7 @@ function removeEmptyOrNull(obj: object): object {
 async function cancel(): Promise<void> {
   if (cancellableTokenId === undefined) return;
 
-  return window.cancelToken(cancellableTokenId);
+  return client.cancellation.cancelToken({ id: cancellableTokenId });
 }
 
 async function playKubeFile(): Promise<void> {
@@ -103,7 +103,7 @@ async function playKubeFile(): Promise<void> {
 
     if (yamlFilePath && selectedProviderConnection) {
       try {
-        cancellableTokenId = await window.getCancellableTokenSource();
+        cancellableTokenId = await client.cancellation.createTokenSource();
 
         const result = await window.playKube(yamlFilePath, $state.snapshot(selectedProviderConnection), {
           build: $state.snapshot(kubeBuild),

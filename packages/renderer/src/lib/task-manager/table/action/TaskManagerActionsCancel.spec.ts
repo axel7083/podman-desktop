@@ -64,7 +64,7 @@ test('Expect cancellable action being displayed if cancellable', async () => {
   expect(client.dialog.showMessageBox).toHaveBeenCalled();
 
   // expect the window.cancelToken to be called
-  expect(window.cancelToken).toHaveBeenCalledWith('1234');
+  expect(client.cancellation.cancelToken).toHaveBeenCalledWith({ id: '1234' });
 });
 
 test('Expect cancellable action not being displayed if not cancellable', async () => {
