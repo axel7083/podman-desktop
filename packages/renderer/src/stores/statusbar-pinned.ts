@@ -20,6 +20,8 @@ import type { PinOption } from '@podman-desktop/core-api/status-bar';
 import { STATUS_BAR_PIN_CONSTANTS } from '@podman-desktop/core-api/status-bar';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = [STATUS_BAR_PIN_CONSTANTS.PIN_OPTIONS_UPDATE];
@@ -33,7 +35,7 @@ export const statusBarPinned: Writable<Array<PinOption>> = writable([]);
 
 // use helper here as window methods are initialized after the store in tests
 const getStatusBarPinOptions = (): Promise<Array<PinOption>> => {
-  return window.getStatusBarPinOptions();
+  return client.statusBar.getPinOptions();
 };
 
 const eventStore = new EventStore<Array<PinOption>>(

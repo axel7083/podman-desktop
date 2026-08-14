@@ -24,6 +24,7 @@ import { imageRegistryContract } from '/@/contracts/image-registry/image-registr
 import { notificationContract } from '/@/contracts/notification/notification.contract.js';
 import { planetContract } from '/@/contracts/planet/planet.contract.js';
 import { proxyContract } from '/@/contracts/proxy/proxy.contract.js';
+import { statusBarContract } from '/@/contracts/status-bar/status-bar.contract.js';
 import { systemContract } from '/@/contracts/system/system.contract.js';
 import { tasksContract } from '/@/contracts/tasks/tasks.contract.js';
 import { tempFileContract } from '/@/contracts/temp-file/temp-file.contract.js';
@@ -40,6 +41,7 @@ export const contracts = {
   notification: notificationContract,
   planet: planetContract,
   proxy: proxyContract,
+  statusBar: statusBarContract,
   system: systemContract,
   tasks: tasksContract,
   tempFile: tempFileContract,

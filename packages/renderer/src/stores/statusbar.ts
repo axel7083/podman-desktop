@@ -19,6 +19,8 @@
 import { STATUS_BAR_UPDATED_EVENT_NAME, type StatusBarEntryDescriptor } from '@podman-desktop/core-api';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = [STATUS_BAR_UPDATED_EVENT_NAME];
@@ -32,7 +34,7 @@ export const statusBarEntries: Writable<StatusBarEntryDescriptor[]> = writable([
 
 // use helper here as window methods are initialized after the store in tests
 const getStatusBarEntries = (): Promise<StatusBarEntryDescriptor[]> => {
-  return window.getStatusBarEntries();
+  return client.statusBar.getEntries();
 };
 
 const eventStore = new EventStore<StatusBarEntryDescriptor[]>(

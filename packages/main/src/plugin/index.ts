@@ -104,7 +104,6 @@ import type {
   SecretCreateResult,
   SecretInfo,
   SimpleContainerInfo,
-  StatusBarEntryDescriptor,
   TelemetryMessages,
   ThemeInfo,
   V1Route,
@@ -129,7 +128,6 @@ import type {
   ContainerCreateOptions as PodmanContainerCreateOptions,
   PlayKubeInfo,
 } from '@podman-desktop/core-api/libpod';
-import type { PinOption } from '@podman-desktop/core-api/status-bar';
 import type Dockerode from 'dockerode';
 import type { IpcMainEvent, WebContents } from 'electron';
 import { app, BrowserWindow, clipboard, ipcMain, shell } from 'electron';
@@ -1726,22 +1724,6 @@ export class PluginSystem {
       },
     );
 
-    this.ipcHandle('status-bar:getStatusBarEntries', async (): Promise<StatusBarEntryDescriptor[]> => {
-      return statusBarRegistry.getStatusBarEntries();
-    });
-
-    this.ipcHandle(
-      'status-bar:executeStatusBarEntryCommand',
-      async (
-        _,
-        command: string,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        args: any[],
-      ): Promise<void> => {
-        await commandRegistry.executeCommand(command, args);
-      },
-    );
-
     this.ipcHandle('app:update', async (): Promise<void> => {
       await commandRegistry.executeCommand('update');
     });
@@ -2939,18 +2921,6 @@ export class PluginSystem {
         return kubernetesClient.getTroubleshootingInformation();
       },
     );
-
-    this.ipcHandle('statusbar:pin:get-options', async (): Promise<Array<PinOption>> => {
-      return pinRegistry.getOptions();
-    });
-
-    this.ipcHandle('statusbar:pin', async (_listener, optionId: string): Promise<void> => {
-      return pinRegistry.pin(optionId);
-    });
-
-    this.ipcHandle('statusbar:unpin', async (_listener, optionId: string): Promise<void> => {
-      return pinRegistry.unpin(optionId);
-    });
 
     const dockerDesktopInstallation = new DockerDesktopInstallation(
       apiSender,

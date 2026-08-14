@@ -1,6 +1,8 @@
 <script lang="ts">
 import type { StatusBarEntry } from '@podman-desktop/core-api';
 
+import { client } from '/@/client';
+
 import { iconClass } from './StatusBarItem';
 
 interface Props {
@@ -34,7 +36,7 @@ async function executeCommand(entry: StatusBarEntry): Promise<void> {
 
   // convert args to a plain object and not as proxy of arguments
   const noProxyCommandArgs = commandArgs ? JSON.parse(JSON.stringify(commandArgs)) : undefined;
-  await window.executeStatusBarEntryCommand(command, noProxyCommandArgs);
+  await client.statusBar.executeCommand({ command, args: noProxyCommandArgs });
 }
 </script>
 

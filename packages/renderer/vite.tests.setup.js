@@ -92,6 +92,13 @@ vi.mock('/@/client', () => ({
     },
     tasks: { clearAll: vi.fn(), clear: vi.fn(), execute: vi.fn() },
     tempFile: { create: vi.fn(), remove: vi.fn() },
+    statusBar: {
+      getEntries: vi.fn(),
+      executeCommand: vi.fn(),
+      getPinOptions: vi.fn(),
+      pin: vi.fn(),
+      unpin: vi.fn(),
+    },
     troubleshooting: { getDockerSocketMappingStatus: vi.fn() },
   },
 }));

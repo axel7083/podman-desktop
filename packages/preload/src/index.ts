@@ -107,7 +107,6 @@ import type {
   SecretCreateResult,
   SecretInfo,
   SimpleContainerInfo,
-  StatusBarEntryDescriptor,
   SystemOverviewStatusInfo,
   TelemetryMessages,
   V1Route,
@@ -132,7 +131,6 @@ import type {
   ContainerCreateOptions as PodmanContainerCreateOptions,
   PlayKubeInfo,
 } from '@podman-desktop/core-api/libpod';
-import type { PinOption } from '@podman-desktop/core-api/status-bar';
 import { contextBridge, ipcRenderer } from 'electron';
 
 export type OpenSaveDialogResultCallback = (result: string | string[] | undefined) => void;
@@ -1355,17 +1353,6 @@ export function initExposure(): void {
     },
   );
 
-  contextBridge.exposeInMainWorld('getStatusBarEntries', async (): Promise<StatusBarEntryDescriptor[]> => {
-    return ipcInvoke('status-bar:getStatusBarEntries');
-  });
-
-  contextBridge.exposeInMainWorld(
-    'executeStatusBarEntryCommand',
-    async (command: string, args: unknown[]): Promise<void> => {
-      return ipcInvoke('status-bar:executeStatusBarEntryCommand', command, args);
-    },
-  );
-
   contextBridge.exposeInMainWorld('updatePodmanDesktop', async (): Promise<void> => {
     return ipcInvoke('app:update');
   });
@@ -2376,18 +2363,6 @@ export function initExposure(): void {
       return ipcInvoke('kubernetes:getTroubleshootingInformation');
     },
   );
-
-  contextBridge.exposeInMainWorld('getStatusBarPinOptions', async (): Promise<Array<PinOption>> => {
-    return ipcInvoke('statusbar:pin:get-options');
-  });
-
-  contextBridge.exposeInMainWorld('pinStatusBar', async (optionId: string): Promise<void> => {
-    return ipcInvoke('statusbar:pin', optionId);
-  });
-
-  contextBridge.exposeInMainWorld('unpinStatusBar', async (optionId: string): Promise<void> => {
-    return ipcInvoke('statusbar:unpin', optionId);
-  });
 }
 
 // expose methods
