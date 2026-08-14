@@ -24,6 +24,7 @@ import { extensionContract } from '/@/contracts/extension/extension.contract.js'
 import { imageRegistryContract } from '/@/contracts/image-registry/image-registry.contract.js';
 import { menuContract } from '/@/contracts/menu/menu.contract.js';
 import { notificationContract } from '/@/contracts/notification/notification.contract.js';
+import { pickerContract } from '/@/contracts/picker/picker.contract.js';
 import { planetContract } from '/@/contracts/planet/planet.contract.js';
 import { proxyContract } from '/@/contracts/proxy/proxy.contract.js';
 import { statusBarContract } from '/@/contracts/status-bar/status-bar.contract.js';
@@ -43,6 +44,7 @@ export const contracts = {
   imageRegistry: imageRegistryContract,
   menu: menuContract,
   notification: notificationContract,
+  picker: pickerContract,
   planet: planetContract,
   proxy: proxyContract,
   statusBar: statusBarContract,

@@ -29,6 +29,7 @@ import { ExtensionRouter } from '/@/plugin/routers/extension.router.js';
 import { ImageRegistryRouter } from '/@/plugin/routers/image-registry.router.js';
 import { MenuRouter } from '/@/plugin/routers/menu.router.js';
 import { NotificationRouter } from '/@/plugin/routers/notification.router.js';
+import { PickerRouter } from '/@/plugin/routers/picker.router.js';
 import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
 import { ProxyRouter } from '/@/plugin/routers/proxy.router.js';
 import { StatusBarRouter } from '/@/plugin/routers/status-bar.router.js';
@@ -64,6 +65,8 @@ export class RpcHandler {
     readonly menu: MenuRouter,
     @inject(NotificationRouter)
     readonly notification: NotificationRouter,
+    @inject(PickerRouter)
+    readonly picker: PickerRouter,
     @inject(PlanetRouter)
     readonly planet: PlanetRouter,
     @inject(ProxyRouter)
@@ -88,6 +91,7 @@ export class RpcHandler {
       imageRegistry: imageRegistry.router,
       menu: menu.router,
       notification: notification.router,
+      picker: picker.router,
       planet: planet.router,
       proxy: proxy.router,
       statusBar: statusBar.router,

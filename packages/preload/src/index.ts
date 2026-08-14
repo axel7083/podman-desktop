@@ -1570,48 +1570,6 @@ export function initExposure(): void {
     },
   );
 
-  contextBridge.exposeInMainWorld(
-    'sendShowInputBoxValue',
-    async (inputBoxId: number, value?: string, error?: string): Promise<void> => {
-      return ipcInvoke('showInputBox:value', inputBoxId, value, error);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'sendShowQuickPickValues',
-    async (quickPickId: number, selectedIndexes?: number[]): Promise<void> => {
-      return ipcInvoke('showQuickPick:values', quickPickId, selectedIndexes);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'sendShowInputBoxValidate',
-    async (
-      inputBoxId: number,
-      value: string,
-    ): Promise<string | containerDesktopAPI.InputBoxValidationMessage | undefined | null> => {
-      return ipcInvoke('showInputBox:validate', inputBoxId, value);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'sendShowQuickPickOnSelect',
-    async (inputBoxId: number, selectedIndex: number): Promise<void> => {
-      return ipcInvoke('showQuickPick:onSelect', inputBoxId, selectedIndex);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'sendCustomPickItemsOnConfirmation',
-    async (customPickId: number, selectedIndexes: number[]): Promise<void> => {
-      return ipcInvoke('customPick:values', customPickId, selectedIndexes);
-    },
-  );
-
-  contextBridge.exposeInMainWorld('closeCustomPick', async (customPickId: number): Promise<void> => {
-    return ipcInvoke('customPick:close', customPickId);
-  });
-
   let onDataCallbacksShellInContainerDDExtensionInstallId = 0;
   const onDataCallbacksShellInContainerDDExtension = new Map<number, (data: string) => void>();
   const onDataCallbacksShellInContainerDDExtensionError = new Map<number, (data: string) => void>();

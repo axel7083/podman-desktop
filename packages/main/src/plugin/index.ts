@@ -812,8 +812,6 @@ export class PluginSystem {
     const onboardingRegistry = container.get<OnboardingRegistry>(OnboardingRegistry);
     const directories = container.get<Directories>(Directories);
     const context = container.get<Context>(Context);
-    const inputQuickPickRegistry = container.get<InputQuickPickRegistry>(InputQuickPickRegistry);
-    const customPickRegistry = container.get<CustomPickRegistry>(CustomPickRegistry);
     const imageRegistry = container.get<ImageRegistry>(ImageRegistry);
     container.bind<ExperimentalFeatureFeedbackHandler>(ExperimentalFeatureFeedbackHandler).toSelf().inSingletonScope();
     const experimentalFeatureFeedbackHandler = container.get<ExperimentalFeatureFeedbackHandler>(
@@ -2004,43 +2002,6 @@ export class PluginSystem {
         context.log.removeLogHandler();
       },
     );
-
-    this.ipcHandle(
-      'showInputBox:value',
-      async (_listener, id: number, value: string | undefined, error?: string): Promise<void> => {
-        return inputQuickPickRegistry.onInputBoxValueEntered(id, value, error);
-      },
-    );
-
-    this.ipcHandle(
-      'showQuickPick:values',
-      async (_listener, id: number, indexes: number[] | undefined): Promise<void> => {
-        return inputQuickPickRegistry.onQuickPickValuesSelected(id, indexes);
-      },
-    );
-
-    this.ipcHandle(
-      'showInputBox:validate',
-      async (
-        _listener,
-        id: number,
-        value: string,
-      ): Promise<string | containerDesktopAPI.InputBoxValidationMessage | undefined | null> => {
-        return inputQuickPickRegistry.validate(id, value);
-      },
-    );
-
-    this.ipcHandle('showQuickPick:onSelect', async (_listener, id: number, selectedId: number): Promise<void> => {
-      return inputQuickPickRegistry.onDidSelectQuickPickItem(id, selectedId);
-    });
-
-    this.ipcHandle('customPick:values', async (_listener, id: number, indexes: number[]): Promise<void> => {
-      return customPickRegistry.onConfirmSelection(id, indexes);
-    });
-
-    this.ipcHandle('customPick:close', async (_listener, id: number): Promise<void> => {
-      return customPickRegistry.onClose(id);
-    });
 
     this.ipcHandle(
       'list-organizer-registry:loadListConfig',

@@ -2,6 +2,7 @@
 import { Button, Checkbox, Modal } from '@podman-desktop/ui-svelte';
 import { onDestroy, onMount, tick } from 'svelte';
 
+import { client } from '/@/client';
 import Markdown from '/@/lib/markdown/Markdown.svelte';
 
 import type { InputBoxOptions, QuickPickOptions } from './quickpick-input';
@@ -105,8 +106,8 @@ const showQuickPickCallback = (quickpickParameter: unknown): void => {
     onSelectCallbackEnabled = true;
     // if there is one item, notify that focus will be on it
     if (quickPickItems.length > 0) {
-      window
-        .sendShowQuickPickOnSelect(currentId, 0)
+      client.picker
+        .quickPickOnSelect({ id: currentId, selectedId: 0 })
         .catch((err: unknown) => console.error(`Error sending show quickpick ${currentId}`, err));
     }
   }
@@ -141,9 +142,9 @@ const onClose = async (): Promise<void> => {
   // else we will have display being turned to true and then cleanup will do display = false
   cleanup();
   if (mode === 'QuickPick') {
-    await window.sendShowQuickPickValues(responseId);
+    await client.picker.quickPickValues({ id: responseId });
   } else if (mode === 'InputBox') {
-    await window.sendShowInputBoxValue(responseId);
+    await client.picker.inputBoxValue({ id: responseId });
   }
 };
 
@@ -166,7 +167,7 @@ async function onInputChange(event: Event): Promise<void> {
       quickPickSelectedIndex = -1;
     }
     if (onSelectCallbackEnabled) {
-      await window.sendShowQuickPickOnSelect(currentId, quickPickSelectedIndex);
+      await client.picker.quickPickOnSelect({ id: currentId, selectedId: quickPickSelectedIndex });
     }
     return;
   }
@@ -177,7 +178,7 @@ async function onInputChange(event: Event): Promise<void> {
   }
   validationError = undefined;
   const value = target.value;
-  const result = await window.sendShowInputBoxValidate(currentId, value);
+  const result = await client.picker.inputBoxValidate({ id: currentId, value });
   if (result) {
     validationError = result.toString();
   }
@@ -218,13 +219,13 @@ async function validateQuickPick(): Promise<void> {
       selectedIndexes = [quickPickSelectedIndex];
     } else {
       selectedIndexes = [];
-      await window.sendShowQuickPickValues(currentId, []);
+      await client.picker.quickPickValues({ id: currentId, indexes: [] });
     }
   }
 
   // perform cleanup before returning value to be able to show again the next show call
   cleanup();
-  await window.sendShowQuickPickValues(idToSend, selectedIndexes);
+  await client.picker.quickPickValues({ id: idToSend, indexes: selectedIndexes });
 }
 
 async function clickQuickPickItem(item: QuickPickItem, index: number): Promise<void> {
@@ -260,7 +261,7 @@ async function handleKeydown(e: KeyboardEvent): Promise<void> {
       // perform cleanup before returning value to be able to show again the next showInputBox call
       cleanup();
       // return the value
-      await window.sendShowInputBoxValue(returnId, returnValue, undefined);
+      await client.picker.inputBoxValue({ id: returnId, value: returnValue, error: undefined });
       return;
     } else if (mode === 'QuickPick') {
       await validateQuickPick();
@@ -286,7 +287,7 @@ async function handleKeydown(e: KeyboardEvent): Promise<void> {
       quickPickSelectedIndex = quickPickItems.indexOf(quickPickFilteredItems[quickPickSelectedFilteredIndex]);
       e.preventDefault();
       if (onSelectCallbackEnabled) {
-        await window.sendShowQuickPickOnSelect(currentId, quickPickSelectedIndex);
+        await client.picker.quickPickOnSelect({ id: currentId, selectedId: quickPickSelectedIndex });
       }
       return;
     } else if (e.key === 'ArrowUp') {
@@ -297,7 +298,7 @@ async function handleKeydown(e: KeyboardEvent): Promise<void> {
       }
       quickPickSelectedIndex = quickPickItems.indexOf(quickPickFilteredItems[quickPickSelectedFilteredIndex]);
       if (onSelectCallbackEnabled) {
-        await window.sendShowQuickPickOnSelect(currentId, quickPickSelectedIndex);
+        await client.picker.quickPickOnSelect({ id: currentId, selectedId: quickPickSelectedIndex });
       }
       e.preventDefault();
       return;

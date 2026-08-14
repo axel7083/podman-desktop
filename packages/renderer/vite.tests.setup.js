@@ -106,6 +106,14 @@ vi.mock('/@/client', () => ({
       pin: vi.fn(),
       unpin: vi.fn(),
     },
+    picker: {
+      inputBoxValue: vi.fn(),
+      inputBoxValidate: vi.fn(),
+      quickPickValues: vi.fn(),
+      quickPickOnSelect: vi.fn(),
+      customPickValues: vi.fn(),
+      customPickClose: vi.fn(),
+    },
     troubleshooting: { getDockerSocketMappingStatus: vi.fn() },
   },
 }));
