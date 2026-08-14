@@ -16,16 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { configurationContract } from '/@/contracts/configuration/configuration.contract.js';
-import { planetContract } from '/@/contracts/planet/planet.contract.js';
-import { proxyContract } from '/@/contracts/proxy/proxy.contract.js';
-import { tasksContract } from '/@/contracts/tasks/tasks.contract.js';
+import { oc, type } from '@orpc/contract';
+import type { ProxySettings } from '@podman-desktop/api';
 
-export * from './constants.js';
+import type { ProxyState } from '/@/proxy.js';
 
-export const contracts = {
-  configuration: configurationContract,
-  planet: planetContract,
-  proxy: proxyContract,
-  tasks: tasksContract,
+export const proxyContract = {
+  updateSettings: oc.input(type<ProxySettings>()).output(type<void>()),
+  getSettings: oc.output(type<ProxySettings | undefined>()),
+  getState: oc.output(type<ProxyState>()),
+  setState: oc.input(type<ProxyState>()).output(type<void>()),
 };

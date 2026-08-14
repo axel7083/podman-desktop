@@ -111,7 +111,6 @@ import type {
   ProviderContainerConnectionInfo,
   ProviderInfo,
   ProviderKubernetesConnectionInfo,
-  ProxyState,
   PullEvent,
   ReleaseNotesInfo,
   ResourceCount,
@@ -962,27 +961,6 @@ export function initExposure(): void {
 
   contextBridge.exposeInMainWorld('stopProviderLifecycle', async (providerId: string): Promise<void> => {
     return ipcInvoke('provider-registry:stopProviderLifecycle', providerId);
-  });
-
-  contextBridge.exposeInMainWorld(
-    'updateProxySettings',
-    async (proxySettings: containerDesktopAPI.ProxySettings): Promise<void> => {
-      return ipcInvoke('proxy:updateSettings', proxySettings);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'getProxySettings',
-    async (): Promise<containerDesktopAPI.ProxySettings | undefined> => {
-      return ipcInvoke('proxy:getSettings');
-    },
-  );
-
-  contextBridge.exposeInMainWorld('getProxyState', async (): Promise<ProxyState> => {
-    return ipcInvoke('proxy:getState');
-  });
-  contextBridge.exposeInMainWorld('setProxyState', async (state: ProxyState): Promise<void> => {
-    return ipcInvoke('proxy:setState', state);
   });
 
   contextBridge.exposeInMainWorld(

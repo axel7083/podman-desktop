@@ -107,7 +107,6 @@ import type {
   ProviderContainerConnectionInfo,
   ProviderInfo,
   ProviderKubernetesConnectionInfo,
-  ProxyState,
   PullEvent,
   ReleaseNotesInfo,
   ResourceCount,
@@ -2401,31 +2400,6 @@ export class PluginSystem {
         return providerRegistry.stopProviderLifecycle(providerId);
       },
     );
-
-    this.ipcHandle(
-      'proxy:updateSettings',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        proxySettings: containerDesktopAPI.ProxySettings,
-      ): Promise<void> => {
-        return proxy.setProxy(proxySettings);
-      },
-    );
-
-    this.ipcHandle(
-      'proxy:setState',
-      async (_listener: Electron.IpcMainInvokeEvent, state: ProxyState): Promise<void> => {
-        return proxy.setState(state);
-      },
-    );
-
-    this.ipcHandle('proxy:getSettings', async (): Promise<containerDesktopAPI.ProxySettings | undefined> => {
-      return proxy.proxy;
-    });
-
-    this.ipcHandle('proxy:getState', async (): Promise<ProxyState> => {
-      return proxy.getState();
-    });
 
     this.ipcHandle(
       'provider-registry:startProviderConnectionLifecycle',

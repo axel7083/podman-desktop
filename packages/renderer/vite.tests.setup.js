@@ -34,6 +34,7 @@ vi.mock('/@/client', () => ({
       disableExperimental: vi.fn(),
       updateExperimentalValue: vi.fn(),
     },
+    proxy: { updateSettings: vi.fn(), getSettings: vi.fn(), getState: vi.fn(), setState: vi.fn() },
     tasks: { clearAll: vi.fn(), clear: vi.fn(), execute: vi.fn() },
   },
 }));

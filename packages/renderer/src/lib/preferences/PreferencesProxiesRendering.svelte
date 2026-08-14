@@ -24,7 +24,7 @@ let noProxyLocked = false;
 let proxyEnabledLocked = false;
 
 onMount(async () => {
-  proxyState = await window.getProxyState();
+  proxyState = await client.proxy.getState();
 
   // Use saved manual settings only when not in manual mode (to preserve user input across page navigations)
   const savedSettings = proxyState !== ProxyState.PROXY_MANUAL ? manualProxySettings.settings : undefined;
@@ -34,7 +34,7 @@ onMount(async () => {
     httpsProxy = savedSettings.httpsProxy;
     noProxy = savedSettings.noProxy;
   } else {
-    const proxySettings = await window.getProxySettings();
+    const proxySettings = await client.proxy.getSettings();
     httpProxy = proxySettings?.httpProxy ?? '';
     httpsProxy = proxySettings?.httpsProxy ?? '';
     noProxy = proxySettings?.noProxy ?? '';
@@ -55,13 +55,16 @@ onMount(async () => {
   // we "retrieve" these values instead of from the proxy settings fetched earlier, as those
   // do not reflect managed configuration overrides
   if (httpProxyLocked) {
-    httpProxy = (await client.configuration.getValue({ key: PROXY_CONFIG_KEYS.HTTP })) ?? httpProxy;
+    httpProxy =
+      ((await client.configuration.getValue({ key: PROXY_CONFIG_KEYS.HTTP })) as string | undefined) ?? httpProxy;
   }
   if (httpsProxyLocked) {
-    httpsProxy = (await client.configuration.getValue({ key: PROXY_CONFIG_KEYS.HTTPS })) ?? httpsProxy;
+    httpsProxy =
+      ((await client.configuration.getValue({ key: PROXY_CONFIG_KEYS.HTTPS })) as string | undefined) ?? httpsProxy;
   }
   if (noProxyLocked) {
-    noProxy = (await client.configuration.getValue({ key: PROXY_CONFIG_KEYS.NO_PROXY })) ?? noProxy;
+    noProxy =
+      ((await client.configuration.getValue({ key: PROXY_CONFIG_KEYS.NO_PROXY })) as string | undefined) ?? noProxy;
   }
 });
 
@@ -82,9 +85,9 @@ function onProxyStateChange(key: string): void {
 }
 
 async function updateProxySettings(): Promise<void> {
-  await window.setProxyState(proxyState);
+  await client.proxy.setState(proxyState);
   if (proxyState !== ProxyState.PROXY_SYSTEM) {
-    await window.updateProxySettings({ httpProxy, httpsProxy, noProxy });
+    await client.proxy.updateSettings({ httpProxy, httpsProxy, noProxy });
   }
 
   if (proxyState === ProxyState.PROXY_MANUAL) {
