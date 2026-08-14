@@ -922,27 +922,7 @@ export class PluginSystem {
           since?: string;
         },
       ): Promise<void> => {
-        const abortController = this.createAbortControllerOnCancellationToken(
-          cancellationTokenRegistry,
-          logsParams.cancellableTokenId,
-        );
-
-        return containerProviderRegistry.logsContainer({
-          engineId: logsParams.engineId,
-          id: logsParams.containerId,
-          callback: (name: string, data: string) => {
-            this.getWebContentsSender().send(
-              'container-provider-registry:logsContainer-onData',
-              logsParams.onDataId,
-              name,
-              data,
-            );
-          },
-          abortController,
-          timestamps: logsParams.timestamps,
-          tail: logsParams.tail,
-          since: logsParams.since,
-        });
+        throw new Error('deprecated');
       },
     );
 
@@ -953,25 +933,7 @@ export class PluginSystem {
     this.ipcHandle(
       'container-provider-registry:shellInContainer',
       async (_listener, engine: string, containerId: string, onDataId: number): Promise<number> => {
-        // provide the data content to the remote side
-        const shellInContainerInvocation = await containerProviderRegistry.shellInContainer(
-          engine,
-          containerId,
-          (content: Buffer) => {
-            this.getWebContentsSender().send('container-provider-registry:shellInContainer-onData', onDataId, content);
-          },
-          (error: string) => {
-            this.getWebContentsSender().send('container-provider-registry:shellInContainer-onError', onDataId, error);
-          },
-          () => {
-            this.getWebContentsSender().send('container-provider-registry:shellInContainer-onEnd', onDataId);
-            // delete the callback
-            containerProviderRegistryShellInContainerSendCallback.delete(onDataId);
-          },
-        );
-        // store the callback
-        containerProviderRegistryShellInContainerSendCallback.set(onDataId, shellInContainerInvocation);
-        return onDataId;
+        throw new Error('deprecated');
       },
     );
 

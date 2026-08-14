@@ -1922,21 +1922,20 @@ export class ContainerProviderRegistry {
   async logsContainer(logsParams: {
     engineId: string;
     id: string;
-    callback: (name: string, data: string) => void;
     abortController?: AbortController;
     timestamps?: boolean;
     tail?: number;
     since?: string;
-  }): Promise<void> {
+  }): Promise<NodeJS.ReadableStream> {
     let telemetryOptions = {};
-    let firstMessage = true;
     const container = this.getMatchingContainer(logsParams.engineId, logsParams.id);
     const optionalParams: { [param: string]: unknown } = {};
     if (logsParams.since) {
       optionalParams['since'] = logsParams.since;
     }
-    container
-      .logs({
+
+    try {
+      return await container.logs({
         follow: true,
         stdout: true,
         stderr: true,
@@ -1944,24 +1943,13 @@ export class ContainerProviderRegistry {
         tail: logsParams.tail,
         timestamps: logsParams.timestamps,
         ...optionalParams,
-      })
-      .then(containerStream => {
-        containerStream.on('end', () => {
-          logsParams.callback('end', '');
-        });
-        containerStream.on('data', chunk => {
-          if (firstMessage) {
-            firstMessage = false;
-            logsParams.callback('first-message', '');
-          }
-          logsParams.callback('data', chunk.toString('utf-8'));
-        });
-      })
-      .catch((error: unknown) => {
-        telemetryOptions = { error: error };
-        throw error;
-      })
-      .finally(() => this.telemetryService.track('logsContainer', telemetryOptions));
+      });
+    } catch (error: unknown) {
+      telemetryOptions = { error: error };
+      throw error;
+    } finally {
+      this.telemetryService.track('logsContainer', telemetryOptions);
+    }
   }
 
   async execInContainer(
@@ -2034,6 +2022,7 @@ export class ContainerProviderRegistry {
     onData: (data: Buffer) => void,
     onError: (error: string) => void,
     onEnd: () => void,
+    signal?: AbortSignal,
   ): Promise<{ write: (param: string) => void; resize: (w: number, h: number) => void }> {
     try {
       const exec = await this.getMatchingContainer(engineId, id).exec({
@@ -2042,6 +2031,7 @@ export class ContainerProviderRegistry {
         AttachStderr: true,
         Cmd: ['/bin/sh', '-c', 'if command -v bash >/dev/null 2>&1; then bash; else sh; fi'],
         Tty: true,
+        abortSignal: signal,
       });
 
       const execStream = await exec.start({
@@ -2051,7 +2041,7 @@ export class ContainerProviderRegistry {
       });
 
       execStream.on('data', chunk => {
-        onData(chunk.toString('utf-8'));
+        onData(chunk);
       });
 
       execStream.on('error', err => {

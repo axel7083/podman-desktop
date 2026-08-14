@@ -1,8 +1,11 @@
+import { Readable } from 'node:stream';
+
 import type { ContractedRouter } from '@orpc/server';
 import { implement } from '@orpc/server';
 import { contracts } from '@podman-desktop/core-api';
 import { inject, injectable } from 'inversify';
 
+import { CancellationTokenRegistry } from '/@/plugin/cancellation-token-registry.js';
 import { ContainerProviderRegistry } from '/@/plugin/container-registry.js';
 import { KubeGeneratorRegistry } from '/@/plugin/kubernetes/kube-generator-registry.js';
 import type { OrpcContext } from '/@/plugin/routers/rpc-handler.js';
@@ -14,9 +17,24 @@ export class ContainerRouter {
   constructor(
     @inject(ContainerProviderRegistry) private containerProviderRegistry: ContainerProviderRegistry,
     @inject(KubeGeneratorRegistry) private kubeGeneratorRegistry: KubeGeneratorRegistry,
+    @inject(CancellationTokenRegistry) private cancellationTokenRegistry: CancellationTokenRegistry,
   ) {}
 
   router: ContractedRouter<typeof contracts.container, OrpcContext> = {
+    logsContainer: os.logsContainer.handler(async ({ input }) => {
+      const abortController = input.cancellableTokenId ? this.cancellationTokenRegistry.createAbortController(input.cancellableTokenId): undefined;
+
+      const stream = await this.containerProviderRegistry.logsContainer({
+        engineId: input.engineId,
+        id: input.containerId,
+        abortController,
+        timestamps: input.timestamps,
+        tail: input.tail,
+        since: input.since,
+      });
+      return Readable.toWeb(stream as Readable) as ReadableStream<Uint8Array<ArrayBufferLike>>;
+    }),
+
     listContainers: os.listContainers.handler(() => {
       return this.containerProviderRegistry.listContainers() as never;
     }),

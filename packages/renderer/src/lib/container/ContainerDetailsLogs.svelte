@@ -10,8 +10,8 @@ import NoLogIcon from '/@/lib/ui/NoLogIcon.svelte';
 import TerminalWindow from '/@/lib/ui/TerminalWindow.svelte';
 import { containerLogsClearTimestamps } from '/@/stores/container-logs';
 
-import ContainerDetailsLogsClear from './ContainerDetailsLogsClear.svelte';
 import type { ContainerInfoUI } from './ContainerInfoUI';
+import { client } from '/@/client';
 
 interface Props {
   container: ContainerInfoUI;
@@ -64,13 +64,33 @@ function callback(name: string, data: string): void {
 }
 
 async function fetchContainerLogs(): Promise<void> {
-  // grab logs of the container
-  await window.logsContainer({
+  console.log('calling client.container.logsContainer');
+  const res = await client.container.logsContainer({
     engineId: container.engineId,
     containerId: container.id,
-    callback,
     since: lastLogTimestamp,
   });
+
+  console.log('got response');
+
+  const reader = res.getReader();
+
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+
+      if (done) break;
+
+      logsTerminal?.write(value);
+      noLogs = false;
+
+      if (!noLogs) {
+        window.dispatchEvent(new Event('resize'));
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
 }
 
 function afterTerminalInit(): void {
@@ -81,13 +101,13 @@ function afterTerminalInit(): void {
   let xtermElement = terminalParentDiv.querySelector('.xterm');
   xtermElement ??= terminalParentDiv;
   // add svelte component using this xterm element
-  mount(ContainerDetailsLogsClear, {
+  /* mount(ContainerDetailsLogsClear, {
     target: xtermElement,
     props: {
       terminal: logsTerminal,
       container: container,
     },
-  });
+  }); */
 }
 
 onMount(async () => {

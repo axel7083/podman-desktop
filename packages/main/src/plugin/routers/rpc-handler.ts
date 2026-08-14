@@ -51,6 +51,7 @@ import { TroubleshootingRouter } from '/@/plugin/routers/troubleshooting.router.
 import { UiRegistryRouter } from '/@/plugin/routers/ui-registry.router.js';
 import { WebviewRouter } from '/@/plugin/routers/webview.router.js';
 import { WelcomeRouter } from '/@/plugin/routers/welcome.router.js';
+import { ShellRouter } from '/@/plugin/routers/shell.router.js';
 
 export type OrpcContext = Context;
 
@@ -75,6 +76,8 @@ export class RpcHandler {
     readonly commands: CommandsRouter,
     @inject(ContainerRouter)
     readonly container: ContainerRouter,
+    @inject(ShellRouter)
+    readonly shell: ShellRouter,
     @inject(ConfigurationRouter)
     readonly configuration: ConfigurationRouter,
     @inject(DialogRouter)
@@ -131,6 +134,7 @@ export class RpcHandler {
       cliTool: cliTool.router,
       commands: commands.router,
       container: container.router,
+      shell: shell.router,
       configuration: configuration.router,
       dialog: dialog.router,
       documentation: documentation.router,

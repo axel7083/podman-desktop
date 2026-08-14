@@ -31,6 +31,19 @@ import type { ContainerCreateOptions as PodmanContainerCreateOptions } from '@po
 export const containerContract = {
   listContainers: oc.output(type<ContainerInfo[]>()),
 
+  logsContainer: oc
+    .input(
+      type<{
+        engineId: string;
+        containerId: string;
+        cancellableTokenId?: number;
+        timestamps?: boolean;
+        tail?: number;
+        since?: string;
+      }>(),
+    )
+    .output(type<ReadableStream<Uint8Array<ArrayBufferLike>>>()),
+
   listSecrets: oc.output(type<SecretInfo[]>()),
   removeSecret: oc.input(type<{ engineId: string; secretId: string }>()).output(type<void>()),
   inspectSecret: oc.input(type<{ engineId: string; secretId: string }>()).output(type<SecretInfo>()),

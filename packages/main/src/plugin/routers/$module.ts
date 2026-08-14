@@ -40,6 +40,7 @@ import { PickerRouter } from '/@/plugin/routers/picker.router.js';
 import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
 import { ProxyRouter } from '/@/plugin/routers/proxy.router.js';
 import { RpcHandler } from '/@/plugin/routers/rpc-handler.js';
+import { ShellRouter } from '/@/plugin/routers/shell.router.js';
 import { StatusBarRouter } from '/@/plugin/routers/status-bar.router.js';
 import { SystemRouter } from '/@/plugin/routers/system.router.js';
 import { TasksRouter } from '/@/plugin/routers/tasks.router.js';
@@ -81,6 +82,8 @@ const routersModule = new ContainerModule(options => {
   options.bind<UiRegistryRouter>(UiRegistryRouter).toSelf().inSingletonScope();
   options.bind<WebviewRouter>(WebviewRouter).toSelf().inSingletonScope();
   options.bind<WelcomeRouter>(WelcomeRouter).toSelf().inSingletonScope();
+  options.bind<ShellRouter>(ShellRouter).toSelf().inSingletonScope();
+
   options.bind<RpcHandler>(RpcHandler).toSelf().inSingletonScope();
 });
 
