@@ -36,7 +36,11 @@ async function fetchImageLayers(provider: ImageFilesInfo, img: ImageInfo): Promi
   try {
     loading = true;
     cancellableTokenId = await window.getCancellableTokenSource();
-    imageLayers = await window.imageGetFilesystemLayers(provider.id, $state.snapshot(img), cancellableTokenId);
+    imageLayers = await client.imageRegistry.getFilesystemLayers({
+      id: provider.id,
+      image: $state.snapshot(img),
+      tokenId: cancellableTokenId,
+    });
   } catch (err: unknown) {
     error = String(err);
   } finally {

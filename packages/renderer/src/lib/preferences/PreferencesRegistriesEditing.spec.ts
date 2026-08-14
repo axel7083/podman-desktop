@@ -24,6 +24,7 @@ import { render, screen } from '@testing-library/svelte';
 import { default as userEvent } from '@testing-library/user-event';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { registriesInfos, registriesSuggestedInfos } from '/@/stores/registries';
 
 import PreferencesRegistriesEditing from './PreferencesRegistriesEditing.svelte';
@@ -235,8 +236,8 @@ describe('PreferencesRegistriesEditing', () => {
       secret: 'secret',
     };
     registriesInfos.set([registry]);
-    vi.mocked(window.checkImageCredentials).mockResolvedValue(undefined);
-    vi.mocked(window.updateImageRegistry).mockResolvedValue(undefined);
+    vi.mocked(client.imageRegistry.checkCredentials).mockResolvedValue(undefined);
+    vi.mocked(client.imageRegistry.updateRegistry).mockResolvedValue(undefined);
     render(PreferencesRegistriesEditing, {});
 
     const kebabMenu = screen.getByRole('button', { name: 'kebab menu' });
@@ -248,7 +249,7 @@ describe('PreferencesRegistriesEditing', () => {
     const loginButton = screen.getByRole('button', { name: 'Login' });
     await userEvent.click(loginButton);
 
-    await waitFor(() => expect(window.updateImageRegistry).toHaveBeenCalledOnce());
+    await waitFor(() => expect(client.imageRegistry.updateRegistry).toHaveBeenCalledOnce());
   });
 
   test('Expect removing registry calls unregisterImageRegistry', async () => {
@@ -268,7 +269,7 @@ describe('PreferencesRegistriesEditing', () => {
     const removeButton = screen.getByTitle('Remove');
     await userEvent.click(removeButton);
 
-    expect(window.unregisterImageRegistry).toHaveBeenCalledOnce();
+    expect(client.imageRegistry.unregisterRegistry).toHaveBeenCalledOnce();
   });
 
   test('Expect that adding a registry enables a form, and Add button is initially disabled', async () => {
@@ -303,7 +304,7 @@ describe('PreferencesRegistriesEditing', () => {
     await userEvent.type(username, 'username');
     await userEvent.type(password, 'password');
     expect(button).toBeEnabled();
-    vi.mocked(window.checkImageCredentials)
+    vi.mocked(client.imageRegistry.checkCredentials)
       .mockRejectedValueOnce(new Error('unable to verify the first certificate'))
       .mockRejectedValueOnce(new Error('self signed certificate in certificate chain'));
     vi.mocked(window.showMessageBox)
@@ -314,13 +315,16 @@ describe('PreferencesRegistriesEditing', () => {
     await waitFor(() => expect(button).toBeEnabled());
     await userEvent.click(button);
     expect(window.showMessageBox).toHaveBeenCalledTimes(2);
-    expect(window.createImageRegistry).toHaveBeenCalledOnce();
-    expect(window.createImageRegistry).toHaveBeenLastCalledWith(undefined, {
-      source: undefined,
-      serverUrl: 'registry.host',
-      username: 'username',
-      secret: 'password',
-      insecure: true,
+    expect(client.imageRegistry.createRegistry).toHaveBeenCalledOnce();
+    expect(client.imageRegistry.createRegistry).toHaveBeenLastCalledWith({
+      providerName: undefined,
+      registryCreateOptions: {
+        source: undefined,
+        serverUrl: 'registry.host',
+        username: 'username',
+        secret: 'password',
+        insecure: true,
+      },
     });
   });
 });

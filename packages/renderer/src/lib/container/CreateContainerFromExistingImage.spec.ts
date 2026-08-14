@@ -126,7 +126,7 @@ beforeEach(() => {
   vi.useFakeTimers({ shouldAdvanceTime: true });
   vi.resetAllMocks();
   vi.mocked(window.listImages).mockResolvedValue(localImageList);
-  vi.mocked(window.searchImageInRegistry).mockResolvedValue(registryImageList);
+  vi.mocked(client.imageRegistry.searchImages).mockResolvedValue(registryImageList);
   vi.mocked(client.configuration.getValue).mockImplementation(async ({ key }: { key: string }) => {
     if (key === 'terminal.integrated.scrollback') {
       return 1000;
@@ -174,7 +174,7 @@ test('Expect that typeahead menu has Local Images and Registry Images headings',
 });
 
 test('Expect not a local image to have an active pull image and run button', async () => {
-  vi.mocked(window.searchImageInRegistry).mockResolvedValue([
+  vi.mocked(client.imageRegistry.searchImages).mockResolvedValue([
     { name: 'image12', description: '', star_count: 3, is_official: true },
   ]);
   render(CreateContainerFromExistingImage);
@@ -207,7 +207,7 @@ test('Expect not a local image to have an active pull image and run button', asy
 });
 
 test('Expect a local image to have an active run image button', async () => {
-  vi.mocked(window.searchImageInRegistry).mockResolvedValue([
+  vi.mocked(client.imageRegistry.searchImages).mockResolvedValue([
     { name: 'fedora21', description: '', star_count: 5, is_official: false },
   ]);
   render(CreateContainerFromExistingImage);
@@ -249,7 +249,7 @@ test('Expect a local image to have an active run image button', async () => {
 });
 
 test('Expect no user input to show only local images', async () => {
-  vi.mocked(window.searchImageInRegistry).mockResolvedValue([
+  vi.mocked(client.imageRegistry.searchImages).mockResolvedValue([
     { name: 'image12', description: '', star_count: 3, is_official: true },
   ]);
   render(CreateContainerFromExistingImage);
@@ -317,7 +317,7 @@ describe('container connections', () => {
 
   test('dropdown should be disabled while pulling', async () => {
     // mock no local image
-    vi.mocked(window.searchImageInRegistry).mockResolvedValue([]);
+    vi.mocked(client.imageRegistry.searchImages).mockResolvedValue([]);
 
     providerInfos.set([MULTI_CONNECTIONS]);
 

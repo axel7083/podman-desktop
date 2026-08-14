@@ -21,6 +21,7 @@ import { ContainerModule } from 'inversify';
 import { AuthenticationRouter } from '/@/plugin/routers/authentication.router.js';
 import { CliToolRouter } from '/@/plugin/routers/cli-tool.router.js';
 import { ConfigurationRouter } from '/@/plugin/routers/configuration.router.js';
+import { ImageRegistryRouter } from '/@/plugin/routers/image-registry.router.js';
 import { NotificationRouter } from '/@/plugin/routers/notification.router.js';
 import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
 import { ProxyRouter } from '/@/plugin/routers/proxy.router.js';
@@ -31,6 +32,7 @@ const routersModule = new ContainerModule(options => {
   options.bind<AuthenticationRouter>(AuthenticationRouter).toSelf().inSingletonScope();
   options.bind<CliToolRouter>(CliToolRouter).toSelf().inSingletonScope();
   options.bind<ConfigurationRouter>(ConfigurationRouter).toSelf().inSingletonScope();
+  options.bind<ImageRegistryRouter>(ImageRegistryRouter).toSelf().inSingletonScope();
   options.bind<NotificationRouter>(NotificationRouter).toSelf().inSingletonScope();
   options.bind<PlanetRouter>(PlanetRouter).toSelf().inSingletonScope();
   options.bind<ProxyRouter>(ProxyRouter).toSelf().inSingletonScope();

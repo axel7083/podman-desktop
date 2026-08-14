@@ -69,16 +69,10 @@ import type {
   HistoryInfo,
   IconInfo,
   IDisposable,
-  ImageCheckerInfo,
-  ImageFilesInfo,
-  ImageFilesystemLayersUI,
   ImageInfo,
   ImageInspectInfo,
   ImageLoadOptions,
-  ImageSearchOptions,
-  ImageSearchResult,
   ImagesSaveOptions,
-  ImageTagsListOptions,
   ImageUpdateStatus,
   ItemInfo,
   KubeContext,
@@ -1511,65 +1505,6 @@ export function initExposure(): void {
     },
   );
 
-  contextBridge.exposeInMainWorld('getImageRegistries', async (): Promise<readonly containerDesktopAPI.Registry[]> => {
-    return ipcInvoke('image-registry:getRegistries');
-  });
-  contextBridge.exposeInMainWorld(
-    'getImageSuggestedRegistries',
-    async (): Promise<containerDesktopAPI.RegistrySuggestedProvider[]> => {
-      return ipcInvoke('image-registry:getSuggestedRegistries');
-    },
-  );
-  contextBridge.exposeInMainWorld('getImageRegistryProviderNames', async (): Promise<string[]> => {
-    return ipcInvoke('image-registry:getProviderNames');
-  });
-
-  contextBridge.exposeInMainWorld('hasAuthconfigForImage', async (imageName: string): Promise<boolean> => {
-    return ipcInvoke('image-registry:hasAuthconfigForImage', imageName);
-  });
-
-  contextBridge.exposeInMainWorld(
-    'createImageRegistry',
-    async (providerName: string, registryCreateOptions: containerDesktopAPI.RegistryCreateOptions): Promise<void> => {
-      return ipcInvoke('image-registry:createRegistry', providerName, registryCreateOptions);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'checkImageCredentials',
-    async (registryCreateOptions: containerDesktopAPI.RegistryCreateOptions): Promise<void> => {
-      return ipcInvoke('image-registry:checkCredentials', registryCreateOptions);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'updateImageRegistry',
-    async (registry: containerDesktopAPI.Registry): Promise<void> => {
-      return ipcInvoke('image-registry:updateRegistry', registry);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'unregisterImageRegistry',
-    async (registry: containerDesktopAPI.Registry): Promise<void> => {
-      return ipcInvoke('image-registry:unregisterRegistry', registry);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'searchImageInRegistry',
-    async (options: ImageSearchOptions): Promise<ImageSearchResult[]> => {
-      return ipcInvoke('image-registry:searchImages', options);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'listImageTagsInRegistry',
-    async (options: ImageTagsListOptions): Promise<string[]> => {
-      return ipcInvoke('image-registry:listImageTags', options);
-    },
-  );
-
   contextBridge.exposeInMainWorld('showAccountsMenu', async (x: number, y: number) => {
     return ipcInvoke('authentication:showAccountsMenu', x, y);
   });
@@ -2516,21 +2451,6 @@ export function initExposure(): void {
     return ipcInvoke('onboardingRegistry:resetOnboarding', extensions);
   });
 
-  contextBridge.exposeInMainWorld('getImageCheckerProviders', async (): Promise<ImageCheckerInfo[]> => {
-    return ipcInvoke('image-checker:getProviders');
-  });
-
-  contextBridge.exposeInMainWorld(
-    'imageCheck',
-    async (
-      id: string,
-      image: containerDesktopAPI.ImageInfo,
-      cancellationToken?: number,
-    ): Promise<containerDesktopAPI.ImageChecks | undefined> => {
-      return ipcInvoke('image-checker:check', id, image, cancellationToken);
-    },
-  );
-
   // Layout Registry functions
   contextBridge.exposeInMainWorld(
     'loadListConfig',
@@ -2545,21 +2465,6 @@ export function initExposure(): void {
     'resetListConfig',
     async (kind: string, availableColumns: string[]): Promise<ListOrganizerItem[]> => {
       return ipcInvoke('list-organizer-registry:resetListConfig', kind, availableColumns);
-    },
-  );
-
-  contextBridge.exposeInMainWorld('getImageFilesProviders', async (): Promise<ImageFilesInfo[]> => {
-    return ipcInvoke('image-files:getProviders');
-  });
-
-  contextBridge.exposeInMainWorld(
-    'imageGetFilesystemLayers',
-    async (
-      id: string,
-      image: containerDesktopAPI.ImageInfo,
-      cancellationToken?: number,
-    ): Promise<ImageFilesystemLayersUI | undefined> => {
-      return ipcInvoke('image-files:getFilesystemLayers', id, image, cancellationToken);
     },
   );
 

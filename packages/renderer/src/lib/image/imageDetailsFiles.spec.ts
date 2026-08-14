@@ -22,21 +22,19 @@ import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { imageFilesProviders } from '/@/stores/image-files-providers';
 
 import ImageDetailsFiles from './ImageDetailsFiles.svelte';
 
 describe('ImageDetailsFiles component', () => {
-  const imageGetFilesystemLayersMock = vi.fn();
+  const imageGetFilesystemLayersMock = vi.mocked(client.imageRegistry.getFilesystemLayers);
   const cancelTokenMock = vi.fn();
   const getCancellableTokenSourceMock = vi.fn();
-  const getConfigurationValueMock = vi.fn();
 
   beforeAll(() => {
-    Object.defineProperty(window, 'imageGetFilesystemLayers', { value: imageGetFilesystemLayersMock });
     Object.defineProperty(window, 'cancelToken', { value: cancelTokenMock });
     Object.defineProperty(window, 'getCancellableTokenSource', { value: getCancellableTokenSourceMock });
-    Object.defineProperty(window, 'getConfigurationValue', { value: getConfigurationValueMock });
   });
 
   beforeEach(() => {
@@ -46,7 +44,7 @@ describe('ImageDetailsFiles component', () => {
 
   describe('when ask fetching layers is false', () => {
     beforeEach(() => {
-      getConfigurationValueMock.mockResolvedValue(false);
+      vi.mocked(client.configuration.getValue).mockResolvedValue(false);
     });
 
     test.each([
@@ -124,7 +122,7 @@ describe('ImageDetailsFiles component', () => {
       imageFilesProviders.set([{ id: 'provider1', label: 'Provider 1' }]);
       await tick();
       await tick();
-      expect(imageGetFilesystemLayersMock).toHaveBeenCalledWith(expect.anything(), expect.anything(), TOKEN_ID);
+      expect(imageGetFilesystemLayersMock).toHaveBeenCalledWith(expect.objectContaining({ tokenId: TOKEN_ID }));
       component.unmount();
       expect(cancelTokenMock).toHaveBeenCalledWith(TOKEN_ID);
     });
@@ -157,7 +155,7 @@ describe('ImageDetailsFiles component', () => {
 
   describe('when ask fetching layers is true', () => {
     beforeEach(() => {
-      getConfigurationValueMock.mockResolvedValue(true);
+      vi.mocked(client.configuration.getValue).mockResolvedValue(true);
     });
 
     test.each([

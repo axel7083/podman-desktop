@@ -68,16 +68,10 @@ import type {
   HistoryInfo,
   IconInfo,
   IDisposable,
-  ImageCheckerInfo,
-  ImageFilesInfo,
-  ImageFilesystemLayersUI,
   ImageInfo,
   ImageInspectInfo,
   ImageLoadOptions,
-  ImageSearchOptions,
-  ImageSearchResult,
   ImagesSaveOptions,
-  ImageTagsListOptions,
   ImageUpdateStatus,
   KubeContext,
   KubernetesContextResources,
@@ -825,8 +819,6 @@ export class PluginSystem {
 
     // setup security restrictions on links
     const messageBox = container.get<MessageBox>(MessageBox);
-    const imageChecker = container.get<ImageCheckerImpl>(ImageCheckerImpl);
-    const imageFiles = container.get<ImageFilesRegistry>(ImageFilesRegistry);
     const viewRegistry = container.get<ViewRegistry>(ViewRegistry);
     const feedback = container.get<FeedbackHandler>(FeedbackHandler);
     const cancellationTokenRegistry = container.get<CancellationTokenRegistry>(CancellationTokenRegistry);
@@ -2133,85 +2125,6 @@ export class PluginSystem {
       return customPickRegistry.onClose(id);
     });
 
-    this.ipcHandle('image-registry:getRegistries', async (): Promise<readonly containerDesktopAPI.Registry[]> => {
-      return imageRegistry.getRegistries();
-    });
-
-    this.ipcHandle(
-      'image-registry:getSuggestedRegistries',
-      async (): Promise<containerDesktopAPI.RegistrySuggestedProvider[]> => {
-        return imageRegistry.getSuggestedRegistries();
-      },
-    );
-
-    this.ipcHandle('image-registry:hasAuthconfigForImage', async (_listener, imageName: string): Promise<boolean> => {
-      if (imageName.indexOf(',') !== -1) {
-        const allImageNames = imageName.split(',');
-        let hasAuth = false;
-        for (const imageName of allImageNames) {
-          hasAuth = hasAuth || imageRegistry.getAuthconfigForImage(imageName) !== undefined;
-        }
-        return hasAuth;
-      }
-      const authconfig = imageRegistry.getAuthconfigForImage(imageName);
-      return authconfig !== undefined;
-    });
-
-    this.ipcHandle('image-registry:getProviderNames', async (): Promise<string[]> => {
-      return imageRegistry.getProviderNames();
-    });
-
-    this.ipcHandle(
-      'image-registry:unregisterRegistry',
-      async (_listener, registry: containerDesktopAPI.Registry): Promise<void> => {
-        return imageRegistry.unregisterRegistry(registry);
-      },
-    );
-
-    // Check credentials for a registry
-    this.ipcHandle(
-      'image-registry:checkCredentials',
-      async (_listener, registryCreateOptions: containerDesktopAPI.RegistryCreateOptions): Promise<void> => {
-        return imageRegistry.checkCredentials(
-          registryCreateOptions.serverUrl,
-          registryCreateOptions.username,
-          registryCreateOptions.secret,
-        );
-      },
-    );
-
-    this.ipcHandle(
-      'image-registry:createRegistry',
-      async (
-        _listener,
-        providerName: string,
-        registryCreateOptions: containerDesktopAPI.RegistryCreateOptions,
-      ): Promise<void> => {
-        await imageRegistry.createRegistry(providerName, registryCreateOptions);
-      },
-    );
-
-    this.ipcHandle(
-      'image-registry:updateRegistry',
-      async (_listener, registry: containerDesktopAPI.Registry): Promise<void> => {
-        await imageRegistry.updateRegistry(registry);
-      },
-    );
-
-    this.ipcHandle(
-      'image-registry:searchImages',
-      async (_listener, options: ImageSearchOptions): Promise<ImageSearchResult[]> => {
-        return imageRegistry.searchImages(options);
-      },
-    );
-
-    this.ipcHandle(
-      'image-registry:listImageTags',
-      async (_listener, options: ImageTagsListOptions): Promise<string[]> => {
-        return imageRegistry.listImageTags(options);
-      },
-    );
-
     this.ipcHandle(
       'list-organizer-registry:loadListConfig',
       async (
@@ -3139,48 +3052,6 @@ export class PluginSystem {
     this.ipcHandle('onboardingRegistry:resetOnboarding', async (_listener, extensions: string[]): Promise<void> => {
       return onboardingRegistry.resetOnboarding(extensions);
     });
-
-    this.ipcHandle('image-checker:getProviders', async (): Promise<ImageCheckerInfo[]> => {
-      return imageChecker.getImageCheckerProviders();
-    });
-
-    this.ipcHandle(
-      'image-checker:check',
-      async (
-        _listener,
-        id: string,
-        image: ImageInfo,
-        tokenId?: number,
-      ): Promise<containerDesktopAPI.ImageChecks | undefined> => {
-        let token;
-        if (tokenId) {
-          const tokenSource = cancellationTokenRegistry.getCancellationTokenSource(tokenId);
-          token = tokenSource?.token;
-        }
-        return imageChecker.check(id, image, token);
-      },
-    );
-
-    this.ipcHandle('image-files:getProviders', async (): Promise<ImageFilesInfo[]> => {
-      return imageFiles.getImageFilesProviders();
-    });
-
-    this.ipcHandle(
-      'image-files:getFilesystemLayers',
-      async (
-        _listener,
-        id: string,
-        image: ImageInfo,
-        tokenId?: number,
-      ): Promise<ImageFilesystemLayersUI | undefined> => {
-        let token;
-        if (tokenId) {
-          const tokenSource = cancellationTokenRegistry.getCancellationTokenSource(tokenId);
-          token = tokenSource?.token;
-        }
-        return imageFiles.getFilesystemLayers(id, image, token);
-      },
-    );
 
     this.ipcHandle('webview:get-preload-script', async (): Promise<string> => {
       const preloadScriptPath = path.join(__dirname, '../../preload-webview/dist/index.cjs');

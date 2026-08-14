@@ -300,7 +300,7 @@ async function searchImages(value: string): Promise<string[]> {
     if (image.startsWith(DOCKER_PREFIX_WITH_SLASH)) {
       image = image.slice(DOCKER_PREFIX_WITH_SLASH.length);
     }
-    const tags = await window.listImageTagsInRegistry({ image });
+    const tags = await client.imageRegistry.listImageTags({ image });
     allTags = tags.map(t => `${originalImage}:${t}`);
     return allTags.filter(i => i.startsWith(value));
   }
@@ -319,7 +319,7 @@ async function searchImages(value: string): Promise<string[]> {
           registry: registry,
           query: value,
         };
-        const searchResult = await window.searchImageInRegistry(options);
+        const searchResult = await client.imageRegistry.searchImages(options);
         // Add all results with their full registry prefix
         for (const r of searchResult) {
           const fullName = [registry, r.name].join('/');
@@ -340,7 +340,7 @@ async function searchImages(value: string): Promise<string[]> {
       registry: registry,
       query: rest.join('/'),
     };
-    const searchResult = await window.searchImageInRegistry(options);
+    const searchResult = await client.imageRegistry.searchImages(options);
     return searchResult.map(r => {
       return [options.registry, r.name].join('/');
     });
@@ -358,7 +358,7 @@ async function searchLatestTag(): Promise<void> {
     if (image.startsWith(DOCKER_PREFIX_WITH_SLASH)) {
       image = image.slice(DOCKER_PREFIX_WITH_SLASH.length);
     }
-    const tags = await window.listImageTagsInRegistry({ image });
+    const tags = await client.imageRegistry.listImageTags({ image });
     if (imageToPull.includes(':')) {
       latestTagMessage = undefined;
       checkIfTagExist(image, tags);

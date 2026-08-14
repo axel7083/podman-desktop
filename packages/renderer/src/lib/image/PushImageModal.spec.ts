@@ -24,6 +24,8 @@ import { Terminal } from '@xterm/xterm';
 import { tick } from 'svelte';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import type { ImageInfoUI } from './ImageInfoUI';
 import PushImageModal from './PushImageModal.svelte';
 
@@ -152,7 +154,7 @@ describe('Expect Push Image dialog', () => {
       | 'End',
     authConfig = true,
   ): Promise<void> {
-    vi.mocked(window.hasAuthconfigForImage).mockResolvedValue(authConfig);
+    vi.mocked(client.imageRegistry.hasAuthconfigForImage).mockResolvedValue(authConfig);
     vi.mocked(window.getImageInspect).mockResolvedValue(fakedImageInspect);
     vi.mocked(window.pushImage).mockImplementation(async (_imageId, _imageTag, cb) => {
       callback = cb;

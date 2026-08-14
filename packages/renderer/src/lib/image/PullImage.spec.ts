@@ -88,9 +88,9 @@ beforeEach(() => {
   vi.mocked(window.getCancellableTokenSource).mockResolvedValue(1234);
   vi.mocked(window.cancelToken).mockResolvedValue(undefined);
   vi.mocked(window.pullImage).mockResolvedValue(undefined);
-  vi.mocked(window.listImageTagsInRegistry).mockResolvedValue(['latest', 'other']);
+  vi.mocked(client.imageRegistry.listImageTags).mockResolvedValue(['latest', 'other']);
   vi.mocked(window.listImages).mockResolvedValue([]);
-  vi.mocked(window.searchImageInRegistry).mockResolvedValue([]);
+  vi.mocked(client.imageRegistry.searchImages).mockResolvedValue([]);
 
   providerInfos.set([PROVIDER_INFO_MOCK]);
 });
@@ -365,7 +365,7 @@ test('Expect not to check not shortname images', async () => {
 test('Expect latest tag warning is displayed when the image does not have latest tag', async () => {
   render(PullImage);
 
-  vi.mocked(window.listImageTagsInRegistry).mockResolvedValue(['other']);
+  vi.mocked(client.imageRegistry.listImageTags).mockResolvedValue(['other']);
   await userEvent.keyboard('my-registry/image-without-latest[Enter]');
 
   // expect that the warning message is displayed
@@ -377,7 +377,7 @@ test('Expect latest tag warning is displayed when the image does not have latest
 test('Expect latest tag warning is not displayed when the image has latest tag', async () => {
   render(PullImage);
 
-  vi.mocked(window.listImageTagsInRegistry).mockResolvedValue(['latest', 'other']);
+  vi.mocked(client.imageRegistry.listImageTags).mockResolvedValue(['latest', 'other']);
   await userEvent.keyboard('my-registry/image-without-latest[Enter]');
 
   // expect that the warning message is not displayed
@@ -458,7 +458,7 @@ test('Expect run action to set image info and go to run page', async () => {
 test('input component should not raise an error when the input is valid', async () => {
   const pullImage = render(PullImage);
 
-  vi.mocked(window.listImageTagsInRegistry).mockResolvedValue(['latest', 'other']);
+  vi.mocked(client.imageRegistry.listImageTags).mockResolvedValue(['latest', 'other']);
   await userEvent.keyboard('my-registry/image');
 
   const cellOutsideInput = pullImage.getAllByRole('textbox');
@@ -471,7 +471,7 @@ test('input component should not raise an error when the input is valid', async 
 test('input component should raise an error when the input is not valid', async () => {
   const pullImage = render(PullImage);
 
-  vi.mocked(window.listImageTagsInRegistry).mockResolvedValue([]);
+  vi.mocked(client.imageRegistry.listImageTags).mockResolvedValue([]);
   await userEvent.keyboard('my-registry/image');
 
   const cellOutsideInput = pullImage.getAllByRole('textbox');
@@ -484,7 +484,7 @@ test('input component should raise an error when the input is not valid', async 
 test('input component should raise an error when the input is not valid - error', async () => {
   const pullImage = render(PullImage);
 
-  vi.mocked(window.listImageTagsInRegistry).mockImplementation(() => {
+  vi.mocked(client.imageRegistry.listImageTags).mockImplementation(() => {
     throw Error('Error msg');
   });
   await userEvent.keyboard('my-registry/image');
@@ -629,7 +629,7 @@ describe('Preferred Registries', () => {
   });
 
   test('should search all preferred registries when no registry prefix specified', async () => {
-    vi.mocked(window.searchImageInRegistry).mockImplementation(async options => {
+    vi.mocked(client.imageRegistry.searchImages).mockImplementation(async options => {
       switch (options.registry) {
         case 'quay.io':
           return [
@@ -658,20 +658,20 @@ describe('Preferred Registries', () => {
     await userEvent.paste('ngin');
 
     await vi.waitFor(() => {
-      expect(window.searchImageInRegistry).toHaveBeenCalledWith(
+      expect(client.imageRegistry.searchImages).toHaveBeenCalledWith(
         expect.objectContaining({ registry: 'quay.io', query: 'ngin' }),
       );
-      expect(window.searchImageInRegistry).toHaveBeenCalledWith(
+      expect(client.imageRegistry.searchImages).toHaveBeenCalledWith(
         expect.objectContaining({ registry: 'ghcr.io', query: 'ngin' }),
       );
-      expect(window.searchImageInRegistry).toHaveBeenCalledWith(
+      expect(client.imageRegistry.searchImages).toHaveBeenCalledWith(
         expect.objectContaining({ registry: 'docker.io', query: 'ngin' }),
       );
     });
   });
 
   test('should deduplicate exact same image names from search results', async () => {
-    vi.mocked(window.searchImageInRegistry).mockImplementation(async () => {
+    vi.mocked(client.imageRegistry.searchImages).mockImplementation(async () => {
       // Both registries return the same image
       return [
         { name: 'nginx', description: '', star_count: 0, is_official: false },
@@ -688,12 +688,12 @@ describe('Preferred Registries', () => {
     // Verify deduplication happens (exact implementation depends on how results are displayed)
     // This test verifies the searchImages function is called
     await vi.waitFor(() => {
-      expect(window.searchImageInRegistry).toHaveBeenCalled();
+      expect(client.imageRegistry.searchImages).toHaveBeenCalled();
     });
   });
 
   test('should show images from different registries as separate entries', async () => {
-    vi.mocked(window.searchImageInRegistry).mockImplementation(async () => {
+    vi.mocked(client.imageRegistry.searchImages).mockImplementation(async () => {
       // Same image name but from different registries
       return [{ name: 'nginx', description: '', star_count: 0, is_official: false }];
     });
@@ -706,13 +706,15 @@ describe('Preferred Registries', () => {
 
     await vi.waitFor(() => {
       // Both quay.io and docker.io should be searched
-      expect(window.searchImageInRegistry).toHaveBeenCalledWith(expect.objectContaining({ registry: 'quay.io' }));
-      expect(window.searchImageInRegistry).toHaveBeenCalledWith(expect.objectContaining({ registry: 'docker.io' }));
+      expect(client.imageRegistry.searchImages).toHaveBeenCalledWith(expect.objectContaining({ registry: 'quay.io' }));
+      expect(client.imageRegistry.searchImages).toHaveBeenCalledWith(
+        expect.objectContaining({ registry: 'docker.io' }),
+      );
     });
   });
 
   test('should handle registry search failures gracefully', async () => {
-    vi.mocked(window.searchImageInRegistry).mockImplementation(async options => {
+    vi.mocked(client.imageRegistry.searchImages).mockImplementation(async options => {
       if (options.registry === 'quay.io') {
         throw new Error('Registry unavailable');
       }
@@ -727,8 +729,10 @@ describe('Preferred Registries', () => {
 
     await vi.waitFor(() => {
       // Should continue with other registries despite quay.io failing
-      expect(window.searchImageInRegistry).toHaveBeenCalledWith(expect.objectContaining({ registry: 'ghcr.io' }));
-      expect(window.searchImageInRegistry).toHaveBeenCalledWith(expect.objectContaining({ registry: 'docker.io' }));
+      expect(client.imageRegistry.searchImages).toHaveBeenCalledWith(expect.objectContaining({ registry: 'ghcr.io' }));
+      expect(client.imageRegistry.searchImages).toHaveBeenCalledWith(
+        expect.objectContaining({ registry: 'docker.io' }),
+      );
       expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Failed to search registry quay.io'));
     });
   });
@@ -751,7 +755,9 @@ describe('Preferred Registries', () => {
 
     await vi.waitFor(() => {
       // Should fall back to docker.io
-      expect(window.searchImageInRegistry).toHaveBeenCalledWith(expect.objectContaining({ registry: 'docker.io' }));
+      expect(client.imageRegistry.searchImages).toHaveBeenCalledWith(
+        expect.objectContaining({ registry: 'docker.io' }),
+      );
     });
   });
 });

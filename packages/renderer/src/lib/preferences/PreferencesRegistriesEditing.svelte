@@ -6,6 +6,7 @@ import type { IConfigurationPropertyRecordedSchema } from '@podman-desktop/core-
 import { Button, DropdownMenu, ErrorMessage, Input } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import IconImage from '/@/lib/appearance/IconImage.svelte';
 import Dialog from '/@/lib/dialogs/Dialog.svelte';
 import PasswordInput from '/@/lib/ui/PasswordInput.svelte';
@@ -57,7 +58,7 @@ let preferredRegistriesProperty: IConfigurationPropertyRecordedSchema | undefine
 );
 
 onMount(async () => {
-  let providerSourceNames = await window.getImageRegistryProviderNames();
+  let providerSourceNames = await client.imageRegistry.getProviderNames();
   if (providerSourceNames && providerSourceNames.length > 0) {
     defaultProviderSourceName = providerSourceNames[0];
   }
@@ -191,7 +192,7 @@ async function loginToRegistry(registry: containerDesktopAPI.Registry): Promise<
   // if we happen to get a certificate verification issue, as the user if they would like to
   // continue with the registry anyway.
   try {
-    await window.checkImageCredentials($state.snapshot(registry));
+    await client.imageRegistry.checkCredentials($state.snapshot(registry));
   } catch (error) {
     if (
       error instanceof Error &&
@@ -218,9 +219,12 @@ async function loginToRegistry(registry: containerDesktopAPI.Registry): Promise<
 
   try {
     if (newRegistry) {
-      await window.createImageRegistry(registry.source, { ...registry });
+      await client.imageRegistry.createRegistry({
+        providerName: registry.source,
+        registryCreateOptions: { ...registry },
+      });
     } else {
-      await window.updateImageRegistry({ ...registry });
+      await client.imageRegistry.updateRegistry({ ...registry });
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
@@ -238,7 +242,7 @@ async function loginToRegistry(registry: containerDesktopAPI.Registry): Promise<
 }
 
 async function removeExistingRegistry(registry: containerDesktopAPI.Registry): Promise<void> {
-  await window.unregisterImageRegistry(registry);
+  await client.imageRegistry.unregisterRegistry(registry);
   setPasswordForRegistryVisible(registry, false);
 }
 </script>

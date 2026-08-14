@@ -7,6 +7,7 @@ import { Icon } from '@podman-desktop/ui-svelte/icons';
 import { onDestroy, onMount } from 'svelte';
 import type { Unsubscriber } from 'svelte/store';
 
+import { client } from '/@/client';
 import type { CheckUI, ProviderUI } from '/@/lib/ui/ProviderResultPage';
 import ProviderResultPage from '/@/lib/ui/ProviderResultPage.svelte';
 import { imageCheckerProviders } from '/@/stores/image-checker-providers';
@@ -60,8 +61,8 @@ async function callProviders(_providers: readonly ImageCheckerInfo[]): Promise<v
       provider: provider.info.label,
       error: '',
     };
-    window
-      .imageCheck(provider.info.id, $state.snapshot(imageInfo), cancellableTokenId)
+    client.imageRegistry
+      .check({ id: provider.info.id, image: $state.snapshot(imageInfo), tokenId: cancellableTokenId })
       .then(_result => {
         // we test if it is still running, as it could have been marked as 'canceled'
         if (provider.state === 'running') {

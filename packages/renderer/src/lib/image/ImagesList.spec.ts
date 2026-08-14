@@ -41,7 +41,7 @@ beforeEach(() => {
   providerInfos.set([]);
   imagesInfos.set([]);
   viewsContributions.set([]);
-  vi.mocked(window.hasAuthconfigForImage).mockResolvedValue(false);
+  vi.mocked(client.imageRegistry.hasAuthconfigForImage).mockResolvedValue(false);
   vi.mocked(window.listViewsContributions).mockResolvedValue([]);
   vi.mocked(client.configuration.getProperties).mockResolvedValue({});
   vi.mocked(client.configuration.getValue).mockResolvedValue(false);

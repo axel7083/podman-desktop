@@ -6,6 +6,7 @@ import type { Terminal } from '@xterm/xterm';
 import { onMount, tick } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import Dialog from '/@/lib/dialogs/Dialog.svelte';
 import TerminalWindow from '/@/lib/ui/TerminalWindow.svelte';
 
@@ -79,8 +80,8 @@ function updateIsAuthenticated(val: boolean): void {
 }
 
 $effect(() => {
-  window
-    .hasAuthconfigForImage(imageInfoToPush.name)
+  client.imageRegistry
+    .hasAuthconfigForImage({ imageName: imageInfoToPush.name })
     .then(result => updateIsAuthenticated(result))
     .catch((err: unknown) =>
       console.error(`Error getting authentication required for image ${imageInfoToPush.id}`, err),
