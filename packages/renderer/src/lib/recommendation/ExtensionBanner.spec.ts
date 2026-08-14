@@ -168,8 +168,11 @@ test('opening messageBox and hiding banner', async () => {
   });
 
   await waitFor(() =>
-    expect(window.telemetryTrack).toBeCalledWith('hideRecommendationExtensionBanner', {
-      choice: 'hide',
+    expect(client.telemetry.track).toBeCalledWith({
+      event: 'hideRecommendationExtensionBanner',
+      eventProperties: {
+        choice: 'hide',
+      },
     }),
   );
 });
@@ -197,8 +200,11 @@ test('opening messageBox and keeping banner', async () => {
   });
 
   await waitFor(() =>
-    expect(window.telemetryTrack).toBeCalledWith('hideRecommendationExtensionBanner', {
-      choice: 'keep',
+    expect(client.telemetry.track).toBeCalledWith({
+      event: 'hideRecommendationExtensionBanner',
+      eventProperties: {
+        choice: 'keep',
+      },
     }),
   );
 });

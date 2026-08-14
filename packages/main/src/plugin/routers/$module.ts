@@ -34,6 +34,7 @@ import { RpcHandler } from '/@/plugin/routers/rpc-handler.js';
 import { StatusBarRouter } from '/@/plugin/routers/status-bar.router.js';
 import { SystemRouter } from '/@/plugin/routers/system.router.js';
 import { TasksRouter } from '/@/plugin/routers/tasks.router.js';
+import { TelemetryRouter } from '/@/plugin/routers/telemetry.router.js';
 import { TempFileRouter } from '/@/plugin/routers/temp-file.router.js';
 import { TroubleshootingRouter } from '/@/plugin/routers/troubleshooting.router.js';
 import { UiRegistryRouter } from '/@/plugin/routers/ui-registry.router.js';
@@ -54,6 +55,7 @@ const routersModule = new ContainerModule(options => {
   options.bind<StatusBarRouter>(StatusBarRouter).toSelf().inSingletonScope();
   options.bind<SystemRouter>(SystemRouter).toSelf().inSingletonScope();
   options.bind<TasksRouter>(TasksRouter).toSelf().inSingletonScope();
+  options.bind<TelemetryRouter>(TelemetryRouter).toSelf().inSingletonScope();
   options.bind<TempFileRouter>(TempFileRouter).toSelf().inSingletonScope();
   options.bind<TroubleshootingRouter>(TroubleshootingRouter).toSelf().inSingletonScope();
   options.bind<UiRegistryRouter>(UiRegistryRouter).toSelf().inSingletonScope();

@@ -99,7 +99,6 @@ import type {
   SecretInfo,
   SimpleContainerInfo,
   SystemOverviewStatusInfo,
-  TelemetryMessages,
   V1Route,
   VolumeCreateOptions,
   VolumeInspectInfo,
@@ -2004,22 +2003,6 @@ export function initExposure(): void {
 
   contextBridge.exposeInMainWorld('cancelToken', async (id: number): Promise<void> => {
     return ipcInvoke('cancellableToken:cancel', id);
-  });
-
-  contextBridge.exposeInMainWorld('getTelemetryMessages', async (): Promise<TelemetryMessages> => {
-    return ipcInvoke('telemetry:getTelemetryMessages');
-  });
-
-  contextBridge.exposeInMainWorld('telemetryTrack', async (event: string, eventProperties?: unknown): Promise<void> => {
-    return ipcInvoke('telemetry:track', event, eventProperties);
-  });
-
-  contextBridge.exposeInMainWorld('telemetryPage', async (name: string): Promise<void> => {
-    return ipcInvoke('telemetry:page', name);
-  });
-
-  contextBridge.exposeInMainWorld('telemetryConfigure', async (): Promise<void> => {
-    return ipcInvoke('telemetry:configure');
   });
 
   let onDataCallbacksShellInContainerExtensionInstallId = 0;

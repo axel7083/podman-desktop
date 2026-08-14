@@ -73,7 +73,7 @@ async function sendFeedback(): Promise<void> {
 
 async function openGitHub(): Promise<void> {
   if (repository) {
-    await window.telemetryTrack('feedback.openGitHub');
+    await client.telemetry.track({ event: 'feedback.openGitHub' });
     await client.system.openExternal({ link: repository });
   }
 }

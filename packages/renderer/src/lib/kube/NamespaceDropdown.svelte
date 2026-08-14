@@ -39,7 +39,7 @@ async function handleNamespaceChange(value: unknown): Promise<void> {
   try {
     await window.kubernetesSetCurrentNamespace(namespace);
   } finally {
-    await window.telemetryTrack('kubernetes.set.namespace');
+    await client.telemetry.track({ event: 'kubernetes.set.namespace' });
   }
 }
 </script>

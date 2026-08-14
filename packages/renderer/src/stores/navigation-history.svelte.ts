@@ -20,6 +20,7 @@ import type { HistoryStackEntry, NavigationHistoryPushInfo } from '@podman-deskt
 import { get } from 'svelte/store';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import DashboardIcon from '/@/lib/images/DashboardIcon.svelte';
 import SettingsIcon from '/@/lib/images/SettingsIcon.svelte';
 import { settingsNavigationEntries } from '/@/PreferencesNavigation';
@@ -388,7 +389,7 @@ function navigateToIndex(index: number): boolean {
  */
 export function goBack(): void {
   if (navigateToIndex(navigationHistory.index - 1)) {
-    window.telemetryTrack('navigation.back').catch(console.error);
+    client.telemetry.track({ event: 'navigation.back' }).catch(console.error);
   }
 }
 
@@ -400,7 +401,7 @@ export function goBack(): void {
  */
 export function goForward(): void {
   if (navigateToIndex(navigationHistory.index + 1)) {
-    window.telemetryTrack('navigation.forward').catch(console.error);
+    client.telemetry.track({ event: 'navigation.forward' }).catch(console.error);
   }
 }
 

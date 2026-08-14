@@ -51,7 +51,7 @@ test('Expect privacy statement is included when it exists', async () => {
       url: 'privacy-url',
     },
   };
-  vi.mocked(window.getTelemetryMessages).mockResolvedValue(telem);
+  vi.mocked(client.telemetry.getTelemetryMessages).mockResolvedValue(telem);
 
   render(FeedbackForm);
 

@@ -55,7 +55,7 @@ export class WelcomeUtils {
 
     // trigger telemetry system initialization
     if (telemetry) {
-      await window.telemetryConfigure();
+      await client.telemetry.configure();
     }
 
     // save the fact that we've prompted

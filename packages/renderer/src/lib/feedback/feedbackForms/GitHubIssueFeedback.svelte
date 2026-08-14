@@ -42,7 +42,7 @@ let existingIssuesLink = $derived(category === 'bug' ? categoryLinks.bug : categ
 $effect(() => contentChange(Boolean(issueTitle || issueDescription)));
 
 onMount(async () => {
-  await window.telemetryTrack(`feedback.FormOpened`, { feedbackCategory: category });
+  await client.telemetry.track({ event: 'feedback.FormOpened', eventProperties: { feedbackCategory: category } });
 });
 
 async function openGitHubIssues(): Promise<void> {
@@ -71,8 +71,8 @@ async function previewOnGitHub(): Promise<void> {
       console.error('There was a problem with preview on GitHub', error);
     })
     .finally(() => {
-      window
-        .telemetryTrack(`feedback.FormSubmitted`, telemetryEventProperties)
+      client.telemetry
+        .track({ event: 'feedback.FormSubmitted', eventProperties: telemetryEventProperties })
         .catch((err: unknown) => console.error('Error sending feedback.formSubmitted telemetry', err));
     });
 }

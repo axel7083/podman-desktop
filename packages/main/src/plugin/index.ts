@@ -55,7 +55,6 @@ import type {
   ContextPermission,
   DocumentationInfo,
   ExtensionInfo,
-  FeedbackProperties,
   ForwardConfig,
   ForwardOptions,
   HistoryInfo,
@@ -96,7 +95,6 @@ import type {
   SecretCreateResult,
   SecretInfo,
   SimpleContainerInfo,
-  TelemetryMessages,
   V1Route,
   VolumeCreateOptions,
   VolumeCreateResponseInfo,
@@ -214,7 +212,7 @@ import { StatusbarProvidersInit } from './statusbar/statusbar-providers-init.js'
 import { StatusBarRegistry } from './statusbar/statusbar-registry.js';
 import { NotificationRegistry } from './tasks/notification-registry.js';
 import { ProgressImpl } from './tasks/progress-impl.js';
-import { EventType, Telemetry } from './telemetry/telemetry.js';
+import { Telemetry } from './telemetry/telemetry.js';
 import { TempFileService } from './temp-file-service.js';
 import { TerminalInit } from './terminal-init.js';
 import { TrayIconColor } from './tray-icon-color.js';
@@ -2661,26 +2659,6 @@ export class PluginSystem {
       if (!tokenSource?.token.isCancellationRequested) {
         tokenSource?.dispose(true);
       }
-    });
-
-    this.ipcHandle('telemetry:getTelemetryMessages', async (): Promise<TelemetryMessages> => {
-      return telemetry.getTelemetryMessages();
-    });
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.ipcHandle(
-      'telemetry:track',
-      async (_listener, event: string, eventProperties?: FeedbackProperties): Promise<void> => {
-        return telemetry.track(event, eventProperties);
-      },
-    );
-
-    this.ipcHandle('telemetry:page', async (_listener, name: string): Promise<void> => {
-      return telemetry.track(EventType.PAGE, { name: name });
-    });
-
-    this.ipcHandle('telemetry:configure', async (): Promise<void> => {
-      return telemetry.configureTelemetry();
     });
 
     this.ipcHandle('app:getVersion', async (): Promise<string> => {

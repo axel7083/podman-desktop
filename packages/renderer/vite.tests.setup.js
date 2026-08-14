@@ -121,6 +121,12 @@ vi.mock('/@/client', () => ({
       getFeedbackLinks: vi.fn(),
       getFeedbackMessages: vi.fn(),
     },
+    telemetry: {
+      getTelemetryMessages: vi.fn(),
+      track: vi.fn(),
+      page: vi.fn(),
+      configure: vi.fn(),
+    },
     troubleshooting: { getDockerSocketMappingStatus: vi.fn() },
     uiRegistry: {
       listContributions: vi.fn(),

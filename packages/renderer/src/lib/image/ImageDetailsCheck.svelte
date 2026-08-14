@@ -107,8 +107,8 @@ async function callProviders(_providers: readonly ImageCheckerInfo[]): Promise<v
         }
       })
       .finally(() => {
-        window
-          .telemetryTrack('imageCheck', telemetryOptions)
+        client.telemetry
+          .track({ event: 'imageCheck', eventProperties: telemetryOptions })
           .catch((err: unknown) => console.error('Error sending imageCheck telemetry', err));
       });
   });
@@ -136,7 +136,7 @@ async function handleAbort(): Promise<void> {
     });
 
     // telemetry
-    await window.telemetryTrack('imageCheck.aborted');
+    await client.telemetry.track({ event: 'imageCheck.aborted' });
   }
 }
 </script>

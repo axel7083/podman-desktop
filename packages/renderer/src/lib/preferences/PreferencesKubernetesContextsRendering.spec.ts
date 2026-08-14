@@ -226,7 +226,6 @@ describe.each([
     initMocks: (): void => {
       Object.defineProperty(global, 'window', {
         value: {
-          telemetryTrack: vi.fn(),
           kubernetesRefreshContextState: vi.fn(),
         },
       });
@@ -496,5 +495,5 @@ test('Connecting for a context sends telemetry', async () => {
 
   vi.mocked(window.kubernetesRefreshContextState).mockResolvedValue(undefined);
   await fireEvent.click(button);
-  expect(window.telemetryTrack).toHaveBeenCalledWith('kubernetes.monitoring.start.non-current');
+  expect(client.telemetry.track).toHaveBeenCalledWith({ event: 'kubernetes.monitoring.start.non-current' });
 });

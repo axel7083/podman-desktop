@@ -49,7 +49,7 @@ async function onClose(): Promise<void> {
     }
   } finally {
     let choice: 'hide' | 'keep' = result?.response === 'Hide' ? 'hide' : 'keep';
-    await window.telemetryTrack('hideRecommendationExtensionBanner', { choice });
+    await client.telemetry.track({ event: 'hideRecommendationExtensionBanner', eventProperties: { choice } });
   }
 }
 </script>

@@ -66,7 +66,7 @@ test('should track dashboard.healthCard.collapsed telemetry when collapsing', as
   const expandButton = await waitFor(() => screen.getByRole('button', { name: 'System Overview' }));
   await fireEvent.click(expandButton);
 
-  await waitFor(() => expect(window.telemetryTrack).toHaveBeenCalledWith('dashboard.healthCard.collapsed'));
+  await waitFor(() => expect(client.telemetry.track).toHaveBeenCalledWith({ event: 'dashboard.healthCard.collapsed' }));
 });
 
 test('should track dashboard.healthCard.expanded telemetry when expanding', async () => {
@@ -76,5 +76,5 @@ test('should track dashboard.healthCard.expanded telemetry when expanding', asyn
   const expandButton = await waitFor(() => screen.getByRole('button', { name: 'System Overview' }));
   await fireEvent.click(expandButton);
 
-  await waitFor(() => expect(window.telemetryTrack).toHaveBeenCalledWith('dashboard.healthCard.expanded'));
+  await waitFor(() => expect(client.telemetry.track).toHaveBeenCalledWith({ event: 'dashboard.healthCard.expanded' }));
 });

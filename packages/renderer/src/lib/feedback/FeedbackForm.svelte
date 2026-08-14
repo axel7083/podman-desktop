@@ -8,7 +8,7 @@ import { client } from '/@/client';
 let telemetryMessages: TelemetryMessages;
 
 onMount(async () => {
-  telemetryMessages = await window.getTelemetryMessages();
+  telemetryMessages = await client.telemetry.getTelemetryMessages();
 });
 </script>
 <div>

@@ -27,6 +27,7 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import { router } from 'tinro';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { providerInfos } from '/@/stores/providers';
 
 import SystemOverviewContent from './SystemOverviewContent.svelte';
@@ -163,10 +164,13 @@ describe('telemetry', () => {
     render(SystemOverviewContent);
 
     await vi.waitFor(() =>
-      expect(window.telemetryTrack).toHaveBeenCalledWith('dashboard.healthCard.viewed', {
-        itemCount: 0,
-        healthyCount: 0,
-        issueCount: 0,
+      expect(client.telemetry.track).toHaveBeenCalledWith({
+        event: 'dashboard.healthCard.viewed',
+        eventProperties: {
+          itemCount: 0,
+          healthyCount: 0,
+          issueCount: 0,
+        },
       }),
     );
   });
@@ -189,10 +193,13 @@ describe('telemetry', () => {
     render(SystemOverviewContent);
 
     await vi.waitFor(() =>
-      expect(window.telemetryTrack).toHaveBeenCalledWith('dashboard.healthCard.viewed', {
-        itemCount: 3,
-        healthyCount: 2,
-        issueCount: 1,
+      expect(client.telemetry.track).toHaveBeenCalledWith({
+        event: 'dashboard.healthCard.viewed',
+        eventProperties: {
+          itemCount: 3,
+          healthyCount: 2,
+          issueCount: 1,
+        },
       }),
     );
   });

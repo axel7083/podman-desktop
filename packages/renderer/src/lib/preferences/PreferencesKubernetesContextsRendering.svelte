@@ -212,7 +212,7 @@ function getNotPermittedHelp(podsPermitted: boolean, deploymentsPermitted: boole
 }
 
 async function connect(contextName: string): Promise<void> {
-  await window.telemetryTrack('kubernetes.monitoring.start.non-current');
+  await client.telemetry.track({ event: 'kubernetes.monitoring.start.non-current' });
   $kubernetesContexts = clearKubeUIContextErrors($kubernetesContexts, contextName);
   window.kubernetesRefreshContextState(contextName).catch((e: unknown) => {
     if (e instanceof Error) {

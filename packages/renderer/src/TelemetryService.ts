@@ -16,6 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import { client } from '/@/client';
+
 export class TelemetryService {
   private static instance: TelemetryService;
 
@@ -36,11 +38,9 @@ export class TelemetryService {
     this.handlePageClose();
 
     this.handlerFlusher = setTimeout(() => {
-      if (window.telemetryPage) {
-        window.telemetryPage(pagePath)?.catch((error: unknown) => {
-          console.error('Failed to send page event', error);
-        });
-      }
+      client.telemetry.page({ name: pagePath }).catch((error: unknown) => {
+        console.error('Failed to send page event', error);
+      });
     }, 200);
   }
 

@@ -20,17 +20,11 @@ import '@testing-library/jest-dom/vitest';
 
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 
 import { client } from '/@/client';
 
 import DirectFeedback from './DirectFeedback.svelte';
-
-beforeAll(() => {
-  Object.defineProperty(window, 'telemetryTrack', {
-    value: vi.fn(),
-  });
-});
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -169,7 +163,7 @@ test('Expect GitHub dialog visible when very-happy-smiley selected', async () =>
   await fireEvent.click(link);
 
   await vi.waitFor(() => {
-    expect(window.telemetryTrack).toHaveBeenCalledWith('feedback.openGitHub');
+    expect(client.telemetry.track).toHaveBeenCalledWith({ event: 'feedback.openGitHub' });
     expect(client.system.openExternal).toHaveBeenCalledWith({ link: 'https://github.com/test/test-repo' });
   });
 

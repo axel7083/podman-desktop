@@ -31,13 +31,11 @@ import GitHubIssueFeedback from './GitHubIssueFeedback.svelte';
 beforeAll(() => {
   Object.defineProperty(global, 'window', {
     value: {
-      telemetryTrack: vi.fn(),
       navigator: {
         clipboard: {
           writeText: vi.fn(),
         },
       },
-      getTelemetryMessages: vi.fn(),
     },
     writable: true,
   });
@@ -46,7 +44,7 @@ beforeAll(() => {
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(client.feedback.githubPreview).mockResolvedValue(undefined);
-  vi.mocked(window.telemetryTrack).mockResolvedValue(undefined);
+  vi.mocked(client.telemetry.track).mockResolvedValue(undefined);
 });
 
 /**
@@ -362,15 +360,21 @@ test.each<GitHubFeedbackCategory>(['bug', 'feature'])(
       },
     });
 
-    expect(window.telemetryTrack).toHaveBeenNthCalledWith(1, `feedback.FormOpened`, { feedbackCategory: category });
+    expect(client.telemetry.track).toHaveBeenNthCalledWith(1, {
+      event: `feedback.FormOpened`,
+      eventProperties: { feedbackCategory: category },
+    });
 
     await userEvent.type(title, `${category} title`);
     await userEvent.type(description, `${category} description`);
     await userEvent.click(preview);
 
     await vi.waitFor(() =>
-      expect(window.telemetryTrack).toHaveBeenNthCalledWith(2, `feedback.FormSubmitted`, {
-        feedbackCategory: category,
+      expect(client.telemetry.track).toHaveBeenNthCalledWith(2, {
+        event: `feedback.FormSubmitted`,
+        eventProperties: {
+          feedbackCategory: category,
+        },
       }),
     );
   },
@@ -390,16 +394,22 @@ test.each<GitHubFeedbackCategory>(['bug', 'feature'])(
       },
     });
 
-    expect(window.telemetryTrack).toHaveBeenNthCalledWith(1, `feedback.FormOpened`, { feedbackCategory: category });
+    expect(client.telemetry.track).toHaveBeenNthCalledWith(1, {
+      event: `feedback.FormOpened`,
+      eventProperties: { feedbackCategory: category },
+    });
 
     await userEvent.type(title, `${category} title`);
     await userEvent.type(description, `${category} description`);
     await userEvent.click(preview);
 
     await vi.waitFor(() =>
-      expect(window.telemetryTrack).toHaveBeenNthCalledWith(2, `feedback.FormSubmitted`, {
-        feedbackCategory: category,
-        error: 'error: unable to preview on GitHub',
+      expect(client.telemetry.track).toHaveBeenNthCalledWith(2, {
+        event: `feedback.FormSubmitted`,
+        eventProperties: {
+          feedbackCategory: category,
+          error: 'error: unable to preview on GitHub',
+        },
       }),
     );
   },

@@ -72,7 +72,6 @@ beforeAll(() => {
   (window as any).updateConfigurationValue = vi.fn();
   (window as any).getCancellableTokenSource = vi.fn();
   (window as any).auditConnectionParameters = vi.fn();
-  (window as any).telemetryTrack = vi.fn();
   (window as any).openDialog = vi.fn();
 });
 
@@ -161,9 +160,12 @@ describe.each([
 
     await fireEvent.click(closeButton);
     expect(gotoSpy).toBeCalledWith('/preferences/resources');
-    expect(window.telemetryTrack).toBeCalledWith(`${closeTelemetryEvent}`, {
-      providerId: providerInfo.id,
-      name: providerInfo.name,
+    expect(client.telemetry.track).toBeCalledWith({
+      event: `${closeTelemetryEvent}`,
+      eventProperties: {
+        providerId: providerInfo.id,
+        name: providerInfo.name,
+      },
     });
   });
 
@@ -293,9 +295,12 @@ describe.each([
       providedKeyLogger(currentConnectionInfo.operationKey, 'finish', []);
     }
 
-    expect(window.telemetryTrack).toBeCalledWith(`${cancelTelemetryEvent}`, {
-      providerId: providerInfo.id,
-      name: providerInfo.name,
+    expect(client.telemetry.track).toBeCalledWith({
+      event: `${cancelTelemetryEvent}`,
+      eventProperties: {
+        providerId: providerInfo.id,
+        name: providerInfo.name,
+      },
     });
     // expect it is successful
     await vi.waitFor(() => expect(cancelTokenMock).toBeCalled(), { timeout: 3000 });

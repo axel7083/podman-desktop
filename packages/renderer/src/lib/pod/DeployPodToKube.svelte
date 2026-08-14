@@ -130,15 +130,18 @@ async function updatePod(): Promise<void> {
   if (createdPod?.status?.phase === 'Running') {
     clearInterval(updatePodInterval);
     deployFinished = true;
-    await window.telemetryTrack('deployToKube.running', {
-      useServices: deployUsingServices,
-      useRoutes: deployUsingRoutes,
+    await client.telemetry.track({
+      event: 'deployToKube.running',
+      eventProperties: {
+        useServices: deployUsingServices,
+        useRoutes: deployUsingRoutes,
+      },
     });
   } else if (
     createdPod?.status?.containerStatuses?.some(status => status.state?.waiting?.reason === 'ImagePullBackOff')
   ) {
     clearInterval(updatePodInterval);
-    await window.telemetryTrack('deployToKube', { errorMessage: 'ImagePullBackOff' });
+    await client.telemetry.track({ event: 'deployToKube', eventProperties: { errorMessage: 'ImagePullBackOff' } });
     deployError = 'ImagePullBackOff error, please check that the image is accessible from the Kubernetes cluster.';
     deployStarted = false;
     deployFinished = false;
@@ -375,7 +378,7 @@ async function deployToKube(): Promise<void> {
       }
 
       // Telemetry
-      await window.telemetryTrack('deployToKube', eventProperties);
+      await client.telemetry.track({ event: 'deployToKube', eventProperties: eventProperties });
 
       // update status
       updatePodInterval = setInterval(() => {
@@ -386,7 +389,10 @@ async function deployToKube(): Promise<void> {
       // Revert back to the previous bodyPod so the user can hit deploy again
       // we only update the bodyPod if we successfully create the pod.
       bodyPod = previousPod;
-      await window.telemetryTrack('deployToKube', { ...eventProperties, errorMessage: error.message });
+      await client.telemetry.track({
+        event: 'deployToKube',
+        eventProperties: { ...eventProperties, errorMessage: error.message },
+      });
       deployError = error;
       deployStarted = false;
       deployFinished = false;

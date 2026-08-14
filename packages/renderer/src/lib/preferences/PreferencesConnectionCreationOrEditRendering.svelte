@@ -458,13 +458,15 @@ async function cancelCreation(): Promise<void> {
     operationCancelled = true;
     tokenId = undefined;
   }
-  await window.telemetryTrack(
-    connectionInfo ? 'updateProviderConnectionRequestUserCanceled' : 'createNewProviderConnectionRequestUserCanceled',
-    {
+  await client.telemetry.track({
+    event: connectionInfo
+      ? 'updateProviderConnectionRequestUserCanceled'
+      : 'createNewProviderConnectionRequestUserCanceled',
+    eventProperties: {
       providerId: providerInfo.id,
       name: providerInfo.name,
     },
-  );
+  });
 }
 
 async function closePanel(): Promise<void> {
@@ -473,13 +475,13 @@ async function closePanel(): Promise<void> {
 
 async function closePage(): Promise<void> {
   router.goto('/preferences/resources');
-  await window.telemetryTrack(
-    connectionInfo ? 'updateProviderConnectionPageUserClosed' : 'createNewProviderConnectionPageUserClosed',
-    {
+  await client.telemetry.track({
+    event: connectionInfo ? 'updateProviderConnectionPageUserClosed' : 'createNewProviderConnectionPageUserClosed',
+    eventProperties: {
       providerId: providerInfo.id,
       name: providerInfo.name,
     },
-  );
+  });
 }
 
 function getConnectionResourceConfigurationValue(

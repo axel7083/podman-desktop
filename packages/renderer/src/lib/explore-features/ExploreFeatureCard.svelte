@@ -25,14 +25,20 @@ async function openTutorial(): Promise<void> {
 async function closeCard(): Promise<void> {
   closeFeature(feature.id);
   await window.closeFeatureCard(feature.id);
-  await window.telemetryTrack('dashboard.exploreFeatureDismissed', {
-    feature: feature.id,
+  await client.telemetry.track({
+    event: 'dashboard.exploreFeatureDismissed',
+    eventProperties: {
+      feature: feature.id,
+    },
   });
 }
 
 async function handleAction(): Promise<void> {
-  await window.telemetryTrack('dashboard.exploreFeatureClicked', {
-    feature: feature.title,
+  await client.telemetry.track({
+    event: 'dashboard.exploreFeatureClicked',
+    eventProperties: {
+      feature: feature.title,
+    },
   });
   router.goto(feature.buttonLink);
 }

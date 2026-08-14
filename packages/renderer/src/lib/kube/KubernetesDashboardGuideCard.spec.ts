@@ -54,8 +54,11 @@ test('Expect clicking works', async () => {
 
   await userEvent.click(button);
   expect(client.system.openExternal).toHaveBeenCalledWith({ link: params.link });
-  expect(window.telemetryTrack).toHaveBeenCalledWith('kubernetes.dashboard.guide', {
-    title: params.title,
-    link: params.link,
+  expect(client.telemetry.track).toHaveBeenCalledWith({
+    event: 'kubernetes.dashboard.guide',
+    eventProperties: {
+      title: params.title,
+      link: params.link,
+    },
   });
 });

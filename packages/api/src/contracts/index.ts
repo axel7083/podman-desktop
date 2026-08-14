@@ -31,6 +31,7 @@ import { proxyContract } from '/@/contracts/proxy/proxy.contract.js';
 import { statusBarContract } from '/@/contracts/status-bar/status-bar.contract.js';
 import { systemContract } from '/@/contracts/system/system.contract.js';
 import { tasksContract } from '/@/contracts/tasks/tasks.contract.js';
+import { telemetryContract } from '/@/contracts/telemetry/telemetry.contract.js';
 import { tempFileContract } from '/@/contracts/temp-file/temp-file.contract.js';
 import { troubleshootingContract } from '/@/contracts/troubleshooting/troubleshooting.contract.js';
 import { uiRegistryContract } from '/@/contracts/ui-registry/ui-registry.contract.js';
@@ -53,6 +54,7 @@ export const contracts = {
   statusBar: statusBarContract,
   system: systemContract,
   tasks: tasksContract,
+  telemetry: telemetryContract,
   tempFile: tempFileContract,
   troubleshooting: troubleshootingContract,
   uiRegistry: uiRegistryContract,

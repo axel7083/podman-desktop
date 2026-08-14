@@ -22,6 +22,7 @@ import { tick } from 'svelte';
 import { router } from 'tinro';
 import { expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { providerInfos } from '/@/stores/providers';
 
 import KubernetesEmptyPage from './KubernetesEmptyPage.svelte';
@@ -36,8 +37,6 @@ vi.mock(import('/@/lib/extensions/EmbeddableCatalogExtensionList.svelte'), () =>
 
 // mock the router
 vi.mock(import('tinro'));
-
-Object.defineProperty(window, 'telemetryTrack', { value: vi.fn() });
 
 test('expect to call EmbeddableCatalogExtensionList for all Kubernetes provider (local and remote)', () => {
   render(KubernetesEmptyPage);
@@ -65,8 +64,11 @@ test('expect to send telemetry when extension that is installed is viewed', () =
     props.oninstall('extension-local');
   });
   render(KubernetesEmptyPage);
-  expect(vi.mocked(window.telemetryTrack)).toHaveBeenCalledWith('kubernetes.nocontext.installExtension', {
-    extension: 'extension-local',
+  expect(vi.mocked(client.telemetry.track)).toHaveBeenCalledWith({
+    event: 'kubernetes.nocontext.installExtension',
+    eventProperties: {
+      extension: 'extension-local',
+    },
   });
 });
 
@@ -75,8 +77,11 @@ test('expect to send telemetry when extension that is ALREADY installed is viewe
     props.ondetails('extension-local');
   });
   render(KubernetesEmptyPage);
-  expect(vi.mocked(window.telemetryTrack)).toHaveBeenCalledWith('kubernetes.nocontext.showExtensionDetails', {
-    extension: 'extension-local',
+  expect(vi.mocked(client.telemetry.track)).toHaveBeenCalledWith({
+    event: 'kubernetes.nocontext.showExtensionDetails',
+    eventProperties: {
+      extension: 'extension-local',
+    },
   });
 });
 
@@ -109,15 +114,21 @@ test('expect to have links for each Kubernetes provider', async () => {
   const link1 = screen.getByLabelText('Go create');
   await fireEvent.click(link1);
   expect(router.goto).toHaveBeenCalledWith('/preferences/resources/provider/101');
-  expect(vi.mocked(window.telemetryTrack)).toHaveBeenCalledWith('kubernetes.nocontext.createNew', {
-    provider: 'provider1',
+  expect(vi.mocked(client.telemetry.track)).toHaveBeenCalledWith({
+    event: 'kubernetes.nocontext.createNew',
+    eventProperties: {
+      provider: 'provider1',
+    },
   });
 
   const link2 = screen.getByLabelText('Create new');
   await fireEvent.click(link2);
   expect(router.goto).toHaveBeenCalledWith('/preferences/resources/provider/102');
-  expect(vi.mocked(window.telemetryTrack)).toHaveBeenCalledWith('kubernetes.nocontext.createNew', {
-    provider: 'provider2',
+  expect(vi.mocked(client.telemetry.track)).toHaveBeenCalledWith({
+    event: 'kubernetes.nocontext.createNew',
+    eventProperties: {
+      provider: 'provider2',
+    },
   });
 
   expect(screen.queryByLabelText(/Name 3/)).toBeNull();

@@ -62,7 +62,7 @@ onMount(async () => {
 
   const telemetryPrompt = await welcomeUtils.havePromptedForTelemetry();
   if (!telemetryPrompt) {
-    telemetryMessages = await window.getTelemetryMessages();
+    telemetryMessages = await client.telemetry.getTelemetryMessages();
     showTelemetry = true;
   }
   podmanDesktopVersion = await window.getPodmanDesktopVersion();

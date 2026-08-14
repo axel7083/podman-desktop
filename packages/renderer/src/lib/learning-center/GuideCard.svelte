@@ -13,8 +13,11 @@ interface Props {
 let { guide, width = 300, height = 300 }: Props = $props();
 
 async function openGuide(guide: Guide): Promise<void> {
-  await window.telemetryTrack('openLearningCenterGuide', {
-    guideId: guide.id,
+  await client.telemetry.track({
+    event: 'openLearningCenterGuide',
+    eventProperties: {
+      guideId: guide.id,
+    },
   });
   await client.system.openExternal({ link: guide.url });
 }

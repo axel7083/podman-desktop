@@ -15,7 +15,10 @@ async function openLink(): Promise<void> {
   try {
     await client.system.openExternal({ link });
   } finally {
-    await window.telemetryTrack('kubernetes.dashboard.guide', { title: title, link: link });
+    await client.telemetry.track({
+      event: 'kubernetes.dashboard.guide',
+      eventProperties: { title: title, link: link },
+    });
   }
 }
 </script>

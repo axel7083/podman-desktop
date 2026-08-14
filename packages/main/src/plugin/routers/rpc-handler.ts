@@ -36,6 +36,7 @@ import { ProxyRouter } from '/@/plugin/routers/proxy.router.js';
 import { StatusBarRouter } from '/@/plugin/routers/status-bar.router.js';
 import { SystemRouter } from '/@/plugin/routers/system.router.js';
 import { TasksRouter } from '/@/plugin/routers/tasks.router.js';
+import { TelemetryRouter } from '/@/plugin/routers/telemetry.router.js';
 import { TempFileRouter } from '/@/plugin/routers/temp-file.router.js';
 import { TroubleshootingRouter } from '/@/plugin/routers/troubleshooting.router.js';
 import { UiRegistryRouter } from '/@/plugin/routers/ui-registry.router.js';
@@ -81,6 +82,8 @@ export class RpcHandler {
     readonly system: SystemRouter,
     @inject(TasksRouter)
     readonly tasks: TasksRouter,
+    @inject(TelemetryRouter)
+    readonly telemetry: TelemetryRouter,
     @inject(TempFileRouter)
     readonly tempFile: TempFileRouter,
     @inject(TroubleshootingRouter)
@@ -104,6 +107,7 @@ export class RpcHandler {
       statusBar: statusBar.router,
       system: system.router,
       tasks: tasks.router,
+      telemetry: telemetry.router,
       tempFile: tempFile.router,
       troubleshooting: troubleshooting.router,
       uiRegistry: uiRegistry.router,

@@ -82,8 +82,11 @@ test('Click on close card', async () => {
 
   expect(closeFeature).toHaveBeenCalledWith('feature1');
   expect(window.closeFeatureCard).toHaveBeenCalledWith('feature1');
-  expect(vi.mocked(window.telemetryTrack)).toHaveBeenCalledWith('dashboard.exploreFeatureDismissed', {
-    feature: 'feature1',
+  expect(vi.mocked(client.telemetry.track)).toHaveBeenCalledWith({
+    event: 'dashboard.exploreFeatureDismissed',
+    eventProperties: {
+      feature: 'feature1',
+    },
   });
 });
 
@@ -106,8 +109,11 @@ test('Click on primary button', async () => {
 
   await fireEvent.click(primaryButton);
 
-  expect(vi.mocked(window.telemetryTrack)).toHaveBeenCalledWith('dashboard.exploreFeatureClicked', {
-    feature: 'Feature 1',
+  expect(vi.mocked(client.telemetry.track)).toHaveBeenCalledWith({
+    event: 'dashboard.exploreFeatureClicked',
+    eventProperties: {
+      feature: 'Feature 1',
+    },
   });
   expect(router.goto).toHaveBeenCalledWith(featureMock.buttonLink);
 });

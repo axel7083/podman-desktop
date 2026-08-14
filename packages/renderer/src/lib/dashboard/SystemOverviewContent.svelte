@@ -10,6 +10,7 @@ import { Icon } from '@podman-desktop/ui-svelte/icons';
 import { onMount } from 'svelte';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 
+import { client } from '/@/client';
 import SystemOverviewProviderCardCompact from '/@/lib/dashboard/SystemOverviewProviderCardCompact.svelte';
 import SystemOverviewProviderCardDetailed from '/@/lib/dashboard/SystemOverviewProviderCardDetailed.svelte';
 import SystemOverviewProviderSetup from '/@/lib/dashboard/SystemOverviewProviderSetup.svelte';
@@ -52,10 +53,13 @@ onMount(async () => {
     ...containerConnectionsWithProvider.map(c => c.connection),
     ...nonContainerConnectionsWithProvider.map(c => c.connection),
   ];
-  await window.telemetryTrack('dashboard.healthCard.viewed', {
-    itemCount: allConnections.length,
-    healthyCount: allConnections.filter(c => c.status === 'started' && !c.error).length,
-    issueCount: allConnections.filter(c => c.error).length,
+  await client.telemetry.track({
+    event: 'dashboard.healthCard.viewed',
+    eventProperties: {
+      itemCount: allConnections.length,
+      healthyCount: allConnections.filter(c => c.status === 'started' && !c.error).length,
+      issueCount: allConnections.filter(c => c.error).length,
+    },
   });
 });
 

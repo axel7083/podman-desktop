@@ -118,7 +118,9 @@ function onClick(direction: Direction): void {
 }
 
 function handleHistorySelect(val: string): void {
-  window.telemetryTrack('navigation.historySelect', { direction: showDropdown }).catch(console.error);
+  client.telemetry
+    .track({ event: 'navigation.historySelect', eventProperties: { direction: showDropdown } })
+    .catch(console.error);
   closeDropdown();
   goToHistoryIndex(Number(val));
 }

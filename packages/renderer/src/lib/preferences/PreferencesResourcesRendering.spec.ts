@@ -113,8 +113,6 @@ const providerInfo: ProviderInfo = {
 vi.mock(import('tinro'));
 
 beforeAll(() => {
-  Object.defineProperty(window, 'telemetryTrack', { value: vi.fn().mockResolvedValue(undefined) });
-  Object.defineProperty(window, 'telemetryPage', { value: vi.fn().mockResolvedValue(undefined) });
   vi.mocked(client.system.getPlatform).mockResolvedValue('linux');
 });
 
@@ -508,9 +506,12 @@ describe.each<{
       expect(button).toBeInTheDocument();
       await userEvent.click(button);
       // telemetry sent
-      expect(window.telemetryTrack).toBeCalledWith('createNewProviderConnectionPageRequested', {
-        providerId: customProviderInfo.id,
-        name: customProviderInfo.name,
+      expect(client.telemetry.track).toBeCalledWith({
+        event: 'createNewProviderConnectionPageRequested',
+        eventProperties: {
+          providerId: customProviderInfo.id,
+          name: customProviderInfo.name,
+        },
       });
       // redirect to create new page
       expect(router.goto).toHaveBeenCalledWith(`/preferences/resources/provider/${customProviderInfo.internalId}`);

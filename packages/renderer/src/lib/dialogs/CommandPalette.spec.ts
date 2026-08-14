@@ -54,7 +54,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(window.telemetryTrack).mockResolvedValue(undefined);
+  vi.mocked(client.telemetry.track).mockResolvedValue(undefined);
   vi.mocked(window.getCommandPaletteSearchOptions).mockResolvedValue([
     { category: 'category 1', text: 'Category 1 text', placeholder: 'Enter category 1 item' },
     { category: 'category 2', text: 'Category 2 text', placeholder: 'Enter category 2 item' },

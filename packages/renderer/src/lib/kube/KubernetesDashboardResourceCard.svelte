@@ -3,6 +3,8 @@ import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
 import { Tooltip } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
+
 import KubernetesIcon from './KubernetesIcon.svelte';
 
 interface Props {
@@ -19,7 +21,10 @@ async function openLink(): Promise<void> {
   try {
     await window.navigateToRoute('kubernetes', { kind: kind });
   } finally {
-    await window.telemetryTrack('kubernetes.dashboard.resource', { type: type, kind: kind });
+    await client.telemetry.track({
+      event: 'kubernetes.dashboard.resource',
+      eventProperties: { type: type, kind: kind },
+    });
   }
 }
 </script>

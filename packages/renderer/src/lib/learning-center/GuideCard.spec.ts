@@ -58,8 +58,11 @@ suite('Guide card', () => {
     const cardButton = screen.getByRole('button', { name: 'Get started' });
     await fireEvent.click(cardButton);
     expect(vi.mocked(client.system.openExternal)).toHaveBeenCalledWith({ link: 'url' });
-    expect(vi.mocked(window.telemetryTrack)).toHaveBeenCalledWith('openLearningCenterGuide', {
-      guideId: 'id',
+    expect(vi.mocked(client.telemetry.track)).toHaveBeenCalledWith({
+      event: 'openLearningCenterGuide',
+      eventProperties: {
+        guideId: 'id',
+      },
     });
   });
 });

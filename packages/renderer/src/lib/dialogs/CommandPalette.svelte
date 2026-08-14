@@ -149,7 +149,7 @@ function displaySearchBar(): void {
   selectedFilteredIndex = 0;
   // toggle the display
   display = true;
-  window.telemetryTrack('globalSearch.opened').catch(console.error);
+  client.telemetry.track({ event: 'globalSearch.opened' }).catch(console.error);
 }
 
 async function handleKeydown(e: KeyboardEvent): Promise<void> {
@@ -278,7 +278,7 @@ async function executeAction(index: number): Promise<void> {
     commandHash: commandHash,
   };
 
-  await window.telemetryTrack('globalSearch.itemClicked', telemetryOptions);
+  await client.telemetry.track({ event: 'globalSearch.itemClicked', eventProperties: telemetryOptions });
 }
 
 function handleMousedown(e: MouseEvent): void {

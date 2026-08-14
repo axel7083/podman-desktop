@@ -7,6 +7,7 @@ import {
 } from '@podman-desktop/core-api';
 import { Button } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
 import SystemOverviewProviderCardBase from '/@/lib/dashboard/SystemOverviewProviderCardBase.svelte';
 import SystemOverviewProviderCardCompact from '/@/lib/dashboard/SystemOverviewProviderCardCompact.svelte';
 import SystemOverviewResourceUsage from '/@/lib/dashboard/SystemOverviewResourceUsage.svelte';
@@ -86,7 +87,10 @@ async function handleActionButtonClick(): Promise<void> {
     const canStart = (connection.status === 'stopped' || !!connection.error) && hasStartLifecycle(provider);
     if (canStart) {
       await startConnection(provider.internalId, $state.snapshot(connection));
-      await window.telemetryTrack('dashboard.healthCard.provider.started', { providerName: provider.name });
+      await client.telemetry.track({
+        event: 'dashboard.healthCard.provider.started',
+        eventProperties: { providerName: provider.name },
+      });
     } else {
       navigateToConnection();
     }

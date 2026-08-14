@@ -77,7 +77,7 @@ async function runContainer(commandLine: string): Promise<void> {
           buttons: ['Dismiss'],
         });
       }
-      await window.telemetryTrack('startFirstContainerByButton');
+      await client.telemetry.track({ event: 'startFirstContainerByButton' });
     }
   } catch (err) {
     await client.dialog.showMessageBox({

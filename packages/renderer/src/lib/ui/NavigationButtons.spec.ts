@@ -39,7 +39,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   vi.useFakeTimers({ shouldAdvanceTime: true });
 
-  vi.mocked(window.telemetryTrack).mockResolvedValue(undefined);
+  vi.mocked(client.telemetry.track).mockResolvedValue(undefined);
   vi.mocked(client.system.getPlatform).mockResolvedValue('linux');
 });
 
@@ -420,7 +420,10 @@ describe('dropdown item selection', () => {
       await fireEvent.mouseUp(containersItem);
 
       expect(goToHistoryIndex).toHaveBeenCalledWith(0);
-      expect(window.telemetryTrack).toHaveBeenCalledWith('navigation.historySelect', { direction: 'back' });
+      expect(client.telemetry.track).toHaveBeenCalledWith({
+        event: 'navigation.historySelect',
+        eventProperties: { direction: 'back' },
+      });
     });
   });
 });

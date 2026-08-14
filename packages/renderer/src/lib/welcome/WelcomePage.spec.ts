@@ -78,7 +78,7 @@ test('Expect that telemetry UI is hidden when telemetry has already been prompte
 });
 
 test('Expect that telemetry UI is visible when necessary', async () => {
-  vi.mocked(window.getTelemetryMessages).mockResolvedValue({ acceptMessage: 'Help improve the product' });
+  vi.mocked(client.telemetry.getTelemetryMessages).mockResolvedValue({ acceptMessage: 'Help improve the product' });
   await waitRender({ showWelcome: true, showTelemetry: true });
   const checkbox = screen.getByRole('checkbox', { name: 'Enable telemetry' });
   expect(checkbox).toBeInTheDocument();
@@ -88,7 +88,7 @@ test('Expect that telemetry messages is visible', async () => {
   const telem: TelemetryMessages = {
     acceptMessage: 'Help improve the product',
   };
-  vi.mocked(window.getTelemetryMessages).mockResolvedValue(telem);
+  vi.mocked(client.telemetry.getTelemetryMessages).mockResolvedValue(telem);
 
   await waitRender({ showWelcome: true, showTelemetry: true });
 
@@ -104,7 +104,7 @@ test('Expect that telemetry link opens url', async () => {
       url: 'info-url',
     },
   };
-  vi.mocked(window.getTelemetryMessages).mockResolvedValue(telem);
+  vi.mocked(client.telemetry.getTelemetryMessages).mockResolvedValue(telem);
 
   await waitRender({ showWelcome: true, showTelemetry: true });
   const accept = screen.getByText(telem.acceptMessage);
@@ -121,7 +121,7 @@ test('Expect that telemetry link is missing when info is not provided', async ()
   const telem = {
     acceptMessage: 'Help improve the product',
   } as TelemetryMessages;
-  vi.mocked(window.getTelemetryMessages).mockResolvedValue(telem);
+  vi.mocked(client.telemetry.getTelemetryMessages).mockResolvedValue(telem);
 
   await waitRender({ showWelcome: true, showTelemetry: true });
 
