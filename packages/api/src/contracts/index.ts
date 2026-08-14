@@ -29,6 +29,7 @@ import { extensionContract } from '/@/contracts/extension/extension.contract.js'
 import { feedbackContract } from '/@/contracts/feedback/feedback.contract.js';
 import { imageRegistryContract } from '/@/contracts/image-registry/image-registry.contract.js';
 import { learningCenterContract } from '/@/contracts/learning-center/learning-center.contract.js';
+import { listOrganizerContract } from '/@/contracts/list-organizer/list-organizer.contract.js';
 import { menuContract } from '/@/contracts/menu/menu.contract.js';
 import { notificationContract } from '/@/contracts/notification/notification.contract.js';
 import { onboardingContract } from '/@/contracts/onboarding/onboarding.contract.js';
@@ -61,6 +62,7 @@ export const contracts = {
   feedback: feedbackContract,
   imageRegistry: imageRegistryContract,
   learningCenter: learningCenterContract,
+  listOrganizer: listOrganizerContract,
   menu: menuContract,
   notification: notificationContract,
   onboarding: onboardingContract,

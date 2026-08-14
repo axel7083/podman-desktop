@@ -18,6 +18,8 @@
 
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { PodmanDesktopStoragePersist } from './PodmanDesktopStoragePersist';
 
 describe('PodmanDesktopStoragePersist', () => {
@@ -28,42 +30,51 @@ describe('PodmanDesktopStoragePersist', () => {
     persist = new PodmanDesktopStoragePersist();
   });
 
-  test('should call window.loadLayoutConfig when load is called', async () => {
+  test('should call client.listOrganizer.loadListConfig when load is called', async () => {
     const expectedResult = [
       { id: 'name', label: 'Name', enabled: true, originalOrder: 0 },
       { id: 'status', label: 'Status', enabled: true, originalOrder: 1 },
     ];
 
-    vi.mocked(window.loadListConfig).mockResolvedValue(expectedResult);
+    vi.mocked(client.listOrganizer.loadListConfig).mockResolvedValue(expectedResult);
 
     const result = await persist.load('containers', ['name', 'status']);
 
-    expect(vi.mocked(window.loadListConfig)).toHaveBeenCalledWith('containers', ['name', 'status']);
+    expect(vi.mocked(client.listOrganizer.loadListConfig)).toHaveBeenCalledWith({
+      key: 'containers',
+      availableColumns: ['name', 'status'],
+    });
     expect(result).toEqual(expectedResult);
   });
 
-  test('should call window.saveLayoutConfig when save is called', async () => {
+  test('should call client.listOrganizer.saveListConfig when save is called', async () => {
     const items = [
       { id: 'name', label: 'Name', enabled: true, originalOrder: 0 },
       { id: 'status', label: 'Status', enabled: false, originalOrder: 1 },
     ];
-    vi.mocked(window.saveListConfig).mockResolvedValue(undefined);
+    vi.mocked(client.listOrganizer.saveListConfig).mockResolvedValue(undefined);
 
     await persist.save('containers', items);
 
-    expect(vi.mocked(window.saveListConfig)).toHaveBeenCalledWith('containers', items);
+    expect(vi.mocked(client.listOrganizer.saveListConfig)).toHaveBeenCalledWith({
+      key: 'containers',
+      items,
+    });
   });
 
-  test('should call window.resetLayoutConfig when reset is called', async () => {
+  test('should call client.listOrganizer.resetListConfig when reset is called', async () => {
     const expectedResult = [
       { id: 'name', label: 'Name', enabled: true, originalOrder: 0 },
       { id: 'status', label: 'Status', enabled: true, originalOrder: 1 },
     ];
-    vi.mocked(window.resetListConfig).mockResolvedValue(expectedResult);
+    vi.mocked(client.listOrganizer.resetListConfig).mockResolvedValue(expectedResult);
 
     const result = await persist.reset('containers', ['name', 'status']);
 
-    expect(vi.mocked(window.resetListConfig)).toHaveBeenCalledWith('containers', ['name', 'status']);
+    expect(vi.mocked(client.listOrganizer.resetListConfig)).toHaveBeenCalledWith({
+      key: 'containers',
+      availableColumns: ['name', 'status'],
+    });
     expect(result).toEqual(expectedResult);
   });
 

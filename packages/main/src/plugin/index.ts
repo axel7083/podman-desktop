@@ -65,7 +65,6 @@ import type {
   KubernetesContextResources,
   KubernetesTroubleshootingInformation,
   ListImagesOptions,
-  ListOrganizerItem,
   LogType,
   ManifestCreateOptions,
   ManifestInspectInfo,
@@ -737,7 +736,6 @@ export class PluginSystem {
     extensionDevelopmentFolders.init();
 
     container.bind<ListOrganizerRegistry>(ListOrganizerRegistry).toSelf().inSingletonScope();
-    const listOrganizerRegistry = container.get<ListOrganizerRegistry>(ListOrganizerRegistry);
 
     container.bind<PinRegistry>(PinRegistry).toSelf().inSingletonScope();
     const pinRegistry = container.get<PinRegistry>(PinRegistry);
@@ -1953,35 +1951,6 @@ export class PluginSystem {
           context = providerRegistry.getMatchingLifecycleContext(providerId);
         }
         context.log.removeLogHandler();
-      },
-    );
-
-    this.ipcHandle(
-      'list-organizer-registry:loadListConfig',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        availableColumns: string[],
-      ): Promise<ListOrganizerItem[]> => {
-        return listOrganizerRegistry.loadListConfig(key, availableColumns);
-      },
-    );
-
-    this.ipcHandle(
-      'list-organizer-registry:saveListConfig',
-      async (_listener: Electron.IpcMainInvokeEvent, key: string, items: ListOrganizerItem[]): Promise<void> => {
-        return listOrganizerRegistry.saveListConfig(key, items);
-      },
-    );
-
-    this.ipcHandle(
-      'list-organizer-registry:resetListConfig',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        availableColumns: string[],
-      ): Promise<ListOrganizerItem[]> => {
-        return listOrganizerRegistry.resetListConfig(key, availableColumns);
       },
     );
 

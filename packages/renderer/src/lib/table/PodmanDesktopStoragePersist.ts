@@ -18,20 +18,22 @@
 
 import type { ListOrganizerItem, TablePersistence } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
+
 /**
  * Podman Desktop storage persistence implementation that uses the main process
- * window API for storing table layout configurations.
+ * oRPC client for storing table layout configurations.
  */
 export class PodmanDesktopStoragePersist implements TablePersistence {
   async load(kind: string, columnNames: string[]): Promise<ListOrganizerItem[]> {
-    return await window.loadListConfig(kind, columnNames);
+    return await client.listOrganizer.loadListConfig({ key: kind, availableColumns: columnNames });
   }
 
   async save(kind: string, items: ListOrganizerItem[]): Promise<void> {
-    await window.saveListConfig(kind, items);
+    await client.listOrganizer.saveListConfig({ key: kind, items });
   }
 
   async reset(kind: string, columnNames: string[]): Promise<ListOrganizerItem[]> {
-    return await window.resetListConfig(kind, columnNames);
+    return await client.listOrganizer.resetListConfig({ key: kind, availableColumns: columnNames });
   }
 }

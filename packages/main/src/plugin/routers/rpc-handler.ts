@@ -34,6 +34,7 @@ import { ExtensionRouter } from '/@/plugin/routers/extension.router.js';
 import { FeedbackRouter } from '/@/plugin/routers/feedback.router.js';
 import { ImageRegistryRouter } from '/@/plugin/routers/image-registry.router.js';
 import { LearningCenterRouter } from '/@/plugin/routers/learning-center.router.js';
+import { ListOrganizerRouter } from '/@/plugin/routers/list-organizer.router.js';
 import { MenuRouter } from '/@/plugin/routers/menu.router.js';
 import { NotificationRouter } from '/@/plugin/routers/notification.router.js';
 import { OnboardingRouter } from '/@/plugin/routers/onboarding.router.js';
@@ -87,6 +88,8 @@ export class RpcHandler {
     readonly imageRegistry: ImageRegistryRouter,
     @inject(LearningCenterRouter)
     readonly learningCenter: LearningCenterRouter,
+    @inject(ListOrganizerRouter)
+    readonly listOrganizer: ListOrganizerRouter,
     @inject(MenuRouter)
     readonly menu: MenuRouter,
     @inject(NotificationRouter)
@@ -132,6 +135,7 @@ export class RpcHandler {
       feedback: feedback.router,
       imageRegistry: imageRegistry.router,
       learningCenter: learningCenter.router,
+      listOrganizer: listOrganizer.router,
       menu: menu.router,
       notification: notification.router,
       onboarding: onboarding.router,

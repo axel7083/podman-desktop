@@ -66,7 +66,6 @@ import type {
   KubernetesContextResources,
   KubernetesTroubleshootingInformation,
   ListImagesOptions,
-  ListOrganizerItem,
   LogType,
   ManifestCreateOptions,
   ManifestInspectInfo,
@@ -1991,23 +1990,6 @@ export function initExposure(): void {
       resolveCallback();
     }
   });
-
-  // Layout Registry functions
-  contextBridge.exposeInMainWorld(
-    'loadListConfig',
-    async (kind: string, availableColumns: string[]): Promise<ListOrganizerItem[]> => {
-      return ipcInvoke('list-organizer-registry:loadListConfig', kind, availableColumns);
-    },
-  );
-  contextBridge.exposeInMainWorld('saveListConfig', async (kind: string, items: ListOrganizerItem[]): Promise<void> => {
-    return ipcInvoke('list-organizer-registry:saveListConfig', kind, items);
-  });
-  contextBridge.exposeInMainWorld(
-    'resetListConfig',
-    async (kind: string, availableColumns: string[]): Promise<ListOrganizerItem[]> => {
-      return ipcInvoke('list-organizer-registry:resetListConfig', kind, availableColumns);
-    },
-  );
 
   contextBridge.exposeInMainWorld('containerfileGetInfo', async (path: string): Promise<ContainerfileInfo> => {
     return ipcInvoke('containerfile:getInfo', path);

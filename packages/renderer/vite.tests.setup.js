@@ -154,6 +154,11 @@ vi.mock('/@/client', () => ({
     learningCenter: {
       listGuides: vi.fn(),
     },
+    listOrganizer: {
+      loadListConfig: vi.fn(),
+      saveListConfig: vi.fn(),
+      resetListConfig: vi.fn(),
+    },
     onboarding: {
       listOnboarding: vi.fn(),
       getOnboarding: vi.fn(),
