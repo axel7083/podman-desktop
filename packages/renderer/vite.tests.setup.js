@@ -92,6 +92,7 @@ vi.mock('/@/client', () => ({
     },
     tasks: { clearAll: vi.fn(), clear: vi.fn(), execute: vi.fn() },
     tempFile: { create: vi.fn(), remove: vi.fn() },
+    troubleshooting: { getDockerSocketMappingStatus: vi.fn() },
   },
 }));
 

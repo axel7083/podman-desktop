@@ -55,7 +55,6 @@ import type {
   ContextHealth,
   ContextPermission,
   ContributionInfo,
-  DockerSocketMappingStatusInfo,
   DocumentationInfo,
   ExtensionInfo,
   FeedbackMessages,
@@ -2932,13 +2931,6 @@ export class PluginSystem {
     this.ipcHandle(
       'context:collectAllValues',
       async (): Promise<Record<string, unknown>> => context.collectAllValues(),
-    );
-
-    this.ipcHandle(
-      'docker-compatibility:getSystemDockerSocketMappingStatus',
-      async (): Promise<DockerSocketMappingStatusInfo> => {
-        return dockerCompatibility.getSystemDockerSocketMappingStatus();
-      },
     );
 
     this.ipcHandle(

@@ -56,7 +56,6 @@ import type {
   ContextHealth,
   ContextPermission,
   ContributionInfo,
-  DockerSocketMappingStatusInfo,
   DocumentationInfo,
   ExploreFeature,
   FeedbackMessages,
@@ -2370,13 +2369,6 @@ export function initExposure(): void {
   contextBridge.exposeInMainWorld('contextCollectAllValues', async (): Promise<Record<string, unknown>> => {
     return ipcInvoke('context:collectAllValues');
   });
-
-  contextBridge.exposeInMainWorld(
-    'getSystemDockerSocketMappingStatus',
-    async (): Promise<DockerSocketMappingStatusInfo> => {
-      return ipcInvoke('docker-compatibility:getSystemDockerSocketMappingStatus');
-    },
-  );
 
   contextBridge.exposeInMainWorld(
     'kubernetesGetTroubleshootingInformation',

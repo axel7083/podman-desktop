@@ -20,7 +20,7 @@ let dockerSocketMappingStatusInfo: DockerSocketMappingStatusInfo | undefined = $
 let engineType: 'kubernetes' | 'podman' | 'docker' | undefined = $state(undefined);
 
 async function refreshSocketMappingStatus(): Promise<void> {
-  dockerSocketMappingStatusInfo = await window.getSystemDockerSocketMappingStatus();
+  dockerSocketMappingStatusInfo = await client.troubleshooting.getDockerSocketMappingStatus();
 
   if (dockerSocketMappingStatusInfo?.serverInfo?.type === 'podman') {
     engineType = 'podman';

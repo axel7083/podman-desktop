@@ -30,6 +30,7 @@ import { RpcHandler } from '/@/plugin/routers/rpc-handler.js';
 import { SystemRouter } from '/@/plugin/routers/system.router.js';
 import { TasksRouter } from '/@/plugin/routers/tasks.router.js';
 import { TempFileRouter } from '/@/plugin/routers/temp-file.router.js';
+import { TroubleshootingRouter } from '/@/plugin/routers/troubleshooting.router.js';
 
 const routersModule = new ContainerModule(options => {
   options.bind<AuthenticationRouter>(AuthenticationRouter).toSelf().inSingletonScope();
@@ -43,6 +44,7 @@ const routersModule = new ContainerModule(options => {
   options.bind<SystemRouter>(SystemRouter).toSelf().inSingletonScope();
   options.bind<TasksRouter>(TasksRouter).toSelf().inSingletonScope();
   options.bind<TempFileRouter>(TempFileRouter).toSelf().inSingletonScope();
+  options.bind<TroubleshootingRouter>(TroubleshootingRouter).toSelf().inSingletonScope();
   options.bind<RpcHandler>(RpcHandler).toSelf().inSingletonScope();
 });
 
