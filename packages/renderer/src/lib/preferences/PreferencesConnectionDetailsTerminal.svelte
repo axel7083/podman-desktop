@@ -125,17 +125,17 @@ async function refreshTerminal(): Promise<void> {
   }
 
   // grab font size
-  const fontSize = await client.configuration.getValue({
+  const fontSize = (await client.configuration.getValue({
     key: TerminalSettings.SectionName + '.' + TerminalSettings.FontSize,
-  });
+  })) as number | undefined;
 
-  const lineHeight = await client.configuration.getValue({
+  const lineHeight = (await client.configuration.getValue({
     key: TerminalSettings.SectionName + '.' + TerminalSettings.LineHeight,
-  });
+  })) as number | undefined;
 
-  const scrollback = await client.configuration.getValue({
+  const scrollback = (await client.configuration.getValue({
     key: TerminalSettings.SectionName + '.' + TerminalSettings.Scrollback,
-  });
+  })) as number | undefined;
 
   // get terminal if any
   const existingTerminal = getExistingTerminal(provider.internalId, connectionInfo.name);

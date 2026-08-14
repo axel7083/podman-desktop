@@ -99,7 +99,7 @@ function displayNewToast(taskInfo: TaskInfo): number {
 
 onMount(async () => {
   // read initial value
-  enabled = (await client.configuration.getValue({ key: CONFIGURATION_KEY })) ?? false;
+  enabled = ((await client.configuration.getValue({ key: CONFIGURATION_KEY })) as boolean | undefined) ?? false;
 
   // update the enabled flag each time the configuration properties is updated
   onDidChangeConfiguration.addEventListener(CONFIGURATION_KEY, obj => {

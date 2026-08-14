@@ -53,7 +53,9 @@ async function onFetchLayers(): Promise<void> {
 
 onMount(async () => {
   try {
-    const value = await client.configuration.getValue({ key: 'userConfirmation.fetchImageFiles' });
+    const value = (await client.configuration.getValue({ key: 'userConfirmation.fetchImageFiles' })) as
+      | boolean
+      | undefined;
     if (value !== undefined) {
       askFetchLayers = value;
     }

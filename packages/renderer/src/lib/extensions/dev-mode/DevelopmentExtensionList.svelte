@@ -37,9 +37,9 @@ onMount(async () => {
   //
   // Check if development mode is enabled
   isDevelopmentModeEnabled =
-    (await client.configuration.getValue({
+    ((await client.configuration.getValue({
       key: `${ExtensionLoaderSettings.SectionName}.${ExtensionLoaderSettings.DevelopmentMode}`,
-    })) ?? false;
+    })) as boolean | undefined) ?? false;
 
   // subscribe to extension changes
   unsubscribers.push(

@@ -63,7 +63,9 @@ const kubernetesContextsWithStates: KubeContextWithStates[] = $derived(
 
 onMount(async () => {
   try {
-    const val: string | undefined = await client.configuration.getValue({ key: 'kubernetes.Kubeconfig' });
+    const val: string | undefined = (await client.configuration.getValue({ key: 'kubernetes.Kubeconfig' })) as
+      | string
+      | undefined;
     if (val !== undefined) {
       kubeconfigFilePath = val;
     } else {

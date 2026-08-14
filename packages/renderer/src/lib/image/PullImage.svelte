@@ -258,9 +258,9 @@ onMount(() => {
 });
 
 onMount(async () => {
-  const configuration = await client.configuration.getValue({
+  const configuration = (await client.configuration.getValue({
     key: `${PreferredRegistriesSettings.SectionName}.${PreferredRegistriesSettings.Preferred}`,
-  });
+  })) as string | undefined;
   if (configuration) {
     const registries = configuration
       .split(',')

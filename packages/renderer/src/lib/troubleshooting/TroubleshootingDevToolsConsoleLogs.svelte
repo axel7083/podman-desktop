@@ -21,7 +21,8 @@ let showTimestamps = $state(false);
 
 onMount(async () => {
   logs = await window.getDevtoolsConsoleLogs();
-  showTimestamps = (await client.configuration.getValue({ key: TIMESTAMPS_CONFIG_KEY })) ?? false;
+  showTimestamps =
+    ((await client.configuration.getValue({ key: TIMESTAMPS_CONFIG_KEY })) as boolean | undefined) ?? false;
 });
 
 onDestroy(() => {});

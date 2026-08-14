@@ -50,15 +50,15 @@ async function refreshTerminal(): Promise<void> {
 
 onMount(async () => {
   // grab font size
-  const fontSize = await client.configuration.getValue({
+  const fontSize = (await client.configuration.getValue({
     key: TerminalSettings.SectionName + '.' + TerminalSettings.FontSize,
-  });
-  const lineHeight = await client.configuration.getValue({
+  })) as number | undefined;
+  const lineHeight = (await client.configuration.getValue({
     key: TerminalSettings.SectionName + '.' + TerminalSettings.LineHeight,
-  });
-  const scrollback = await client.configuration.getValue({
+  })) as number | undefined;
+  const scrollback = (await client.configuration.getValue({
     key: TerminalSettings.SectionName + '.' + TerminalSettings.Scrollback,
-  });
+  })) as number | undefined;
   logsTerminal = new Terminal({
     fontSize,
     lineHeight,

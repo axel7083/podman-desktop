@@ -33,7 +33,7 @@ let {
 let enableCatalog = $state(true);
 
 onMount(async () => {
-  const value = await client.configuration.getValue({ key: 'extensions.catalog.enabled' });
+  const value = (await client.configuration.getValue({ key: 'extensions.catalog.enabled' })) as boolean | undefined;
   enableCatalog = value ?? true;
 });
 

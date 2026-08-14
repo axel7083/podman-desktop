@@ -58,9 +58,9 @@ onMount(async () => {
   Monaco = await import('monaco-editor');
 
   // grab font size
-  const fontSize = await client.configuration.getValue({
+  const fontSize = (await client.configuration.getValue({
     key: EditorSettings.SectionName + '.' + EditorSettings.FontSize,
-  });
+  })) as number | undefined;
 
   editor = Monaco.editor.create(divEl, {
     value: content,

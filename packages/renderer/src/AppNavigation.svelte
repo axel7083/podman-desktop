@@ -160,7 +160,7 @@ let scrollRegionCleanup: (() => void) | undefined;
 onMount(async () => {
   const commandRegistry = new CommandRegistry();
   commandRegistry.init();
-  navWidth = (await client.configuration.getValue({ key: NAV_BAR_WIDTH_KEY })) ?? maxWidth;
+  navWidth = ((await client.configuration.getValue({ key: NAV_BAR_WIDTH_KEY })) as number | undefined) ?? maxWidth;
   await tick();
   const el = scrollRegionEl;
   if (el) {
