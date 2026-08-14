@@ -446,7 +446,7 @@ test('file mode: does not attempt temp file cleanup', async () => {
   expect(window.playKube).toHaveBeenCalledWith('Containerfile', expect.anything(), expect.anything());
 
   // Verify no temp file operations occurred
-  expect(window.removeTempFile).not.toHaveBeenCalled();
+  expect(client.tempFile.remove).not.toHaveBeenCalled();
 });
 
 test('custom YAML mode: button text changes to "Play custom YAML"', async () => {

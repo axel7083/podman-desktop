@@ -26,6 +26,7 @@ import { planetContract } from '/@/contracts/planet/planet.contract.js';
 import { proxyContract } from '/@/contracts/proxy/proxy.contract.js';
 import { systemContract } from '/@/contracts/system/system.contract.js';
 import { tasksContract } from '/@/contracts/tasks/tasks.contract.js';
+import { tempFileContract } from '/@/contracts/temp-file/temp-file.contract.js';
 
 export * from './constants.js';
 
@@ -40,4 +41,5 @@ export const contracts = {
   proxy: proxyContract,
   system: systemContract,
   tasks: tasksContract,
+  tempFile: tempFileContract,
 };

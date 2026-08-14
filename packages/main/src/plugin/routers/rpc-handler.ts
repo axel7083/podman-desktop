@@ -31,6 +31,7 @@ import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
 import { ProxyRouter } from '/@/plugin/routers/proxy.router.js';
 import { SystemRouter } from '/@/plugin/routers/system.router.js';
 import { TasksRouter } from '/@/plugin/routers/tasks.router.js';
+import { TempFileRouter } from '/@/plugin/routers/temp-file.router.js';
 
 export type OrpcContext = Context;
 
@@ -63,6 +64,8 @@ export class RpcHandler {
     readonly system: SystemRouter,
     @inject(TasksRouter)
     readonly tasks: TasksRouter,
+    @inject(TempFileRouter)
+    readonly tempFile: TempFileRouter,
   ) {
     const router = implementer.router({
       authentication: authentication.router,
@@ -75,6 +78,7 @@ export class RpcHandler {
       proxy: proxy.router,
       system: system.router,
       tasks: tasks.router,
+      tempFile: tempFile.router,
     });
 
     this.#handler = new RPCHandler(router, {

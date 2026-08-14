@@ -91,6 +91,7 @@ vi.mock('/@/client', () => ({
       getUrlProtocol: vi.fn(),
     },
     tasks: { clearAll: vi.fn(), clear: vi.fn(), execute: vi.fn() },
+    tempFile: { create: vi.fn(), remove: vi.fn() },
   },
 }));
 

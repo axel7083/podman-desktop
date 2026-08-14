@@ -822,8 +822,6 @@ export class PluginSystem {
     const inputQuickPickRegistry = container.get<InputQuickPickRegistry>(InputQuickPickRegistry);
     const customPickRegistry = container.get<CustomPickRegistry>(CustomPickRegistry);
     const imageRegistry = container.get<ImageRegistry>(ImageRegistry);
-    const tempFileService = container.get<TempFileService>(TempFileService);
-
     container.bind<ExperimentalFeatureFeedbackHandler>(ExperimentalFeatureFeedbackHandler).toSelf().inSingletonScope();
     const experimentalFeatureFeedbackHandler = container.get<ExperimentalFeatureFeedbackHandler>(
       ExperimentalFeatureFeedbackHandler,
@@ -1127,14 +1125,6 @@ export class PluginSystem {
         }
       },
     );
-
-    this.ipcHandle('temp-file-service:createTempFile', async (_listener, content: string): Promise<string> => {
-      return tempFileService.createTempFile(content);
-    });
-
-    this.ipcHandle('temp-file-service:removeTempFile', async (_listener, filePath: string): Promise<void> => {
-      return tempFileService.removeTempFile(filePath);
-    });
 
     this.ipcHandle(
       'container-provider-registry:startContainer',
