@@ -20,6 +20,7 @@ import { ContainerModule } from 'inversify';
 
 import { AuthenticationRouter } from '/@/plugin/routers/authentication.router.js';
 import { ConfigurationRouter } from '/@/plugin/routers/configuration.router.js';
+import { NotificationRouter } from '/@/plugin/routers/notification.router.js';
 import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
 import { ProxyRouter } from '/@/plugin/routers/proxy.router.js';
 import { RpcHandler } from '/@/plugin/routers/rpc-handler.js';
@@ -28,6 +29,7 @@ import { TasksRouter } from '/@/plugin/routers/tasks.router.js';
 const routersModule = new ContainerModule(options => {
   options.bind<AuthenticationRouter>(AuthenticationRouter).toSelf().inSingletonScope();
   options.bind<ConfigurationRouter>(ConfigurationRouter).toSelf().inSingletonScope();
+  options.bind<NotificationRouter>(NotificationRouter).toSelf().inSingletonScope();
   options.bind<PlanetRouter>(PlanetRouter).toSelf().inSingletonScope();
   options.bind<ProxyRouter>(ProxyRouter).toSelf().inSingletonScope();
   options.bind<TasksRouter>(TasksRouter).toSelf().inSingletonScope();

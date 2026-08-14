@@ -98,8 +98,6 @@ import type {
   NetworkCreateOptions,
   NetworkCreateResult,
   NetworkInspectInfo,
-  NotificationCard,
-  NotificationCardOptions,
   OnboardingInfo,
   OnboardingStatus,
   PodCreateOptions,
@@ -2532,22 +2530,6 @@ export function initExposure(): void {
 
   contextBridge.exposeInMainWorld('resetOnboarding', async (extensions: string[]): Promise<void> => {
     return ipcInvoke('onboardingRegistry:resetOnboarding', extensions);
-  });
-
-  contextBridge.exposeInMainWorld('listNotifications', async (): Promise<NotificationCard[]> => {
-    return ipcInvoke('notificationRegistry:listNotifications');
-  });
-
-  contextBridge.exposeInMainWorld('addNotification', async (notification: NotificationCardOptions): Promise<void> => {
-    return ipcInvoke('notificationRegistry:addNotification', notification);
-  });
-
-  contextBridge.exposeInMainWorld('removeNotification', async (id: number): Promise<void> => {
-    return ipcInvoke('notificationRegistry:removeNotification', id);
-  });
-
-  contextBridge.exposeInMainWorld('clearNotificationsQueue', async (): Promise<void> => {
-    return ipcInvoke('notificationRegistry:clearNotificationsQueue');
   });
 
   contextBridge.exposeInMainWorld('getImageCheckerProviders', async (): Promise<ImageCheckerInfo[]> => {

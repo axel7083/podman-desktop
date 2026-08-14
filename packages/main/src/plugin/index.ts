@@ -95,7 +95,6 @@ import type {
   NetworkCreateOptions,
   NetworkCreateResult,
   NetworkInspectInfo,
-  NotificationCard,
   NotificationCardOptions,
   OnboardingInfo,
   OnboardingStatus,
@@ -176,6 +175,7 @@ import product from '/@product.json' with { type: 'json' };
 // eslint-disable-next-line no-restricted-imports
 import rootPackage from '../../../../package.json' with { type: 'json' };
 import { AppearanceInit } from './appearance-init.js';
+import { AuthenticationImpl } from './authentication.js';
 import { AutostartEngine } from './autostart-engine.js';
 import { CancellationTokenRegistry } from './cancellation-token-registry.js';
 import { Certificates } from './certificates.js';
@@ -3154,25 +3154,6 @@ export class PluginSystem {
 
     this.ipcHandle('onboardingRegistry:resetOnboarding', async (_listener, extensions: string[]): Promise<void> => {
       return onboardingRegistry.resetOnboarding(extensions);
-    });
-
-    this.ipcHandle('notificationRegistry:listNotifications', async (): Promise<NotificationCard[]> => {
-      return notificationRegistry.getNotifications();
-    });
-
-    this.ipcHandle(
-      'notificationRegistry:addNotification',
-      async (_listener, notification: NotificationCardOptions): Promise<void> => {
-        notificationRegistry.addNotification(notification);
-      },
-    );
-
-    this.ipcHandle('notificationRegistry:removeNotification', async (_listener, id: number): Promise<void> => {
-      return notificationRegistry.removeNotificationById(id);
-    });
-
-    this.ipcHandle('notificationRegistry:clearNotificationsQueue', async (): Promise<void> => {
-      return notificationRegistry.removeAll();
     });
 
     this.ipcHandle('image-checker:getProviders', async (): Promise<ImageCheckerInfo[]> => {

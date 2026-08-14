@@ -16,20 +16,13 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { authenticationContract } from '/@/contracts/authentication/authentication.contract.js';
-import { configurationContract } from '/@/contracts/configuration/configuration.contract.js';
-import { notificationContract } from '/@/contracts/notification/notification.contract.js';
-import { planetContract } from '/@/contracts/planet/planet.contract.js';
-import { proxyContract } from '/@/contracts/proxy/proxy.contract.js';
-import { tasksContract } from '/@/contracts/tasks/tasks.contract.js';
+import { oc, type } from '@orpc/contract';
 
-export * from './constants.js';
+import type { NotificationCard, NotificationCardOptions } from '/@/notification.js';
 
-export const contracts = {
-  authentication: authenticationContract,
-  configuration: configurationContract,
-  notification: notificationContract,
-  planet: planetContract,
-  proxy: proxyContract,
-  tasks: tasksContract,
+export const notificationContract = {
+  list: oc.output(type<NotificationCard[]>()),
+  add: oc.input(type<NotificationCardOptions>()).output(type<void>()),
+  remove: oc.input(type<{ id: number }>()).output(type<void>()),
+  clearAll: oc.output(type<void>()),
 };
