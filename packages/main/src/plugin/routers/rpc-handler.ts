@@ -47,6 +47,7 @@ import { TelemetryRouter } from '/@/plugin/routers/telemetry.router.js';
 import { TempFileRouter } from '/@/plugin/routers/temp-file.router.js';
 import { TroubleshootingRouter } from '/@/plugin/routers/troubleshooting.router.js';
 import { UiRegistryRouter } from '/@/plugin/routers/ui-registry.router.js';
+import { WebviewRouter } from '/@/plugin/routers/webview.router.js';
 import { WelcomeRouter } from '/@/plugin/routers/welcome.router.js';
 
 export type OrpcContext = Context;
@@ -112,6 +113,8 @@ export class RpcHandler {
     readonly troubleshooting: TroubleshootingRouter,
     @inject(UiRegistryRouter)
     readonly uiRegistry: UiRegistryRouter,
+    @inject(WebviewRouter)
+    readonly webview: WebviewRouter,
     @inject(WelcomeRouter)
     readonly welcome: WelcomeRouter,
   ) {
@@ -142,6 +145,7 @@ export class RpcHandler {
       tempFile: tempFile.router,
       troubleshooting: troubleshooting.router,
       uiRegistry: uiRegistry.router,
+      webview: webview.router,
       welcome: welcome.router,
     });
 

@@ -161,6 +161,16 @@ vi.mock('/@/client', () => ({
       resetOnboarding: vi.fn(),
     },
     troubleshooting: { getDockerSocketMappingStatus: vi.fn() },
+    webview: {
+      getPreloadScript: vi.fn(),
+      getRegistryHttpPort: vi.fn(),
+      listWebviews: vi.fn(),
+      postMessage: vi.fn(),
+      updateState: vi.fn(),
+      makeDefaultWebviewVisible: vi.fn(),
+      registerDevTools: vi.fn(),
+      cleanupDevTools: vi.fn(),
+    },
     welcome: { getWelcomeMessages: vi.fn() },
     uiRegistry: {
       listContributions: vi.fn(),

@@ -25,13 +25,11 @@ import { render, screen } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { webviews } from '/@/stores/webviews';
 
 import Webview from './Webview.svelte';
 
-const makeDefaultWebviewVisibleMock = vi.fn();
-const getWebviewPreloadPathMock = vi.fn();
-const getWebviewRegistryHttpPortMock = vi.fn();
 const messages = new Map<string, (args: any) => void>();
 
 // webviews for the store
@@ -60,9 +58,9 @@ const webviewTestList: WebviewInfo[] = [
 
 beforeEach(() => {
   vi.resetAllMocks();
-  (window as any).makeDefaultWebviewVisible = makeDefaultWebviewVisibleMock.mockResolvedValue(undefined);
-  (window as any).getWebviewPreloadPath = getWebviewPreloadPathMock;
-  (window as any).getWebviewRegistryHttpPort = getWebviewRegistryHttpPortMock;
+  vi.mocked(client.webview.makeDefaultWebviewVisible).mockResolvedValue(undefined);
+  vi.mocked(client.webview.getPreloadScript).mockResolvedValue('/path/to/preload');
+  vi.mocked(client.webview.getRegistryHttpPort).mockResolvedValue(5678);
 
   vi.mocked(window.events.receive).mockImplementation((channel, func) => {
     messages.set(channel, func);
@@ -70,12 +68,6 @@ beforeEach(() => {
       dispose: vi.fn(),
     };
   });
-
-  // provide preload path
-  getWebviewPreloadPathMock.mockResolvedValue('/path/to/preload');
-
-  // provide registry port
-  getWebviewRegistryHttpPortMock.mockResolvedValue(5678);
 
   webviews.set(webviewTestList);
 });

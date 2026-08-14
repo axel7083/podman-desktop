@@ -94,7 +94,6 @@ import type {
   VolumeCreateResponseInfo,
   VolumeInspectInfo,
   VolumeListInfo,
-  WebviewInfo,
 } from '@podman-desktop/core-api';
 import type { ApiSenderChannelMap } from '@podman-desktop/core-api/api-sender';
 import { ApiSenderType } from '@podman-desktop/core-api/api-sender';
@@ -2601,31 +2600,6 @@ export class PluginSystem {
       return kubernetesClient.refreshContextState(context);
     });
 
-    this.ipcHandle('webview:devtools:register', async (_listener, webcontentId: number): Promise<void> => {
-      return webviewRegistry.registerWebviewDevTools(webcontentId);
-    });
-
-    this.ipcHandle('webview:devtools:cleanup', async (_listener, webcontentId: number): Promise<void> => {
-      return webviewRegistry.cleanupWebviewDevTools(webcontentId);
-    });
-
-    this.ipcHandle('webviewRegistry:listWebviews', async (_listener): Promise<WebviewInfo[]> => {
-      return webviewRegistry.listWebviews();
-    });
-    this.ipcHandle(
-      'webviewRegistry:post-message',
-      async (_listener, id: string, message: { data: unknown }): Promise<void> => {
-        return webviewRegistry.postMessageToWebview(id, message);
-      },
-    );
-    this.ipcHandle('webviewRegistry:update-state', async (_listener, id: string, state: unknown): Promise<void> => {
-      return webviewRegistry.updateWebviewState(id, state);
-    });
-
-    this.ipcHandle('webviewRegistry:makeDefaultWebviewVisible', async (_listener, webviewId: string): Promise<void> => {
-      return webviewRegistry.makeDefaultWebviewVisible(webviewId);
-    });
-
     this.ipcHandle(
       'navigation:navigateToRoute',
       async (_listener, routeId: string, ...args: unknown[]): Promise<void> => {
@@ -2639,15 +2613,6 @@ export class PluginSystem {
         navigationManager.navigateToHistoryEntry(extensionId, entryId);
       },
     );
-
-    this.ipcHandle('webview:get-preload-script', async (): Promise<string> => {
-      const preloadScriptPath = path.join(__dirname, '../../preload-webview/dist/index.cjs');
-      return `file://${preloadScriptPath}`;
-    });
-
-    this.ipcHandle('webview:get-registry-http-port', async (): Promise<number> => {
-      return webviewRegistry.getRegistryHttpPort();
-    });
 
     this.ipcHandle(
       'kubernetes:getTroubleshootingInformation',

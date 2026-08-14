@@ -96,7 +96,6 @@ import type {
   VolumeCreateOptions,
   VolumeInspectInfo,
   VolumeListInfo,
-  WebviewInfo,
 } from '@podman-desktop/core-api';
 import { NavigationPage, ORPC_START_CHANNEL } from '@podman-desktop/core-api';
 import type { ApiSenderType } from '@podman-desktop/core-api/api-sender';
@@ -1550,14 +1549,6 @@ export function initExposure(): void {
     return ipcInvoke('docker-desktop-plugin:delete', extensionId);
   });
 
-  contextBridge.exposeInMainWorld('getWebviewPreloadPath', async (): Promise<string> => {
-    return ipcInvoke('webview:get-preload-script');
-  });
-
-  contextBridge.exposeInMainWorld('getWebviewRegistryHttpPort', async (): Promise<number> => {
-    return ipcInvoke('webview:get-registry-http-port');
-  });
-
   contextBridge.exposeInMainWorld('getDDPreloadPath', async (): Promise<string> => {
     return ipcRenderer.invoke('docker-desktop-plugin:get-preload-script');
   });
@@ -1999,21 +1990,6 @@ export function initExposure(): void {
     if (resolveCallback) {
       resolveCallback();
     }
-  });
-
-  contextBridge.exposeInMainWorld('listWebviews', async (): Promise<WebviewInfo[]> => {
-    return ipcInvoke('webviewRegistry:listWebviews');
-  });
-  contextBridge.exposeInMainWorld('makeDefaultWebviewVisible', async (webviewId: string): Promise<void> => {
-    return ipcInvoke('webviewRegistry:makeDefaultWebviewVisible', webviewId);
-  });
-
-  contextBridge.exposeInMainWorld('registerWebviewDevTools', async (webcontentId: number): Promise<void> => {
-    return ipcInvoke('webview:devtools:register', webcontentId);
-  });
-
-  contextBridge.exposeInMainWorld('cleanupWebviewDevTools', async (webcontentId: number): Promise<void> => {
-    return ipcInvoke('webview:devtools:cleanup', webcontentId);
   });
 
   // Layout Registry functions

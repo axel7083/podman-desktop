@@ -42,6 +42,7 @@ import { telemetryContract } from '/@/contracts/telemetry/telemetry.contract.js'
 import { tempFileContract } from '/@/contracts/temp-file/temp-file.contract.js';
 import { troubleshootingContract } from '/@/contracts/troubleshooting/troubleshooting.contract.js';
 import { uiRegistryContract } from '/@/contracts/ui-registry/ui-registry.contract.js';
+import { webviewContract } from '/@/contracts/webview/webview.contract.js';
 import { welcomeContract } from '/@/contracts/welcome/welcome.contract.js';
 
 export * from './constants.js';
@@ -73,5 +74,6 @@ export const contracts = {
   tempFile: tempFileContract,
   troubleshooting: troubleshootingContract,
   uiRegistry: uiRegistryContract,
+  webview: webviewContract,
   welcome: welcomeContract,
 };

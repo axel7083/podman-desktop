@@ -20,6 +20,8 @@ import type { WebviewInfo } from '@podman-desktop/core-api';
 import type { Writable } from 'svelte/store';
 import { writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = [
@@ -46,7 +48,7 @@ export const webviews: Writable<WebviewInfo[]> = writable([]);
 
 // use helper here as window methods are initialized after the store in tests
 const listWebviews = async (): Promise<WebviewInfo[]> => {
-  return window.listWebviews();
+  return client.webview.listWebviews();
 };
 
 export const webviewsEventStore = new EventStore<WebviewInfo[]>(

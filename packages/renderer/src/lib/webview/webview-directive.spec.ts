@@ -19,6 +19,8 @@
 import type { WebviewInfo } from '@podman-desktop/core-api';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import {
   createWindowIpcApi,
   type WebviewDirectiveOptions,
@@ -63,44 +65,23 @@ describe('webview-directive', () => {
       getWebContentsId: vi.fn(),
       getWebviewInfo: vi.fn(),
     } as unknown as WebviewLifecycleManager;
-
-    delete (window as unknown as Record<string, unknown>).registerWebviewDevTools;
-    delete (window as unknown as Record<string, unknown>).cleanupWebviewDevTools;
   });
 
   describe('createWindowIpcApi', () => {
-    test('should create IPC API from window globals when available', () => {
-      (window as unknown as Record<string, unknown>).registerWebviewDevTools = mockIpcApi.registerWebviewDevTools;
-      (window as unknown as Record<string, unknown>).cleanupWebviewDevTools = mockIpcApi.cleanupWebviewDevTools;
+    test('should create IPC API that delegates to client.webview', async () => {
+      vi.mocked(client.webview.registerDevTools).mockResolvedValue(undefined);
+      vi.mocked(client.webview.cleanupDevTools).mockResolvedValue(undefined);
 
       const result = createWindowIpcApi();
 
-      expect(result).toEqual({
-        registerWebviewDevTools: mockIpcApi.registerWebviewDevTools,
-        cleanupWebviewDevTools: mockIpcApi.cleanupWebviewDevTools,
-      });
-    });
+      expect(result).toHaveProperty('registerWebviewDevTools');
+      expect(result).toHaveProperty('cleanupWebviewDevTools');
 
-    test('should throw error when registerWebviewDevTools is not available', () => {
-      (window as unknown as Record<string, unknown>).cleanupWebviewDevTools = mockIpcApi.cleanupWebviewDevTools;
+      await result.registerWebviewDevTools(123);
+      expect(client.webview.registerDevTools).toHaveBeenCalledWith({ webcontentId: 123 });
 
-      expect(() => createWindowIpcApi()).toThrow(
-        'Required webview DevTools management functions are not available on window',
-      );
-    });
-
-    test('should throw error when cleanupWebviewDevTools is not available', () => {
-      (window as unknown as Record<string, unknown>).registerWebviewDevTools = mockIpcApi.registerWebviewDevTools;
-
-      expect(() => createWindowIpcApi()).toThrow(
-        'Required webview DevTools management functions are not available on window',
-      );
-    });
-
-    test('should throw error when both functions are missing', () => {
-      expect(() => createWindowIpcApi()).toThrow(
-        'Required webview DevTools management functions are not available on window',
-      );
+      await result.cleanupWebviewDevTools(456);
+      expect(client.webview.cleanupDevTools).toHaveBeenCalledWith({ webcontentId: 456 });
     });
   });
 
@@ -143,10 +124,7 @@ describe('webview-directive', () => {
       expect(mockWebviewElement.addEventListener).toHaveBeenCalled();
     });
 
-    test('should fallback to window globals when ipcApi not provided', () => {
-      (window as unknown as Record<string, unknown>).registerWebviewDevTools = mockIpcApi.registerWebviewDevTools;
-      (window as unknown as Record<string, unknown>).cleanupWebviewDevTools = mockIpcApi.cleanupWebviewDevTools;
-
+    test('should fallback to client IPC API when ipcApi not provided', () => {
       const options: WebviewDirectiveOptions = {
         webviewInfo: mockWebviewInfo,
       };
@@ -168,10 +146,7 @@ describe('webview-directive', () => {
       expect(mockWebviewElement.addEventListener).toHaveBeenCalled();
     });
 
-    test('should work with empty options when window globals are available', () => {
-      (window as unknown as Record<string, unknown>).registerWebviewDevTools = mockIpcApi.registerWebviewDevTools;
-      (window as unknown as Record<string, unknown>).cleanupWebviewDevTools = mockIpcApi.cleanupWebviewDevTools;
-
+    test('should work with empty options using client IPC API', () => {
       const result = webviewLifecycle(mockWebviewElement);
 
       expect(result).toBeDefined();
@@ -211,18 +186,11 @@ describe('webview-directive', () => {
   });
 
   describe('error handling', () => {
-    test('should throw error when window globals missing and no ipcApi provided', () => {
-      expect(() => webviewLifecycle(mockWebviewElement)).toThrow(
-        'Required webview DevTools management functions are not available on window',
-      );
-    });
+    test('should work without explicit ipcApi since client is always available', () => {
+      const result = webviewLifecycle(mockWebviewElement);
 
-    test('should handle partial window globals gracefully', () => {
-      (window as unknown as Record<string, unknown>).registerWebviewDevTools = mockIpcApi.registerWebviewDevTools;
-
-      expect(() => webviewLifecycle(mockWebviewElement)).toThrow(
-        'Required webview DevTools management functions are not available on window',
-      );
+      expect(result).toBeDefined();
+      expect(mockWebviewElement.addEventListener).toHaveBeenCalled();
     });
   });
 
@@ -345,9 +313,6 @@ describe('webview-directive', () => {
     });
 
     test('should handle empty dependencies object', () => {
-      (window as unknown as Record<string, unknown>).registerWebviewDevTools = mockIpcApi.registerWebviewDevTools;
-      (window as unknown as Record<string, unknown>).cleanupWebviewDevTools = mockIpcApi.cleanupWebviewDevTools;
-
       const result = webviewLifecycleInternal(mockWebviewElement, {}, {});
 
       expect(result).toBeDefined();

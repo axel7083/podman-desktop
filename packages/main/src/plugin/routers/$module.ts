@@ -45,6 +45,7 @@ import { TelemetryRouter } from '/@/plugin/routers/telemetry.router.js';
 import { TempFileRouter } from '/@/plugin/routers/temp-file.router.js';
 import { TroubleshootingRouter } from '/@/plugin/routers/troubleshooting.router.js';
 import { UiRegistryRouter } from '/@/plugin/routers/ui-registry.router.js';
+import { WebviewRouter } from '/@/plugin/routers/webview.router.js';
 import { WelcomeRouter } from '/@/plugin/routers/welcome.router.js';
 
 const routersModule = new ContainerModule(options => {
@@ -74,6 +75,7 @@ const routersModule = new ContainerModule(options => {
   options.bind<TempFileRouter>(TempFileRouter).toSelf().inSingletonScope();
   options.bind<TroubleshootingRouter>(TroubleshootingRouter).toSelf().inSingletonScope();
   options.bind<UiRegistryRouter>(UiRegistryRouter).toSelf().inSingletonScope();
+  options.bind<WebviewRouter>(WebviewRouter).toSelf().inSingletonScope();
   options.bind<WelcomeRouter>(WelcomeRouter).toSelf().inSingletonScope();
   options.bind<RpcHandler>(RpcHandler).toSelf().inSingletonScope();
 });

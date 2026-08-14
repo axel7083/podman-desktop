@@ -18,6 +18,8 @@
 
 import type { WebviewInfo } from '@podman-desktop/core-api';
 
+import { client } from '/@/client';
+
 import { type IpcApi, type WebviewElement, WebviewLifecycleManager } from './webview-lifecycle-manager';
 
 /**
@@ -55,37 +57,20 @@ export interface WebviewDirectiveReturn {
 }
 
 /**
- * Safely creates an IPC API from window globals with proper error handling.
- *
- * This function attempts to create an IPC API object by reading the webview DevTools
- * management functions from the global window object. These functions should be
- * exposed by the preload script during application initialization.
+ * Creates an IPC API that delegates to the oRPC client for webview DevTools management.
  *
  * @returns An IPC API object with registerWebviewDevTools and cleanupWebviewDevTools methods
- * @throws {Error} When required window globals are not available or undefined
  *
  * @example
  * ```typescript
- * try {
- *   const ipcApi = createWindowIpcApi();
- *   // Use ipcApi for webview DevTools management
- * } catch (error) {
- *   console.error('Failed to create IPC API:', error);
- *   // Handle the error appropriately
- * }
+ * const ipcApi = createWindowIpcApi();
+ * // Use ipcApi for webview DevTools management
  * ```
  */
 export function createWindowIpcApi(): IpcApi {
-  if (!window.registerWebviewDevTools || !window.cleanupWebviewDevTools) {
-    throw new Error(
-      'Required webview DevTools management functions are not available on window. ' +
-        'Ensure the preload script has properly exposed registerWebviewDevTools and cleanupWebviewDevTools.',
-    );
-  }
-
   return {
-    registerWebviewDevTools: window.registerWebviewDevTools,
-    cleanupWebviewDevTools: window.cleanupWebviewDevTools,
+    registerWebviewDevTools: (webcontentId: number): Promise<void> => client.webview.registerDevTools({ webcontentId }),
+    cleanupWebviewDevTools: (webcontentId: number): Promise<void> => client.webview.cleanupDevTools({ webcontentId }),
   };
 }
 
