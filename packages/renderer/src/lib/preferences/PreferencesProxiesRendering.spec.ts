@@ -24,6 +24,7 @@ import { Dropdown } from '@podman-desktop/ui-svelte';
 import { fireEvent, render } from '@testing-library/svelte';
 import { assert, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import PreferencesProxiesRendering from '/@/lib/preferences/PreferencesProxiesRendering.svelte';
 import { PROXY_LABELS } from '/@/lib/preferences/proxy-state-labels';
 import { manualProxySettings } from '/@/stores/manual-proxy-settings.svelte';
@@ -41,8 +42,8 @@ beforeEach(() => {
   vi.resetAllMocks();
 
   vi.mocked(window.getProviderInfos).mockResolvedValue([]);
-  vi.mocked(window.getConfigurationProperties).mockResolvedValue({});
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(undefined);
+  vi.mocked(client.configuration.getProperties).mockResolvedValue({});
+  vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);
 });
 
 describe('dropdown', () => {
@@ -241,7 +242,7 @@ describe('dropdown', () => {
 describe('managed label', () => {
   test('should display managed label when http proxy is locked', async () => {
     vi.mocked(window.getProxyState).mockResolvedValue(ProxyState.PROXY_MANUAL);
-    vi.mocked(window.getConfigurationProperties).mockResolvedValue({
+    vi.mocked(client.configuration.getProperties).mockResolvedValue({
       [PROXY_CONFIG_KEYS.HTTP]: { id: PROXY_CONFIG_KEYS.HTTP, title: 'HTTP Proxy', parentId: 'proxy', locked: true },
     });
 
@@ -254,7 +255,7 @@ describe('managed label', () => {
 
   test('should display managed label when https proxy is locked', async () => {
     vi.mocked(window.getProxyState).mockResolvedValue(ProxyState.PROXY_MANUAL);
-    vi.mocked(window.getConfigurationProperties).mockResolvedValue({
+    vi.mocked(client.configuration.getProperties).mockResolvedValue({
       [PROXY_CONFIG_KEYS.HTTPS]: { id: PROXY_CONFIG_KEYS.HTTPS, title: 'HTTPS Proxy', parentId: 'proxy', locked: true },
     });
 
@@ -267,7 +268,7 @@ describe('managed label', () => {
 
   test('should display managed label when no proxy is locked', async () => {
     vi.mocked(window.getProxyState).mockResolvedValue(ProxyState.PROXY_MANUAL);
-    vi.mocked(window.getConfigurationProperties).mockResolvedValue({
+    vi.mocked(client.configuration.getProperties).mockResolvedValue({
       [PROXY_CONFIG_KEYS.NO_PROXY]: {
         id: PROXY_CONFIG_KEYS.NO_PROXY,
         title: 'No Proxy',
@@ -285,7 +286,7 @@ describe('managed label', () => {
 
   test('should display multiple managed labels when multiple proxy settings are locked', async () => {
     vi.mocked(window.getProxyState).mockResolvedValue(ProxyState.PROXY_MANUAL);
-    vi.mocked(window.getConfigurationProperties).mockResolvedValue({
+    vi.mocked(client.configuration.getProperties).mockResolvedValue({
       [PROXY_CONFIG_KEYS.HTTP]: { id: PROXY_CONFIG_KEYS.HTTP, title: 'HTTP Proxy', parentId: 'proxy', locked: true },
       [PROXY_CONFIG_KEYS.HTTPS]: { id: PROXY_CONFIG_KEYS.HTTPS, title: 'HTTPS Proxy', parentId: 'proxy', locked: true },
       [PROXY_CONFIG_KEYS.NO_PROXY]: {
@@ -305,7 +306,7 @@ describe('managed label', () => {
 
   test('should not display managed label when proxy settings are not locked', async () => {
     vi.mocked(window.getProxyState).mockResolvedValue(ProxyState.PROXY_MANUAL);
-    vi.mocked(window.getConfigurationProperties).mockResolvedValue({
+    vi.mocked(client.configuration.getProperties).mockResolvedValue({
       [PROXY_CONFIG_KEYS.HTTP]: { id: PROXY_CONFIG_KEYS.HTTP, title: 'HTTP Proxy', parentId: 'proxy', locked: false },
       [PROXY_CONFIG_KEYS.HTTPS]: {
         id: PROXY_CONFIG_KEYS.HTTPS,
@@ -330,7 +331,7 @@ describe('managed label', () => {
 
   test('should disable input when proxy setting is locked', async () => {
     vi.mocked(window.getProxyState).mockResolvedValue(ProxyState.PROXY_MANUAL);
-    vi.mocked(window.getConfigurationProperties).mockResolvedValue({
+    vi.mocked(client.configuration.getProperties).mockResolvedValue({
       [PROXY_CONFIG_KEYS.HTTP]: { id: PROXY_CONFIG_KEYS.HTTP, title: 'HTTP Proxy', parentId: 'proxy', locked: true },
     });
 
@@ -344,10 +345,10 @@ describe('managed label', () => {
 
   test('should display managed value in input when http proxy is locked', async () => {
     vi.mocked(window.getProxyState).mockResolvedValue(ProxyState.PROXY_MANUAL);
-    vi.mocked(window.getConfigurationProperties).mockResolvedValue({
+    vi.mocked(client.configuration.getProperties).mockResolvedValue({
       [PROXY_CONFIG_KEYS.HTTP]: { id: PROXY_CONFIG_KEYS.HTTP, title: 'HTTP Proxy', parentId: 'proxy', locked: true },
     });
-    vi.mocked(window.getConfigurationValue).mockResolvedValue('http://managed-https-proxy.foobar.com:8080');
+    vi.mocked(client.configuration.getValue).mockResolvedValue('http://managed-https-proxy.foobar.com:8080');
 
     const { container } = render(PreferencesProxiesRendering);
 
@@ -359,10 +360,10 @@ describe('managed label', () => {
 
   test('should display managed value in input when https proxy is locked', async () => {
     vi.mocked(window.getProxyState).mockResolvedValue(ProxyState.PROXY_MANUAL);
-    vi.mocked(window.getConfigurationProperties).mockResolvedValue({
+    vi.mocked(client.configuration.getProperties).mockResolvedValue({
       [PROXY_CONFIG_KEYS.HTTPS]: { id: PROXY_CONFIG_KEYS.HTTPS, title: 'HTTPS Proxy', parentId: 'proxy', locked: true },
     });
-    vi.mocked(window.getConfigurationValue).mockResolvedValue('http://managed-https-proxy.foobar.com:8080');
+    vi.mocked(client.configuration.getValue).mockResolvedValue('http://managed-https-proxy.foobar.com:8080');
 
     const { container } = render(PreferencesProxiesRendering);
 
@@ -374,7 +375,7 @@ describe('managed label', () => {
 
   test('should display managed value in input when no proxy is locked', async () => {
     vi.mocked(window.getProxyState).mockResolvedValue(ProxyState.PROXY_MANUAL);
-    vi.mocked(window.getConfigurationProperties).mockResolvedValue({
+    vi.mocked(client.configuration.getProperties).mockResolvedValue({
       [PROXY_CONFIG_KEYS.NO_PROXY]: {
         id: PROXY_CONFIG_KEYS.NO_PROXY,
         title: 'No Proxy',
@@ -382,7 +383,7 @@ describe('managed label', () => {
         locked: true,
       },
     });
-    vi.mocked(window.getConfigurationValue).mockResolvedValue('*.foobar.com,192.168.*.*');
+    vi.mocked(client.configuration.getValue).mockResolvedValue('*.foobar.com,192.168.*.*');
 
     const { container } = render(PreferencesProxiesRendering);
 
@@ -394,7 +395,7 @@ describe('managed label', () => {
 
   test('should display managed label when proxy.enabled is locked', async () => {
     vi.mocked(window.getProxyState).mockResolvedValue(ProxyState.PROXY_MANUAL);
-    vi.mocked(window.getConfigurationProperties).mockResolvedValue({
+    vi.mocked(client.configuration.getProperties).mockResolvedValue({
       [PROXY_CONFIG_KEYS.ENABLED]: {
         id: PROXY_CONFIG_KEYS.ENABLED,
         title: 'Proxy Enabled',
@@ -412,7 +413,7 @@ describe('managed label', () => {
 
   test('should disable dropdown when proxy.enabled is locked', async () => {
     vi.mocked(window.getProxyState).mockResolvedValue(ProxyState.PROXY_MANUAL);
-    vi.mocked(window.getConfigurationProperties).mockResolvedValue({
+    vi.mocked(client.configuration.getProperties).mockResolvedValue({
       [PROXY_CONFIG_KEYS.ENABLED]: {
         id: PROXY_CONFIG_KEYS.ENABLED,
         title: 'Proxy Enabled',
@@ -435,7 +436,7 @@ describe('managed label', () => {
 
   test('should not disable dropdown when proxy.enabled is not locked', async () => {
     vi.mocked(window.getProxyState).mockResolvedValue(ProxyState.PROXY_MANUAL);
-    vi.mocked(window.getConfigurationProperties).mockResolvedValue({
+    vi.mocked(client.configuration.getProperties).mockResolvedValue({
       [PROXY_CONFIG_KEYS.ENABLED]: {
         id: PROXY_CONFIG_KEYS.ENABLED,
         title: 'Proxy Enabled',
@@ -458,7 +459,7 @@ describe('managed label', () => {
 
   test('large test: should display managed label next to dropdown and disable inputs when proxy settings are locked', async () => {
     vi.mocked(window.getProxyState).mockResolvedValue(ProxyState.PROXY_MANUAL);
-    vi.mocked(window.getConfigurationProperties).mockResolvedValue({
+    vi.mocked(client.configuration.getProperties).mockResolvedValue({
       [PROXY_CONFIG_KEYS.ENABLED]: {
         id: PROXY_CONFIG_KEYS.ENABLED,
         title: 'Proxy Enabled',

@@ -24,6 +24,8 @@ import { tick } from 'svelte';
 import type { TinroRouteMeta } from 'tinro';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import PreferencesNavigation from './PreferencesNavigation.svelte';
 import { configurationProperties } from './stores/configurationProperties';
 import { onDidChangeRegisteredFeatures, registeredFeatures } from './stores/registered-features';
@@ -143,7 +145,7 @@ beforeEach(() => {
     },
     writable: true,
   });
-  vi.mocked(window.getConfigurationValue<boolean>).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 });
 
 test('Test rendering of the preferences navigation bar and its items', () => {
@@ -178,16 +180,16 @@ test('Test rendering of the compatibility docker pag if config is available', as
   await tick();
 
   // expect getConfigurationValue to be called
-  expect(window.getConfigurationValue).toBeCalledWith('dockerCompatibility.enabled');
+  expect(client.configuration.getValue).toBeCalledWith({ key: 'dockerCompatibility.enabled' });
 
   const dockerCompatLink = screen.getByRole('link', { name: 'Docker Compatibility' });
   expect(dockerCompatLink).toBeVisible();
 });
 
 test('Test rendering of the compatibility docker page is hidden if disabled', async () => {
-  // mock window.getConfigurationValue
-  vi.mocked(window.getConfigurationValue<boolean>).mockReset();
-  vi.mocked(window.getConfigurationValue<boolean>).mockResolvedValue(false);
+  // mock client.configuration.getValue
+  vi.mocked(client.configuration.getValue).mockReset();
+  vi.mocked(client.configuration.getValue).mockResolvedValue(false);
 
   render(PreferencesNavigation, {
     meta: {
@@ -199,7 +201,7 @@ test('Test rendering of the compatibility docker page is hidden if disabled', as
   await tick();
 
   // expect getConfigurationValue to be called
-  expect(window.getConfigurationValue).toBeCalledWith('dockerCompatibility.enabled');
+  expect(client.configuration.getValue).toBeCalledWith({ key: 'dockerCompatibility.enabled' });
 
   // should not be displayed
   const dockerCompatLink = screen.queryByRole('link', { name: 'Docker Compatibility' });
@@ -207,10 +209,10 @@ test('Test rendering of the compatibility docker page is hidden if disabled', as
 });
 
 test('Test rendering of the compatibility docker page does change if config changes from enabled to disabled', async () => {
-  // mock window.getConfigurationValue
-  vi.mocked(window.getConfigurationValue<boolean>).mockClear();
-  vi.mocked(window.getConfigurationValue<boolean>).mockResolvedValueOnce(true);
-  vi.mocked(window.getConfigurationValue<boolean>).mockResolvedValue(false);
+  // mock client.configuration.getValue
+  vi.mocked(client.configuration.getValue).mockClear();
+  vi.mocked(client.configuration.getValue).mockResolvedValueOnce(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(false);
 
   render(PreferencesNavigation, {
     meta: {
@@ -222,7 +224,7 @@ test('Test rendering of the compatibility docker page does change if config chan
   await tick();
 
   // expect getConfigurationValue to be called
-  expect(window.getConfigurationValue).toBeCalledWith('dockerCompatibility.enabled');
+  expect(client.configuration.getValue).toBeCalledWith({ key: 'dockerCompatibility.enabled' });
 
   const dockerCompatLink = screen.queryByRole('link', { name: 'Docker Compatibility' });
 
@@ -237,10 +239,10 @@ test('Test rendering of the compatibility docker page does change if config chan
 });
 
 test('Test rendering of the compatibility docker page does change if config changes from disabled to enabled', async () => {
-  // mock window.getConfigurationValue
-  vi.mocked(window.getConfigurationValue<boolean>).mockClear();
-  vi.mocked(window.getConfigurationValue<boolean>).mockResolvedValueOnce(false);
-  vi.mocked(window.getConfigurationValue<boolean>).mockResolvedValue(true);
+  // mock client.configuration.getValue
+  vi.mocked(client.configuration.getValue).mockClear();
+  vi.mocked(client.configuration.getValue).mockResolvedValueOnce(false);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
   render(PreferencesNavigation, {
     meta: {
@@ -252,7 +254,7 @@ test('Test rendering of the compatibility docker page does change if config chan
   await tick();
 
   // expect getConfigurationValue to be called
-  expect(window.getConfigurationValue).toBeCalledWith('dockerCompatibility.enabled');
+  expect(client.configuration.getValue).toBeCalledWith({ key: 'dockerCompatibility.enabled' });
 
   const dockerCompatLink = screen.queryByRole('link', { name: 'Docker Compatibility' });
 
@@ -267,9 +269,9 @@ test('Test rendering of the compatibility docker page does change if config chan
 });
 
 test('Test rendering of the compatibility docker page does change if config changes when other config settings is updated', async () => {
-  // mock window.getConfigurationValue
-  vi.mocked(window.getConfigurationValue<boolean>).mockClear();
-  vi.mocked(window.getConfigurationValue<boolean>).mockResolvedValueOnce(true);
+  // mock client.configuration.getValue
+  vi.mocked(client.configuration.getValue).mockClear();
+  vi.mocked(client.configuration.getValue).mockResolvedValueOnce(true);
 
   render(PreferencesNavigation, {
     meta: {
@@ -281,7 +283,7 @@ test('Test rendering of the compatibility docker page does change if config chan
   await tick();
 
   // expect getConfigurationValue to be called
-  expect(window.getConfigurationValue).toBeCalledWith('dockerCompatibility.enabled');
+  expect(client.configuration.getValue).toBeCalledWith({ key: 'dockerCompatibility.enabled' });
 
   const dockerCompatLink = screen.queryByRole('link', { name: 'Docker Compatibility' });
 

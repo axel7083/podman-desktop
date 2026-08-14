@@ -19,6 +19,8 @@
 import { get } from 'svelte/store';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { kubernetesContextsHealths, kubernetesContextsHealthsStore } from './kubernetes-context-health';
 
 // We need to have separate tests files to run different tests, as there are global variables in the store file, which cannot be reset between tests
@@ -30,7 +32,7 @@ beforeEach(() => {
 });
 
 test('kubernetesContextsHealths not in experimental states mode', async () => {
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(false);
+  vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(false);
   const initialValues = [
     {
       contextName: 'context1',

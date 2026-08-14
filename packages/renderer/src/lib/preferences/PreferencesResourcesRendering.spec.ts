@@ -26,6 +26,7 @@ import userEvent from '@testing-library/user-event';
 import { router } from 'tinro';
 import { assert, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { configurationProperties } from '/@/stores/configurationProperties';
 import { onboardingList } from '/@/stores/onboarding';
 import { providerInfos } from '/@/stores/providers';
@@ -898,7 +899,7 @@ describe('container connection resource metrics', () => {
     singleProvider.containerConnections = [providerInfo.containerConnections[0]];
     providerInfos.set([singleProvider]);
     configurationProperties.set(resourceConfigProperties);
-    vi.mocked(window.getConfigurationValue).mockResolvedValue(4);
+    vi.mocked(client.configuration.getValue).mockResolvedValue(4);
 
     render(PreferencesResourcesRendering, {});
 
@@ -925,7 +926,7 @@ describe('container connection resource metrics', () => {
     singleProvider.containerConnections = [providerInfo.containerConnections[0]];
     providerInfos.set([singleProvider]);
     configurationProperties.set([...resourceConfigProperties, nonResourceConfig]);
-    vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+    vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
     render(PreferencesResourcesRendering, {});
 
@@ -941,7 +942,7 @@ describe('container connection resource metrics', () => {
     singleProvider.containerConnections = [providerInfo.containerConnections[0]];
     providerInfos.set([singleProvider]);
     configurationProperties.set(resourceConfigProperties);
-    vi.mocked(window.getConfigurationValue).mockResolvedValue(4);
+    vi.mocked(client.configuration.getValue).mockResolvedValue(4);
 
     render(PreferencesResourcesRendering, {});
 

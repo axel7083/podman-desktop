@@ -26,6 +26,7 @@ import { get } from 'svelte/store';
 /* eslint-enable import/no-duplicates */
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { onboardingList } from '/@/stores/onboarding';
 import { providerInfos } from '/@/stores/providers';
 
@@ -65,7 +66,7 @@ test('Expect that the close button closes the window', async () => {
 });
 
 test('Expect that telemetry UI is hidden when telemetry has already been prompted', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue('true');
+  vi.mocked(client.configuration.getValue).mockResolvedValue('true');
   await waitRender({ showWelcome: true, showTelemetry: false });
   let checkbox;
   try {
@@ -321,12 +322,18 @@ test('Make sure the provider with name podman appears first even if its 2nd in t
 test('Expect that releaseNotesBanner.show configuration value is set to current version when showWelcome is set to true', async () => {
   await waitRender({});
   await vi.waitFor(() =>
-    expect(vi.mocked(window.updateConfigurationValue)).toBeCalledWith(`releaseNotesBanner.show`, '1.0.0'),
+    expect(vi.mocked(client.configuration.updateValue)).toBeCalledWith({
+      key: `releaseNotesBanner.show`,
+      value: '1.0.0',
+    }),
   );
 });
 
 test('Expect that releaseNotesBanner.show configuration value is not set to current version when showWelcome is not set to true', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValueOnce('value1');
+  vi.mocked(client.configuration.getValue).mockResolvedValueOnce('value1');
   await waitRender({});
-  expect(vi.mocked(window.updateConfigurationValue)).not.toBeCalledWith(`releaseNotesBanner.show`, '1.0.0');
+  expect(vi.mocked(client.configuration.updateValue)).not.toBeCalledWith({
+    key: `releaseNotesBanner.show`,
+    value: '1.0.0',
+  });
 });

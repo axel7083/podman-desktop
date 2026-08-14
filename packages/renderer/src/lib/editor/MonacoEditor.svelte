@@ -6,6 +6,7 @@ import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
 import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 import type { Unsubscriber } from 'svelte/store';
 
+import { client } from '/@/client';
 import { AppearanceUtil } from '/@/lib/appearance/appearance-util';
 import { isDark } from '/@/stores/appearance';
 
@@ -57,9 +58,9 @@ onMount(async () => {
   Monaco = await import('monaco-editor');
 
   // grab font size
-  const fontSize = await window.getConfigurationValue<number>(
-    EditorSettings.SectionName + '.' + EditorSettings.FontSize,
-  );
+  const fontSize = await client.configuration.getValue({
+    key: EditorSettings.SectionName + '.' + EditorSettings.FontSize,
+  });
 
   editor = Monaco.editor.create(divEl, {
     value: content,

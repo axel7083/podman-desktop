@@ -24,6 +24,7 @@ import { get } from 'svelte/store';
 import { router, type TinroRoute } from 'tinro';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { lastPage } from '/@/stores/breadcrumb';
 import { podsInfos } from '/@/stores/pods';
 
@@ -53,8 +54,8 @@ beforeEach(() => {
 
   vi.mocked(window.getContributedMenus).mockResolvedValue([]);
   vi.mocked(window.listContainers).mockResolvedValue([]);
-  vi.mocked(window.getConfigurationProperties).mockResolvedValue({});
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(undefined);
+  vi.mocked(client.configuration.getProperties).mockResolvedValue({});
+  vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);
 });
 
 test('Expect redirect to previous page if pod is deleted', async () => {

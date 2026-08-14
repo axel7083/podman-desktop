@@ -3,6 +3,7 @@ import type { StatusBarEntry } from '@podman-desktop/core-api';
 import { ExperimentalTasksSettings } from '@podman-desktop/core-api';
 import { onDestroy, onMount } from 'svelte';
 
+import { client } from '/@/client';
 import TaskIndicator from '/@/lib/statusbar/TaskIndicator.svelte';
 import { isHighContrast } from '/@/stores/appearance';
 import { onDidChangeConfiguration } from '/@/stores/configurationProperties';
@@ -66,10 +67,12 @@ onMount(async () => {
       });
   });
 
-  experimentalTaskStatusBar = await window.isExperimentalConfigurationEnabled(
-    `${ExperimentalTasksSettings.SectionName}.${ExperimentalTasksSettings.StatusBar}`,
-  );
-  experimentalProvidersStatusBar = await window.isExperimentalConfigurationEnabled('statusbarProviders.showProviders');
+  experimentalTaskStatusBar = await client.configuration.isExperimentalEnabled({
+    key: `${ExperimentalTasksSettings.SectionName}.${ExperimentalTasksSettings.StatusBar}`,
+  });
+  experimentalProvidersStatusBar = await client.configuration.isExperimentalEnabled({
+    key: 'statusbarProviders.showProviders',
+  });
 
   onDidChangeConfiguration.addEventListener('statusbarProviders.showProviders', onDidChangeConfigurationCallback);
 });

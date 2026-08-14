@@ -28,6 +28,7 @@ import { get } from 'svelte/store';
 import { router } from 'tinro';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { containersInfos } from '/@/stores/containers';
 import { providerInfos } from '/@/stores/providers';
 
@@ -40,7 +41,7 @@ beforeEach(() => {
   vi.mocked(window.listPods).mockResolvedValue([]);
   vi.mocked(window.listViewsContributions).mockResolvedValue([]);
   vi.mocked(window.getContributedMenus).mockResolvedValue([]);
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(false);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(false);
   vi.mocked(window.onDidUpdateProviderStatus).mockResolvedValue(undefined);
   vi.mocked(window.listContainers).mockResolvedValue([]);
   vi.mocked(window.getProviderInfos).mockResolvedValue([
@@ -798,7 +799,7 @@ test('Sort containers based on selected parameter', async () => {
 
 test('Expect user confirmation to pop up when preferences require', async () => {
   vi.mocked(window.listContainers).mockResolvedValue([]);
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
   vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));

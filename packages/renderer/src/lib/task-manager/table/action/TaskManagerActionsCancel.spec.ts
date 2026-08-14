@@ -21,6 +21,7 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import type { TaskInfoUI } from '/@/stores/tasks';
 
 import TaskManagerActionsCancel from './TaskManagerActionsCancel.svelte';
@@ -28,7 +29,6 @@ import TaskManagerActionsCancel from './TaskManagerActionsCancel.svelte';
 beforeAll(() => {
   Object.defineProperty(global, 'window', {
     value: {
-      getConfigurationValue: vi.fn(),
       showMessageBox: vi.fn(),
       cancelToken: vi.fn(),
     },
@@ -38,7 +38,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.getConfigurationValue).mockResolvedValue({});
+  vi.mocked(client.configuration.getValue).mockResolvedValue({});
 });
 
 const completedTask: TaskInfoUI = {

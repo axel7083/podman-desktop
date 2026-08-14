@@ -29,7 +29,6 @@ import TaskManagerBulkDeleteButton from './TaskManagerBulkDeleteButton.svelte';
 beforeAll(() => {
   Object.defineProperty(global, 'window', {
     value: {
-      getConfigurationValue: vi.fn(),
       showMessageBox: vi.fn(),
     },
     writable: true,
@@ -64,7 +63,7 @@ const bulkOperationTitle = 'bulk delete operation';
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.getConfigurationValue).mockResolvedValue({});
+  vi.mocked(client.configuration.getValue).mockResolvedValue({});
   tasksInfo.set([selectedTask1, selectedTask2, unselectedTask]);
 });
 

@@ -20,12 +20,13 @@ import '@testing-library/jest-dom/vitest';
 
 import { beforeAll, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import ProviderConfigured from '/@/lib/dashboard/ProviderConfigured.svelte';
 
 import { verifyStatus } from './ProviderStatusTestHelper.spec';
 
 beforeAll(() => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
   vi.mocked(window.events.receive).mockImplementation((_channel, func) => {
     func();
     return { dispose: vi.fn() };

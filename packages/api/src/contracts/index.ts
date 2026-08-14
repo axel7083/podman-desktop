@@ -16,12 +16,14 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import { configurationContract } from '/@/contracts/configuration/configuration.contract.js';
 import { planetContract } from '/@/contracts/planet/planet.contract.js';
 import { tasksContract } from '/@/contracts/tasks/tasks.contract.js';
 
 export * from './constants.js';
 
 export const contracts = {
+  configuration: configurationContract,
   planet: planetContract,
   tasks: tasksContract,
 };

@@ -25,6 +25,15 @@ import { vi } from 'vitest';
 
 vi.mock('/@/client', () => ({
   client: {
+    configuration: {
+      getProperties: vi.fn(),
+      getValue: vi.fn(),
+      updateValue: vi.fn(),
+      isExperimentalEnabled: vi.fn(),
+      enableExperimental: vi.fn(),
+      disableExperimental: vi.fn(),
+      updateExperimentalValue: vi.fn(),
+    },
     tasks: { clearAll: vi.fn(), clear: vi.fn(), execute: vi.fn() },
   },
 }));

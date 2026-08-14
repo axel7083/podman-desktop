@@ -23,6 +23,7 @@ import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { readable } from 'svelte/store';
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { kubernetesContextsHealths } from '/@/stores/kubernetes-context-health';
 import { kubernetesContextsPermissions } from '/@/stores/kubernetes-context-permission';
 import { kubernetesContexts } from '/@/stores/kubernetes-contexts';
@@ -225,7 +226,6 @@ describe.each([
     initMocks: (): void => {
       Object.defineProperty(global, 'window', {
         value: {
-          isExperimentalConfigurationEnabled: vi.fn(),
           telemetryTrack: vi.fn(),
           kubernetesRefreshContextState: vi.fn(),
         },
@@ -242,7 +242,7 @@ describe.each([
           count: 2,
         },
       ]);
-      vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+      vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
       kubernetesContextsHealths.set([
         {
           contextName: 'context-name',

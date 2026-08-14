@@ -22,6 +22,7 @@ import type { CatalogExtension } from '@podman-desktop/core-api/extension-catalo
 import { cleanup, fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { type CombinedExtensionInfoUI } from '/@/stores/all-installed-extensions';
 import { catalogExtensionInfos } from '/@/stores/catalog-extensions';
 import { extensionInfos } from '/@/stores/extensions';
@@ -30,7 +31,7 @@ import ExtensionList from './ExtensionList.svelte';
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 });
 
 export const aFakeExtension: CatalogExtension = {
@@ -96,7 +97,7 @@ const combined: CombinedExtensionInfoUI[] = [
 ] as unknown[] as CombinedExtensionInfoUI[];
 
 test('Expect to see extensions', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
   catalogExtensionInfos.set([aFakeExtension, bFakeExtension]);
   extensionInfos.set(combined);
 
@@ -124,7 +125,7 @@ test('Expect to see extensions', async () => {
 });
 
 test('Expect to see empty screen on extension page only', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
   catalogExtensionInfos.set([aFakeExtension]);
   extensionInfos.set([]);
 
@@ -143,7 +144,7 @@ test('Expect to see empty screen on extension page only', async () => {
 });
 
 test('Expect to see empty screen on catalog page only', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
   catalogExtensionInfos.set([]);
   extensionInfos.set(combined);
 
@@ -165,7 +166,7 @@ test('Expect to see empty screen on catalog page only', async () => {
 });
 
 test('Expect to see empty screens on both pages', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
   catalogExtensionInfos.set([]);
   extensionInfos.set([]);
 
@@ -184,7 +185,7 @@ test('Expect to see empty screens on both pages', async () => {
 });
 
 test('Search extension page searches also description', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
   catalogExtensionInfos.set([aFakeExtension]);
   extensionInfos.set(combined);
 
@@ -201,11 +202,11 @@ test('Search extension page searches also description', async () => {
   cleanup();
 
   // Change the search
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
   render(ExtensionList, { searchTerm: 'foo' });
 
   await vi.waitFor(() => {
-    expect(window.getConfigurationValue).toHaveBeenCalled();
+    expect(client.configuration.getValue).toHaveBeenCalled();
   });
 
   // The extension should not be there as it doesn't have "foo" in the description
@@ -214,7 +215,7 @@ test('Search extension page searches also description', async () => {
 });
 
 test('Search catalog page searches also description', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
   catalogExtensionInfos.set([aFakeExtension, bFakeExtension]);
   extensionInfos.set([]);
 
@@ -238,14 +239,14 @@ test('Search catalog page searches also description', async () => {
 });
 
 test('Expect to see local extensions tab content', async () => {
-  vi.mocked(window.getConfigurationValue).mockImplementation(async (key: string) => {
+  vi.mocked(client.configuration.getValue).mockImplementation(async ({ key }: { key: string }) => {
     // Return true for local extensions and catalog enabled
     return key === 'extensions.localExtensions.enabled' || key === 'extensions.catalog.enabled';
   });
   catalogExtensionInfos.set([]);
   extensionInfos.set([]);
 
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(undefined);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);
 
   render(ExtensionList);
 
@@ -263,7 +264,7 @@ test('Expect to see local extensions tab content', async () => {
 });
 
 test('Switching tabs keeps only terms in search term', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
   catalogExtensionInfos.set([aFakeExtension, bFakeExtension]);
   extensionInfos.set([]);
 
@@ -292,12 +293,12 @@ test('Expect install custom button is visible', async () => {
 });
 
 test('Expect install custom button to not be visible if extensions.customExtensions.enabled is false', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(false);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(false);
 
   render(ExtensionList);
 
   await vi.waitFor(() => {
-    expect(window.getConfigurationValue).toHaveBeenCalled();
+    expect(client.configuration.getValue).toHaveBeenCalled();
   });
 
   const installCustomButton = screen.queryByRole('button', { name: 'Install custom' });
@@ -305,7 +306,7 @@ test('Expect install custom button to not be visible if extensions.customExtensi
 });
 
 test('Expect local extensions tab is visible', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(undefined);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);
   catalogExtensionInfos.set([]);
   extensionInfos.set([]);
 
@@ -317,14 +318,14 @@ test('Expect local extensions tab is visible', async () => {
 });
 
 test('Expect local extensions tab to not be visible if extensions.localExtensions.enabled is false', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(false);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(false);
   catalogExtensionInfos.set([]);
   extensionInfos.set([]);
 
   render(ExtensionList);
 
   await vi.waitFor(() => {
-    expect(window.getConfigurationValue).toHaveBeenCalled();
+    expect(client.configuration.getValue).toHaveBeenCalled();
   });
 
   const localExtensionsTab = screen.queryByRole('button', { name: 'Local Extensions' });
@@ -332,7 +333,7 @@ test('Expect local extensions tab to not be visible if extensions.localExtension
 });
 
 test('Expect catalog tab is visible', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(undefined);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);
   catalogExtensionInfos.set([]);
   extensionInfos.set([]);
 
@@ -345,7 +346,7 @@ test('Expect catalog tab is visible', async () => {
 });
 
 test('Expect catalog tab to not be visible if extensions.catalog.enabled is false', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(false);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(false);
   catalogExtensionInfos.set([]);
   extensionInfos.set([]);
 

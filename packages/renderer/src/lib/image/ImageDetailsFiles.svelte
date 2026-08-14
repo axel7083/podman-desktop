@@ -5,6 +5,7 @@ import { Button, Checkbox } from '@podman-desktop/ui-svelte';
 import { onDestroy, onMount } from 'svelte';
 import type { Unsubscriber } from 'svelte/store';
 
+import { client } from '/@/client';
 import { imageFilesProviders } from '/@/stores/image-files-providers';
 
 import FilesystemLayerView from './FilesystemLayerView.svelte';
@@ -52,7 +53,7 @@ async function onFetchLayers(): Promise<void> {
 
 onMount(async () => {
   try {
-    const value = await window.getConfigurationValue<boolean>('userConfirmation.fetchImageFiles');
+    const value = await client.configuration.getValue({ key: 'userConfirmation.fetchImageFiles' });
     if (value !== undefined) {
       askFetchLayers = value;
     }

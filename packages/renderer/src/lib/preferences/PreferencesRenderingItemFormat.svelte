@@ -3,6 +3,7 @@ import type { IConfigurationPropertyRecordedSchema } from '@podman-desktop/core-
 import { ErrorMessage } from '@podman-desktop/ui-svelte';
 import { onDestroy, onMount } from 'svelte';
 
+import { client } from '/@/client';
 import Markdown from '/@/lib/markdown/Markdown.svelte';
 import BooleanItem from '/@/lib/preferences/item-formats/BooleanItem.svelte';
 import EnumItem from '/@/lib/preferences/item-formats/EnumItem.svelte';
@@ -110,9 +111,9 @@ async function update(record: IConfigurationPropertyRecordedSchema): Promise<voi
         settings = JSON.parse(JSON.stringify(recordValue));
       }
       if (record.experimental) {
-        await window.updateExperimentalConfigurationValue(record.id, settings, record.scope);
+        await client.configuration.updateExperimentalValue({ key: record.id, value: settings, scope: record.scope });
       } else {
-        await window.updateConfigurationValue(record.id, settings, record.scope);
+        await client.configuration.updateValue({ key: record.id, value: settings, scope: record.scope });
       }
     } catch (error) {
       invalidText = String(error);

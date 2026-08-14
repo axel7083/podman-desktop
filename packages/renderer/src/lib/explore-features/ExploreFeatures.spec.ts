@@ -23,6 +23,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { afterEach, beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { exploreFeaturesInfo } from '/@/stores/explore-features';
 
 import ExploreFeatures from './ExploreFeatures.svelte';
@@ -122,18 +123,24 @@ test('Toggling expansion updates configuration value for expanded state', async 
     expect(carouselTitle).toBeVisible();
   });
 
-  expect(vi.mocked(window.updateConfigurationValue)).not.toHaveBeenCalled();
+  expect(vi.mocked(client.configuration.updateValue)).not.toHaveBeenCalled();
 
   const button = screen.getByRole('button', { name: 'Explore Features' });
   expect(button).toBeInTheDocument();
   await waitFor(() => expect(button).toHaveAttribute('aria-expanded', 'true'));
 
   await fireEvent.click(button);
-  expect(vi.mocked(window.updateConfigurationValue)).toHaveBeenCalledWith('exploreFeatures.expanded', false);
+  expect(vi.mocked(client.configuration.updateValue)).toHaveBeenCalledWith({
+    key: 'exploreFeatures.expanded',
+    value: false,
+  });
   await waitFor(() => expect(button).toHaveAttribute('aria-expanded', 'false'));
 
   await fireEvent.click(button);
-  expect(vi.mocked(window.updateConfigurationValue)).toHaveBeenCalledWith('exploreFeatures.expanded', true);
+  expect(vi.mocked(client.configuration.updateValue)).toHaveBeenCalledWith({
+    key: 'exploreFeatures.expanded',
+    value: true,
+  });
   expect(button).toHaveAttribute('aria-expanded', 'true');
 });
 
@@ -149,14 +156,14 @@ test('Expanded when the config value not set', async () => {
 });
 
 test.each([true, false])('Carousel aria-expanded value set to returned config value', async expanded => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(expanded);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(expanded);
   render(ExploreFeatures);
   await vi.waitFor(() => {
     const carouselTitle = screen.getByText('Explore Features');
     expect(carouselTitle).toBeVisible();
   });
 
-  await waitFor(() => expect(vi.mocked(window.getConfigurationValue)).toBeCalled());
+  await waitFor(() => expect(vi.mocked(client.configuration.getValue)).toBeCalled());
 
   const button = screen.getByRole('button', { name: 'Explore Features' });
   expect(button).toHaveAttribute('aria-expanded', `${expanded}`);

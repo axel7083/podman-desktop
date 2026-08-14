@@ -5,6 +5,7 @@ import { Button } from '@podman-desktop/ui-svelte';
 import { onDestroy, onMount } from 'svelte';
 import type { Unsubscriber } from 'svelte/store';
 
+import { client } from '/@/client';
 import DevelopmentExtensionListTable from '/@/lib/extensions/dev-mode/table/ListTable.svelte';
 import { extensionDevelopmentFolders } from '/@/stores/extensionDevelopmentFolders';
 import { extensionInfos } from '/@/stores/extensions';
@@ -36,9 +37,9 @@ onMount(async () => {
   //
   // Check if development mode is enabled
   isDevelopmentModeEnabled =
-    (await window.getConfigurationValue(
-      `${ExtensionLoaderSettings.SectionName}.${ExtensionLoaderSettings.DevelopmentMode}`,
-    )) ?? false;
+    (await client.configuration.getValue({
+      key: `${ExtensionLoaderSettings.SectionName}.${ExtensionLoaderSettings.DevelopmentMode}`,
+    })) ?? false;
 
   // subscribe to extension changes
   unsubscribers.push(

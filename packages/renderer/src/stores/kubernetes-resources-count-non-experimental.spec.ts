@@ -20,6 +20,8 @@ import type { ResourceCount } from '@podman-desktop/core-api';
 import { get } from 'svelte/store';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { kubernetesResourcesCount, kubernetesResourcesCountStore } from './kubernetes-resources-count';
 
 beforeEach(() => {
@@ -27,7 +29,7 @@ beforeEach(() => {
 });
 
 test('kubernetesResourcesCount in non experimental states mode', async () => {
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(false);
+  vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(false);
 
   const initialValues: ResourceCount[] = [
     {

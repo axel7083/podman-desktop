@@ -28,6 +28,7 @@ import { get } from 'svelte/store';
 import { router } from 'tinro';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { handleNavigation } from '/@/navigation';
 import { providerInfos } from '/@/stores/providers';
 import { recommendedRegistries } from '/@/stores/recommendedRegistries';
@@ -73,7 +74,7 @@ beforeEach(() => {
     func();
     return { dispose: vi.fn() };
   });
-  vi.mocked(window.getConfigurationValue).mockImplementation(async (key: string) => {
+  vi.mocked(client.configuration.getValue).mockImplementation(async ({ key }: { key: string }) => {
     if (key === 'terminal.integrated.scrollback') {
       return 1000;
     }
@@ -605,7 +606,7 @@ describe('container connections', () => {
 
 describe('Preferred Registries', () => {
   beforeEach(() => {
-    vi.mocked(window.getConfigurationValue).mockImplementation(async (key: string) => {
+    vi.mocked(client.configuration.getValue).mockImplementation(async ({ key }: { key: string }) => {
       switch (key) {
         case 'terminal.integrated.scrollback':
           return 1000;
@@ -621,9 +622,9 @@ describe('Preferred Registries', () => {
     render(PullImage);
 
     await vi.waitFor(() => {
-      expect(window.getConfigurationValue).toHaveBeenCalledWith(
-        `${PreferredRegistriesSettings.SectionName}.${PreferredRegistriesSettings.Preferred}`,
-      );
+      expect(client.configuration.getValue).toHaveBeenCalledWith({
+        key: `${PreferredRegistriesSettings.SectionName}.${PreferredRegistriesSettings.Preferred}`,
+      });
     });
   });
 
@@ -733,7 +734,7 @@ describe('Preferred Registries', () => {
   });
 
   test('should use default docker.io if no preferred registries configured', async () => {
-    vi.mocked(window.getConfigurationValue).mockImplementation(async (key: string) => {
+    vi.mocked(client.configuration.getValue).mockImplementation(async ({ key }: { key: string }) => {
       switch (key) {
         case 'terminal.integrated.scrollback':
           return 1000;

@@ -2,6 +2,7 @@
 import { faCloudDownload } from '@fortawesome/free-solid-svg-icons';
 import { Button, FilteredEmptyScreen, NavPage } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
 import type { ExtensionListScreen } from '/@/lib/extensions/extension-list';
 import InstalledExtensionList from '/@/lib/extensions/InstalledExtensionList.svelte';
 import ExtensionIcon from '/@/lib/images/ExtensionIcon.svelte';
@@ -26,14 +27,14 @@ let { searchTerm = '', screen = 'installed' }: Props = $props();
 const extensionsUtils = new ExtensionsUtils();
 
 let enableCustomExtensions = $derived(
-  (await window.getConfigurationValue('extensions.customExtensions.enabled')) ?? true,
+  (await client.configuration.getValue({ key: 'extensions.customExtensions.enabled' })) ?? true,
 );
 
 let enableLocalExtensions = $derived(
-  (await window.getConfigurationValue('extensions.localExtensions.enabled')) ?? true,
+  (await client.configuration.getValue({ key: 'extensions.localExtensions.enabled' })) ?? true,
 );
 
-let enableCatalog = $derived((await window.getConfigurationValue('extensions.catalog.enabled')) ?? true);
+let enableCatalog = $derived((await client.configuration.getValue({ key: 'extensions.catalog.enabled' })) ?? true);
 
 const filteredInstalledExtensions: CombinedExtensionInfoUI[] = $derived(
   extensionsUtils.filterInstalledExtensions($combinedInstalledExtensions, searchTerm),

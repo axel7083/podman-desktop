@@ -23,12 +23,13 @@ import { CONFIGURATION_DEFAULT_SCOPE } from '@podman-desktop/core-api/configurat
 import { fireEvent, render } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import ExperimentalPage from '/@/lib/preferences/ExperimentalPage.svelte';
 
 beforeEach(() => {
   vi.resetAllMocks();
   // mock false by default (not enabled)
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(false);
+  vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(false);
 });
 
 const DUMMY_CONFIG: IConfigurationPropertyRecordedSchema = {
@@ -100,7 +101,7 @@ test('Enable all should update all configuration', async () => {
 
   // the component should have used the getInitialValue on each property
   for (const configuration of generated) {
-    expect(window.getConfigurationValue).toHaveBeenCalledWith(configuration.id, configuration.scope);
+    expect(client.configuration.getValue).toHaveBeenCalledWith({ key: configuration.id, scope: configuration.scope });
   }
 
   // let's check the box
@@ -108,17 +109,17 @@ test('Enable all should update all configuration', async () => {
 
   await vi.waitFor(() => {
     for (const configuration of generated) {
-      expect(window.updateExperimentalConfigurationValue).toHaveBeenCalledWith(
-        configuration.id,
-        {},
-        configuration.scope,
-      );
+      expect(client.configuration.updateExperimentalValue).toHaveBeenCalledWith({
+        key: configuration.id,
+        value: {},
+        scope: configuration.scope,
+      });
     }
   });
 });
 
 test('all value checked should check the enable all', async () => {
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+  vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
 
   const { container } = render(ExperimentalPage, {
     properties: [EXPERIMENTAL_CONFIG],
@@ -131,7 +132,7 @@ test('all value checked should check the enable all', async () => {
     return enableAll as HTMLInputElement;
   });
 
-  expect(window.updateExperimentalConfigurationValue).not.toBeCalled();
+  expect(client.configuration.updateExperimentalValue).not.toBeCalled();
 
   await vi.waitFor(() => {
     expect(enableAll).toBeChecked();

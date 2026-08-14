@@ -3,6 +3,7 @@ import type { MessageBoxReturnValue } from '@podman-desktop/core-api';
 import { type ExtensionBanner } from '@podman-desktop/core-api/recommendations';
 import { CloseButton } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
 import FeaturedExtension from '/@/lib/featured/FeaturedExtension.svelte';
 
 // Pass in the theme appearance colour of PD to the banner, we do it here so we don't have to do multiple isDark checks when rendering multiple banners.
@@ -40,7 +41,11 @@ async function onClose(): Promise<void> {
     });
 
     if (result?.response === 'Hide') {
-      await window.updateConfigurationValue(`extensions.ignoreBannerRecommendations`, true, 'DEFAULT');
+      await client.configuration.updateValue({
+        key: `extensions.ignoreBannerRecommendations`,
+        value: true,
+        scope: 'DEFAULT',
+      });
     }
   } finally {
     let choice: 'hide' | 'keep' = result?.response === 'Hide' ? 'hide' : 'keep';

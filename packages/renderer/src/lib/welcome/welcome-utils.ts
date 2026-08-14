@@ -20,32 +20,38 @@ import { CONFIGURATION_DEFAULT_SCOPE } from '@podman-desktop/core-api/configurat
 import { TelemetrySettings } from '@podman-desktop/core-api/telemetry';
 import { WelcomeSettings } from '@podman-desktop/core-api/welcome';
 
+import { client } from '/@/client';
+
 export class WelcomeUtils {
   async getVersion(): Promise<string | undefined> {
-    return window.getConfigurationValue<string>(WelcomeSettings.SectionName + '.' + WelcomeSettings.Version);
+    return (await client.configuration.getValue({
+      key: WelcomeSettings.SectionName + '.' + WelcomeSettings.Version,
+    })) as string | undefined;
   }
 
   async updateVersion(val: string): Promise<void> {
-    await window.updateConfigurationValue(
-      WelcomeSettings.SectionName + '.' + WelcomeSettings.Version,
-      val,
-      CONFIGURATION_DEFAULT_SCOPE,
-    );
+    await client.configuration.updateValue({
+      key: WelcomeSettings.SectionName + '.' + WelcomeSettings.Version,
+      value: val,
+      scope: CONFIGURATION_DEFAULT_SCOPE,
+    });
   }
 
-  havePromptedForTelemetry(): Promise<boolean | undefined> {
-    return window.getConfigurationValue<boolean>(TelemetrySettings.SectionName + '.' + TelemetrySettings.Check);
+  async havePromptedForTelemetry(): Promise<boolean | undefined> {
+    return (await client.configuration.getValue({
+      key: TelemetrySettings.SectionName + '.' + TelemetrySettings.Check,
+    })) as boolean | undefined;
   }
 
   async setTelemetry(telemetry: boolean): Promise<void> {
     console.log('Telemetry enablement: ' + telemetry);
 
     // store if the user said yes or no to telemetry
-    await window.updateConfigurationValue(
-      TelemetrySettings.SectionName + '.' + TelemetrySettings.Enabled,
-      telemetry,
-      CONFIGURATION_DEFAULT_SCOPE,
-    );
+    await client.configuration.updateValue({
+      key: TelemetrySettings.SectionName + '.' + TelemetrySettings.Enabled,
+      value: telemetry,
+      scope: CONFIGURATION_DEFAULT_SCOPE,
+    });
 
     // trigger telemetry system initialization
     if (telemetry) {
@@ -53,10 +59,10 @@ export class WelcomeUtils {
     }
 
     // save the fact that we've prompted
-    await window.updateConfigurationValue(
-      TelemetrySettings.SectionName + '.' + TelemetrySettings.Check,
-      true,
-      CONFIGURATION_DEFAULT_SCOPE,
-    );
+    await client.configuration.updateValue({
+      key: TelemetrySettings.SectionName + '.' + TelemetrySettings.Check,
+      value: true,
+      scope: CONFIGURATION_DEFAULT_SCOPE,
+    });
   }
 }

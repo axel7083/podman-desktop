@@ -30,6 +30,7 @@ import { get } from 'svelte/store';
 import { router } from 'tinro';
 import { beforeAll, beforeEach, describe, expect, type Mock, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { eventCollect, reconnectUI } from '/@/lib/preferences/preferences-connection-rendering-task';
 import { operationConnectionsInfo } from '/@/stores/operation-connections';
 
@@ -594,9 +595,9 @@ test(`Expect create with unchecked and checked checkboxes having multiple scopes
     },
   ];
 
-  // mock getConfigurationValue to return true if property is 'test.checked'
-  (window as any).getConfigurationValue = vi.fn().mockImplementation((property: string) => {
-    return property === 'test.checked';
+  // mock getValue to return true if property is 'test.checked'
+  vi.mocked(client.configuration.getValue).mockImplementation(async ({ key }: { key: string }) => {
+    return key === 'test.checked';
   });
 
   render(PreferencesConnectionCreationOrEditRendering, {
@@ -618,9 +619,9 @@ test(`Expect create with unchecked and checked checkboxes having multiple scopes
   await fireEvent.click(createButton);
 
   // check if getConfigurationValue was called with the correct parameters
-  expect(window.getConfigurationValue).toBeCalledWith('test.checked', 'DEFAULT');
-  expect(window.getConfigurationValue).toBeCalledWith('test.unchecked', 'DEFAULT');
-  expect(window.getConfigurationValue).toBeCalledWith('test.factoryProperty', 'DEFAULT');
+  expect(client.configuration.getValue).toBeCalledWith({ key: 'test.checked', scope: 'DEFAULT' });
+  expect(client.configuration.getValue).toBeCalledWith({ key: 'test.unchecked', scope: 'DEFAULT' });
+  expect(client.configuration.getValue).toBeCalledWith({ key: 'test.factoryProperty', scope: 'DEFAULT' });
 
   expect(callback).toBeCalledWith(
     'test',

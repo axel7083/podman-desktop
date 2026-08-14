@@ -6,6 +6,7 @@ import { Button } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 import { onDestroy, onMount } from 'svelte';
 
+import { client } from '/@/client';
 import NoLogIcon from '/@/lib/ui/NoLogIcon.svelte';
 
 const TIMESTAMPS_CONFIG_KEY = 'troubleshooting.logsTimestamps';
@@ -20,7 +21,7 @@ let showTimestamps = $state(false);
 
 onMount(async () => {
   logs = await window.getDevtoolsConsoleLogs();
-  showTimestamps = (await window.getConfigurationValue<boolean>(TIMESTAMPS_CONFIG_KEY)) ?? false;
+  showTimestamps = (await client.configuration.getValue({ key: TIMESTAMPS_CONFIG_KEY })) ?? false;
 });
 
 onDestroy(() => {});
@@ -46,7 +47,7 @@ async function copyLogsToClipboard(): Promise<void> {
     <Icon size="1.875x" class="pr-3" icon={faFileLines} />
     <div class="text-xl">Logs</div>
     <div class="flex flex-1 justify-end items-center gap-1">
-      <Button title="Toggle Timestamps" on:click={async (): Promise<void> => { showTimestamps = !showTimestamps; await window.updateConfigurationValue(TIMESTAMPS_CONFIG_KEY, showTimestamps); }} type="link"
+      <Button title="Toggle Timestamps" on:click={async (): Promise<void> => { showTimestamps = !showTimestamps; await client.configuration.updateValue({ key: TIMESTAMPS_CONFIG_KEY, value: showTimestamps }); }} type="link"
         ><Icon class="h-5 w-5 cursor-pointer text-xl {showTimestamps ? 'text-(--pd-action-button-primary-text)' : 'text-(--pd-content-text)'}" icon={faClock} /></Button>
       <Button title="Copy To Clipboard" on:click={async (): Promise<void> => await copyLogsToClipboard()} type="link"
         ><Icon class="h-5 w-5 cursor-pointer text-xl text-(--pd-action-button-primary-text)" icon={faPaste} /></Button>

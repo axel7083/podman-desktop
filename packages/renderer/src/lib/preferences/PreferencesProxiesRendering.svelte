@@ -4,6 +4,7 @@ import { type DialogType, PROXY_CONFIG_KEYS, ProxyState } from '@podman-desktop/
 import { Button, Dropdown, ErrorMessage, Input } from '@podman-desktop/ui-svelte';
 import { onDestroy, onMount } from 'svelte';
 
+import { client } from '/@/client';
 import { PROXY_LABELS } from '/@/lib/preferences/proxy-state-labels';
 import { manualProxySettings } from '/@/stores/manual-proxy-settings.svelte';
 
@@ -44,7 +45,7 @@ onMount(async () => {
   }
 
   // Check if proxy settings are locked by managed configuration
-  const configProperties = await window.getConfigurationProperties();
+  const configProperties = await client.configuration.getProperties();
   proxyEnabledLocked = configProperties[PROXY_CONFIG_KEYS.ENABLED]?.locked ?? false;
   httpProxyLocked = configProperties[PROXY_CONFIG_KEYS.HTTP]?.locked ?? false;
   httpsProxyLocked = configProperties[PROXY_CONFIG_KEYS.HTTPS]?.locked ?? false;
@@ -54,13 +55,13 @@ onMount(async () => {
   // we "retrieve" these values instead of from the proxy settings fetched earlier, as those
   // do not reflect managed configuration overrides
   if (httpProxyLocked) {
-    httpProxy = (await window.getConfigurationValue<string>(PROXY_CONFIG_KEYS.HTTP)) ?? httpProxy;
+    httpProxy = (await client.configuration.getValue({ key: PROXY_CONFIG_KEYS.HTTP })) ?? httpProxy;
   }
   if (httpsProxyLocked) {
-    httpsProxy = (await window.getConfigurationValue<string>(PROXY_CONFIG_KEYS.HTTPS)) ?? httpsProxy;
+    httpsProxy = (await client.configuration.getValue({ key: PROXY_CONFIG_KEYS.HTTPS })) ?? httpsProxy;
   }
   if (noProxyLocked) {
-    noProxy = (await window.getConfigurationValue<string>(PROXY_CONFIG_KEYS.NO_PROXY)) ?? noProxy;
+    noProxy = (await client.configuration.getValue({ key: PROXY_CONFIG_KEYS.NO_PROXY })) ?? noProxy;
   }
 });
 

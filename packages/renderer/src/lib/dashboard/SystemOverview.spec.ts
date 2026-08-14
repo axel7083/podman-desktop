@@ -21,6 +21,8 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import SystemOverview from './SystemOverview.svelte';
 
 vi.mock(import('/@/lib/dashboard/SystemOverviewContent.svelte'));
@@ -29,8 +31,8 @@ vi.mock(import('svelte/transition'));
 beforeEach(() => {
   vi.resetAllMocks();
 
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
-  vi.mocked(window.updateConfigurationValue).mockResolvedValue(undefined);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.updateValue).mockResolvedValue(undefined);
 });
 
 test('should render System Overview title', async () => {
@@ -39,21 +41,23 @@ test('should render System Overview title', async () => {
   await waitFor(() => expect(screen.getByText('System Overview')).toBeInTheDocument());
 });
 
-test('should call getConfigurationValue for system overview expanded state on mount', async () => {
+test('should call getValue for system overview expanded state on mount', async () => {
   render(SystemOverview);
 
-  await waitFor(() => expect(window.getConfigurationValue).toHaveBeenCalled());
-  await waitFor(() => expect(window.getConfigurationValue).toHaveBeenCalledWith('systemOverview.expanded'));
+  await waitFor(() => expect(client.configuration.getValue).toHaveBeenCalled());
+  await waitFor(() => expect(client.configuration.getValue).toHaveBeenCalledWith({ key: 'systemOverview.expanded' }));
 });
 
-test('should call updateConfigurationValue when toggle is triggered', async () => {
+test('should call updateValue when toggle is triggered', async () => {
   render(SystemOverview);
 
   const expandButton = await waitFor(() => screen.getByRole('button', { name: 'System Overview' }));
   await fireEvent.click(expandButton);
 
-  await waitFor(() => expect(window.updateConfigurationValue).toHaveBeenCalled());
-  await waitFor(() => expect(window.updateConfigurationValue).toHaveBeenCalledWith('systemOverview.expanded', false));
+  await waitFor(() => expect(client.configuration.updateValue).toHaveBeenCalled());
+  await waitFor(() =>
+    expect(client.configuration.updateValue).toHaveBeenCalledWith({ key: 'systemOverview.expanded', value: false }),
+  );
 });
 
 test('should track dashboard.healthCard.collapsed telemetry when collapsing', async () => {
@@ -66,7 +70,7 @@ test('should track dashboard.healthCard.collapsed telemetry when collapsing', as
 });
 
 test('should track dashboard.healthCard.expanded telemetry when expanding', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(false);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(false);
   render(SystemOverview);
 
   const expandButton = await waitFor(() => screen.getByRole('button', { name: 'System Overview' }));

@@ -35,6 +35,7 @@ import { get } from 'svelte/store';
 import { router } from 'tinro';
 import { beforeAll, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import PodsList from '/@/lib/pod/PodsList.svelte';
 import { filtered, podsInfos } from '/@/stores/pods';
 import { providerInfos } from '/@/stores/providers';
@@ -247,7 +248,7 @@ beforeAll(() => {
   (window as any).kubernetesGetDetailedContexts = vi.fn().mockResolvedValue([]);
   vi.mocked(window.removePod);
   (window as any).getConfigurationValue = vi.fn();
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(false);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(false);
 
   vi.mocked(window.events.receive).mockImplementation((_channel, func) => {
     func();
@@ -553,7 +554,7 @@ test('Expect user confirmation to pop up when preferences require', async () => 
   const checkboxes = screen.getAllByRole('checkbox', { name: 'Toggle pod' });
   await fireEvent.click(checkboxes[0]);
 
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
   (window as any).showMessageBox = vi.fn();
   vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });

@@ -22,6 +22,7 @@ import type { Component } from 'svelte';
 import { type Writable, writable } from 'svelte/store';
 import type { IconSize } from 'svelte-fa';
 
+import { client } from '/@/client';
 import { configurationProperties } from '/@/stores/configurationProperties';
 import { EventStore } from '/@/stores/event-store';
 
@@ -158,24 +159,24 @@ async function hideItems(): Promise<void> {
 
 // update the items by looking at the disabled items each time we update the configuration properties
 configurationProperties.subscribe(() => {
-  if (window.getConfigurationValue) {
-    window
-      .getConfigurationValue<string[]>('navbar.disabledItems')
+  if (client.configuration.getValue) {
+    client.configuration
+      .getValue({ key: 'navbar.disabledItems' })
       ?.then(value => {
         if (value) {
-          hiddenItems = value;
+          hiddenItems = value as string[];
         }
       })
-      .then(() => hideItems())
-      .catch((err: unknown) => console.error('Error getting configuration value navbar.disabledItems', err));
+      ?.then(() => hideItems())
+      ?.catch((err: unknown) => console.error('Error getting configuration value navbar.disabledItems', err));
 
     handleKubernetesGroup();
   }
 });
 
 function handleKubernetesGroup(): void {
-  window
-    .getConfigurationValue<boolean>('kubernetes.useInternalKubernetes')
+  client.configuration
+    .getValue({ key: 'kubernetes.useInternalKubernetes' })
     ?.then(value => {
       if (value) {
         if (!values.find(item => item.name === 'Kubernetes')) {
@@ -188,6 +189,6 @@ function handleKubernetesGroup(): void {
         values = values.filter(item => item.name !== 'Kubernetes');
       }
     })
-    .then(() => hideItems())
-    .catch((err: unknown) => console.error('Error getting configuration value kubernetes.useInternalKubernetes', err));
+    ?.then(() => hideItems())
+    ?.catch((err: unknown) => console.error('Error getting configuration value kubernetes.useInternalKubernetes', err));
 }

@@ -4,6 +4,7 @@ import { ExperimentalTasksSettings } from '@podman-desktop/core-api';
 import { type SvelteToastOptions, toast } from '@zerodevx/svelte-toast';
 import { type ComponentType, onMount } from 'svelte';
 
+import { client } from '/@/client';
 import { onDidChangeConfiguration } from '/@/stores/configurationProperties';
 import { tasksInfo } from '/@/stores/tasks';
 
@@ -98,7 +99,7 @@ function displayNewToast(taskInfo: TaskInfo): number {
 
 onMount(async () => {
   // read initial value
-  enabled = (await window.getConfigurationValue<boolean>(CONFIGURATION_KEY)) ?? false;
+  enabled = (await client.configuration.getValue({ key: CONFIGURATION_KEY })) ?? false;
 
   // update the enabled flag each time the configuration properties is updated
   onDidChangeConfiguration.addEventListener(CONFIGURATION_KEY, obj => {

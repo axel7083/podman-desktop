@@ -5,6 +5,7 @@ import { Button, Dropdown, ErrorMessage, Input } from '@podman-desktop/ui-svelte
 import { onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import Dialog from '/@/lib/dialogs/Dialog.svelte';
 import { kubernetesContexts } from '/@/stores/kubernetes-contexts';
 
@@ -46,7 +47,7 @@ onMount(async () => {
   contextUser = contextToEdit.user;
   clusters = await window.kubernetesGetClusters();
   users = await window.kubernetesGetUsers();
-  kubeConfig = (await window.getConfigurationValue('kubernetes.Kubeconfig')) ?? kubeConfig;
+  kubeConfig = (await client.configuration.getValue({ key: 'kubernetes.Kubeconfig' })) ?? kubeConfig;
 });
 
 function disableSave(name: string, namespace: string): boolean {

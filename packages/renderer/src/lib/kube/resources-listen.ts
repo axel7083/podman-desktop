@@ -20,6 +20,7 @@ import type { KubernetesObject } from '@kubernetes/client-node';
 import type { IDisposable } from '@podman-desktop/core-api';
 import type { Unsubscriber, Writable } from 'svelte/store';
 
+import { client } from '/@/client';
 import { kubernetesContexts } from '/@/stores/kubernetes-contexts';
 import { findMatchInLeaves } from '/@/stores/search-util';
 
@@ -115,7 +116,7 @@ function filter(resources: KubernetesObject[], searchTerm: string): KubernetesOb
 
 export async function isKubernetesExperimentalMode(): Promise<boolean> {
   try {
-    return await window.isExperimentalConfigurationEnabled('kubernetes.statesExperimental');
+    return await client.configuration.isExperimentalEnabled({ key: 'kubernetes.statesExperimental' });
   } catch {
     return false;
   }

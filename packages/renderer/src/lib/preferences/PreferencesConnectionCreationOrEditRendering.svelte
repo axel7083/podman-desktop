@@ -15,6 +15,7 @@ import { onDestroy, onMount } from 'svelte';
 import { get, type Unsubscriber } from 'svelte/store';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import type { ContextUI } from '/@/lib/context/context';
 import Markdown from '/@/lib/markdown/Markdown.svelte';
 import AuditMessageBox from '/@/lib/ui/AuditMessageBox.svelte';
@@ -282,10 +283,10 @@ function setConfigurationValue(id: string, value: string | boolean | number): vo
 async function getConfigurationValue(configurationKey: IConfigurationPropertyRecordedSchema): Promise<any> {
   if (configurationKey?.id) {
     if (connectionInfo) {
-      const value = await window.getConfigurationValue(
-        configurationKey.id,
-        connectionInfo as unknown as ConfigurationScope,
-      );
+      const value = await client.configuration.getValue({
+        key: configurationKey.id,
+        scope: connectionInfo as unknown as ConfigurationScope,
+      });
       internalSetConfigurationValue(configurationKey.id, false, value as string);
       return value;
     }

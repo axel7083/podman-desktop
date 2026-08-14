@@ -1,6 +1,7 @@
 <script lang="ts">
 import type { IConfigurationPropertyRecordedSchema } from '@podman-desktop/core-api/configuration';
 
+import { client } from '/@/client';
 import Markdown from '/@/lib/markdown/Markdown.svelte';
 import PreferencesRenderingItem from '/@/lib/preferences/PreferencesRenderingItem.svelte';
 import SettingsPage from '/@/lib/preferences/SettingsPage.svelte';
@@ -46,7 +47,7 @@ async function onCheckedAll(event: { detail: boolean }): Promise<void> {
   try {
     for (const property of experimental) {
       if (!property.id) continue;
-      const enabled = await window.isExperimentalConfigurationEnabled(property.id, property.scope);
+      const enabled = await client.configuration.isExperimentalEnabled({ key: property.id, scope: property.scope });
       // If is the feature enabled and we want to enable all, enable only those that are not enabled yet
       // If is the feature disabled and we want to disable all, disable only those that are not disabled yet
       if (event.detail === enabled) {
@@ -54,7 +55,7 @@ async function onCheckedAll(event: { detail: boolean }): Promise<void> {
       }
 
       const settings = event.detail ? {} : false;
-      await window.updateExperimentalConfigurationValue(property.id, settings, property.scope);
+      await client.configuration.updateExperimentalValue({ key: property.id, value: settings, scope: property.scope });
     }
   } finally {
     loading = false;

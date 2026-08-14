@@ -23,6 +23,7 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import { writable } from 'svelte/store';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import * as states from '/@/stores/kubernetes-contexts-state';
 
 import PVCList from './PVCList.svelte';
@@ -85,7 +86,7 @@ test('Expect user confirmation to pop up when preferences require', async () => 
   await fireEvent.click(checkboxes[0]);
   expect(checkboxes[0]).toBeChecked();
 
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
   vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 

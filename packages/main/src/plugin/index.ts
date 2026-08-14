@@ -131,10 +131,7 @@ import type {
 import type { ApiSenderChannelMap } from '@podman-desktop/core-api/api-sender';
 import { ApiSenderType } from '@podman-desktop/core-api/api-sender';
 import type { AuthenticationProviderInfo } from '@podman-desktop/core-api/authentication';
-import {
-  type IConfigurationPropertyRecordedSchema,
-  IConfigurationRegistry,
-} from '@podman-desktop/core-api/configuration';
+import { IConfigurationRegistry } from '@podman-desktop/core-api/configuration';
 import type { CatalogExtension } from '@podman-desktop/core-api/extension-catalog';
 import type { FeaturedExtension } from '@podman-desktop/core-api/featured';
 import type {
@@ -540,11 +537,7 @@ export class PluginSystem {
     container.bind<ConfigurationRegistry>(ConfigurationRegistry).toSelf().inSingletonScope();
     container.bind<LockedConfiguration>(LockedConfiguration).toSelf().inSingletonScope();
     container.bind<IConfigurationRegistry>(IConfigurationRegistry).toService(ConfigurationRegistry);
-    const configurationRegistry = await this.initConfigurationRegistry(
-      container,
-      notifications,
-      configurationRegistryEmitter,
-    );
+    await this.initConfigurationRegistry(container, notifications, configurationRegistryEmitter);
 
     container.bind<ColorRegistry>(ColorRegistry).to(InjectableColorRegistry).inSingletonScope();
     const colorRegistry = container.get<ColorRegistry>(ColorRegistry);
@@ -566,9 +559,6 @@ export class PluginSystem {
     await telemetry.init();
 
     container.bind<ExperimentalConfigurationManager>(ExperimentalConfigurationManager).toSelf().inSingletonScope();
-    const experimentalConfigurationManager = container.get<ExperimentalConfigurationManager>(
-      ExperimentalConfigurationManager,
-    );
 
     container.bind<CommandRegistry>(CommandRegistry).toSelf().inSingletonScope();
     const commandRegistry = container.get<CommandRegistry>(CommandRegistry);
@@ -2264,27 +2254,6 @@ export class PluginSystem {
     );
 
     this.ipcHandle(
-      'configuration-registry:getConfigurationProperties',
-      async (): Promise<Record<string, IConfigurationPropertyRecordedSchema>> => {
-        return configurationRegistry.getConfigurationProperties();
-      },
-    );
-    this.ipcHandle(
-      'configuration-registry:getConfigurationValue',
-      async <T>(
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        scope?: containerDesktopAPI.ConfigurationScope,
-      ): Promise<T | undefined> => {
-        // extract parent key with first name before first . notation
-        const parentKey = key.substring(0, key.indexOf('.'));
-        // extract child key with first name after first . notation
-        const childKey = key.substring(key.indexOf('.') + 1);
-        return configurationRegistry.getConfiguration(parentKey, scope).get(childKey);
-      },
-    );
-
-    this.ipcHandle(
       'list-organizer-registry:loadListConfig',
       async (
         _listener: Electron.IpcMainInvokeEvent,
@@ -2310,63 +2279,6 @@ export class PluginSystem {
         availableColumns: string[],
       ): Promise<ListOrganizerItem[]> => {
         return listOrganizerRegistry.resetListConfig(key, availableColumns);
-      },
-    );
-
-    this.ipcHandle(
-      'configuration-registry:updateConfigurationValue',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        value: unknown,
-        scope?: containerDesktopAPI.ConfigurationScope | containerDesktopAPI.ConfigurationScope[],
-      ): Promise<void> => {
-        return configurationRegistry.updateConfigurationValue(key, value, scope);
-      },
-    );
-
-    this.ipcHandle(
-      'experimental-configuration-manager:updateExperimentalConfigurationValue',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        value: unknown,
-        scope?: containerDesktopAPI.ConfigurationScope | containerDesktopAPI.ConfigurationScope[],
-      ): Promise<void> => {
-        return experimentalConfigurationManager.updateExperimentalConfigurationValue(key, value, scope);
-      },
-    );
-
-    this.ipcHandle(
-      'experimental-configuration-manager:isExperimentalConfigurationEnabled',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        scope?: containerDesktopAPI.ConfigurationScope | containerDesktopAPI.ConfigurationScope[],
-      ): Promise<boolean> => {
-        return experimentalConfigurationManager.isExperimentalConfigurationEnabled(key, scope);
-      },
-    );
-
-    this.ipcHandle(
-      'experimental-configuration-manager:enableExperimentalConfiguration',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        scope?: containerDesktopAPI.ConfigurationScope | containerDesktopAPI.ConfigurationScope[],
-      ): Promise<void> => {
-        return experimentalConfigurationManager.enableExperimentalConfiguration(key, scope);
-      },
-    );
-
-    this.ipcHandle(
-      'experimental-configuration-manager:disableExperimentalConfiguration',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        scope?: containerDesktopAPI.ConfigurationScope | containerDesktopAPI.ConfigurationScope[],
-      ): Promise<void> => {
-        return experimentalConfigurationManager.disableExperimentalConfiguration(key, scope);
       },
     );
 

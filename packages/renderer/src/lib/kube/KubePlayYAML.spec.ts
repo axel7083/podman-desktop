@@ -26,6 +26,7 @@ import userEvent from '@testing-library/user-event';
 import { router } from 'tinro';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { providerInfos } from '/@/stores/providers';
 
 import KubePlayYAML from './KubePlayYAML.svelte';
@@ -82,7 +83,7 @@ beforeEach(() => {
 
   vi.mocked(window.openDialog).mockResolvedValue(['Containerfile']);
   vi.mocked(window.telemetryPage).mockResolvedValue(undefined);
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(undefined);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);
 });
 
 function setup(): void {

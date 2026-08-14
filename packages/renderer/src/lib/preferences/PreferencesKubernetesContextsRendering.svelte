@@ -7,6 +7,7 @@ import { Icon } from '@podman-desktop/ui-svelte/icons';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import { clearKubeUIContextErrors, setKubeUIContextError } from '/@/lib/kube/KubeContextUI';
 import EngineIcon from '/@/lib/ui/EngineIcon.svelte';
 import ListItemButtonIcon from '/@/lib/ui/ListItemButtonIcon.svelte';
@@ -62,7 +63,7 @@ const kubernetesContextsWithStates: KubeContextWithStates[] = $derived(
 
 onMount(async () => {
   try {
-    const val: string | undefined = await window.getConfigurationValue('kubernetes.Kubeconfig');
+    const val: string | undefined = await client.configuration.getValue({ key: 'kubernetes.Kubeconfig' });
     if (val !== undefined) {
       kubeconfigFilePath = val;
     } else {
@@ -73,7 +74,7 @@ onMount(async () => {
   }
 
   try {
-    experimentalStates = await window.isExperimentalConfigurationEnabled('kubernetes.statesExperimental');
+    experimentalStates = await client.configuration.isExperimentalEnabled({ key: 'kubernetes.statesExperimental' });
   } catch {
     // keep default value
   }

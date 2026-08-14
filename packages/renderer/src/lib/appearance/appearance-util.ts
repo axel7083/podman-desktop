@@ -18,6 +18,7 @@
 
 import { AppearanceSettings } from '@podman-desktop/core-api/appearance';
 
+import { client } from '/@/client';
 import { isDark } from '/@/stores/appearance';
 
 let isDarkTheme = false;
@@ -27,9 +28,9 @@ isDark.subscribe(value => {
 
 export class AppearanceUtil {
   async getTheme(): Promise<string> {
-    const themeName = await window.getConfigurationValue<string>(
-      AppearanceSettings.SectionName + '.' + AppearanceSettings.Appearance,
-    );
+    const themeName = (await client.configuration.getValue({
+      key: AppearanceSettings.SectionName + '.' + AppearanceSettings.Appearance,
+    })) as string | undefined;
 
     const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 

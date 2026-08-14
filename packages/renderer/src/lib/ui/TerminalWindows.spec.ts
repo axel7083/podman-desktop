@@ -25,6 +25,7 @@ import { Terminal } from '@xterm/xterm';
 import { writable } from 'svelte/store';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import TerminalWindow from '/@/lib/ui/TerminalWindow.svelte';
 
 vi.mock(import('@xterm/xterm'));
@@ -88,7 +89,7 @@ test('showCursor false or undefined should write specific instruction to termina
 });
 
 test('terminal constructor should contains fontSize and lineHeight from configuration', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(10);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(10);
 
   render(TerminalWindow, {
     terminal: createTerminalMock(),
@@ -103,15 +104,15 @@ test('terminal constructor should contains fontSize and lineHeight from configur
     );
   });
 
-  expect(window.getConfigurationValue).toHaveBeenCalledWith(
-    TerminalSettings.SectionName + '.' + TerminalSettings.FontSize,
-  );
-  expect(window.getConfigurationValue).toHaveBeenCalledWith(
-    TerminalSettings.SectionName + '.' + TerminalSettings.LineHeight,
-  );
-  expect(window.getConfigurationValue).toHaveBeenCalledWith(
-    TerminalSettings.SectionName + '.' + TerminalSettings.Scrollback,
-  );
+  expect(client.configuration.getValue).toHaveBeenCalledWith({
+    key: TerminalSettings.SectionName + '.' + TerminalSettings.FontSize,
+  });
+  expect(client.configuration.getValue).toHaveBeenCalledWith({
+    key: TerminalSettings.SectionName + '.' + TerminalSettings.LineHeight,
+  });
+  expect(client.configuration.getValue).toHaveBeenCalledWith({
+    key: TerminalSettings.SectionName + '.' + TerminalSettings.Scrollback,
+  });
 });
 
 test('addon fit should be loaded on mount', async () => {

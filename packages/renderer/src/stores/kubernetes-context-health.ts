@@ -19,6 +19,8 @@
 import type { ContextHealth } from '@podman-desktop/core-api';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = ['kubernetes-contexts-healths', 'extension-stopped', 'extensions-started'];
@@ -28,7 +30,7 @@ let readyToUpdate = false;
 
 async function checkForUpdate(eventName: string): Promise<boolean> {
   // check for update only in experimental states mode
-  const enabled = await window.isExperimentalConfigurationEnabled('kubernetes.statesExperimental');
+  const enabled = await client.configuration.isExperimentalEnabled({ key: 'kubernetes.statesExperimental' });
   if (!enabled) {
     return false;
   }

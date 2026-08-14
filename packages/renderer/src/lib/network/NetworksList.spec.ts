@@ -25,6 +25,7 @@ import { tick } from 'svelte';
 import { get } from 'svelte/store';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { networksListInfo, searchPattern } from '/@/stores/networks';
 import { providerInfos } from '/@/stores/providers';
 
@@ -206,7 +207,7 @@ test('Expect user confirmation for bulk delete when required', async () => {
   expect(checkboxes[1]).toBeDisabled();
   await fireEvent.click(checkboxes[0]);
 
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
   vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 
   const deleteButton = screen.getByRole('button', { name: 'Delete 1 selected items' });

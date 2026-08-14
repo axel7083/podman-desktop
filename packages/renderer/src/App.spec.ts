@@ -23,6 +23,7 @@ import { get, writable } from 'svelte/store';
 import { router } from 'tinro';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import * as kubernetesNoCurrentContext from '/@/stores/kubernetes-no-current-context';
 
 import App from './App.svelte';
@@ -100,7 +101,7 @@ beforeEach(() => {
     return { dispose: vi.fn() };
   });
   Object.defineProperty(window, 'dispatchEvent', { value: dispatchEventMock });
-  (window.getConfigurationValue as unknown) = vi.fn();
+  vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);
   vi.mocked(kubernetesNoCurrentContext).kubernetesNoCurrentContext = writable(false);
 });
 

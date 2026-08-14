@@ -26,6 +26,7 @@ import { get } from 'svelte/store';
 /* eslint-enable import/no-duplicates */
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { mockBreadcrumb } from '/@/stores/breadcrumb.spec';
 import { containersInfos } from '/@/stores/containers';
 import { providerInfos } from '/@/stores/providers';
@@ -47,8 +48,8 @@ beforeEach(() => {
     return { dispose: vi.fn() };
   });
 
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(undefined);
-  vi.mocked(window.getConfigurationProperties).mockResolvedValue({});
+  vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);
+  vi.mocked(client.configuration.getProperties).mockResolvedValue({});
   vi.mocked(window.initializeProvider).mockResolvedValue([]);
   vi.mocked(window.getContainerInspect).mockResolvedValue(containerInspectInfo);
   vi.mocked(window.listNetworks).mockResolvedValue([]);

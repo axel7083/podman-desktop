@@ -19,6 +19,7 @@
 import type { ListOrganizerItem } from '@podman-desktop/ui-svelte';
 import type { Component } from 'svelte';
 
+import { client } from '/@/client';
 import { createSystemOverview } from '/@/stores/dashboard/dashboard-page-registry-system-overview';
 
 import { createExploreFeatures } from './dashboard-page-registry-explore-features';
@@ -61,7 +62,7 @@ window.events?.receive('enhanced-dashboard-enabled', (value: unknown) => {
 });
 
 export async function setupDashboardPageRegistry(): Promise<void> {
-  enhancedDashboard.enabled = await window.isExperimentalConfigurationEnabled('dashboard.enhancedDashboard');
+  enhancedDashboard.enabled = await client.configuration.isExperimentalEnabled({ key: 'dashboard.enhancedDashboard' });
   dashboardPageRegistry.entries = getDashboardPageRegistry();
   defaultSection.names = dashboardPageRegistry.entries.map(entry => entry.id);
 }

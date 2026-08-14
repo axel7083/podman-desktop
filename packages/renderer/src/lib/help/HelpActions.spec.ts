@@ -21,6 +21,8 @@ import '@testing-library/jest-dom/vitest';
 import { render } from '@testing-library/svelte';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import HelpActions from './HelpActions.svelte';
 
 let toggleMenuCallback: (() => void) | undefined;
@@ -38,7 +40,7 @@ describe('HelpActions component', () => {
   });
 
   test('Productized Help Actions menu contains an item', async () => {
-    vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+    vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
     const title = 'Title 1';
     vi.mocked(window.helpMenuGetItems).mockResolvedValue([{ enabled: true, title, icon: 'fas fa-lightbulb' }]);
     const { getByTitle } = render(HelpActions);

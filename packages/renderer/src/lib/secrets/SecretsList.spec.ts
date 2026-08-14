@@ -23,6 +23,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { providerInfos } from '/@/stores/providers';
 import { searchPattern, secretsInfo } from '/@/stores/secrets';
 
@@ -171,7 +172,7 @@ test('Expect user confirmation for bulk delete', async () => {
   expect(checkboxes).toHaveLength(2);
   await fireEvent.click(checkboxes[0]);
 
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
   vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 
   const deleteButton = screen.getByRole('button', { name: 'Delete 1 selected items' });

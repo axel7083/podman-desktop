@@ -29,6 +29,7 @@ import { get } from 'svelte/store';
 /* eslint-enable import/no-duplicates */
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { providerInfos } from '/@/stores/providers';
 import { volumeListInfos, volumesEventStore } from '/@/stores/volumes';
 
@@ -45,7 +46,7 @@ beforeEach(async () => {
 
   vi.mocked(window.onDidUpdateProviderStatus).mockResolvedValue(undefined);
   vi.mocked(window.getProviderInfos).mockResolvedValue([]);
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(false);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(false);
   vi.mocked(window.listVolumes).mockResolvedValue([]);
 });
 
@@ -374,7 +375,7 @@ test('Expect user confirmation to pop up when preferences require', async () => 
   const checkboxes = screen.getAllByRole('checkbox', { name: 'Toggle volume' });
   await fireEvent.click(checkboxes[0]);
 
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
   (window as any).showMessageBox = vi.fn();
   vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 

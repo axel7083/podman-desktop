@@ -10,6 +10,7 @@ import { Terminal } from '@xterm/xterm';
 import { onDestroy, onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import { getTerminalTheme } from '/@/lib/terminal/terminal-theme';
 import NoLogIcon from '/@/lib/ui/NoLogIcon.svelte';
 import { getExistingTerminal, registerTerminal } from '/@/stores/container-terminal-store';
@@ -147,16 +148,16 @@ async function refreshTerminal(): Promise<void> {
   }
 
   // grab font size
-  const fontSize = await window.getConfigurationValue<number>(
-    TerminalSettings.SectionName + '.' + TerminalSettings.FontSize,
-  );
-  const lineHeight = await window.getConfigurationValue<number>(
-    TerminalSettings.SectionName + '.' + TerminalSettings.LineHeight,
-  );
+  const fontSize = await client.configuration.getValue({
+    key: TerminalSettings.SectionName + '.' + TerminalSettings.FontSize,
+  });
+  const lineHeight = await client.configuration.getValue({
+    key: TerminalSettings.SectionName + '.' + TerminalSettings.LineHeight,
+  });
 
-  const scrollback = await window.getConfigurationValue<number>(
-    TerminalSettings.SectionName + '.' + TerminalSettings.Scrollback,
-  );
+  const scrollback = await client.configuration.getValue({
+    key: TerminalSettings.SectionName + '.' + TerminalSettings.Scrollback,
+  });
 
   // get terminal if any
   const existingTerminal = getExistingTerminal(container.engineId, container.id);

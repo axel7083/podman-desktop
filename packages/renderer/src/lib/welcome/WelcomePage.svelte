@@ -4,6 +4,7 @@ import { Button, Checkbox, Link, Tooltip } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import IconImage from '/@/lib/appearance/IconImage.svelte';
 import DesktopIcon from '/@/lib/images/DesktopIcon.svelte';
 import { onboardingList } from '/@/stores/onboarding';
@@ -67,7 +68,7 @@ onMount(async () => {
   podmanDesktopVersion = await window.getPodmanDesktopVersion();
 
   if (showWelcome) {
-    await window.updateConfigurationValue(`releaseNotesBanner.show`, podmanDesktopVersion);
+    await client.configuration.updateValue({ key: `releaseNotesBanner.show`, value: podmanDesktopVersion });
   }
 });
 

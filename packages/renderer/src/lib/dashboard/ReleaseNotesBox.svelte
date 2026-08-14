@@ -4,6 +4,7 @@ import type { ReleaseNotes } from '@podman-desktop/core-api';
 import { Button, CloseButton, Link } from '@podman-desktop/ui-svelte';
 import { onDestroy, onMount } from 'svelte';
 
+import { client } from '/@/client';
 import Markdown from '/@/lib/markdown/Markdown.svelte';
 import { onDidChangeConfiguration } from '/@/stores/configurationProperties';
 import { updateAvailable } from '/@/stores/update-store';
@@ -44,14 +45,15 @@ async function getInfoFromNotes(): Promise<void> {
 }
 
 async function onClose(): Promise<void> {
-  await window.updateConfigurationValue(`releaseNotesBanner.show`, currentVersion);
+  await client.configuration.updateValue({ key: `releaseNotesBanner.show`, value: currentVersion });
   showBanner = false;
 }
 
 onMount(async () => {
   onDidChangeConfiguration.addEventListener('releaseNotesBanner.show', onDidChangeConfigurationCallback);
   currentVersion = await window.getPodmanDesktopVersion();
-  showBanner = (await window.getConfigurationValue(`releaseNotesBanner.show`)) !== currentVersion ? true : false;
+  showBanner =
+    (await client.configuration.getValue({ key: `releaseNotesBanner.show` })) !== currentVersion ? true : false;
   await getInfoFromNotes();
 });
 

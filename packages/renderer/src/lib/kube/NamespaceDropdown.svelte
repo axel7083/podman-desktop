@@ -2,6 +2,7 @@
 import { Dropdown } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import { kubernetesContextsHealths } from '/@/stores/kubernetes-context-health';
 import { kubernetesCurrentContextState } from '/@/stores/kubernetes-contexts-state';
 
@@ -9,7 +10,7 @@ let isExperimental: boolean = $state(false);
 
 onMount(async () => {
   try {
-    isExperimental = await window.isExperimentalConfigurationEnabled('kubernetes.statesExperimental');
+    isExperimental = await client.configuration.isExperimentalEnabled({ key: 'kubernetes.statesExperimental' });
   } catch {
     // keep default value
   }

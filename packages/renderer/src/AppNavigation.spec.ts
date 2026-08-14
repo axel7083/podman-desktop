@@ -26,6 +26,7 @@ import { readable } from 'svelte/store';
 import type { TinroRouteMeta } from 'tinro';
 import { beforeAll, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import * as kubeContextStore from '/@/stores/kubernetes-contexts-state';
 
 import AppNavigation from './AppNavigation.svelte';
@@ -196,7 +197,7 @@ test('resize handle captures pointer and persists width on drag end', async () =
   const meta = { url: '/' } as unknown as TinroRouteMeta;
 
   // Use a non-default width so waiting for it proves onMount finished (avoids mid-drag overwrite)
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(150);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(150);
 
   await fetchNavigationRegistries();
   render(AppNavigation, {
@@ -216,5 +217,7 @@ test('resize handle captures pointer and persists width on drag end', async () =
   await vi.waitFor(() => expect(handle).toHaveAttribute('aria-valuenow', '180'));
 
   window.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerId: 1 }));
-  await vi.waitFor(() => expect(window.updateConfigurationValue).toHaveBeenCalledWith(NAV_BAR_WIDTH_KEY, 180));
+  await vi.waitFor(() =>
+    expect(client.configuration.updateValue).toHaveBeenCalledWith({ key: NAV_BAR_WIDTH_KEY, value: 180 }),
+  );
 });

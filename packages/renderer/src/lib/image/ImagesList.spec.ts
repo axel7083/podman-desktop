@@ -29,6 +29,7 @@ import { get } from 'svelte/store';
 import { router } from 'tinro';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { IMAGE_LIST_VIEW_BADGES, IMAGE_LIST_VIEW_ICONS, IMAGE_VIEW_BADGES, IMAGE_VIEW_ICONS } from '/@/lib/view/views';
 import { imagesInfos } from '/@/stores/images';
 import { providerInfos } from '/@/stores/providers';
@@ -42,8 +43,8 @@ beforeEach(() => {
   viewsContributions.set([]);
   vi.mocked(window.hasAuthconfigForImage).mockResolvedValue(false);
   vi.mocked(window.listViewsContributions).mockResolvedValue([]);
-  vi.mocked(window.getConfigurationProperties).mockResolvedValue({});
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(false);
+  vi.mocked(client.configuration.getProperties).mockResolvedValue({});
+  vi.mocked(client.configuration.getValue).mockResolvedValue(false);
   vi.mocked(window.onDidUpdateProviderStatus).mockResolvedValue(undefined);
 
   vi.mocked(window.events.receive).mockImplementation((_channel, func) => {
@@ -644,7 +645,7 @@ test('Expect user confirmation to pop up when preferences require', async () => 
   const checkboxes = screen.getAllByRole('checkbox', { name: 'Toggle image' });
   await fireEvent.click(checkboxes[0]);
 
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
   vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 

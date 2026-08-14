@@ -21,6 +21,7 @@ import type { KubernetesContextResources } from '@podman-desktop/core-api';
 import { writable } from 'svelte/store';
 import { beforeAll, expect, type Mock, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import * as contexts from '/@/stores/kubernetes-contexts';
 
 import { listenResources } from './resources-listen';
@@ -49,19 +50,19 @@ beforeAll(() => {
 });
 
 test('listenResources is undefined in non experimental mode', async () => {
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(false);
+  vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(false);
   const result = await listenResources('resource1', {}, (): void => {});
   expect(result).toBeUndefined();
 });
 
 test('listenResources is undefined in non experimental mode (getConfigurationValue fails)', async () => {
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockRejectedValue(undefined);
+  vi.mocked(client.configuration.isExperimentalEnabled).mockRejectedValue(undefined);
   const result = await listenResources('resource1', {}, (): void => {});
   expect(result).toBeUndefined();
 });
 
 test('non filtered resources', async () => {
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+  vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
   vi.mocked(contexts).kubernetesContexts = writable([
     {
       currentContext: true,
@@ -94,7 +95,7 @@ test('non filtered resources', async () => {
 });
 
 test('updated resources without filter', async () => {
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+  vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
   vi.mocked(contexts).kubernetesContexts = writable([
     {
       currentContext: true,
@@ -142,7 +143,7 @@ test('updated resources without filter', async () => {
 
 test('filtered resources', async () => {
   const searchTermStore = writable<string>('');
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+  vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
   vi.mocked(contexts).kubernetesContexts = writable([
     {
       currentContext: true,
@@ -201,7 +202,7 @@ test('filtered resources', async () => {
 
 test('updated resources with filter', async () => {
   const searchTermStore = writable<string>('');
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+  vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
   vi.mocked(contexts).kubernetesContexts = writable([
     {
       currentContext: true,

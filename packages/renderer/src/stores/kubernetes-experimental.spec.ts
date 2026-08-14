@@ -19,11 +19,13 @@
 import { get } from 'svelte/store';
 import { expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { configurationProperties } from './configurationProperties';
 import { isKubernetesExperimentalModeStore } from './kubernetes-experimental';
 
 test('experimental mode is set', async () => {
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+  vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
   configurationProperties.set([]);
   await vi.waitFor(() => {
     const result = get(isKubernetesExperimentalModeStore);
@@ -32,7 +34,7 @@ test('experimental mode is set', async () => {
 });
 
 test('experimental mode is not set', async () => {
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(false);
+  vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(false);
   configurationProperties.set([]);
   await vi.waitFor(() => {
     const result = get(isKubernetesExperimentalModeStore);
@@ -41,7 +43,7 @@ test('experimental mode is not set', async () => {
 });
 
 test('experimental mode is not defined', async () => {
-  vi.mocked(window.getConfigurationValue).mockRejectedValue(new Error('an error'));
+  vi.mocked(client.configuration.getValue).mockRejectedValue(new Error('an error'));
   configurationProperties.set([]);
   await vi.waitFor(() => {
     const result = get(isKubernetesExperimentalModeStore);

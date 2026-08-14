@@ -3,6 +3,7 @@ import type { ContainerProviderConnection } from '@podman-desktop/api';
 import type { ProviderContainerConnectionInfo } from '@podman-desktop/core-api';
 import type { IConfigurationPropertyRecordedSchema } from '@podman-desktop/core-api/configuration';
 
+import { client } from '/@/client';
 import Donut from '/@/lib/donut/Donut.svelte';
 
 import { extractConnectionResourceMetrics, RESOURCE_FORMATS, toDisplayMetrics } from './connection-resource-metrics';
@@ -28,10 +29,10 @@ $effect(() => {
     properties.map(async configurationKey => ({
       ...configurationKey,
       value: configurationKey.id
-        ? await window.getConfigurationValue(
-            configurationKey.id,
-            containerConnectionInfo as unknown as ContainerProviderConnection,
-          )
+        ? await client.configuration.getValue({
+            key: configurationKey.id,
+            scope: containerConnectionInfo as unknown as ContainerProviderConnection,
+          })
         : undefined,
       connection: containerConnectionInfo?.name ?? '',
       providerId: providerInternalId ?? '',

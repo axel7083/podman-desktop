@@ -12,6 +12,7 @@ import { SvelteMap } from 'svelte/reactivity';
 import type { Unsubscriber } from 'svelte/store';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import ContributionActions from '/@/lib/actions/ContributionActions.svelte';
 import type { ContextUI } from '/@/lib/context/context';
 import { ContextKeyExpr } from '/@/lib/context/contextKey';
@@ -426,10 +427,10 @@ $effect(() => {
               return {
                 ...configurationKey,
                 value: configurationKey.id
-                  ? await window.getConfigurationValue(
-                      configurationKey.id,
-                      $state.snapshot(container) as unknown as ContainerProviderConnection,
-                    )
+                  ? await client.configuration.getValue({
+                      key: configurationKey.id,
+                      scope: $state.snapshot(container) as unknown as ContainerProviderConnection,
+                    })
                   : undefined,
                 connection: container.name,
                 providerId: provider.internalId,

@@ -25,8 +25,6 @@ import type { AppearanceUtil } from '/@/lib/appearance/appearance-util';
 
 import Badge from './Badge.svelte';
 
-// mock window.getConfigurationValue
-const getConfigurationValueMock = vi.fn();
 const getImageMock = vi.fn();
 
 vi.mock(import('/@/lib/appearance/appearance-util'), () => {
@@ -39,7 +37,6 @@ vi.mock(import('/@/lib/appearance/appearance-util'), () => {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  Object.defineProperty(window, 'getConfigurationValue', { value: getConfigurationValueMock });
 });
 
 test('Should display badge', async () => {

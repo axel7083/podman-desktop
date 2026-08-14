@@ -9,6 +9,7 @@ import { onMount, tick } from 'svelte';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import ContainerConnectionDropdown from '/@/lib/forms/ContainerConnectionDropdown.svelte';
 import { ImageUtils } from '/@/lib/image/image-utils';
 import EngineFormPage from '/@/lib/ui/EngineFormPage.svelte';
@@ -257,9 +258,9 @@ onMount(() => {
 });
 
 onMount(async () => {
-  const configuration = await window.getConfigurationValue<string>(
-    `${PreferredRegistriesSettings.SectionName}.${PreferredRegistriesSettings.Preferred}`,
-  );
+  const configuration = await client.configuration.getValue({
+    key: `${PreferredRegistriesSettings.SectionName}.${PreferredRegistriesSettings.Preferred}`,
+  });
   if (configuration) {
     const registries = configuration
       .split(',')

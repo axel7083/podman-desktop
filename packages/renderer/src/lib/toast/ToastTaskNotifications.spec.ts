@@ -23,15 +23,12 @@ import { render, waitFor } from '@testing-library/svelte';
 import { toast } from '@zerodevx/svelte-toast';
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { tasksInfo } from '/@/stores/tasks';
 
 import ToastTaskNotifications from './ToastTaskNotifications.svelte';
 
-beforeAll(() => {
-  Object.defineProperty(window, 'getConfigurationValue', {
-    value: vi.fn(),
-  });
-});
+beforeAll(() => {});
 
 vi.mock(import('@zerodevx/svelte-toast'));
 
@@ -53,7 +50,7 @@ beforeEach(() => {
 
 test('Check a toast is being created when there is a task created', async () => {
   // make it enabled
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
   tasksInfo.set([IN_PROGRESS_TASK]);
 
@@ -78,7 +75,7 @@ test('Check a toast is being created when there is a task created', async () => 
 
 test('Check no toast is being created if disabled', async () => {
   // make it disabled
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(false);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(false);
 
   tasksInfo.set([IN_PROGRESS_TASK]);
 
@@ -90,7 +87,7 @@ test('Check no toast is being created if disabled', async () => {
 
 test('Check a toast is being updated after a task is updated', async () => {
   // make it enabled
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
   // return a toast id when we create one
   const dummyToastId = 1256;
@@ -142,7 +139,7 @@ describe('Toast disappearing and notifying again', () => {
 
   test('Check that toast is being pushed again if the task took longer than 60s', async () => {
     // make it enabled
-    vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+    vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
     // return a toast id when we create one
     const dummyToastId = 1256;
@@ -192,7 +189,7 @@ describe('Toast disappearing and notifying again', () => {
 
   test('Check that toast is not being pushed again if the task took less than 60s', async () => {
     // make it enabled
-    vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+    vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
     // return a toast id when we create one
     const dummyToastId = 1256;

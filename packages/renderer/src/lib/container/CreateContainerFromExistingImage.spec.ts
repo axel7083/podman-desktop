@@ -31,6 +31,7 @@ import { tick } from 'svelte';
 import { get } from 'svelte/store';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { handleNavigation } from '/@/navigation';
 import { providerInfos } from '/@/stores/providers';
 
@@ -126,7 +127,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(window.listImages).mockResolvedValue(localImageList);
   vi.mocked(window.searchImageInRegistry).mockResolvedValue(registryImageList);
-  vi.mocked(window.getConfigurationValue).mockImplementation(async (key: string) => {
+  vi.mocked(client.configuration.getValue).mockImplementation(async ({ key }: { key: string }) => {
     if (key === 'terminal.integrated.scrollback') {
       return 1000;
     }

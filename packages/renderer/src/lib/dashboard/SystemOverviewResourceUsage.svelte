@@ -5,6 +5,7 @@ import type { IConfigurationPropertyRecordedSchema } from '@podman-desktop/core-
 import { ProgressBar } from '@podman-desktop/ui-svelte';
 import { filesize } from 'filesize';
 
+import { client } from '/@/client';
 import { extractConnectionResourceMetrics } from '/@/lib/preferences/connection-resource-metrics';
 import type { IProviderConnectionConfigurationPropertyRecorded } from '/@/lib/preferences/Util';
 import { configurationProperties } from '/@/stores/configurationProperties';
@@ -42,7 +43,10 @@ $effect(() => {
       return {
         ...configKey,
         value: configKey.id
-          ? await window.getConfigurationValue(configKey.id, connection as unknown as ContainerProviderConnection)
+          ? await client.configuration.getValue({
+              key: configKey.id,
+              scope: connection as unknown as ContainerProviderConnection,
+            })
           : undefined,
         connection: connection.name,
         providerId: provider.internalId,

@@ -23,6 +23,7 @@ import { render } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import Providers from '/@/lib/statusbar/Providers.svelte';
 import StatusBar from '/@/lib/statusbar/StatusBar.svelte';
 import { isHighContrast } from '/@/stores/appearance';
@@ -38,7 +39,6 @@ const callbacks = new Map<string, (arg: unknown) => void>();
 beforeEach(() => {
   vi.resetAllMocks();
 
-  Object.defineProperty(window, 'isExperimentalConfigurationEnabled', { value: vi.fn() });
   onDidChangeConfiguration.addEventListener = vi.fn().mockImplementation((message: string, callback: () => void) => {
     callbacks.set(message, callback);
   });
@@ -58,21 +58,20 @@ beforeEach(() => {
   ]);
 });
 
-test('onMount should call isExperimentalConfigurationEnabled', async () => {
+test('onMount should call isExperimentalEnabled', async () => {
   render(StatusBar);
 
-  await vi.waitFor(() => expect(window.isExperimentalConfigurationEnabled).toBeCalledTimes(2));
+  await vi.waitFor(() => expect(client.configuration.isExperimentalEnabled).toBeCalledTimes(2));
 
-  expect(window.isExperimentalConfigurationEnabled).nthCalledWith(
-    1,
-    `${ExperimentalTasksSettings.SectionName}.${ExperimentalTasksSettings.StatusBar}`,
-  );
+  expect(client.configuration.isExperimentalEnabled).nthCalledWith(1, {
+    key: `${ExperimentalTasksSettings.SectionName}.${ExperimentalTasksSettings.StatusBar}`,
+  });
 
-  expect(window.isExperimentalConfigurationEnabled).nthCalledWith(2, `statusbarProviders.showProviders`);
+  expect(client.configuration.isExperimentalEnabled).nthCalledWith(2, { key: `statusbarProviders.showProviders` });
 });
 
-test('tasks should be visible when isExperimentalConfigurationEnabled is true', async () => {
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+test('tasks should be visible when isExperimentalEnabled is true', async () => {
+  vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
 
   const { getByRole } = render(StatusBar);
 
@@ -83,16 +82,16 @@ test('tasks should be visible when isExperimentalConfigurationEnabled is true', 
   });
 });
 
-test('tasks should not be visible when isExperimentalConfigurationEnabled is false', () => {
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(false);
+test('tasks should not be visible when isExperimentalEnabled is false', () => {
+  vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(false);
 
   const { queryByRole } = render(StatusBar);
   const status = queryByRole('status');
   expect(status).toBeNull();
 });
 
-test('providers should be visible when isExperimentalConfigurationEnabled is true', async () => {
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+test('providers should be visible when isExperimentalEnabled is true', async () => {
+  vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
 
   render(StatusBar);
 
@@ -120,8 +119,8 @@ test('statusbar has data-pd-force-theme set to hc-dark in high-contrast mode', a
 });
 
 describe('providers', () => {
-  test('providers should not be visible when isExperimentalConfigurationEnabled is false', () => {
-    vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(false);
+  test('providers should not be visible when isExperimentalEnabled is false', () => {
+    vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(false);
 
     render(StatusBar);
 
@@ -129,10 +128,10 @@ describe('providers', () => {
   });
 
   test('providers should show up when configuration changes from false to true', async () => {
-    vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+    vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
     render(StatusBar);
 
-    await vi.waitFor(() => expect(window.isExperimentalConfigurationEnabled).toBeCalledTimes(1));
+    await vi.waitFor(() => expect(client.configuration.isExperimentalEnabled).toBeCalledTimes(1));
 
     expect(Providers).not.toHaveBeenCalled();
 
@@ -144,8 +143,8 @@ describe('providers', () => {
   });
 
   test('providers are hidden when configuration changes from true to false', async () => {
-    vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValueOnce(false);
-    vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValueOnce(true);
+    vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValueOnce(false);
+    vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValueOnce(true);
 
     render(StatusBar);
 
