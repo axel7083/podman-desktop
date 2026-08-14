@@ -21,15 +21,22 @@ import { contracts, ORPC_START_CHANNEL } from '@podman-desktop/core-api';
 import { Container as InversifyContainer, inject, injectable } from 'inversify';
 
 import { IPCMainOn } from '/@/plugin/api.js';
+import { AppRouter } from '/@/plugin/routers/app.router.js';
 import { AuthenticationRouter } from '/@/plugin/routers/authentication.router.js';
+import { CancellationRouter } from '/@/plugin/routers/cancellation.router.js';
 import { CliToolRouter } from '/@/plugin/routers/cli-tool.router.js';
+import { CommandsRouter } from '/@/plugin/routers/commands.router.js';
 import { ConfigurationRouter } from '/@/plugin/routers/configuration.router.js';
 import { DialogRouter } from '/@/plugin/routers/dialog.router.js';
+import { DocumentationRouter } from '/@/plugin/routers/documentation.router.js';
+import { ExploreFeaturesRouter } from '/@/plugin/routers/explore-features.router.js';
 import { ExtensionRouter } from '/@/plugin/routers/extension.router.js';
 import { FeedbackRouter } from '/@/plugin/routers/feedback.router.js';
 import { ImageRegistryRouter } from '/@/plugin/routers/image-registry.router.js';
+import { LearningCenterRouter } from '/@/plugin/routers/learning-center.router.js';
 import { MenuRouter } from '/@/plugin/routers/menu.router.js';
 import { NotificationRouter } from '/@/plugin/routers/notification.router.js';
+import { OnboardingRouter } from '/@/plugin/routers/onboarding.router.js';
 import { PickerRouter } from '/@/plugin/routers/picker.router.js';
 import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
 import { ProxyRouter } from '/@/plugin/routers/proxy.router.js';
@@ -40,6 +47,7 @@ import { TelemetryRouter } from '/@/plugin/routers/telemetry.router.js';
 import { TempFileRouter } from '/@/plugin/routers/temp-file.router.js';
 import { TroubleshootingRouter } from '/@/plugin/routers/troubleshooting.router.js';
 import { UiRegistryRouter } from '/@/plugin/routers/ui-registry.router.js';
+import { WelcomeRouter } from '/@/plugin/routers/welcome.router.js';
 
 export type OrpcContext = Context;
 
@@ -52,24 +60,38 @@ export class RpcHandler {
   constructor(
     @inject(IPCMainOn)
     protected readonly ipcHandle: IPCMainOn,
+    @inject(AppRouter)
+    readonly app: AppRouter,
     @inject(AuthenticationRouter)
     readonly authentication: AuthenticationRouter,
+    @inject(CancellationRouter)
+    readonly cancellation: CancellationRouter,
     @inject(CliToolRouter)
     readonly cliTool: CliToolRouter,
+    @inject(CommandsRouter)
+    readonly commands: CommandsRouter,
     @inject(ConfigurationRouter)
     readonly configuration: ConfigurationRouter,
     @inject(DialogRouter)
     readonly dialog: DialogRouter,
+    @inject(DocumentationRouter)
+    readonly documentation: DocumentationRouter,
+    @inject(ExploreFeaturesRouter)
+    readonly exploreFeatures: ExploreFeaturesRouter,
     @inject(ExtensionRouter)
     readonly extension: ExtensionRouter,
     @inject(FeedbackRouter)
     readonly feedback: FeedbackRouter,
     @inject(ImageRegistryRouter)
     readonly imageRegistry: ImageRegistryRouter,
+    @inject(LearningCenterRouter)
+    readonly learningCenter: LearningCenterRouter,
     @inject(MenuRouter)
     readonly menu: MenuRouter,
     @inject(NotificationRouter)
     readonly notification: NotificationRouter,
+    @inject(OnboardingRouter)
+    readonly onboarding: OnboardingRouter,
     @inject(PickerRouter)
     readonly picker: PickerRouter,
     @inject(PlanetRouter)
@@ -90,17 +112,26 @@ export class RpcHandler {
     readonly troubleshooting: TroubleshootingRouter,
     @inject(UiRegistryRouter)
     readonly uiRegistry: UiRegistryRouter,
+    @inject(WelcomeRouter)
+    readonly welcome: WelcomeRouter,
   ) {
     const router = implementer.router({
+      app: app.router,
       authentication: authentication.router,
+      cancellation: cancellation.router,
       cliTool: cliTool.router,
+      commands: commands.router,
       configuration: configuration.router,
       dialog: dialog.router,
+      documentation: documentation.router,
+      exploreFeatures: exploreFeatures.router,
       extension: extension.router,
       feedback: feedback.router,
       imageRegistry: imageRegistry.router,
+      learningCenter: learningCenter.router,
       menu: menu.router,
       notification: notification.router,
+      onboarding: onboarding.router,
       picker: picker.router,
       planet: planet.router,
       proxy: proxy.router,
@@ -111,6 +142,7 @@ export class RpcHandler {
       tempFile: tempFile.router,
       troubleshooting: troubleshooting.router,
       uiRegistry: uiRegistry.router,
+      welcome: welcome.router,
     });
 
     this.#handler = new RPCHandler(router, {

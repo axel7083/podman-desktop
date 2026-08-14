@@ -58,14 +58,14 @@ onMount(async () => {
     showWelcome = true;
   }
   router.goto('/');
-  welcomeMessages = await window.getWelcomeMessages();
+  welcomeMessages = await client.welcome.getWelcomeMessages();
 
   const telemetryPrompt = await welcomeUtils.havePromptedForTelemetry();
   if (!telemetryPrompt) {
     telemetryMessages = await client.telemetry.getTelemetryMessages();
     showTelemetry = true;
   }
-  podmanDesktopVersion = await window.getPodmanDesktopVersion();
+  podmanDesktopVersion = await client.app.getVersion();
 
   if (showWelcome) {
     await client.configuration.updateValue({ key: `releaseNotesBanner.show`, value: podmanDesktopVersion });

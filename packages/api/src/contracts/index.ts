@@ -16,15 +16,22 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import { appContract } from '/@/contracts/app/app.contract.js';
 import { authenticationContract } from '/@/contracts/authentication/authentication.contract.js';
+import { cancellationContract } from '/@/contracts/cancellation/cancellation.contract.js';
 import { cliToolContract } from '/@/contracts/cli-tool/cli-tool.contract.js';
+import { commandsContract } from '/@/contracts/commands/commands.contract.js';
 import { configurationContract } from '/@/contracts/configuration/configuration.contract.js';
 import { dialogContract } from '/@/contracts/dialog/dialog.contract.js';
+import { documentationContract } from '/@/contracts/documentation/documentation.contract.js';
+import { exploreFeaturesContract } from '/@/contracts/explore-features/explore-features.contract.js';
 import { extensionContract } from '/@/contracts/extension/extension.contract.js';
 import { feedbackContract } from '/@/contracts/feedback/feedback.contract.js';
 import { imageRegistryContract } from '/@/contracts/image-registry/image-registry.contract.js';
+import { learningCenterContract } from '/@/contracts/learning-center/learning-center.contract.js';
 import { menuContract } from '/@/contracts/menu/menu.contract.js';
 import { notificationContract } from '/@/contracts/notification/notification.contract.js';
+import { onboardingContract } from '/@/contracts/onboarding/onboarding.contract.js';
 import { pickerContract } from '/@/contracts/picker/picker.contract.js';
 import { planetContract } from '/@/contracts/planet/planet.contract.js';
 import { proxyContract } from '/@/contracts/proxy/proxy.contract.js';
@@ -35,19 +42,27 @@ import { telemetryContract } from '/@/contracts/telemetry/telemetry.contract.js'
 import { tempFileContract } from '/@/contracts/temp-file/temp-file.contract.js';
 import { troubleshootingContract } from '/@/contracts/troubleshooting/troubleshooting.contract.js';
 import { uiRegistryContract } from '/@/contracts/ui-registry/ui-registry.contract.js';
+import { welcomeContract } from '/@/contracts/welcome/welcome.contract.js';
 
 export * from './constants.js';
 
 export const contracts = {
+  app: appContract,
   authentication: authenticationContract,
+  cancellation: cancellationContract,
   cliTool: cliToolContract,
+  commands: commandsContract,
   configuration: configurationContract,
   dialog: dialogContract,
+  documentation: documentationContract,
+  exploreFeatures: exploreFeaturesContract,
   extension: extensionContract,
   feedback: feedbackContract,
   imageRegistry: imageRegistryContract,
+  learningCenter: learningCenterContract,
   menu: menuContract,
   notification: notificationContract,
+  onboarding: onboardingContract,
   picker: pickerContract,
   planet: planetContract,
   proxy: proxyContract,
@@ -58,4 +73,5 @@ export const contracts = {
   tempFile: tempFileContract,
   troubleshooting: troubleshootingContract,
   uiRegistry: uiRegistryContract,
+  welcome: welcomeContract,
 };

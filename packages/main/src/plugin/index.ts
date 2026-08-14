@@ -42,8 +42,6 @@ import type {
 } from '@kubernetes/client-node';
 import type * as containerDesktopAPI from '@podman-desktop/api';
 import type {
-  CommandInfo,
-  CommandPaletteSearchOption,
   ContainerCreateOptions,
   ContainerExportOptions,
   ContainerImportOptions,
@@ -53,7 +51,6 @@ import type {
   ContextGeneralState,
   ContextHealth,
   ContextPermission,
-  DocumentationInfo,
   ExtensionInfo,
   ForwardConfig,
   ForwardOptions,
@@ -77,8 +74,6 @@ import type {
   NetworkCreateResult,
   NetworkInspectInfo,
   NotificationCardOptions,
-  OnboardingInfo,
-  OnboardingStatus,
   PodInfo,
   PodInspectInfo,
   PreflightCheckEvent,
@@ -88,7 +83,6 @@ import type {
   ProviderInfo,
   ProviderKubernetesConnectionInfo,
   PullEvent,
-  ReleaseNotesInfo,
   ResourceCount,
   ResourceName,
   SecretCreateOptions,
@@ -101,7 +95,6 @@ import type {
   VolumeInspectInfo,
   VolumeListInfo,
   WebviewInfo,
-  WelcomeMessages,
 } from '@podman-desktop/core-api';
 import type { ApiSenderChannelMap } from '@podman-desktop/core-api/api-sender';
 import { ApiSenderType } from '@podman-desktop/core-api/api-sender';
@@ -142,10 +135,8 @@ import { Welcome } from '/@/plugin/welcome.js';
 import { securityRestrictionCurrentHandler } from '/@/security-restrictions-handler.js';
 import { TrayMenu } from '/@/tray-menu.js';
 import { isMac } from '/@/util.js';
-import product from '/@product.json' with { type: 'json' };
 
 // eslint-disable-next-line no-restricted-imports
-import rootPackage from '../../../../package.json' with { type: 'json' };
 import { AppearanceInit } from './appearance-init.js';
 import { AuthenticationImpl } from './authentication.js';
 import { AutostartEngine } from './autostart-engine.js';
@@ -193,7 +184,6 @@ import { ImageRegistry } from './image-registry.js';
 import { InputQuickPickRegistry } from './input-quickpick/input-quickpick-registry.js';
 import { ExtensionInstaller } from './install/extension-installer.js';
 import { KubernetesClient } from './kubernetes/kubernetes-client.js';
-import { downloadGuideList } from './learning-center/learning-center.js';
 import { LearningCenterInit } from './learning-center-init.js';
 import { LibpodApiInit } from './libpod-api-enable/libpod-api-init.js';
 import { ListOrganizerRegistry } from './list-organizer.js';
@@ -683,7 +673,6 @@ export class PluginSystem {
     terminalInit.init();
 
     container.bind<Welcome>(Welcome).toSelf().inSingletonScope();
-    const welcome = container.get<Welcome>(Welcome);
 
     container.bind<NavigationItemsInit>(NavigationItemsInit).toSelf().inSingletonScope();
     const navigationItems = container.get<NavigationItemsInit>(NavigationItemsInit);
@@ -771,7 +760,6 @@ export class PluginSystem {
     extensionsCatalog.init();
 
     container.bind<DocumentationService>(DocumentationService).toSelf().inSingletonScope();
-    const documentationService = container.get<DocumentationService>(DocumentationService);
 
     container.bind<Featured>(Featured).toSelf().inSingletonScope();
     const featured = container.get<Featured>(Featured);
@@ -797,7 +785,6 @@ export class PluginSystem {
     const troubleshooting = container.get<Troubleshooting>(Troubleshooting);
     troubleshooting.init();
     const contributionManager = container.get<ContributionManager>(ContributionManager);
-    const onboardingRegistry = container.get<OnboardingRegistry>(OnboardingRegistry);
     const directories = container.get<Directories>(Directories);
     const imageRegistry = container.get<ImageRegistry>(ImageRegistry);
     container.bind<ExperimentalFeatureFeedbackHandler>(ExperimentalFeatureFeedbackHandler).toSelf().inSingletonScope();
@@ -1705,26 +1692,6 @@ export class PluginSystem {
       },
     );
 
-    this.ipcHandle('app:update', async (): Promise<void> => {
-      await commandRegistry.executeCommand('update');
-    });
-
-    this.ipcHandle('app:update-available', async (): Promise<boolean> => {
-      return podmanDesktopUpdater.updateAvailable();
-    });
-
-    this.ipcHandle('app:get-release-notes', async (): Promise<ReleaseNotesInfo> => {
-      return podmanDesktopUpdater.getReleaseNotes();
-    });
-
-    this.ipcHandle('app:getTitleBarText', async (_listener): Promise<string> => {
-      return product.name;
-    });
-
-    this.ipcHandle('app:getAppRepository', async (_listener): Promise<string | undefined> => {
-      return rootPackage.repository;
-    });
-
     this.ipcHandle('provider-registry:getProviderInfos', async (): Promise<ProviderInfo[]> => {
       return providerRegistry.getProviderInfos();
     });
@@ -2018,22 +1985,6 @@ export class PluginSystem {
         return listOrganizerRegistry.resetListConfig(key, availableColumns);
       },
     );
-
-    this.ipcHandle('documentation:getItems', async (): Promise<DocumentationInfo[]> => {
-      return documentationService.getDocumentationItems();
-    });
-
-    this.ipcHandle('documentation:refresh', async (): Promise<void> => {
-      return documentationService.refreshDocumentation();
-    });
-
-    this.ipcHandle('commands:getCommandPaletteCommands', async (): Promise<CommandInfo[]> => {
-      return commandRegistry.getCommandPaletteCommands();
-    });
-
-    this.ipcHandle('commands:getCommandPaletteSearchOptions', async (): Promise<CommandPaletteSearchOption[]> => {
-      return commandRegistry.getCommandPaletteSearchOptions();
-    });
 
     this.ipcHandle(
       'provider-registry:startProviderLifecycle',
@@ -2650,21 +2601,6 @@ export class PluginSystem {
       return kubernetesClient.refreshContextState(context);
     });
 
-    this.ipcHandle('cancellableTokenSource:create', async (): Promise<number> => {
-      return cancellationTokenRegistry.createCancellationTokenSource();
-    });
-
-    this.ipcHandle('cancellableToken:cancel', async (_listener, id: number): Promise<void> => {
-      const tokenSource = cancellationTokenRegistry.getCancellationTokenSource(id);
-      if (!tokenSource?.token.isCancellationRequested) {
-        tokenSource?.dispose(true);
-      }
-    });
-
-    this.ipcHandle('app:getVersion', async (): Promise<string> => {
-      return app.getVersion();
-    });
-
     this.ipcHandle('webview:devtools:register', async (_listener, webcontentId: number): Promise<void> => {
       return webviewRegistry.registerWebviewDevTools(webcontentId);
     });
@@ -2690,10 +2626,6 @@ export class PluginSystem {
       return webviewRegistry.makeDefaultWebviewVisible(webviewId);
     });
 
-    this.ipcHandle('welcome:getWelcomeMessages', async (): Promise<WelcomeMessages> => {
-      return welcome.getWelcomeMessages();
-    });
-
     this.ipcHandle(
       'navigation:navigateToRoute',
       async (_listener, routeId: string, ...args: unknown[]): Promise<void> => {
@@ -2708,28 +2640,6 @@ export class PluginSystem {
       },
     );
 
-    this.ipcHandle('onboardingRegistry:listOnboarding', async (): Promise<OnboardingInfo[]> => {
-      return onboardingRegistry.listOnboarding();
-    });
-
-    this.ipcHandle(
-      'onboardingRegistry:getOnboarding',
-      async (_listener, extension: string): Promise<OnboardingInfo | undefined> => {
-        return onboardingRegistry.getOnboarding(extension);
-      },
-    );
-
-    this.ipcHandle(
-      'onboardingRegistry:updateStepState',
-      async (_listener, status: OnboardingStatus, extension: string, stepId?: string): Promise<void> => {
-        return onboardingRegistry.updateStepState(status, extension, stepId);
-      },
-    );
-
-    this.ipcHandle('onboardingRegistry:resetOnboarding', async (_listener, extensions: string[]): Promise<void> => {
-      return onboardingRegistry.resetOnboarding(extensions);
-    });
-
     this.ipcHandle('webview:get-preload-script', async (): Promise<string> => {
       const preloadScriptPath = path.join(__dirname, '../../preload-webview/dist/index.cjs');
       return `file://${preloadScriptPath}`;
@@ -2737,18 +2647,6 @@ export class PluginSystem {
 
     this.ipcHandle('webview:get-registry-http-port', async (): Promise<number> => {
       return webviewRegistry.getRegistryHttpPort();
-    });
-
-    this.ipcHandle('learning-center:listGuides', async () => {
-      return downloadGuideList();
-    });
-
-    this.ipcHandle('explore-features:listFeatures', async () => {
-      return exploreFeatures.downloadFeaturesList();
-    });
-
-    this.ipcHandle('explore-features:closeFeatureCard', async (_listener, featureId: string): Promise<void> => {
-      return exploreFeatures.closeFeatureCard(featureId);
     });
 
     this.ipcHandle(

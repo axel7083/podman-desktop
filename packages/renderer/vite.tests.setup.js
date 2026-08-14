@@ -127,7 +127,41 @@ vi.mock('/@/client', () => ({
       page: vi.fn(),
       configure: vi.fn(),
     },
+    app: {
+      update: vi.fn(),
+      updateAvailable: vi.fn(),
+      getReleaseNotes: vi.fn(),
+      getTitleBarText: vi.fn(),
+      getAppRepository: vi.fn(),
+      getVersion: vi.fn(),
+    },
+    cancellation: {
+      createTokenSource: vi.fn(),
+      cancelToken: vi.fn(),
+    },
+    commands: {
+      getCommandPaletteCommands: vi.fn(),
+      getCommandPaletteSearchOptions: vi.fn(),
+    },
+    documentation: {
+      getItems: vi.fn(),
+      refresh: vi.fn(),
+    },
+    exploreFeatures: {
+      listFeatures: vi.fn(),
+      closeFeatureCard: vi.fn(),
+    },
+    learningCenter: {
+      listGuides: vi.fn(),
+    },
+    onboarding: {
+      listOnboarding: vi.fn(),
+      getOnboarding: vi.fn(),
+      updateStepState: vi.fn(),
+      resetOnboarding: vi.fn(),
+    },
     troubleshooting: { getDockerSocketMappingStatus: vi.fn() },
+    welcome: { getWelcomeMessages: vi.fn() },
     uiRegistry: {
       listContributions: vi.fn(),
       listIcons: vi.fn(),

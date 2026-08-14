@@ -34,8 +34,8 @@ import WelcomePage from './WelcomePage.svelte';
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.getPodmanDesktopVersion).mockResolvedValue('1.0.0');
-  vi.mocked(window.getWelcomeMessages).mockResolvedValue({
+  vi.mocked(client.app.getVersion).mockResolvedValue('1.0.0');
+  vi.mocked(client.welcome.getWelcomeMessages).mockResolvedValue({
     getStartedMessage: 'Get started with Podman Desktop',
     welcomeMessage: 'Welcome to Podman Desktop',
   });

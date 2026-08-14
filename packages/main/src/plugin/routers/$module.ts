@@ -18,15 +18,22 @@
 
 import { ContainerModule } from 'inversify';
 
+import { AppRouter } from '/@/plugin/routers/app.router.js';
 import { AuthenticationRouter } from '/@/plugin/routers/authentication.router.js';
+import { CancellationRouter } from '/@/plugin/routers/cancellation.router.js';
 import { CliToolRouter } from '/@/plugin/routers/cli-tool.router.js';
+import { CommandsRouter } from '/@/plugin/routers/commands.router.js';
 import { ConfigurationRouter } from '/@/plugin/routers/configuration.router.js';
 import { DialogRouter } from '/@/plugin/routers/dialog.router.js';
+import { DocumentationRouter } from '/@/plugin/routers/documentation.router.js';
+import { ExploreFeaturesRouter } from '/@/plugin/routers/explore-features.router.js';
 import { ExtensionRouter } from '/@/plugin/routers/extension.router.js';
 import { FeedbackRouter } from '/@/plugin/routers/feedback.router.js';
 import { ImageRegistryRouter } from '/@/plugin/routers/image-registry.router.js';
+import { LearningCenterRouter } from '/@/plugin/routers/learning-center.router.js';
 import { MenuRouter } from '/@/plugin/routers/menu.router.js';
 import { NotificationRouter } from '/@/plugin/routers/notification.router.js';
+import { OnboardingRouter } from '/@/plugin/routers/onboarding.router.js';
 import { PickerRouter } from '/@/plugin/routers/picker.router.js';
 import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
 import { ProxyRouter } from '/@/plugin/routers/proxy.router.js';
@@ -38,17 +45,25 @@ import { TelemetryRouter } from '/@/plugin/routers/telemetry.router.js';
 import { TempFileRouter } from '/@/plugin/routers/temp-file.router.js';
 import { TroubleshootingRouter } from '/@/plugin/routers/troubleshooting.router.js';
 import { UiRegistryRouter } from '/@/plugin/routers/ui-registry.router.js';
+import { WelcomeRouter } from '/@/plugin/routers/welcome.router.js';
 
 const routersModule = new ContainerModule(options => {
+  options.bind<AppRouter>(AppRouter).toSelf().inSingletonScope();
   options.bind<AuthenticationRouter>(AuthenticationRouter).toSelf().inSingletonScope();
+  options.bind<CancellationRouter>(CancellationRouter).toSelf().inSingletonScope();
   options.bind<CliToolRouter>(CliToolRouter).toSelf().inSingletonScope();
+  options.bind<CommandsRouter>(CommandsRouter).toSelf().inSingletonScope();
   options.bind<ConfigurationRouter>(ConfigurationRouter).toSelf().inSingletonScope();
   options.bind<DialogRouter>(DialogRouter).toSelf().inSingletonScope();
+  options.bind<DocumentationRouter>(DocumentationRouter).toSelf().inSingletonScope();
+  options.bind<ExploreFeaturesRouter>(ExploreFeaturesRouter).toSelf().inSingletonScope();
   options.bind<ExtensionRouter>(ExtensionRouter).toSelf().inSingletonScope();
   options.bind<FeedbackRouter>(FeedbackRouter).toSelf().inSingletonScope();
   options.bind<ImageRegistryRouter>(ImageRegistryRouter).toSelf().inSingletonScope();
+  options.bind<LearningCenterRouter>(LearningCenterRouter).toSelf().inSingletonScope();
   options.bind<MenuRouter>(MenuRouter).toSelf().inSingletonScope();
   options.bind<NotificationRouter>(NotificationRouter).toSelf().inSingletonScope();
+  options.bind<OnboardingRouter>(OnboardingRouter).toSelf().inSingletonScope();
   options.bind<PickerRouter>(PickerRouter).toSelf().inSingletonScope();
   options.bind<PlanetRouter>(PlanetRouter).toSelf().inSingletonScope();
   options.bind<ProxyRouter>(ProxyRouter).toSelf().inSingletonScope();
@@ -59,6 +74,7 @@ const routersModule = new ContainerModule(options => {
   options.bind<TempFileRouter>(TempFileRouter).toSelf().inSingletonScope();
   options.bind<TroubleshootingRouter>(TroubleshootingRouter).toSelf().inSingletonScope();
   options.bind<UiRegistryRouter>(UiRegistryRouter).toSelf().inSingletonScope();
+  options.bind<WelcomeRouter>(WelcomeRouter).toSelf().inSingletonScope();
   options.bind<RpcHandler>(RpcHandler).toSelf().inSingletonScope();
 });
 
