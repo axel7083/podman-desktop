@@ -49,7 +49,7 @@ vi.mock(import('svelte/transition'), () => ({
 }));
 
 beforeEach(() => {
-  vi.mocked(window.listGuides).mockResolvedValue(guides);
+  vi.mocked(client.learningCenter.listGuides).mockResolvedValue(guides);
 });
 
 afterEach(() => {
