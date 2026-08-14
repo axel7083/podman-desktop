@@ -20,6 +20,7 @@ import type { PodInfo } from '@podman-desktop/core-api';
 import { get } from 'svelte/store';
 import { assert, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import type { PodInfoUI } from '/@/lib/pod/PodInfoUI';
 
 import { clearPodActionInProgress, podsEventStore, podsInfos, setPodActionError, setPodStatus } from './pods';
@@ -49,16 +50,16 @@ test.each([
   podsEventStore.setupWithDebounce(10, 10);
 
   // empty list
-  vi.mocked(window.listPods).mockResolvedValue([]);
+  vi.mocked(client.container.listPods).mockResolvedValue([]);
 
   // mark as ready to receive updates
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
 
   // clear mock calls
-  vi.mocked(window.listPods).mockClear();
+  vi.mocked(client.container.listPods).mockClear();
 
   // now, setup at least one container
-  vi.mocked(window.listPods).mockResolvedValue([
+  vi.mocked(client.container.listPods).mockResolvedValue([
     {
       Id: 'id123',
     } as unknown as PodInfo,
@@ -70,7 +71,7 @@ test.each([
   await callback();
 
   // wait listContainersMock is called
-  while (vi.mocked(window.listPods).mock.calls.length === 0) {
+  while (vi.mocked(client.container.listPods).mock.calls.length === 0) {
     await new Promise(resolve => setTimeout(resolve, 10));
   }
 

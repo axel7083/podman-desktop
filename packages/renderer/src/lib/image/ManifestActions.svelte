@@ -28,7 +28,7 @@ async function deleteManifest(): Promise<void> {
   manifest.status = 'DELETING';
   dispatch('update', manifest);
   try {
-    await window.removeManifest(manifest.engineId, manifest.name);
+    await client.container.removeManifest({ engine: manifest.engineId, manifestId: manifest.name });
   } catch (error) {
     await onError(`Error while deleting manifest: ${error instanceof Error ? error.message : String(error)}`);
   }

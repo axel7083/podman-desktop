@@ -2,6 +2,8 @@
 import { faPlug } from '@fortawesome/free-solid-svg-icons';
 import { Button, ErrorMessage } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
+
 let reconnectInProgress = $state(false);
 let reconnectError = $state('');
 let reconnectResult = $state('');
@@ -12,7 +14,7 @@ async function reconnectContainerProviders(): Promise<void> {
   reconnectError = '';
   reconnectResult = 'Waiting for response...';
   try {
-    await window.reconnectContainerProviders();
+    await client.container.reconnectContainerProviders();
   } catch (e) {
     reconnectError = String(e);
     reconnectResult = 'Failed';

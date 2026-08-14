@@ -1,6 +1,7 @@
 <script lang="ts">
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import MonacoEditor from '/@/lib/editor/MonacoEditor.svelte';
 
 import type { ComposeInfoUI } from './ComposeInfoUI';
@@ -19,7 +20,7 @@ onMount(async () => {
 
   // Generate the kube yaml using the generatePodmanKube function which
   // only has to take in the engineID and an array of container ID's to generate from
-  const kubeResult = await window.generatePodmanKube(compose.engineId, containerIds);
+  const kubeResult = await client.container.generatePodmanKube({ engine: compose.engineId, names: containerIds });
   kubeDetails = kubeResult;
 });
 </script>

@@ -61,7 +61,7 @@ const providerInfoMock = {
 
 async function init(searchTerm?: string): Promise<void> {
   vi.mocked(window.getProviderInfos).mockResolvedValue([providerInfoMock]);
-  vi.mocked(window.listSecrets).mockResolvedValue([secret1, secret2]);
+  vi.mocked(client.container.listSecrets).mockResolvedValue([secret1, secret2]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -83,7 +83,7 @@ async function init(searchTerm?: string): Promise<void> {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.listSecrets).mockResolvedValue([]);
+  vi.mocked(client.container.listSecrets).mockResolvedValue([]);
   vi.mocked(window.getProviderInfos).mockResolvedValue([]);
   vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
   providerInfos.set([]);
@@ -92,7 +92,7 @@ beforeEach(() => {
 });
 
 test('Expect no container engines being displayed', async () => {
-  vi.mocked(window.listSecrets).mockResolvedValue([secret1, secret2]);
+  vi.mocked(client.container.listSecrets).mockResolvedValue([secret1, secret2]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -183,7 +183,7 @@ test('Expect user confirmation for bulk delete', async () => {
   vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   await fireEvent.click(deleteButton);
   expect(client.dialog.showMessageBox).toHaveBeenCalledTimes(2);
-  await waitFor(() => expect(window.removeSecret).toHaveBeenCalled());
+  await waitFor(() => expect(client.container.removeSecret).toHaveBeenCalled());
 });
 
 test('Expect search to filter secrets by name', async () => {
@@ -199,7 +199,7 @@ test('Expect environment column sorted by engineName', async () => {
   const secret1Modified = { ...secret1, engineId: 'engine-zzz', engineName: 'name-aaa' };
   const secret2Modified = { ...secret2, engineId: 'engine-aaa', engineName: 'name-zzz' };
 
-  vi.mocked(window.listSecrets).mockResolvedValue([secret1Modified, secret2Modified]);
+  vi.mocked(client.container.listSecrets).mockResolvedValue([secret1Modified, secret2Modified]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));

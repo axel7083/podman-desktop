@@ -2,6 +2,7 @@
 import type { ContainerInspectInfo } from '@podman-desktop/core-api';
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import MonacoEditor from '/@/lib/editor/MonacoEditor.svelte';
 
 import type { ComposeInfoUI } from './ComposeInfoUI';
@@ -18,10 +19,10 @@ onMount(async () => {
   // Go through each container and grab the inspect result, add it to inspectDetails / stringify
   const mappedResults = await Promise.all(
     compose.containers.map(async container => {
-      const inspectResult = (await window.getContainerInspect(
-        container.engineId,
-        container.id,
-      )) as Partial<ContainerInspectInfo>;
+      const inspectResult = (await client.container.getContainerInspect({
+        engine: container.engineId,
+        containerId: container.id,
+      })) as Partial<ContainerInspectInfo>;
 
       // remove engine* properties from the inspect result as it's more internal
       delete inspectResult.engineId;

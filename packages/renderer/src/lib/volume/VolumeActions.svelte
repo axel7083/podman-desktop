@@ -36,7 +36,7 @@ async function removeVolume(): Promise<void> {
   volume.status = 'DELETING';
   dispatch('update', volume);
 
-  await window.removeVolume(volume.engineId, volume.name);
+  await client.container.removeVolume({ engine: volume.engineId, volumeName: volume.name });
 }
 
 // If dropdownMenu = true, we'll change style to the imported dropdownMenu style

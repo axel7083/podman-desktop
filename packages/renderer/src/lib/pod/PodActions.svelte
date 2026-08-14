@@ -51,7 +51,7 @@ onMount(async () => {
   const containerUtils = new ContainerUtils();
 
   const containerIds = pod.containers.map(podContainer => podContainer.Id);
-  const podContainers = (await window.listContainers()).filter(
+  const podContainers = (await client.container.listContainers()).filter(
     container => containerIds.findIndex(containerInfo => containerInfo === container.Id) >= 0,
   );
 
@@ -81,10 +81,10 @@ async function startPod(): Promise<void> {
 
   try {
     if (hasPaused) {
-      await window.unpausePod(pod.engineId, pod.id);
+      await client.container.unpausePod({ engine: pod.engineId, podId: pod.id });
     }
     if (hasExited) {
-      await window.startPod(pod.engineId, pod.id);
+      await client.container.startPod({ engine: pod.engineId, podId: pod.id });
     }
   } catch (error) {
     handleError(String(error));
@@ -96,7 +96,7 @@ async function startPod(): Promise<void> {
 async function restartPod(): Promise<void> {
   inProgress(false, 'RESTARTING');
   try {
-    await window.restartPod(pod.engineId, pod.id);
+    await client.container.restartPod({ engine: pod.engineId, podId: pod.id });
   } catch (error) {
     handleError(String(error));
   } finally {
@@ -107,7 +107,7 @@ async function restartPod(): Promise<void> {
 async function stopPod(): Promise<void> {
   inProgress(false, 'STOPPING');
   try {
-    await window.stopPod(pod.engineId, pod.id);
+    await client.container.stopPod({ engine: pod.engineId, podId: pod.id });
   } catch (error) {
     handleError(String(error));
   } finally {
@@ -118,7 +118,7 @@ async function stopPod(): Promise<void> {
 async function deletePod(): Promise<void> {
   inProgress(false, 'DELETING');
   try {
-    await window.removePod(pod.engineId, pod.id);
+    await client.container.removePod({ engine: pod.engineId, podId: pod.id });
   } catch (error) {
     handleError(String(error));
   } finally {

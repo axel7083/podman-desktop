@@ -67,7 +67,10 @@ async function resolveShortname(): Promise<void> {
   }
   if (imageToPull && !imageToPull.includes('/')) {
     shortnameImages =
-      (await window.resolveShortnameImage($state.snapshot(selectedProviderConnection), imageToPull)) ?? [];
+      (await client.container.resolveShortnameImage({
+        providerContainerConnectionInfo: $state.snapshot(selectedProviderConnection),
+        shortName: imageToPull,
+      })) ?? [];
     // not a shortname
   } else {
     podmanFQN = '';
@@ -210,8 +213,8 @@ async function getFirstPulledImageInfo(): Promise<ImageInfoUI | undefined> {
   if (!target) return undefined;
 
   const localImages = (
-    await window.listImages({
-      provider: $state.snapshot(selectedProviderConnection),
+    await client.container.listImages({
+      options: { provider: $state.snapshot(selectedProviderConnection) },
     })
   ).filter(image => (image.RepoTags ?? []).some(repoTag => repoTag.includes(target)));
 

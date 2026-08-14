@@ -7,6 +7,7 @@ import type { ProviderContainerConnectionInfo } from '@podman-desktop/core-api';
 import { Button, ErrorMessage, Input } from '@podman-desktop/ui-svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import VolumeIcon from '/@/lib/images/VolumeIcon.svelte';
 import EngineFormPage from '/@/lib/ui/EngineFormPage.svelte';
 import { providerInfos } from '/@/stores/providers';
@@ -64,7 +65,10 @@ async function createVolume(providerConnectionInfo: ProviderContainerConnectionI
   createError = undefined;
   createVolumeInProgress = true;
   try {
-    await window.createVolume(providerConnectionInfo, { Name: volumeName });
+    await client.container.createVolume({
+      providerContainerConnectionInfo: providerConnectionInfo,
+      options: { Name: volumeName },
+    });
     createVolumeFinished = true;
   } catch (error: unknown) {
     createError = error instanceof Error ? error.message : String(error);

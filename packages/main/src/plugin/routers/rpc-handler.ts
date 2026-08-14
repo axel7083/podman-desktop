@@ -27,6 +27,7 @@ import { CancellationRouter } from '/@/plugin/routers/cancellation.router.js';
 import { CliToolRouter } from '/@/plugin/routers/cli-tool.router.js';
 import { CommandsRouter } from '/@/plugin/routers/commands.router.js';
 import { ConfigurationRouter } from '/@/plugin/routers/configuration.router.js';
+import { ContainerRouter } from '/@/plugin/routers/container.router.js';
 import { DialogRouter } from '/@/plugin/routers/dialog.router.js';
 import { DocumentationRouter } from '/@/plugin/routers/documentation.router.js';
 import { ExploreFeaturesRouter } from '/@/plugin/routers/explore-features.router.js';
@@ -72,6 +73,8 @@ export class RpcHandler {
     readonly cliTool: CliToolRouter,
     @inject(CommandsRouter)
     readonly commands: CommandsRouter,
+    @inject(ContainerRouter)
+    readonly container: ContainerRouter,
     @inject(ConfigurationRouter)
     readonly configuration: ConfigurationRouter,
     @inject(DialogRouter)
@@ -127,6 +130,7 @@ export class RpcHandler {
       cancellation: cancellation.router,
       cliTool: cliTool.router,
       commands: commands.router,
+      container: container.router,
       configuration: configuration.router,
       dialog: dialog.router,
       documentation: documentation.router,

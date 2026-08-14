@@ -11,6 +11,7 @@ import {
 } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import { withBulkConfirmation } from '/@/lib/actions/BulkActions';
 import type { EngineInfoUI } from '/@/lib/engine/EngineInfoUI';
 import Prune from '/@/lib/engine/Prune.svelte';
@@ -109,7 +110,7 @@ async function deleteSelectedPods(): Promise<void> {
   await Promise.all(
     selectedPods.map(async pod => {
       try {
-        await window.removePod(pod.engineId, pod.id);
+        await client.container.removePod({ engine: pod.engineId, podId: pod.id });
       } catch (e) {
         console.error('error while removing pod', e);
       }

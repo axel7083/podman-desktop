@@ -2,6 +2,7 @@
 import type { NetworkInspectInfo } from '@podman-desktop/core-api';
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import MonacoEditor from '/@/lib/editor/MonacoEditor.svelte';
 
 import type { NetworkInfoUI } from './NetworkInfoUI';
@@ -16,7 +17,10 @@ let inspectDetails: string = $state('');
 
 onMount(async () => {
   // grab inspect result from the network
-  let inspectResult = (await window.inspectNetwork(network.engineId, network.id)) as Partial<NetworkInspectInfo>;
+  let inspectResult = (await client.container.inspectNetwork({
+    engine: network.engineId,
+    networkId: network.id,
+  })) as Partial<NetworkInspectInfo>;
   // remove engine* properties from the inspect result as it's more internal
   delete inspectResult.engineId;
   delete inspectResult.engineName;

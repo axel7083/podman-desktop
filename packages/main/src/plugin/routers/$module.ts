@@ -24,6 +24,7 @@ import { CancellationRouter } from '/@/plugin/routers/cancellation.router.js';
 import { CliToolRouter } from '/@/plugin/routers/cli-tool.router.js';
 import { CommandsRouter } from '/@/plugin/routers/commands.router.js';
 import { ConfigurationRouter } from '/@/plugin/routers/configuration.router.js';
+import { ContainerRouter } from '/@/plugin/routers/container.router.js';
 import { DialogRouter } from '/@/plugin/routers/dialog.router.js';
 import { DocumentationRouter } from '/@/plugin/routers/documentation.router.js';
 import { ExploreFeaturesRouter } from '/@/plugin/routers/explore-features.router.js';
@@ -55,6 +56,7 @@ const routersModule = new ContainerModule(options => {
   options.bind<CancellationRouter>(CancellationRouter).toSelf().inSingletonScope();
   options.bind<CliToolRouter>(CliToolRouter).toSelf().inSingletonScope();
   options.bind<CommandsRouter>(CommandsRouter).toSelf().inSingletonScope();
+  options.bind<ContainerRouter>(ContainerRouter).toSelf().inSingletonScope();
   options.bind<ConfigurationRouter>(ConfigurationRouter).toSelf().inSingletonScope();
   options.bind<DialogRouter>(DialogRouter).toSelf().inSingletonScope();
   options.bind<DocumentationRouter>(DocumentationRouter).toSelf().inSingletonScope();

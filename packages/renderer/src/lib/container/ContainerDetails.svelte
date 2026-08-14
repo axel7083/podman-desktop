@@ -6,6 +6,7 @@ import { ErrorMessage, Link, StatusIcon, Tab } from '@podman-desktop/ui-svelte';
 import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import DetailsPage from '/@/lib/ui/DetailsPage.svelte';
 import StateChange from '/@/lib/ui/StateChange.svelte';
 import { getTabUrl, isTabSelected } from '/@/lib/ui/Util';
@@ -42,8 +43,8 @@ let container: ContainerInfoUI | undefined = $derived(
 $effect(() => {
   if (container) {
     hadContainer = true;
-    window
-      .getContainerInspect(container.engineId, container.id)
+    client.container
+      .getContainerInspect({ engine: container.engineId, containerId: container.id })
       .then(inspect => {
         displayTty = (inspect.Config.Tty ?? false) && (inspect.Config.OpenStdin ?? false);
         // Redirect to appropriate tab if we're at the root path

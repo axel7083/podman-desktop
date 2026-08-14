@@ -92,7 +92,7 @@ test('Delete a group of compose containers successfully', async () => {
       ImageID: 'dummy-image-id',
     } as unknown as ContainerInfo,
   ];
-  vi.mocked(window.listContainers).mockResolvedValue(mockedContainers);
+  vi.mocked(client.container.listContainers).mockResolvedValue(mockedContainers);
 
   // Send over custom events to simulate PD being started
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
@@ -119,11 +119,15 @@ test('Delete a group of compose containers successfully', async () => {
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
   // wait deleteContainerMock is called
-  while (vi.mocked(window.deleteContainersByLabel).mock.calls.length === 0) {
+  while (vi.mocked(client.container.deleteContainersByLabel).mock.calls.length === 0) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 
   // Expect deleteContainerMock to be called / successfully clicked
-  expect(window.deleteContainersByLabel).toBeCalledWith('podman', 'com.docker.compose.project', groupName);
-  expect(window.deleteContainersByLabel).toBeCalledTimes(1);
+  expect(client.container.deleteContainersByLabel).toHaveBeenCalledWith({
+    engine: 'podman',
+    label: 'com.docker.compose.project',
+    key: groupName,
+  });
+  expect(client.container.deleteContainersByLabel).toHaveBeenCalledTimes(1);
 });

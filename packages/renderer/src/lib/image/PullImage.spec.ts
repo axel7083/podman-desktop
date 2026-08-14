@@ -84,12 +84,12 @@ beforeEach(() => {
     return undefined;
   });
   console.error = vi.fn();
-  vi.mocked(window.resolveShortnameImage).mockResolvedValue(['docker.io/test1']);
+  vi.mocked(client.container.resolveShortnameImage).mockResolvedValue(['docker.io/test1']);
   vi.mocked(client.cancellation.createTokenSource).mockResolvedValue(1234);
   vi.mocked(client.cancellation.cancelToken).mockResolvedValue(undefined);
   vi.mocked(window.pullImage).mockResolvedValue(undefined);
   vi.mocked(client.imageRegistry.listImageTags).mockResolvedValue(['latest', 'other']);
-  vi.mocked(window.listImages).mockResolvedValue([]);
+  vi.mocked(client.container.listImages).mockResolvedValue([]);
   vi.mocked(client.imageRegistry.searchImages).mockResolvedValue([]);
 
   providerInfos.set([PROVIDER_INFO_MOCK]);
@@ -296,14 +296,14 @@ describe('PullImage', () => {
 });
 
 test('Expect if no docker.io shortname to use Podman FQN', async () => {
-  vi.mocked(window.resolveShortnameImage).mockResolvedValue(['someregistry/test1']);
+  vi.mocked(client.container.resolveShortnameImage).mockResolvedValue(['someregistry/test1']);
   render(PullImage);
 
   const textbox = screen.getByRole('textbox', { name: 'Image to pull' });
   await userEvent.click(textbox);
   await userEvent.paste('test1');
 
-  expect(vi.mocked(window.resolveShortnameImage)).toBeCalled();
+  expect(vi.mocked(client.container.resolveShortnameImage)).toBeCalled();
   await tick();
   const FQNButton = screen.getByRole('checkbox', { name: 'Use Podman FQN' });
 
@@ -316,14 +316,14 @@ test('Expect if no docker.io shortname to use Podman FQN', async () => {
 });
 
 test('Expect if no docker.io shortname but checkbox not checked to use docker hub', async () => {
-  vi.mocked(window.resolveShortnameImage).mockResolvedValue(['someregistry/test1']);
+  vi.mocked(client.container.resolveShortnameImage).mockResolvedValue(['someregistry/test1']);
   render(PullImage);
 
   const textbox = screen.getByRole('textbox', { name: 'Image to pull' });
   await userEvent.click(textbox);
   await userEvent.paste('test1');
 
-  expect(vi.mocked(window.resolveShortnameImage)).toBeCalled();
+  expect(vi.mocked(client.container.resolveShortnameImage)).toBeCalled();
   await tick();
 
   const pullImagebutton = screen.getByRole('button', { name: 'Pull image' });
@@ -334,14 +334,14 @@ test('Expect if no docker.io shortname but checkbox not checked to use docker hu
 });
 
 test('Expect if docker.io shortname exists to not use Podman FQN', async () => {
-  vi.mocked(window.resolveShortnameImage).mockResolvedValue(['someregistry/test1', 'docker.io/test1']);
+  vi.mocked(client.container.resolveShortnameImage).mockResolvedValue(['someregistry/test1', 'docker.io/test1']);
   render(PullImage);
 
   const textbox = screen.getByRole('textbox', { name: 'Image to pull' });
   await userEvent.click(textbox);
   await userEvent.paste('test1');
 
-  expect(vi.mocked(window.resolveShortnameImage)).toBeCalled();
+  expect(vi.mocked(client.container.resolveShortnameImage)).toBeCalled();
   await tick();
   expect(screen.queryByRole('checkbox', { name: 'Use Podman FQN' })).not.toBeInTheDocument();
 
@@ -359,7 +359,7 @@ test('Expect not to check not shortname images', async () => {
   await userEvent.click(textbox);
   await userEvent.paste('test1/');
 
-  expect(vi.mocked(window.resolveShortnameImage)).not.toBeCalled();
+  expect(vi.mocked(client.container.resolveShortnameImage)).not.toBeCalled();
 });
 
 test('Expect latest tag warning is displayed when the image does not have latest tag', async () => {
@@ -399,7 +399,7 @@ test('Expect done, details and run actions after a successful pull', async () =>
 
 test('Expect details action to open pulled image summary route', async () => {
   const gotoSpy = vi.spyOn(router, 'goto');
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890123',
       RepoTags: ['docker.io/library/alpine:latest'],
@@ -417,8 +417,8 @@ test('Expect details action to open pulled image summary route', async () => {
   await userEvent.click(detailsButton);
 
   await vi.waitFor(() => {
-    expect(window.listImages).toHaveBeenCalledWith({
-      provider: CONTAINER_CONNECTION_MOCK,
+    expect(client.container.listImages).toHaveBeenCalledWith({
+      options: { provider: CONTAINER_CONNECTION_MOCK },
     });
     expect(gotoSpy).toHaveBeenLastCalledWith(
       '/images/sha256:1234567890123/podman/ZG9ja2VyLmlvL2xpYnJhcnkvYWxwaW5lOmxhdGVzdA==/summary',
@@ -435,7 +435,7 @@ test('Expect run action to set image info and go to run page', async () => {
     engineId: 'podman',
     engineName: 'podman',
   } as unknown as ImageInfo;
-  vi.mocked(window.listImages).mockResolvedValue([image]);
+  vi.mocked(client.container.listImages).mockResolvedValue([image]);
   render(PullImage, { imageToPull: 'docker.io/alpine' });
 
   const pullImagebutton = screen.getByRole('button', { name: 'Pull image' });

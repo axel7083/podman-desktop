@@ -13,6 +13,7 @@ import {
 } from '@podman-desktop/ui-svelte';
 import moment from 'moment/moment';
 
+import { client } from '/@/client';
 import { withBulkConfirmation } from '/@/lib/actions/BulkActions';
 import NoContainerEngineEmptyScreen from '/@/lib/image/NoContainerEngineEmptyScreen.svelte';
 import SecretIcon from '/@/lib/images/SecretIcon.svelte';
@@ -84,7 +85,9 @@ async function bulkDeleteSecrets(): Promise<void> {
 
   try {
     bulkDeleteInProgress = true;
-    await Promise.allSettled(selected.map(secret => window.removeSecret(secret.engineId, secret.Id)));
+    await Promise.allSettled(
+      selected.map(secret => client.container.removeSecret({ engineId: secret.engineId, secretId: secret.Id })),
+    );
   } finally {
     bulkDeleteInProgress = false;
   }

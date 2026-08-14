@@ -37,10 +37,6 @@ class ResizeObserver {
 }
 beforeAll(() => {
   Object.defineProperty(window, 'ResizeObserver', { value: ResizeObserver });
-
-  Object.defineProperty(window, 'hasAuthconfigForImage', {
-    value: vi.fn().mockResolvedValue(false),
-  });
 });
 
 const fakedManifest: ImageInfoUI = {
@@ -98,7 +94,7 @@ test('Expect error dialog with correct message when manifest deletion fails', as
   const errorMessage = 'manifest not found';
   vi.mocked(withConfirmation).mockImplementation(f => f());
   vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Dismiss' });
-  vi.mocked(window.removeManifest).mockRejectedValueOnce(new Error(errorMessage));
+  vi.mocked(client.container.removeManifest).mockRejectedValueOnce(new Error(errorMessage));
   vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 
   const manifest: ImageInfoUI = {

@@ -20,6 +20,7 @@ import type { VolumeListInfo } from '@podman-desktop/core-api';
 import type { Writable } from 'svelte/store';
 import { derived, writable } from 'svelte/store';
 
+import { client } from '/@/client';
 import VolumeIcon from '/@/lib/images/VolumeIcon.svelte';
 
 import { EventStore } from './event-store';
@@ -55,11 +56,11 @@ async function checkForUpdate(eventName: string): Promise<boolean> {
 
 export const volumeListInfos: Writable<VolumeListInfo[]> = writable([]);
 
-// use helper here as window methods are initialized after the store in tests
+// use helper here as client methods are initialized after the store in tests
 const listVolumes = (...args: unknown[]): Promise<VolumeListInfo[]> => {
   const fetchUsage = args?.length > 0 && args[0] === 'fetchUsage';
 
-  return window.listVolumes(fetchUsage);
+  return client.container.listVolumes({ fetchUsage });
 };
 
 export const volumesEventStore = new EventStore<VolumeListInfo[]>(

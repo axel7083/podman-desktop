@@ -133,12 +133,11 @@ const stats: ContainerStatsInfo = {
 };
 
 beforeAll(() => {
-  const containerStatsMock = vi.fn();
-  containerStatsMock.mockImplementation((engineId, id, stats) => {
-    return stats;
-  });
-  Object.defineProperty(window, 'getContainerStats', { value: containerStatsMock });
-  Object.defineProperty(window, 'stopContainerStats', { value: vi.fn() });
+  vi.mocked(window.getContainerStats).mockImplementation(
+    (_engineId: string, _id: string, callback: (containerStats: ContainerStatsInfo) => void) => {
+      return callback as unknown as Promise<number>;
+    },
+  );
 });
 
 test('Expect memory donut', async () => {

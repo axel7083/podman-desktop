@@ -66,10 +66,10 @@ async function runContainer(commandLine: string): Promise<void> {
     inProgress = true;
     if (selectedProviderConnection) {
       await window.pullImage(selectedProviderConnection, helloImage, () => {});
-      const listImages = await window.listImages();
+      const listImages = await client.container.listImages({});
       const image = listImages.find(item => item.RepoTags?.includes(helloImage));
       if (image) {
-        await window.createAndStartContainer(image.engineId, { Image: helloImage });
+        await client.container.createAndStartContainer({ engine: image.engineId, options: { Image: helloImage } });
       } else {
         await client.dialog.showMessageBox({
           title: 'Run Container Failed',

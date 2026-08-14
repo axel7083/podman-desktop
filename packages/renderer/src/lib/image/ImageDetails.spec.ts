@@ -41,8 +41,6 @@ import { viewsContributions } from '/@/stores/views';
 
 import ImageDetails from './ImageDetails.svelte';
 
-const listImagesMock = vi.fn();
-
 const myImage: ImageInfo = {
   Id: 'myImage',
   Labels: {},
@@ -64,18 +62,12 @@ const myNoneNameImage: ImageInfo = {
 };
 delete myNoneNameImage.RepoTags;
 
-const deleteImageMock = vi.fn();
-const hasAuthMock = vi.fn();
-
 beforeAll(() => {
-  Object.defineProperty(window, 'listImages', { value: listImagesMock });
-  Object.defineProperty(window, 'listContainers', { value: vi.fn() });
-  Object.defineProperty(window, 'deleteImage', { value: deleteImageMock });
-  Object.defineProperty(window, 'hasAuthconfigForImage', { value: hasAuthMock });
-  Object.defineProperty(window, 'getImageCheckerProviders', { value: vi.fn().mockResolvedValue([]) });
-  Object.defineProperty(window, 'listViewsContributions', { value: vi.fn().mockResolvedValue([]) });
-  Object.defineProperty(window, 'getImageFilesProviders', { value: vi.fn().mockResolvedValue([]) });
-  Object.defineProperty(window, 'getConfigurationProperties', { value: vi.fn().mockResolvedValue({}) });
+  vi.mocked(client.imageRegistry.hasAuthconfigForImage).mockResolvedValue(false);
+  vi.mocked(client.imageRegistry.getCheckerProviders).mockResolvedValue([]);
+  vi.mocked(client.uiRegistry.listViews).mockResolvedValue([]);
+  vi.mocked(client.imageRegistry.getFilesProviders).mockResolvedValue([]);
+  vi.mocked(client.configuration.getProperties).mockResolvedValue({});
 });
 
 beforeEach(() => {
@@ -93,7 +85,7 @@ test('Expect redirect to previous page if image is deleted', async () => {
   vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
 
   const routerGotoSpy = vi.spyOn(router, 'goto');
-  listImagesMock.mockResolvedValue([myImage]);
+  vi.mocked(client.container.listImages).mockResolvedValue([myImage]);
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   while (get(imagesInfos).length !== 1) {
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -101,10 +93,11 @@ test('Expect redirect to previous page if image is deleted', async () => {
 
   // remove myImage from the store when we call 'deleteImage'
   // it will then refresh the store and update ImageDetails page
-  deleteImageMock.mockImplementation(() => {
+  vi.mocked(client.container.deleteImage).mockImplementation(() => {
     imagesInfos.update(images => images.filter(image => image.Id !== myImage.Id));
+    return Promise.resolve();
   });
-  hasAuthMock.mockReturnValue(new Promise(() => false));
+  vi.mocked(client.imageRegistry.hasAuthconfigForImage).mockResolvedValue(false);
 
   // defines a fake lastPage so we can check where we will be redirected
   lastPage.set({ name: 'Fake Previous', path: '/last' });
@@ -124,7 +117,7 @@ test('Expect redirect to previous page if image is deleted', async () => {
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
   // check that delete method has been called
-  expect(deleteImageMock).toHaveBeenCalled();
+  expect(client.container.deleteImage).toHaveBeenCalled();
 
   // expect that we have called the router when page has been removed
   // to jump to the previous page
@@ -136,14 +129,14 @@ test('Expect redirect to previous page if image is deleted', async () => {
 });
 
 test('expect delete image called with image id when image name is <none>', async () => {
-  listImagesMock.mockResolvedValue([myNoneNameImage]);
+  vi.mocked(client.container.listImages).mockResolvedValue([myNoneNameImage]);
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
 
   while (get(imagesInfos).length !== 1) {
     await new Promise(resolve => setTimeout(resolve, 500));
   }
 
-  hasAuthMock.mockReturnValue(new Promise(() => false));
+  vi.mocked(client.imageRegistry.hasAuthconfigForImage).mockResolvedValue(false);
 
   // render the component
   render(ImageDetails, {
@@ -160,7 +153,10 @@ test('expect delete image called with image id when image name is <none>', async
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
   // check that delete method has been called
-  expect(deleteImageMock).toHaveBeenCalledWith(myNoneNameImage.engineId, myNoneNameImage.Id);
+  expect(client.container.deleteImage).toHaveBeenCalledWith({
+    engine: myNoneNameImage.engineId,
+    imageId: myNoneNameImage.Id,
+  });
 });
 
 describe('expect display usage of an image', () => {
@@ -179,7 +175,7 @@ describe('expect display usage of an image', () => {
     } as unknown as ImageInfo;
     imagesInfos.set([myImage]);
 
-    hasAuthMock.mockReturnValue(new Promise(() => false));
+    vi.mocked(client.imageRegistry.hasAuthconfigForImage).mockResolvedValue(false);
 
     // render the component
     render(ImageDetails, {
@@ -209,7 +205,7 @@ describe('expect display usage of an image', () => {
     } as unknown as ImageInfo;
     imagesInfos.set([myImage]);
 
-    hasAuthMock.mockReturnValue(new Promise(() => false));
+    vi.mocked(client.imageRegistry.hasAuthconfigForImage).mockResolvedValue(false);
 
     // render the component
     render(ImageDetails, {
@@ -234,7 +230,7 @@ test('expect Check tab is not displayed by default', () => {
   } as unknown as ImageInfo;
   imagesInfos.set([myImage]);
 
-  hasAuthMock.mockReturnValue(new Promise(() => false));
+  vi.mocked(client.imageRegistry.hasAuthconfigForImage).mockResolvedValue(false);
 
   render(ImageDetails, {
     imageID,
@@ -257,7 +253,7 @@ test('expect Check tab is displayed when an image checker provider exists', () =
   } as unknown as ImageInfo;
   imagesInfos.set([myImage]);
 
-  hasAuthMock.mockReturnValue(new Promise(() => false));
+  vi.mocked(client.imageRegistry.hasAuthconfigForImage).mockResolvedValue(false);
 
   imageCheckerProviders.set([
     {
@@ -287,14 +283,14 @@ test.each([
       'io.podman-desktop': 'true',
     },
   };
-  listImagesMock.mockResolvedValue([imageWithLabels]);
+  vi.mocked(client.container.listImages).mockResolvedValue([imageWithLabels]);
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
 
   while (get(imagesInfos).length !== 1) {
     await new Promise(resolve => setTimeout(resolve, 500));
   }
 
-  hasAuthMock.mockReturnValue(new Promise(() => false));
+  vi.mocked(client.imageRegistry.hasAuthconfigForImage).mockResolvedValue(false);
 
   const contribs = [
     {
@@ -342,14 +338,14 @@ test.each([
       'io.podman-desktop': 'true',
     },
   };
-  listImagesMock.mockResolvedValue([imageWithLabels]);
+  vi.mocked(client.container.listImages).mockResolvedValue([imageWithLabels]);
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
 
   while (get(imagesInfos).length !== 1) {
     await new Promise(resolve => setTimeout(resolve, 500));
   }
 
-  hasAuthMock.mockReturnValue(new Promise(() => false));
+  vi.mocked(client.imageRegistry.hasAuthconfigForImage).mockResolvedValue(false);
 
   const contribs = [
     {

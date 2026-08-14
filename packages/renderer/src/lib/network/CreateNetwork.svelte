@@ -11,6 +11,7 @@ import { Icon } from '@podman-desktop/ui-svelte/icons';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import ContainerConnectionDropdown from '/@/lib/forms/ContainerConnectionDropdown.svelte';
 import NetworkIcon from '/@/lib/images/NetworkIcon.svelte';
 import EngineFormPage from '/@/lib/ui/EngineFormPage.svelte';
@@ -41,7 +42,9 @@ let selectedProvider: ProviderContainerConnectionInfo | undefined = $derived(net
 
 // Fetch available network drivers for selected provider
 let driverOptions = $derived(
-  selectedProvider ? window.getNetworkDrivers($state.snapshot(selectedProvider)) : Promise.resolve([]),
+  selectedProvider
+    ? client.container.getNetworkDrivers({ providerContainerConnectionInfo: $state.snapshot(selectedProvider) })
+    : Promise.resolve([]),
 );
 
 // Detect if the selected provider is Podman (for DNS server feature that doesnt use dockerode api)
@@ -97,7 +100,10 @@ async function createNetwork(): Promise<void> {
           : undefined,
     };
 
-    const result = await window.createNetwork($state.snapshot(networkInfo.selectedProvider), networkOptions);
+    const result = await client.container.createNetwork({
+      providerContainerConnectionInfo: $state.snapshot(networkInfo.selectedProvider),
+      options: networkOptions,
+    });
 
     if (!result.Id || !result.engineId) {
       throw new Error('Network creation failed: Missing network ID or engine ID');
@@ -107,7 +113,12 @@ async function createNetwork(): Promise<void> {
     if (isPodman && dnsAvailable && networkInfo.dnsEnabled) {
       const dnsServers = networkInfo.dnsServers?.filter(dns => dns.trim() !== '') ?? [];
       if (dnsServers.length > 0) {
-        await window.updateNetwork(result.engineId, result.Id, dnsServers, []);
+        await client.container.updateNetwork({
+          engineId: result.engineId,
+          networkId: result.Id,
+          addDNSServers: dnsServers,
+          removeDNSServers: [],
+        });
       }
     }
 

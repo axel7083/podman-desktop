@@ -2,6 +2,7 @@
 import type { ContainerStatsInfo } from '@podman-desktop/core-api';
 import { onDestroy, onMount } from 'svelte';
 
+import { client } from '/@/client';
 import Donut from '/@/lib/donut/Donut.svelte';
 
 import { ContainerUtils } from './container-utils';
@@ -64,7 +65,7 @@ onMount(async () => {
 onDestroy(async () => {
   // unsubscribe from the store
   if (fetchStatsId) {
-    await window.stopContainerStats(fetchStatsId);
+    await client.container.stopContainerStats({ containerStatsId: fetchStatsId });
   }
 });
 </script>

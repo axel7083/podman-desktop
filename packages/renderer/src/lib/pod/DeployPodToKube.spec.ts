@@ -82,7 +82,7 @@ beforeEach(() => {
     },
   };
 
-  vi.mocked(window.generatePodmanKube).mockResolvedValue(jsYaml.dump(podYaml));
+  vi.mocked(client.container.generatePodmanKube).mockResolvedValue(jsYaml.dump(podYaml));
 
   // Mock listSimpleContainersByLabel with a SimpleContainerInfo[] array of 1 container
   const simpleContainerInfo = {
@@ -94,7 +94,7 @@ beforeEach(() => {
       'com.docker.compose.project': 'hello',
     },
   } as unknown as SimpleContainerInfo;
-  vi.mocked(window.listSimpleContainersByLabel).mockResolvedValue([simpleContainerInfo]);
+  vi.mocked(client.container.listSimpleContainersByLabel).mockResolvedValue([simpleContainerInfo]);
 });
 
 async function waitRender(customProperties: Partial<DeployPodToKube>): Promise<void> {

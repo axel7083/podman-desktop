@@ -53,7 +53,7 @@ beforeEach(() => {
   vi.resetAllMocks();
 
   vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
-  vi.mocked(window.listContainers).mockResolvedValue([]);
+  vi.mocked(client.container.listContainers).mockResolvedValue([]);
   vi.mocked(client.configuration.getProperties).mockResolvedValue({});
   vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);
 });
@@ -62,7 +62,7 @@ test('Expect redirect to previous page if pod is deleted', async () => {
   // Mock the showMessageBox to return 0 (yes)
   vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   const routerGotoSpy = vi.spyOn(router, 'goto');
-  vi.mocked(window.listPods).mockResolvedValue([myPod]);
+  vi.mocked(client.container.listPods).mockResolvedValue([myPod]);
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   while (get(podsInfos).length !== 1) {
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -70,7 +70,7 @@ test('Expect redirect to previous page if pod is deleted', async () => {
 
   // remove myPod from the store when we call 'removePod'
   // it will then refresh the store and update PodsDetails page
-  vi.mocked(window.removePod).mockImplementation(async () => {
+  vi.mocked(client.container.removePod).mockImplementation(async () => {
     podsInfos.update(pods => pods.filter(pod => pod.id !== myPod.Id));
   });
 
@@ -92,7 +92,7 @@ test('Expect redirect to previous page if pod is deleted', async () => {
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
   // check that remove method has been called
-  expect(window.removePod).toHaveBeenCalled();
+  expect(client.container.removePod).toHaveBeenCalled();
 
   // expect that we have called the router when page has been removed
   // to jump to the previous page
@@ -112,7 +112,7 @@ test('Expect redirect to logs', async () => {
     listener({ path: '/pods/podman/myPod/engine0/' } as unknown as TinroRoute);
     return (): void => {};
   });
-  vi.mocked(window.listPods).mockResolvedValue([myPod]);
+  vi.mocked(client.container.listPods).mockResolvedValue([myPod]);
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   while (get(podsInfos).length !== 1) {
     await new Promise(resolve => setTimeout(resolve, 500));

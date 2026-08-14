@@ -125,7 +125,7 @@ const providerInfo = {
 beforeEach(() => {
   vi.useFakeTimers({ shouldAdvanceTime: true });
   vi.resetAllMocks();
-  vi.mocked(window.listImages).mockResolvedValue(localImageList);
+  vi.mocked(client.container.listImages).mockResolvedValue(localImageList);
   vi.mocked(client.imageRegistry.searchImages).mockResolvedValue(registryImageList);
   vi.mocked(client.configuration.getValue).mockImplementation(async ({ key }: { key: string }) => {
     if (key === 'terminal.integrated.scrollback') {
@@ -275,9 +275,9 @@ test('window#listImages should not be call without a selected container connecti
   const inputBox = getByPlaceholderText('Select or enter an image to run');
   expect(inputBox).toBeEnabled();
 
-  expect(window.listImages).toHaveBeenCalledOnce();
-  expect(window.listImages).toHaveBeenCalledWith({
-    provider: pInfo,
+  expect(client.container.listImages).toHaveBeenCalledOnce();
+  expect(client.container.listImages).toHaveBeenCalledWith({
+    options: { provider: pInfo },
   });
 });
 

@@ -23,11 +23,14 @@ async function startPod(): Promise<void> {
   if (selectedProviderConnection) {
     try {
       await window.pullImage(selectedProviderConnection, helloImage, () => {});
-      const listImages = await window.listImages();
+      const listImages = await client.container.listImages({});
       const image = listImages.find(item => item.RepoTags?.includes(helloImage));
-      await window.createPod({ name: myFirstPod });
+      await client.container.createPod({ createOptions: { name: myFirstPod } });
       if (image) {
-        await window.createAndStartContainer(image.engineId, { Image: helloImage, pod: myFirstPod });
+        await client.container.createAndStartContainer({
+          engine: image.engineId,
+          options: { Image: helloImage, pod: myFirstPod },
+        });
       } else {
         await client.dialog.showMessageBox({
           title: 'Run Pod Failed',

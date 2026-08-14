@@ -7,6 +7,7 @@ import {
 import { Button, ErrorMessage, Input } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
 import ContainerConnectionDropdown from '/@/lib/forms/ContainerConnectionDropdown.svelte';
 import SecretIcon from '/@/lib/images/SecretIcon.svelte';
 import EngineFormPage from '/@/lib/ui/EngineFormPage.svelte';
@@ -47,7 +48,7 @@ async function createSecret(): Promise<void> {
   try {
     loading = true;
     createError = undefined;
-    await window.createSecret($state.snapshot(secretCreateOptions));
+    await client.container.createSecret({ options: $state.snapshot(secretCreateOptions) });
     handleNavigation({ page: NavigationPage.SECRETS });
   } catch (error: unknown) {
     createError = error instanceof Error ? error.message : String(error);

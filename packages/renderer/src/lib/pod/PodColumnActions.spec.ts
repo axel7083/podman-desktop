@@ -18,24 +18,19 @@
 
 import '@testing-library/jest-dom/vitest';
 
-import type { ContainerInfo, Port } from '@podman-desktop/api';
+import type { Port } from '@podman-desktop/api';
+import type { ContainerInfo } from '@podman-desktop/core-api';
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { afterEach, beforeAll, beforeEach, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
 import { client } from '/@/client';
 
 import PodColumnActions from './PodColumnActions.svelte';
 import type { PodInfoUI } from './PodInfoUI';
 
-const listContainersMock = vi.fn();
-
-beforeAll(() => {
-  Object.defineProperty(window, 'listContainers', { value: listContainersMock });
-});
-
 beforeEach(() => {
-  listContainersMock.mockResolvedValue([
-    { Id: 'pod', Ports: [{ PublicPort: 8080 } as Port] as Port[] } as ContainerInfo,
+  vi.mocked(client.container.listContainers).mockResolvedValue([
+    { Id: 'pod', Ports: [{ PublicPort: 8080 } as Port] as Port[] } as unknown as ContainerInfo,
   ]);
 
   vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);

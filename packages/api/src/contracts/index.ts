@@ -22,6 +22,7 @@ import { cancellationContract } from '/@/contracts/cancellation/cancellation.con
 import { cliToolContract } from '/@/contracts/cli-tool/cli-tool.contract.js';
 import { commandsContract } from '/@/contracts/commands/commands.contract.js';
 import { configurationContract } from '/@/contracts/configuration/configuration.contract.js';
+import { containerContract } from '/@/contracts/container/container.contract.js';
 import { dialogContract } from '/@/contracts/dialog/dialog.contract.js';
 import { documentationContract } from '/@/contracts/documentation/documentation.contract.js';
 import { exploreFeaturesContract } from '/@/contracts/explore-features/explore-features.contract.js';
@@ -53,6 +54,7 @@ export const contracts = {
   authentication: authenticationContract,
   cancellation: cancellationContract,
   cliTool: cliToolContract,
+  container: containerContract,
   commands: commandsContract,
   configuration: configurationContract,
   dialog: dialogContract,

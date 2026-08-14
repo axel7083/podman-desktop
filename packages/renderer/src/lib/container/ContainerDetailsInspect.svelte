@@ -2,6 +2,7 @@
 import type { ContainerInspectInfo } from '@podman-desktop/core-api';
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import MonacoEditor from '/@/lib/editor/MonacoEditor.svelte';
 
 import type { ContainerInfoUI } from './ContainerInfoUI';
@@ -16,10 +17,10 @@ let inspectDetails: string = $state('');
 
 onMount(async () => {
   // grab inspect result from the container
-  const inspectResult = (await window.getContainerInspect(
-    container.engineId,
-    container.id,
-  )) as Partial<ContainerInspectInfo>;
+  const inspectResult = (await client.container.getContainerInspect({
+    engine: container.engineId,
+    containerId: container.id,
+  })) as Partial<ContainerInspectInfo>;
   // remove engine* properties from the inspect result as it's more internal
   delete inspectResult.engineId;
   delete inspectResult.engineName;

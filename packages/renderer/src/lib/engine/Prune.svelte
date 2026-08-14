@@ -58,7 +58,7 @@ async function prune(type: string, selectedItemLabel: string): Promise<void> {
     case 'containers':
       for (let engine of engines) {
         try {
-          await window.pruneContainers(engine.id);
+          await client.container.pruneContainers({ engine: engine.id });
         } catch (error) {
           console.error(error);
         }
@@ -67,7 +67,7 @@ async function prune(type: string, selectedItemLabel: string): Promise<void> {
     case 'pods':
       for (let engine of engines) {
         try {
-          await window.prunePods(engine.id);
+          await client.container.prunePods({ engine: engine.id });
         } catch (error) {
           console.error(error);
         }
@@ -76,7 +76,7 @@ async function prune(type: string, selectedItemLabel: string): Promise<void> {
     case 'volumes':
       for (let engine of engines) {
         try {
-          await window.pruneVolumes(engine.id);
+          await client.container.pruneVolumes({ engine: engine.id });
         } catch (error) {
           console.error(error);
         }
@@ -85,7 +85,7 @@ async function prune(type: string, selectedItemLabel: string): Promise<void> {
     case 'images':
       for (let engine of engines) {
         try {
-          await window.pruneImages(engine.id, selectedItemLabel === LABEL_IMAGE_UNUSED);
+          await client.container.pruneImages({ engine: engine.id, all: selectedItemLabel === LABEL_IMAGE_UNUSED });
         } catch (error) {
           console.error(error);
         }

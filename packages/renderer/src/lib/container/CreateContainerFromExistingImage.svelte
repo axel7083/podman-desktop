@@ -66,7 +66,10 @@ async function resolveShortname(): Promise<void> {
   }
   if (imageToPull && !imageToPull.includes('/')) {
     shortnameImages =
-      (await window.resolveShortnameImage($state.snapshot(selectedProviderConnection), imageToPull)) ?? [];
+      (await client.container.resolveShortnameImage({
+        providerContainerConnectionInfo: $state.snapshot(selectedProviderConnection),
+        shortName: imageToPull,
+      })) ?? [];
     // not a shortname
   } else {
     podmanFQN = '';
@@ -227,8 +230,8 @@ async function searchImages(value: string): Promise<{ images: string[]; tags: st
 }
 
 async function searchLocalImages(value: string): Promise<string[]> {
-  const listImages: ImageInfo[] = await window.listImages({
-    provider: $state.snapshot(selectedProviderConnection),
+  const listImages: ImageInfo[] = await client.container.listImages({
+    options: { provider: $state.snapshot(selectedProviderConnection) },
   });
   const localImagesNames = listImages.map(image => {
     if (image.RepoTags) {
@@ -284,8 +287,8 @@ async function buildContainerFromImage(): Promise<void> {
     dockerLibraryImage = `${registry}/library/${imageName}`;
   }
   const localImages = (
-    await window.listImages({
-      provider: $state.snapshot(selectedProviderConnection),
+    await client.container.listImages({
+      options: { provider: $state.snapshot(selectedProviderConnection) },
     })
   ).filter(
     image =>

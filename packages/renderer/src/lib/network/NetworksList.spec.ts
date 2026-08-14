@@ -79,7 +79,7 @@ const providerInfoMock = {
 async function init(searchTerm?: string): Promise<void> {
   vi.mocked(window.getProviderInfos).mockResolvedValue([providerInfoMock]);
 
-  vi.mocked(window.listNetworks).mockResolvedValue([network1, network2]);
+  vi.mocked(client.container.listNetworks).mockResolvedValue([network1, network2]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -99,7 +99,7 @@ async function init(searchTerm?: string): Promise<void> {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.listNetworks).mockResolvedValue([]);
+  vi.mocked(client.container.listNetworks).mockResolvedValue([]);
   vi.mocked(window.getProviderInfos).mockResolvedValue([]);
   providerInfos.set([]);
   networksListInfo.set([]);
@@ -107,7 +107,7 @@ beforeEach(() => {
 });
 
 test('Expect no container engines being displayed', async () => {
-  vi.mocked(window.listNetworks).mockResolvedValue([network1, network2]);
+  vi.mocked(client.container.listNetworks).mockResolvedValue([network1, network2]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -218,7 +218,7 @@ test('Expect user confirmation for bulk delete when required', async () => {
   vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   await fireEvent.click(deleteButton);
   expect(client.dialog.showMessageBox).toHaveBeenCalledTimes(2);
-  await waitFor(() => expect(window.removeNetwork).toHaveBeenCalled());
+  await waitFor(() => expect(client.container.removeNetwork).toHaveBeenCalled());
 });
 
 test('Expect environment column sorted by engineId', async () => {
@@ -227,7 +227,7 @@ test('Expect environment column sorted by engineId', async () => {
   const network1Modified = { ...network1, engineId: 'engine-zzz', engineName: 'name-aaa' };
   const network2Modified = { ...network2, engineId: 'engine-aaa', engineName: 'name-zzz' };
 
-  vi.mocked(window.listNetworks).mockResolvedValue([network1Modified, network2Modified]);
+  vi.mocked(client.container.listNetworks).mockResolvedValue([network1Modified, network2Modified]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -296,7 +296,7 @@ test('Expect environment dropdown to appear with multiple running connections', 
     engineName: 'Docker Desktop',
   };
 
-  vi.mocked(window.listNetworks).mockResolvedValue([podmanNetwork, dockerNetwork]);
+  vi.mocked(client.container.listNetworks).mockResolvedValue([podmanNetwork, dockerNetwork]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -362,7 +362,7 @@ test('Expect environment dropdown to filter networks by selected environment', a
     engineName: 'Docker Desktop',
   };
 
-  vi.mocked(window.listNetworks).mockResolvedValue([podmanNetwork, dockerNetwork]);
+  vi.mocked(client.container.listNetworks).mockResolvedValue([podmanNetwork, dockerNetwork]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));

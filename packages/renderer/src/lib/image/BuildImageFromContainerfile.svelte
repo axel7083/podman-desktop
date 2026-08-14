@@ -224,9 +224,11 @@ async function buildMultiplePlatformImagesAndCreateManifest(): Promise<void> {
         }
       }
     }
-    await window.createManifest({
-      images: buildIDs,
-      name: buildImageInfo.containerImageName!,
+    await client.container.createManifest({
+      manifestOptions: {
+        images: buildIDs,
+        name: buildImageInfo.containerImageName!,
+      },
     });
   } catch (error) {
     eventCollect(buildImageInfo.buildImageKey, 'error', `${String(error)}\r\n`);

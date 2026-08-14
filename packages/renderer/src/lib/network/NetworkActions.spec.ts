@@ -72,13 +72,13 @@ test('Expect non-podman unused network to have delete option and disabled edit',
 
   const deleteButton = screen.getByTitle('Delete Network');
   await fireEvent.click(deleteButton);
-  expect(window.removeNetwork).toHaveBeenCalledWith(network1.engineId, network1.id);
+  expect(client.container.removeNetwork).toHaveBeenCalledWith({ engine: network1.engineId, networkId: network1.id });
 });
 
 test('Expect error dialog when network deletion fails', async () => {
   const errorMessage = 'default network podman cannot be removed';
   vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
-  vi.mocked(window.removeNetwork).mockRejectedValueOnce(new Error(errorMessage));
+  vi.mocked(client.container.removeNetwork).mockRejectedValueOnce(new Error(errorMessage));
 
   const network: NetworkInfoUI = { ...network1, status: 'UNUSED' };
   render(NetworkActions, { object: network });
@@ -125,6 +125,11 @@ test('Expect podman used network to have edit option and disabled delete', async
 
   await fireEvent.click(submitButton);
 
-  expect(window.updateNetwork).toBeCalledWith('podman2', '123456789123456', ['0.0.0.1', '2.1.1.2'], ['1.1.1.1']);
+  expect(client.container.updateNetwork).toBeCalledWith({
+    engineId: 'podman2',
+    networkId: '123456789123456',
+    addDNSServers: ['0.0.0.1', '2.1.1.2'],
+    removeDNSServers: ['1.1.1.1'],
+  });
   expect(screen.queryByText('Update Network Network 2')).not.toBeInTheDocument();
 });

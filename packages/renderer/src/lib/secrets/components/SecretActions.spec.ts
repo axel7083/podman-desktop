@@ -54,7 +54,7 @@ test('Expect delete button to be visible and trigger confirmation', async () => 
     expect(client.dialog.showMessageBox).toHaveBeenCalledOnce();
   });
 
-  expect(window.removeSecret).toHaveBeenCalledWith(secret.engineId, secret.Id);
+  expect(client.container.removeSecret).toHaveBeenCalledWith({ engineId: secret.engineId, secretId: secret.Id });
 });
 
 describe('contributions', () => {

@@ -30,7 +30,7 @@ function onDeleteSecret(): void {
     async () => {
       try {
         loading = true;
-        await window.removeSecret(object.engineId, object.Id);
+        await client.container.removeSecret({ engineId: object.engineId, secretId: object.Id });
       } finally {
         loading = false;
       }

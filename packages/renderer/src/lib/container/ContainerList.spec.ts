@@ -38,12 +38,12 @@ vi.mock(import('tinro'));
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.listPods).mockResolvedValue([]);
+  vi.mocked(client.container.listPods).mockResolvedValue([]);
   vi.mocked(client.uiRegistry.listViews).mockResolvedValue([]);
   vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
   vi.mocked(client.configuration.getValue).mockResolvedValue(false);
   vi.mocked(window.onDidUpdateProviderStatus).mockResolvedValue(undefined);
-  vi.mocked(window.listContainers).mockResolvedValue([]);
+  vi.mocked(client.container.listContainers).mockResolvedValue([]);
   vi.mocked(window.getProviderInfos).mockResolvedValue([
     {
       name: 'podman',
@@ -253,7 +253,7 @@ test('Try to delete a pod that has containers', async () => {
     } as ContainerInfo,
   ];
 
-  vi.mocked(window.listContainers).mockResolvedValue(mockedContainers);
+  vi.mocked(client.container.listContainers).mockResolvedValue(mockedContainers);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -278,16 +278,16 @@ test('Try to delete a pod that has containers', async () => {
   await fireEvent.click(deleteButton);
 
   // expect that we call to delete the pod first (as it's a group of containers)
-  expect(window.removePod).toHaveBeenCalledWith('podman', podId);
+  expect(client.container.removePod).toHaveBeenCalledWith({ engine: 'podman', podId });
 
-  // wait window.deleteContainer is called
-  while (vi.mocked(window.deleteContainer).mock.calls.length === 0) {
+  // wait client.container.deleteContainer is called
+  while (vi.mocked(client.container.deleteContainer).mock.calls.length === 0) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 
   // and then only the container that is not inside a pod
-  expect(window.deleteContainer).toBeCalledWith('podman', singleContainer.Id);
-  expect(window.deleteContainer).toBeCalledTimes(1);
+  expect(client.container.deleteContainer).toHaveBeenCalledWith({ engine: 'podman', containerId: singleContainer.Id });
+  expect(client.container.deleteContainer).toHaveBeenCalledTimes(1);
 });
 
 test('Try to delete a container without deleting pods', async () => {
@@ -329,7 +329,7 @@ test('Try to delete a container without deleting pods', async () => {
     } as ContainerInfo,
   ];
 
-  vi.mocked(window.listContainers).mockResolvedValue(mockedContainers);
+  vi.mocked(client.container.listContainers).mockResolvedValue(mockedContainers);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -350,19 +350,19 @@ test('Try to delete a container without deleting pods', async () => {
   expect(deleteButton).toBeInTheDocument();
   await fireEvent.click(deleteButton);
 
-  // wait until window.deleteContainer is called
-  while (vi.mocked(window.deleteContainer).mock.calls.length === 0) {
+  // wait until client.container.deleteContainer is called
+  while (vi.mocked(client.container.deleteContainer).mock.calls.length === 0) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 
   // expect that the container has been deleted
-  expect(window.deleteContainer).toBeCalledWith('podman', singleContainer.Id);
+  expect(client.container.deleteContainer).toHaveBeenCalledWith({ engine: 'podman', containerId: singleContainer.Id });
 
   // but not the other container
-  expect(window.deleteContainer).toHaveBeenCalledOnce();
+  expect(client.container.deleteContainer).toHaveBeenCalledOnce();
 
   // and not the pod
-  expect(window.removePod).not.toBeCalled();
+  expect(client.container.removePod).not.toHaveBeenCalled();
 });
 
 test('Try to delete a pod without deleting container', async () => {
@@ -403,7 +403,7 @@ test('Try to delete a pod without deleting container', async () => {
     } as ContainerInfo,
   ];
 
-  vi.mocked(window.listContainers).mockResolvedValue(mockedContainers);
+  vi.mocked(client.container.listContainers).mockResolvedValue(mockedContainers);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -425,16 +425,16 @@ test('Try to delete a pod without deleting container', async () => {
   await fireEvent.click(deleteButton);
 
   // wait until removePodMock is called
-  while (vi.mocked(window.removePod).mock.calls.length === 0) {
+  while (vi.mocked(client.container.removePod).mock.calls.length === 0) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 
   // expect that the pod has been removed
-  expect(window.removePod).toHaveBeenCalledWith('podman', podId);
-  expect(window.removePod).toHaveBeenCalledOnce();
+  expect(client.container.removePod).toHaveBeenCalledWith({ engine: 'podman', podId });
+  expect(client.container.removePod).toHaveBeenCalledOnce();
 
   // and the standalone container has not been deleted
-  expect(window.deleteContainer).not.toHaveBeenCalled();
+  expect(client.container.deleteContainer).not.toHaveBeenCalled();
 });
 
 test('Expect filter empty screen', async () => {
@@ -465,7 +465,7 @@ test('Expect filter empty screen', async () => {
   // one single container
   const mockedContainers = [singleContainer as ContainerInfo];
 
-  vi.mocked(window.listContainers).mockResolvedValue(mockedContainers);
+  vi.mocked(client.container.listContainers).mockResolvedValue(mockedContainers);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -509,7 +509,7 @@ test('Expect clear filter in empty screen to clear search term, except is:...', 
   // one single container
   const mockedContainers = [singleContainer as ContainerInfo];
 
-  vi.mocked(window.listContainers).mockResolvedValue(mockedContainers);
+  vi.mocked(client.container.listContainers).mockResolvedValue(mockedContainers);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -659,7 +659,7 @@ test('Expect to display running / stopped containers depending on tab', { timeou
     } as ContainerInfo,
   ];
 
-  vi.mocked(window.listContainers).mockResolvedValue(mockedContainers);
+  vi.mocked(client.container.listContainers).mockResolvedValue(mockedContainers);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -730,7 +730,7 @@ test('Expect to display running / stopped containers depending on tab', { timeou
 });
 
 test('Sort containers based on selected parameter', async () => {
-  vi.mocked(window.listContainers).mockResolvedValue([]);
+  vi.mocked(client.container.listContainers).mockResolvedValue([]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -764,7 +764,7 @@ test('Sort containers based on selected parameter', async () => {
     } as unknown as ContainerInfo,
   ];
 
-  vi.mocked(window.listContainers).mockResolvedValue(mockedContainers);
+  vi.mocked(client.container.listContainers).mockResolvedValue(mockedContainers);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -798,7 +798,7 @@ test('Sort containers based on selected parameter', async () => {
 });
 
 test('Expect user confirmation to pop up when preferences require', async () => {
-  vi.mocked(window.listContainers).mockResolvedValue([]);
+  vi.mocked(client.container.listContainers).mockResolvedValue([]);
   vi.mocked(client.configuration.getValue).mockResolvedValue(true);
   vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 
@@ -822,7 +822,7 @@ test('Expect user confirmation to pop up when preferences require', async () => 
     } as ContainerInfo,
   ];
 
-  vi.mocked(window.listContainers).mockResolvedValue(mockedContainers);
+  vi.mocked(client.container.listContainers).mockResolvedValue(mockedContainers);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -847,7 +847,7 @@ test('Expect user confirmation to pop up when preferences require', async () => 
   vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   await fireEvent.click(deleteButton);
   expect(client.dialog.showMessageBox).toHaveBeenCalledTimes(2);
-  await vi.waitFor(() => expect(window.deleteContainer).toHaveBeenCalled());
+  await vi.waitFor(() => expect(client.container.deleteContainer).toHaveBeenCalled());
 });
 
 test('Try to run pods in bulk', async () => {
@@ -890,7 +890,7 @@ test('Try to run pods in bulk', async () => {
     } as ContainerInfo,
   ];
 
-  vi.mocked(window.listContainers).mockResolvedValue(mockedContainers);
+  vi.mocked(client.container.listContainers).mockResolvedValue(mockedContainers);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -914,27 +914,27 @@ test('Try to run pods in bulk', async () => {
   await fireEvent.click(runBulkButton);
 
   // wait until startPodMock is called
-  while (vi.mocked(window.startPod).mock.calls.length === 0) {
+  while (vi.mocked(client.container.startPod).mock.calls.length === 0) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 
   // wait until startContainerMock is called
-  while (vi.mocked(window.startContainer).mock.calls.length === 0) {
+  while (vi.mocked(client.container.startContainer).mock.calls.length === 0) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 
   // expect that the pod is running
-  expect(window.startPod).toHaveBeenCalledWith('podman', podId);
-  expect(window.startPod).toHaveBeenCalledOnce();
+  expect(client.container.startPod).toHaveBeenCalledWith({ engine: 'podman', podId });
+  expect(client.container.startPod).toHaveBeenCalledOnce();
 
   // expect that the container is running
-  expect(window.startContainer).toHaveBeenCalledWith('podman', containerId);
-  expect(window.startContainer).toHaveBeenCalledOnce();
+  expect(client.container.startContainer).toHaveBeenCalledWith({ engine: 'podman', containerId });
+  expect(client.container.startContainer).toHaveBeenCalledOnce();
 });
 
 test('Ensuring the table and empty screen are not visible at the same time', async () => {
   // mock one container
-  vi.mocked(window.listContainers).mockResolvedValue([
+  vi.mocked(client.container.listContainers).mockResolvedValue([
     {
       Id: 'sha256:7897891234567890123',
       Image: 'sha256:345',
@@ -998,7 +998,7 @@ test('pods with same name on different engines should have separate group', asyn
     State: '',
   }));
 
-  vi.mocked(window.listContainers).mockResolvedValue(CONTAINERS_MOCK);
+  vi.mocked(client.container.listContainers).mockResolvedValue(CONTAINERS_MOCK);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -1049,7 +1049,7 @@ test('Expect environment dropdown to appear with multiple running connections', 
     } as ProviderInfo,
   ]);
 
-  vi.mocked(window.listContainers).mockResolvedValue([
+  vi.mocked(client.container.listContainers).mockResolvedValue([
     {
       Id: 'container1',
       Image: 'podman-image',
@@ -1132,7 +1132,7 @@ test('Expect environment dropdown to filter containers by selected environment',
     } as ProviderInfo,
   ]);
 
-  vi.mocked(window.listContainers).mockResolvedValue([
+  vi.mocked(client.container.listContainers).mockResolvedValue([
     {
       Id: 'container1',
       Image: 'podman-image',

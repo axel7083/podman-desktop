@@ -39,7 +39,7 @@ beforeEach(() => {
     return { dispose: vi.fn() };
   });
 
-  vi.mocked(window.getImageInspect).mockRejectedValue({});
+  vi.mocked(client.container.getImageInspect).mockRejectedValue({});
   vi.mocked(window.logsContainer).mockResolvedValue(undefined);
 });
 
@@ -155,7 +155,7 @@ describe('Expect Push Image dialog', () => {
     authConfig = true,
   ): Promise<void> {
     vi.mocked(client.imageRegistry.hasAuthconfigForImage).mockResolvedValue(authConfig);
-    vi.mocked(window.getImageInspect).mockResolvedValue(fakedImageInspect);
+    vi.mocked(client.container.getImageInspect).mockResolvedValue(fakedImageInspect);
     vi.mocked(window.pushImage).mockImplementation(async (_imageId, _imageTag, cb) => {
       callback = cb;
     });

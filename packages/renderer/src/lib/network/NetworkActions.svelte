@@ -22,7 +22,7 @@ async function removeNetwork(): Promise<void> {
   object.status = 'DELETING';
 
   try {
-    await window.removeNetwork(object.engineId, object.id);
+    await client.container.removeNetwork({ engine: object.engineId, networkId: object.id });
   } catch (error) {
     object.status = oldStatus;
     await client.dialog.showMessageBox({

@@ -27,7 +27,10 @@ let logsPush = $state<Terminal>();
 let selectedImageTag = $state('');
 let imageTags: string[] = $state([]);
 onMount(async () => {
-  const inspectInfo = await window.getImageInspect(imageInfoToPush.engineId, imageInfoToPush.id);
+  const inspectInfo = await client.container.getImageInspect({
+    engine: imageInfoToPush.engineId,
+    imageId: imageInfoToPush.id,
+  });
 
   imageTags = inspectInfo.RepoTags;
   if (imageTags.length > 0) {

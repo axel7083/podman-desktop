@@ -23,6 +23,8 @@ import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import type { NetworkInfoUI } from './NetworkInfoUI';
 import UpdateNetworkDialog from './UpdateNetworkDialog.svelte';
 
@@ -64,6 +66,11 @@ test('Expect podman used network to have update option but not delete', async ()
 
   await fireEvent.click(submitButton);
 
-  expect(window.updateNetwork).toBeCalledWith('podman1', '123456789123456', ['0.0.0.1', '2.1.1.2'], ['1.1.1.1']);
+  expect(client.container.updateNetwork).toBeCalledWith({
+    engineId: 'podman1',
+    networkId: '123456789123456',
+    addDNSServers: ['0.0.0.1', '2.1.1.2'],
+    removeDNSServers: ['1.1.1.1'],
+  });
   expect(closeDialog).toHaveBeenCalled();
 });

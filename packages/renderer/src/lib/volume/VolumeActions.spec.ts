@@ -19,14 +19,12 @@
 import '@testing-library/jest-dom/vitest';
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
-import { beforeAll, expect, test, vi } from 'vitest';
+import { expect, test, vi } from 'vitest';
 
 import { client } from '/@/client';
 
 import VolumeActions from './VolumeActions.svelte';
 import type { VolumeInfoUI } from './VolumeInfoUI';
-
-const removeVolumeMock = vi.fn();
 
 class VolumeInfoUIImpl {
   #status: string;
@@ -44,10 +42,6 @@ class VolumeInfoUIImpl {
     this.#status = status;
   }
 }
-
-beforeAll(() => {
-  Object.defineProperty(window, 'removeVolume', { value: removeVolumeMock });
-});
 
 test('Expect prompt dialog and deletion', async () => {
   vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
@@ -68,5 +62,5 @@ test('Expect prompt dialog and deletion', async () => {
   });
 
   expect(volume.status).toBe('DELETING');
-  expect(removeVolumeMock).toHaveBeenCalled();
+  expect(client.container.removeVolume).toHaveBeenCalled();
 });

@@ -20,6 +20,8 @@ import type { VolumeListInfo } from '@podman-desktop/core-api';
 import { get } from 'svelte/store';
 import { assert, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { fetchVolumesWithData, volumeListInfos, volumesEventStore } from './volumes';
 
 const callbacks = new Map<string, (data?: unknown) => void | Promise<void>>();
@@ -35,7 +37,7 @@ beforeEach(() => {
 
 test('volumes should be updated in case of a container is removed', async () => {
   // initial volume
-  vi.mocked(window.listVolumes).mockResolvedValue([
+  vi.mocked(client.container.listVolumes).mockResolvedValue([
     {
       Volumes: [
         {
@@ -60,7 +62,7 @@ test('volumes should be updated in case of a container is removed', async () => 
   expect(volumes[0].Volumes.length).toBe(1);
 
   // ok now mock the listVolumes function to return an empty list
-  vi.mocked(window.listVolumes).mockResolvedValue([]);
+  vi.mocked(client.container.listVolumes).mockResolvedValue([]);
 
   // call 'container-removed-event' event
   const containerRemovedCallback = callbacks.get('container-removed-event');
@@ -89,16 +91,16 @@ test.each([
   volumesEventStore.setupWithDebounce(10, 10);
 
   // empty list
-  vi.mocked(window.listVolumes).mockResolvedValue([]);
+  vi.mocked(client.container.listVolumes).mockResolvedValue([]);
 
   // mark as ready to receive updates
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
 
   // clear mock calls
-  vi.mocked(window.listVolumes).mockClear();
+  vi.mocked(client.container.listVolumes).mockClear();
 
   // now, setup listVolumes
-  vi.mocked(window.listVolumes).mockResolvedValue([
+  vi.mocked(client.container.listVolumes).mockResolvedValue([
     {
       Volumes: [
         {
@@ -116,7 +118,7 @@ test.each([
   await callback();
 
   // wait listContainersMock is called
-  while (vi.mocked(window.listVolumes).mock.calls.length === 0) {
+  while (vi.mocked(client.container.listVolumes).mock.calls.length === 0) {
     await new Promise(resolve => setTimeout(resolve, 10));
   }
 

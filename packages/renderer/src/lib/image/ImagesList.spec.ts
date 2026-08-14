@@ -79,7 +79,7 @@ test('Expect images being ordered by newest first', async () => {
     } as unknown as ProviderInfo,
   ]);
 
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890123',
       RepoTags: ['fedora:old'],
@@ -150,7 +150,7 @@ test('Expect filter empty screen', async () => {
     } as unknown as ProviderInfo,
   ]);
 
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890123',
       RepoTags: ['fedora:old'],
@@ -195,7 +195,7 @@ test('Expect two images in list given image id and engine id', async () => {
     } as unknown as ProviderInfo,
   ]);
 
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890123',
       RepoTags: ['fedora:old'],
@@ -291,7 +291,7 @@ describe('Contributions', () => {
         'podman-desktop.label': true,
       };
 
-      vi.mocked(window.listImages).mockResolvedValue([
+      vi.mocked(client.container.listImages).mockResolvedValue([
         {
           Id: 'sha256:1234567890123',
           RepoTags: ['fedora:old'],
@@ -369,7 +369,7 @@ describe('Contributions', () => {
         'podman-desktop.label': true,
       };
 
-      vi.mocked(window.listImages).mockResolvedValue([
+      vi.mocked(client.container.listImages).mockResolvedValue([
         {
           Id: 'sha256:1234567890123',
           RepoTags: ['fedora:old'],
@@ -458,7 +458,7 @@ test('expect redirect to saveImage page when at least one image is selected and 
     } as unknown as ProviderInfo,
   ]);
 
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890123',
       RepoTags: ['fedora:old'],
@@ -539,7 +539,7 @@ test('Manifest images display without actions', async () => {
   ]);
 
   // Set up the image list with one normal image and one manifest image
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890123',
       RepoTags: ['normalimage:latest'],
@@ -615,7 +615,7 @@ test('Expect user confirmation to pop up when preferences require', async () => 
     } as unknown as ProviderInfo,
   ]);
 
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890',
       RepoTags: ['mockimage:latest'],
@@ -657,7 +657,7 @@ test('Expect user confirmation to pop up when preferences require', async () => 
   vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   await fireEvent.click(deleteButton);
   expect(client.dialog.showMessageBox).toHaveBeenCalledTimes(2);
-  await vi.waitFor(() => expect(window.deleteImage).toHaveBeenCalled());
+  await vi.waitFor(() => expect(client.container.deleteImage).toHaveBeenCalled());
 });
 
 test('Expect to see empty page and no table when no container engine is running', async () => {
@@ -674,7 +674,7 @@ test('Expect to see empty page and no table when no container engine is running'
       ],
     } as unknown as ProviderInfo,
   ]);
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890',
       RepoTags: ['mockimage:latest'],
@@ -717,7 +717,7 @@ test('Expect environment column sorted by engineId', async () => {
     } as unknown as ProviderInfo,
   ]);
 
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890123',
       RepoTags: ['fedora:latest'],
@@ -789,7 +789,7 @@ test('Expect environment dropdown to appear with multiple running connections', 
     } as unknown as ProviderInfo,
   ]);
 
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890123',
       RepoTags: ['podman-image:latest'],
@@ -858,7 +858,7 @@ test('Expect environment dropdown to filter images by selected environment', asy
     } as unknown as ProviderInfo,
   ]);
 
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890123',
       RepoTags: ['podman-image:latest'],

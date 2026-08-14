@@ -129,7 +129,7 @@ onMount(async () => {
     return;
   }
 
-  imageInspectInfo = await window.getImageInspect(image.engineId, image.id);
+  imageInspectInfo = await client.container.getImageInspect({ engine: image.engineId, imageId: image.id });
   exposedPorts = Array.from(Object.keys(imageInspectInfo?.Config?.ExposedPorts ?? {}));
 
   options.basic.command = array2String(imageInspectInfo.Config?.Cmd ?? []);
@@ -161,7 +161,7 @@ onMount(async () => {
   }
 
   // grab all networks
-  const allNetworks = await window.listNetworks();
+  const allNetworks = await client.container.listNetworks();
   // keep only the network matching our engine
   engineNetworks = allNetworks.filter(network => network.engineId === image.engineId);
 
@@ -177,7 +177,7 @@ onMount(async () => {
   }
 
   // grab all containers
-  const allContainers = await window.listContainers();
+  const allContainers = await client.container.listContainers();
   const containerUtils = new ContainerUtils();
   // keep only the containers matching our engine
   engineContainers = allContainers
@@ -425,7 +425,10 @@ async function startContainer(): Promise<void> {
   }
 
   try {
-    const data = await window.createAndStartContainer(imageInspectInfo.engineId, createOptions);
+    const data = await client.container.createAndStartContainer({
+      engine: imageInspectInfo.engineId,
+      options: createOptions,
+    });
 
     // redirect to containers if no tty, else redirect to the container details
     if (Tty && OpenStdin) {

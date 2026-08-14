@@ -16,25 +16,18 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import '@testing-library/jest-dom/vitest';
 
 import type { ProviderContainerConnectionInfo } from '@podman-desktop/core-api';
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { beforeAll, expect, test, vi } from 'vitest';
+import { expect, test, vi } from 'vitest';
+
+import { client } from '/@/client';
 
 import TroubleshootingContainerEngineGrabContainers from './TroubleshootingContainerEngineGrabContainers.svelte';
 
-const listContainersFromEngineMock = vi.fn();
-
-// fake the window object
-beforeAll(() => {
-  (window as any).listContainersFromEngine = listContainersFromEngineMock;
-});
-
 test('Check containers button is available and click on it', async () => {
-  listContainersFromEngineMock.mockReturnValue([{}]);
+  vi.mocked(client.container.listContainersFromEngine).mockResolvedValue([{ Id: 'test', Names: ['test-container'] }]);
 
   const providerContainerEngine = {} as unknown as ProviderContainerConnectionInfo;
   render(TroubleshootingContainerEngineGrabContainers, { providerContainerEngine });
@@ -57,9 +50,7 @@ test('Check containers button is available and click on it', async () => {
 });
 
 test('Check containers button is available and get error', async () => {
-  listContainersFromEngineMock.mockImplementation(() => {
-    throw new Error('Unable to ping container engine');
-  });
+  vi.mocked(client.container.listContainersFromEngine).mockRejectedValue(new Error('Unable to ping container engine'));
 
   const providerContainerEngine = {} as unknown as ProviderContainerConnectionInfo;
   render(TroubleshootingContainerEngineGrabContainers, { providerContainerEngine });

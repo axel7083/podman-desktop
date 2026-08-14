@@ -79,7 +79,7 @@ function handleError(errorMessage: string): void {
 async function startContainer(): Promise<void> {
   inProgress(true, 'STARTING');
   try {
-    await window.startContainer(container.engineId, container.id);
+    await client.container.startContainer({ engine: container.engineId, containerId: container.id });
   } catch (error) {
     handleError(String(error));
   } finally {
@@ -90,7 +90,7 @@ async function startContainer(): Promise<void> {
 async function unpauseContainer(): Promise<void> {
   inProgress(true, 'STARTING');
   try {
-    await window.unpauseContainer(container.engineId, container.id);
+    await client.container.unpauseContainer({ engine: container.engineId, containerId: container.id });
   } catch (error) {
     handleError(String(error));
   } finally {
@@ -101,7 +101,7 @@ async function unpauseContainer(): Promise<void> {
 async function restartContainer(): Promise<void> {
   inProgress(true, 'RESTARTING');
   try {
-    await window.restartContainer(container.engineId, container.id);
+    await client.container.restartContainer({ engine: container.engineId, containerId: container.id });
   } catch (error) {
     handleError(String(error));
   } finally {
@@ -112,7 +112,7 @@ async function restartContainer(): Promise<void> {
 async function stopContainer(): Promise<void> {
   inProgress(true, 'STOPPING');
   try {
-    await window.stopContainer(container.engineId, container.id);
+    await client.container.stopContainer({ engine: container.engineId, containerId: container.id });
   } catch (error) {
     handleError(String(error));
   } finally {
@@ -141,7 +141,7 @@ function openLogs(): void {
 async function deleteContainer(): Promise<void> {
   inProgress(true, 'DELETING');
   try {
-    await window.deleteContainer(container.engineId, container.id);
+    await client.container.deleteContainer({ engine: container.engineId, containerId: container.id });
   } catch (error) {
     handleError(String(error));
   } finally {

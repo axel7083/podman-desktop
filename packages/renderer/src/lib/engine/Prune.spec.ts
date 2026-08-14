@@ -58,7 +58,7 @@ describe('containers', () => {
       message: 'This action will prune all unused containers from the Podman engine.',
     });
 
-    expect(window.pruneContainers).toHaveBeenCalledWith('podman');
+    expect(client.container.pruneContainers).toHaveBeenCalledWith({ engine: 'podman' });
   });
 });
 
@@ -101,7 +101,7 @@ describe('images', () => {
       message: 'This action will prune images from the Podman engine.',
     });
 
-    expect(window.pruneImages).toHaveBeenCalledWith('podman', false);
+    expect(client.container.pruneImages).toHaveBeenCalledWith({ engine: 'podman', all: false });
   });
 
   test('prune all unused images', async () => {
@@ -124,7 +124,7 @@ describe('images', () => {
       message: 'This action will prune images from the Podman engine.',
     });
 
-    expect(window.pruneImages).toHaveBeenCalledWith('podman', true);
+    expect(client.container.pruneImages).toHaveBeenCalledWith({ engine: 'podman', all: true });
   });
 
   test('prune nothing (click cancel)', async () => {
@@ -147,6 +147,6 @@ describe('images', () => {
       message: 'This action will prune images from the Podman engine.',
     });
 
-    expect(window.pruneImages).not.toBeCalled();
+    expect(client.container.pruneImages).not.toBeCalled();
   });
 });

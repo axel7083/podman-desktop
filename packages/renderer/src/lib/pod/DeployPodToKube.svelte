@@ -54,11 +54,14 @@ onMount(async () => {
   // we can then pass the array of containers to generatePodmanKube rather than the singular pod id
   let rawYAML: string;
   if (type === 'compose') {
-    const containers = await window.listSimpleContainersByLabel('com.docker.compose.project', resourceId);
+    const containers = await client.container.listSimpleContainersByLabel({
+      label: 'com.docker.compose.project',
+      key: resourceId,
+    });
     const containerIds = containers.map(container => container.Id);
-    rawYAML = await window.generatePodmanKube(engineId, containerIds);
+    rawYAML = await client.container.generatePodmanKube({ engine: engineId, names: containerIds });
   } else {
-    rawYAML = await window.generatePodmanKube(engineId, [resourceId]);
+    rawYAML = await client.container.generatePodmanKube({ engine: engineId, names: [resourceId] });
   }
 
   // parse yaml

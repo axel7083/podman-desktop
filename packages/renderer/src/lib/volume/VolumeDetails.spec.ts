@@ -30,8 +30,6 @@ import { volumeListInfos } from '/@/stores/volumes';
 
 import VolumeDetails from './VolumeDetails.svelte';
 
-const listVolumesMock = vi.fn();
-
 const myVolume: VolumeListInfo = {
   engineId: 'engine0',
   engineName: 'podman',
@@ -53,11 +51,7 @@ const myVolume: VolumeListInfo = {
   Warnings: [],
 };
 
-const removeVolumeMock = vi.fn();
-
 beforeAll(() => {
-  Object.defineProperty(window, 'listVolumes', { value: listVolumesMock });
-  Object.defineProperty(window, 'removeVolume', { value: removeVolumeMock });
   Object.defineProperty(window, 'getConfigurationProperties', { value: vi.fn().mockResolvedValue({}) });
 });
 
@@ -65,7 +59,7 @@ test('Expect redirect to previous page if volume is deleted', async () => {
   // Mock the showMessageBox to return 0 (yes)
   vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   const routerGotoSpy = vi.spyOn(router, 'goto');
-  listVolumesMock.mockResolvedValue([myVolume]);
+  vi.mocked(client.container.listVolumes).mockResolvedValue([myVolume]);
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   while (get(volumeListInfos).length !== 1) {
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -73,8 +67,9 @@ test('Expect redirect to previous page if volume is deleted', async () => {
 
   // remove myVolume from the store when we call 'removeVolume'
   // it will then refresh the store and update VolumeDetails page
-  removeVolumeMock.mockImplementation(() => {
+  vi.mocked(client.container.removeVolume).mockImplementation(() => {
     volumeListInfos.update(volumes => volumes.filter(volume => volume.engineId !== myVolume.engineId));
+    return Promise.resolve();
   });
 
   // defines a fake lastPage so we can check where we will be redirected
@@ -95,7 +90,7 @@ test('Expect redirect to previous page if volume is deleted', async () => {
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
   // check that remove method has been called
-  expect(removeVolumeMock).toHaveBeenCalled();
+  expect(client.container.removeVolume).toHaveBeenCalled();
 
   // expect that we have called the router when page has been removed
   // to jump to the previous page

@@ -4,6 +4,8 @@ import type { ProviderContainerConnectionInfo } from '@podman-desktop/core-api';
 import { Button, ErrorMessage } from '@podman-desktop/ui-svelte';
 import { Buffer } from 'buffer';
 
+import { client } from '/@/client';
+
 interface Props {
   providerContainerEngine: ProviderContainerConnectionInfo;
 }
@@ -20,7 +22,9 @@ async function pingConnection(): Promise<void> {
   pingError = '';
   pingResult = 'Waiting for response...';
   try {
-    const result = await window.pingContainerEngine($state.snapshot(providerContainerEngine));
+    const result = await client.container.pingContainerEngine({
+      providerContainerConnectionInfo: $state.snapshot(providerContainerEngine),
+    });
     pingResult = `Responded: ${Buffer.from(String(result)).toString()}`;
   } catch (e) {
     pingResult = 'Failed';

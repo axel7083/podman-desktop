@@ -42,22 +42,16 @@ import type {
 } from '@kubernetes/client-node';
 import type * as containerDesktopAPI from '@podman-desktop/api';
 import type {
-  ContainerCreateOptions,
   ContainerExportOptions,
   ContainerfileInfo,
   ContainerImportOptions,
-  ContainerInfo,
-  ContainerInspectInfo,
   ContainerStatsInfo,
   ContextGeneralState,
   ContextHealth,
   ContextPermission,
   ForwardConfig,
   ForwardOptions,
-  HistoryInfo,
   IDisposable,
-  ImageInfo,
-  ImageInspectInfo,
   ImageLoadOptions,
   ImagesSaveOptions,
   ImageUpdateStatus,
@@ -65,18 +59,8 @@ import type {
   KubeContext,
   KubernetesContextResources,
   KubernetesTroubleshootingInformation,
-  ListImagesOptions,
   LogType,
-  ManifestCreateOptions,
-  ManifestInspectInfo,
-  ManifestPushOptions,
   NavigationRequest,
-  NetworkCreateOptions,
-  NetworkCreateResult,
-  NetworkInspectInfo,
-  PodCreateOptions,
-  PodInfo,
-  PodInspectInfo,
   PreflightCheckEvent,
   PreflightChecksCallback,
   ProviderConnectionInfo,
@@ -86,15 +70,8 @@ import type {
   PullEvent,
   ResourceCount,
   ResourceName,
-  SecretCreateOptions,
-  SecretCreateResult,
-  SecretInfo,
-  SimpleContainerInfo,
   SystemOverviewStatusInfo,
   V1Route,
-  VolumeCreateOptions,
-  VolumeInspectInfo,
-  VolumeListInfo,
 } from '@podman-desktop/core-api';
 import { NavigationPage, ORPC_START_CHANNEL } from '@podman-desktop/core-api';
 import type { ApiSenderType } from '@podman-desktop/core-api/api-sender';
@@ -104,10 +81,7 @@ import type {
   KubernetesGeneratorInfo,
   KubernetesGeneratorSelector,
 } from '@podman-desktop/core-api/kubernetes';
-import type {
-  ContainerCreateOptions as PodmanContainerCreateOptions,
-  PlayKubeInfo,
-} from '@podman-desktop/core-api/libpod';
+import type { PlayKubeInfo } from '@podman-desktop/core-api/libpod';
 import { contextBridge, ipcRenderer } from 'electron';
 
 const originalConsole = console;
@@ -247,151 +221,6 @@ export function initExposure(): void {
     },
   );
 
-  contextBridge.exposeInMainWorld('listContainers', async (): Promise<ContainerInfo[]> => {
-    return ipcInvoke('container-provider-registry:listContainers');
-  });
-
-  contextBridge.exposeInMainWorld('listSecrets', async (): Promise<SecretInfo[]> => {
-    return ipcInvoke('container-provider-registry:listSecrets');
-  });
-
-  contextBridge.exposeInMainWorld('removeSecret', async (engineId: string, secretId: string): Promise<void> => {
-    return ipcInvoke('container-provider-registry:removeSecret', engineId, secretId);
-  });
-
-  contextBridge.exposeInMainWorld('inspectSecret', async (engineId: string, secretId: string): Promise<SecretInfo> => {
-    return ipcInvoke('container-provider-registry:inspectSecret', engineId, secretId);
-  });
-
-  contextBridge.exposeInMainWorld('createSecret', async (options: SecretCreateOptions): Promise<SecretCreateResult> => {
-    return ipcInvoke('container-provider-registry:createSecret', options);
-  });
-
-  contextBridge.exposeInMainWorld(
-    'listSimpleContainersByLabel',
-    async (label: string, key: string): Promise<SimpleContainerInfo[]> => {
-      return ipcInvoke('container-provider-registry:listSimpleContainersByLabel', label, key);
-    },
-  );
-
-  contextBridge.exposeInMainWorld('listImages', async (options?: ListImagesOptions): Promise<ImageInfo[]> => {
-    return ipcInvoke('container-provider-registry:listImages', options);
-  });
-
-  contextBridge.exposeInMainWorld('listVolumes', async (fetchUsage = true): Promise<VolumeListInfo[]> => {
-    return ipcInvoke('container-provider-registry:listVolumes', fetchUsage);
-  });
-  contextBridge.exposeInMainWorld('removeVolume', async (engine: string, volumeName: string): Promise<void> => {
-    return ipcInvoke('container-provider-registry:removeVolume', engine, volumeName);
-  });
-  contextBridge.exposeInMainWorld(
-    'getVolumeInspect',
-    async (engine: string, volumeName: string): Promise<VolumeInspectInfo> => {
-      return ipcInvoke('container-provider-registry:getVolumeInspect', engine, volumeName);
-    },
-  );
-
-  contextBridge.exposeInMainWorld('listPods', async (): Promise<PodInfo[]> => {
-    return ipcInvoke('container-provider-registry:listPods');
-  });
-
-  contextBridge.exposeInMainWorld('reconnectContainerProviders', async (): Promise<PodInfo[]> => {
-    return ipcInvoke('container-provider-registry:reconnectContainerProviders');
-  });
-
-  contextBridge.exposeInMainWorld('listNetworks', async (): Promise<NetworkInspectInfo[]> => {
-    return ipcInvoke('container-provider-registry:listNetworks');
-  });
-
-  contextBridge.exposeInMainWorld('removeNetwork', async (engine: string, networkId: string): Promise<void> => {
-    return ipcInvoke('container-provider-registry:removeNetwork', engine, networkId);
-  });
-
-  contextBridge.exposeInMainWorld(
-    'updateNetwork',
-    async (engine: string, networkId: string, addDNSServers: string[], removeDNSServers: string[]): Promise<void> => {
-      return ipcInvoke('container-provider-registry:updateNetwork', engine, networkId, addDNSServers, removeDNSServers);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'createNetwork',
-    async (
-      providerContainerConnectionInfo: ProviderContainerConnectionInfo,
-      options: NetworkCreateOptions,
-    ): Promise<NetworkCreateResult> => {
-      return ipcInvoke('container-provider-registry:createNetwork', providerContainerConnectionInfo, options);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'inspectNetwork',
-    async (engine: string, networkId: string): Promise<NetworkInspectInfo> => {
-      return ipcInvoke('container-provider-registry:inspectNetwork', engine, networkId);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'getNetworkDrivers',
-    async (providerContainerConnectionInfo: ProviderContainerConnectionInfo): Promise<string[]> => {
-      return ipcInvoke('container-provider-registry:getNetworkDrivers', providerContainerConnectionInfo);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'replicatePodmanContainer',
-    async (
-      source: { engineId: string; id: string },
-      target: { engineId: string },
-      overrideParameters: PodmanContainerCreateOptions,
-    ): Promise<{ Id: string; Warnings: string[] }> => {
-      return ipcInvoke('container-provider-registry:replicatePodmanContainer', source, target, overrideParameters);
-    },
-  );
-  contextBridge.exposeInMainWorld(
-    'createPod',
-    async (podCreateOptions: PodCreateOptions): Promise<{ engineId: string; Id: string }> => {
-      return ipcInvoke('container-provider-registry:createPod', podCreateOptions);
-    },
-  );
-  contextBridge.exposeInMainWorld('startPod', async (engine: string, podId: string): Promise<void> => {
-    return ipcInvoke('container-provider-registry:startPod', engine, podId);
-  });
-  contextBridge.exposeInMainWorld('unpausePod', async (engine: string, podId: string): Promise<void> => {
-    return ipcInvoke('container-provider-registry:unpausePod', engine, podId);
-  });
-  contextBridge.exposeInMainWorld('restartPod', async (engine: string, podId: string): Promise<void> => {
-    return ipcInvoke('container-provider-registry:restartPod', engine, podId);
-  });
-
-  // Manifest
-  contextBridge.exposeInMainWorld(
-    'createManifest',
-    async (createOptions: ManifestCreateOptions): Promise<{ engineId: string; Id: string }> => {
-      return ipcInvoke('container-provider-registry:createManifest', createOptions);
-    },
-  );
-  contextBridge.exposeInMainWorld(
-    'inspectManifest',
-    async (engine: string, manifestId: string): Promise<ManifestInspectInfo> => {
-      return ipcInvoke('container-provider-registry:inspectManifest', engine, manifestId);
-    },
-  );
-  contextBridge.exposeInMainWorld('pushManifest', async (pushOptions: ManifestPushOptions): Promise<void> => {
-    return ipcInvoke('container-provider-registry:pushManifest', pushOptions);
-  });
-  contextBridge.exposeInMainWorld('removeManifest', async (engine: string, manifestId: string): Promise<void> => {
-    return ipcInvoke('container-provider-registry:removeManifest', engine, manifestId);
-  });
-
-  /**
-   * @deprecated This method is deprecated and will be removed in a future release.
-   * Use generateKube instead.
-   */
-  contextBridge.exposeInMainWorld('generatePodmanKube', async (engine: string, names: string[]): Promise<string> => {
-    return ipcInvoke('container-provider-registry:generatePodmanKube', engine, names);
-  });
-
   contextBridge.exposeInMainWorld(
     'generateKube',
     async (
@@ -414,44 +243,6 @@ export function initExposure(): void {
       },
     ): Promise<PlayKubeInfo> => {
       return ipcInvoke('container-provider-registry:playKube', relativeContainerfilePath, selectedProvider, options);
-    },
-  );
-
-  contextBridge.exposeInMainWorld('stopPod', async (engine: string, podId: string): Promise<void> => {
-    return ipcInvoke('container-provider-registry:stopPod', engine, podId);
-  });
-  contextBridge.exposeInMainWorld('removePod', async (engine: string, podId: string): Promise<void> => {
-    return ipcInvoke('container-provider-registry:removePod', engine, podId);
-  });
-
-  contextBridge.exposeInMainWorld('startContainer', async (engine: string, containerId: string): Promise<void> => {
-    return ipcInvoke('container-provider-registry:startContainer', engine, containerId);
-  });
-
-  contextBridge.exposeInMainWorld('unpauseContainer', async (engine: string, containerId: string): Promise<void> => {
-    return ipcInvoke('container-provider-registry:unpauseContainer', engine, containerId);
-  });
-
-  contextBridge.exposeInMainWorld(
-    'pingContainerEngine',
-    async (providerContainerConnectionInfo: ProviderContainerConnectionInfo): Promise<unknown> => {
-      return ipcInvoke('container-provider-registry:pingContainerEngine', providerContainerConnectionInfo);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'listContainersFromEngine',
-    async (
-      providerContainerConnectionInfo: ProviderContainerConnectionInfo,
-    ): Promise<{ Id: string; Names: string[] }[]> => {
-      return ipcInvoke('container-provider-registry:listContainersFromEngine', providerContainerConnectionInfo);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'resolveShortnameImage',
-    async (providerContainerConnectionInfo: ProviderContainerConnectionInfo, shortName: string): Promise<string[]> => {
-      return ipcInvoke('container-provider-registry:resolveShortnameImage', providerContainerConnectionInfo, shortName);
     },
   );
 
@@ -509,62 +300,6 @@ export function initExposure(): void {
       }
     },
   );
-
-  contextBridge.exposeInMainWorld('restartContainer', async (engine: string, containerId: string): Promise<void> => {
-    return ipcInvoke('container-provider-registry:restartContainer', engine, containerId);
-  });
-
-  contextBridge.exposeInMainWorld(
-    'restartContainersByLabel',
-    async (engine: string, label: string, key: string): Promise<void> => {
-      return ipcInvoke('container-provider-registry:restartContainersByLabel', engine, label, key);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'startContainersByLabel',
-    async (engine: string, label: string, key: string): Promise<void> => {
-      return ipcInvoke('container-provider-registry:startContainersByLabel', engine, label, key);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'stopContainersByLabel',
-    async (engine: string, label: string, key: string): Promise<void> => {
-      return ipcInvoke('container-provider-registry:stopContainersByLabel', engine, label, key);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'deleteContainersByLabel',
-    async (engine: string, label: string, key: string): Promise<void> => {
-      return ipcInvoke('container-provider-registry:deleteContainersByLabel', engine, label, key);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'createAndStartContainer',
-    async (engine: string, options: ContainerCreateOptions): Promise<{ id: string }> => {
-      return ipcInvoke('container-provider-registry:createAndStartContainer', engine, options);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'createVolume',
-    async (
-      providerContainerConnectionInfo: ProviderContainerConnectionInfo,
-      options: VolumeCreateOptions,
-    ): Promise<void> => {
-      return ipcInvoke('container-provider-registry:createVolume', providerContainerConnectionInfo, options);
-    },
-  );
-
-  contextBridge.exposeInMainWorld('stopContainer', async (engine: string, containerId: string): Promise<void> => {
-    return ipcInvoke('container-provider-registry:stopContainer', engine, containerId);
-  });
-  contextBridge.exposeInMainWorld('deleteContainer', async (engine: string, containerId: string): Promise<void> => {
-    return ipcInvoke('container-provider-registry:deleteContainer', engine, containerId);
-  });
 
   contextBridge.exposeInMainWorld(
     'exportContainer',
@@ -835,17 +570,6 @@ export function initExposure(): void {
     }
   });
 
-  contextBridge.exposeInMainWorld(
-    'getContainerInspect',
-    async (engine: string, containerId: string): Promise<ContainerInspectInfo> => {
-      return ipcInvoke('container-provider-registry:getContainerInspect', engine, containerId);
-    },
-  );
-
-  contextBridge.exposeInMainWorld('getPodInspect', async (engine: string, podId: string): Promise<PodInspectInfo> => {
-    return ipcInvoke('container-provider-registry:getPodInspect', engine, podId);
-  });
-
   let onDataCallbacksGetContainerStatsId = 0;
   const onDataCallbacksGetContainerStats = new Map<number, (containerStats: ContainerStatsInfo) => void>();
   contextBridge.exposeInMainWorld(
@@ -875,35 +599,6 @@ export function initExposure(): void {
       }
     },
   );
-  contextBridge.exposeInMainWorld('stopContainerStats', async (containerStatsId: number): Promise<void> => {
-    return ipcInvoke('container-provider-registry:stopContainerStats', containerStatsId);
-  });
-
-  contextBridge.exposeInMainWorld(
-    'getImageInspect',
-    async (engine: string, imageId: string): Promise<ImageInspectInfo> => {
-      return ipcInvoke('container-provider-registry:getImageInspect', engine, imageId);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'getImageHistory',
-    async (engine: string, imageId: string): Promise<HistoryInfo[]> => {
-      return ipcInvoke('container-provider-registry:getImageHistory', engine, imageId);
-    },
-  );
-
-  contextBridge.exposeInMainWorld('deleteImage', async (engine: string, imageId: string): Promise<void> => {
-    return ipcInvoke('container-provider-registry:deleteImage', engine, imageId);
-  });
-
-  contextBridge.exposeInMainWorld(
-    'tagImage',
-    async (engine: string, imageId: string, repo: string, tag?: string): Promise<void> => {
-      return ipcInvoke('container-provider-registry:tagImage', engine, imageId, repo, tag);
-    },
-  );
-
   contextBridge.exposeInMainWorld('startProviderLifecycle', async (providerId: string): Promise<void> => {
     return ipcInvoke('provider-registry:startProviderLifecycle', providerId);
   });
@@ -1921,22 +1616,6 @@ export function initExposure(): void {
       return ipcInvoke('openshift-client:createRoute', namespace, route);
     },
   );
-
-  contextBridge.exposeInMainWorld('pruneContainers', async (engine: string): Promise<string> => {
-    return ipcInvoke('container-provider-registry:pruneContainers', engine);
-  });
-
-  contextBridge.exposeInMainWorld('prunePods', async (engine: string): Promise<string> => {
-    return ipcInvoke('container-provider-registry:prunePods', engine);
-  });
-
-  contextBridge.exposeInMainWorld('pruneVolumes', async (engine: string): Promise<string> => {
-    return ipcInvoke('container-provider-registry:pruneVolumes', engine);
-  });
-
-  contextBridge.exposeInMainWorld('pruneImages', async (engine: string, all = true): Promise<string> => {
-    return ipcInvoke('container-provider-registry:pruneImages', engine, all);
-  });
 
   let onDataCallbacksShellInContainerExtensionInstallId = 0;
   const onDataCallbacksShellInContainerExtension = new Map<number, (data: string) => void>();

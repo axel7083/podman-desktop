@@ -20,6 +20,8 @@ import type { ContainerInfo } from '@podman-desktop/core-api';
 import { get } from 'svelte/store';
 import { assert, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { containersEventStore, containersInfos } from './containers';
 
 const callbacks = new Map<string, (data?: unknown) => void | Promise<void>>();
@@ -47,16 +49,16 @@ test.each([
   containersEventStore.setupWithDebounce(10, 10);
 
   // empty list
-  vi.mocked(window.listContainers).mockResolvedValue([]);
+  vi.mocked(client.container.listContainers).mockResolvedValue([]);
 
   // mark as ready to receive updates
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
 
   // clear mock calls
-  vi.mocked(window.listContainers).mockClear();
+  vi.mocked(client.container.listContainers).mockClear();
 
   // now, setup at least one container
-  vi.mocked(window.listContainers).mockResolvedValue([
+  vi.mocked(client.container.listContainers).mockResolvedValue([
     {
       Id: 'id123',
     } as unknown as ContainerInfo,
@@ -67,8 +69,8 @@ test.each([
   assert(callback);
   await callback();
 
-  // wait vi.mocked(window.listContainers) is called
-  while (vi.mocked(window.listContainers).mock.calls.length === 0) {
+  // wait vi.mocked(client.container.listContainers) is called
+  while (vi.mocked(client.container.listContainers).mock.calls.length === 0) {
     await new Promise(resolve => setTimeout(resolve, 10));
   }
 

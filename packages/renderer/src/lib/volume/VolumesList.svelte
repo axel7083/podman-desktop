@@ -15,6 +15,7 @@ import { onDestroy, onMount } from 'svelte';
 import type { Unsubscriber } from 'svelte/store';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import { withBulkConfirmation } from '/@/lib/actions/BulkActions';
 import type { EngineInfoUI } from '/@/lib/engine/EngineInfoUI';
 import Prune from '/@/lib/engine/Prune.svelte';
@@ -118,7 +119,7 @@ async function deleteSelectedVolumes(): Promise<void> {
   await Promise.all(
     selectedVolumes.map(async volume => {
       try {
-        await window.removeVolume(volume.engineId, volume.name);
+        await client.container.removeVolume({ engine: volume.engineId, volumeName: volume.name });
       } catch (e) {
         console.error('error while removing volume', e);
       }

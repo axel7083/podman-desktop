@@ -20,7 +20,7 @@ import '@testing-library/jest-dom/vitest';
 
 import { within } from '@testing-library/dom';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
-import { afterEach, beforeAll, beforeEach, expect, type Mock, test, vi } from 'vitest';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
 import { client } from '/@/client';
 import type { ContainerInfoUI } from '/@/lib/container/ContainerInfoUI';
@@ -79,13 +79,6 @@ const createDeferred = <T = void>(): Deferred<T> => {
   });
   return { promise, resolve, reject };
 };
-
-beforeAll(() => {
-  Object.defineProperty(window, 'startContainersByLabel', { value: vi.fn() });
-  Object.defineProperty(window, 'stopContainersByLabel', { value: vi.fn() });
-  Object.defineProperty(window, 'restartContainersByLabel', { value: vi.fn() });
-  Object.defineProperty(window, 'deleteContainersByLabel', { value: vi.fn() });
-});
 
 beforeEach(() => {
   vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
@@ -179,7 +172,7 @@ test('Stop keeps Start hidden during STOPPING (all containers are running)', asy
   expect(ui.getByRole('button', { name: 'Stop Compose' })).not.toHaveClass('hidden');
 
   const dStop = createDeferred<void>();
-  (window.stopContainersByLabel as unknown as Mock).mockReturnValueOnce(dStop.promise);
+  vi.mocked(client.container.stopContainersByLabel).mockReturnValueOnce(dStop.promise);
 
   await fireEvent.click(ui.getByRole('button', { name: 'Stop Compose' }));
 
@@ -215,7 +208,7 @@ test('Start keeps Stop hidden during STARTING (all containers are stopped)', asy
   expect(ui.getByRole('button', { name: 'Stop Compose', hidden: true })).toHaveClass('hidden');
 
   const dStart = createDeferred<void>();
-  (window.startContainersByLabel as unknown as Mock).mockReturnValueOnce(dStart.promise);
+  vi.mocked(client.container.startContainersByLabel).mockReturnValueOnce(dStart.promise);
 
   await fireEvent.click(ui.getByRole('button', { name: 'Start Compose' }));
 
@@ -252,7 +245,7 @@ test('Stop keeps both visible during STOPPING (some containers are running)', as
   expect(ui.getByRole('button', { name: 'Stop Compose' })).not.toHaveClass('hidden');
 
   const dStop = createDeferred<void>();
-  (window.stopContainersByLabel as unknown as Mock).mockReturnValueOnce(dStop.promise);
+  vi.mocked(client.container.stopContainersByLabel).mockReturnValueOnce(dStop.promise);
 
   await fireEvent.click(ui.getByRole('button', { name: 'Stop Compose' }));
 
