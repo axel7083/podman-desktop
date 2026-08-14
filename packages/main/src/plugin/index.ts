@@ -129,7 +129,6 @@ import type {
 } from '@podman-desktop/core-api';
 import type { ApiSenderChannelMap } from '@podman-desktop/core-api/api-sender';
 import { ApiSenderType } from '@podman-desktop/core-api/api-sender';
-import type { AuthenticationProviderInfo } from '@podman-desktop/core-api/authentication';
 import { IConfigurationRegistry } from '@podman-desktop/core-api/configuration';
 import type { CatalogExtension } from '@podman-desktop/core-api/extension-catalog';
 import type { FeaturedExtension } from '@podman-desktop/core-api/featured';
@@ -177,7 +176,6 @@ import product from '/@product.json' with { type: 'json' };
 // eslint-disable-next-line no-restricted-imports
 import rootPackage from '../../../../package.json' with { type: 'json' };
 import { AppearanceInit } from './appearance-init.js';
-import { AuthenticationImpl } from './authentication.js';
 import { AutostartEngine } from './autostart-engine.js';
 import { CancellationTokenRegistry } from './cancellation-token-registry.js';
 import { Certificates } from './certificates.js';
@@ -844,7 +842,6 @@ export class PluginSystem {
     const context = container.get<Context>(Context);
     const inputQuickPickRegistry = container.get<InputQuickPickRegistry>(InputQuickPickRegistry);
     const customPickRegistry = container.get<CustomPickRegistry>(CustomPickRegistry);
-    const authentication = container.get<AuthenticationImpl>(AuthenticationImpl);
     const imageRegistry = container.get<ImageRegistry>(ImageRegistry);
     const tempFileService = container.get<TempFileService>(TempFileService);
 
@@ -2228,27 +2225,6 @@ export class PluginSystem {
       'image-registry:listImageTags',
       async (_listener, options: ImageTagsListOptions): Promise<string[]> => {
         return imageRegistry.listImageTags(options);
-      },
-    );
-
-    this.ipcHandle(
-      'authentication-provider-registry:getAuthenticationProvidersInfo',
-      async (): Promise<readonly AuthenticationProviderInfo[]> => {
-        return authentication.getAuthenticationProvidersInfo();
-      },
-    );
-
-    this.ipcHandle(
-      'authentication-provider-registry:requestAuthenticationProviderSignOut',
-      async (_listener, providerId: string, sessionId): Promise<void> => {
-        return authentication.signOut(providerId, sessionId);
-      },
-    );
-
-    this.ipcHandle(
-      'authentication-provider-registry:requestAuthenticationProviderSignIn',
-      async (_listener, requestId: string): Promise<void> => {
-        await authentication.executeSessionRequest(requestId);
       },
     );
 

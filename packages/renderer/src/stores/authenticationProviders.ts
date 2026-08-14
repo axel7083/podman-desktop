@@ -19,6 +19,7 @@
 import type { AuthenticationProviderInfo } from '@podman-desktop/core-api/authentication';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
 import KeyIcon from '/@/lib/images/KeyIcon.svelte';
 
 import { EventStore } from './event-store';
@@ -39,9 +40,8 @@ async function checkForUpdate(eventName: string): Promise<boolean> {
 
 export const authenticationProviders: Writable<readonly AuthenticationProviderInfo[]> = writable([]);
 
-// use helper here as window methods are initialized after the store in tests
 const getAuthenticationProvidersInfo = (): Promise<readonly AuthenticationProviderInfo[]> => {
-  return window.getAuthenticationProvidersInfo();
+  return client.authentication.getProvidersInfo();
 };
 
 const eventStore = new EventStore<readonly AuthenticationProviderInfo[]>(

@@ -21,6 +21,7 @@ import { contracts, ORPC_START_CHANNEL } from '@podman-desktop/core-api';
 import { Container as InversifyContainer, inject, injectable } from 'inversify';
 
 import { IPCMainOn } from '/@/plugin/api.js';
+import { AuthenticationRouter } from '/@/plugin/routers/authentication.router.js';
 import { ConfigurationRouter } from '/@/plugin/routers/configuration.router.js';
 import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
 import { ProxyRouter } from '/@/plugin/routers/proxy.router.js';
@@ -37,6 +38,8 @@ export class RpcHandler {
   constructor(
     @inject(IPCMainOn)
     protected readonly ipcHandle: IPCMainOn,
+    @inject(AuthenticationRouter)
+    readonly authentication: AuthenticationRouter,
     @inject(ConfigurationRouter)
     readonly configuration: ConfigurationRouter,
     @inject(PlanetRouter)
@@ -47,6 +50,7 @@ export class RpcHandler {
     readonly tasks: TasksRouter,
   ) {
     const router = implementer.router({
+      authentication: authentication.router,
       configuration: configuration.router,
       planet: planet.router,
       proxy: proxy.router,

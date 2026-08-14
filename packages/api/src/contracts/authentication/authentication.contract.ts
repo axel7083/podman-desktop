@@ -16,18 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { authenticationContract } from '/@/contracts/authentication/authentication.contract.js';
-import { configurationContract } from '/@/contracts/configuration/configuration.contract.js';
-import { planetContract } from '/@/contracts/planet/planet.contract.js';
-import { proxyContract } from '/@/contracts/proxy/proxy.contract.js';
-import { tasksContract } from '/@/contracts/tasks/tasks.contract.js';
+import { oc, type } from '@orpc/contract';
 
-export * from './constants.js';
+import type { AuthenticationProviderInfo } from '/@/authentication/authentication.js';
 
-export const contracts = {
-  authentication: authenticationContract,
-  configuration: configurationContract,
-  planet: planetContract,
-  proxy: proxyContract,
-  tasks: tasksContract,
+export const authenticationContract = {
+  getProvidersInfo: oc.output(type<readonly AuthenticationProviderInfo[]>()),
+  signOut: oc.input(type<{ providerId: string; sessionId: string }>()).output(type<void>()),
+  signIn: oc.input(type<{ requestId: string }>()).output(type<void>()),
 };

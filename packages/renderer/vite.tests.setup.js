@@ -25,6 +25,7 @@ import { vi } from 'vitest';
 
 vi.mock('/@/client', () => ({
   client: {
+    authentication: { getProvidersInfo: vi.fn(), signOut: vi.fn(), signIn: vi.fn() },
     configuration: {
       getProperties: vi.fn(),
       getValue: vi.fn(),

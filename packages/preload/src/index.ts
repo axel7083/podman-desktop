@@ -132,7 +132,6 @@ import type {
 } from '@podman-desktop/core-api';
 import { NavigationPage, ORPC_START_CHANNEL } from '@podman-desktop/core-api';
 import type { ApiSenderType } from '@podman-desktop/core-api/api-sender';
-import type { AuthenticationProviderInfo } from '@podman-desktop/core-api/authentication';
 import type { ContextInfo } from '@podman-desktop/core-api/context';
 import type { CatalogExtension } from '@podman-desktop/core-api/extension-catalog';
 import type { FeaturedExtension } from '@podman-desktop/core-api/featured';
@@ -1588,24 +1587,6 @@ export function initExposure(): void {
       return ipcInvoke('image-registry:listImageTags', options);
     },
   );
-
-  contextBridge.exposeInMainWorld(
-    'getAuthenticationProvidersInfo',
-    async (): Promise<readonly AuthenticationProviderInfo[]> => {
-      return ipcInvoke('authentication-provider-registry:getAuthenticationProvidersInfo');
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'requestAuthenticationProviderSignOut',
-    async (providerId: string, sessionId: string): Promise<void> => {
-      return ipcInvoke('authentication-provider-registry:requestAuthenticationProviderSignOut', providerId, sessionId);
-    },
-  );
-
-  contextBridge.exposeInMainWorld('requestAuthenticationProviderSignIn', async (requestId: string): Promise<void> => {
-    return ipcInvoke('authentication-provider-registry:requestAuthenticationProviderSignIn', requestId);
-  });
 
   contextBridge.exposeInMainWorld('showAccountsMenu', async (x: number, y: number) => {
     return ipcInvoke('authentication:showAccountsMenu', x, y);
