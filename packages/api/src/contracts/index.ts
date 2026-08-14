@@ -17,6 +17,7 @@
  ***********************************************************************/
 
 import { authenticationContract } from '/@/contracts/authentication/authentication.contract.js';
+import { cliToolContract } from '/@/contracts/cli-tool/cli-tool.contract.js';
 import { configurationContract } from '/@/contracts/configuration/configuration.contract.js';
 import { notificationContract } from '/@/contracts/notification/notification.contract.js';
 import { planetContract } from '/@/contracts/planet/planet.contract.js';
@@ -27,6 +28,7 @@ export * from './constants.js';
 
 export const contracts = {
   authentication: authenticationContract,
+  cliTool: cliToolContract,
   configuration: configurationContract,
   notification: notificationContract,
   planet: planetContract,

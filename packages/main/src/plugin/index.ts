@@ -43,7 +43,6 @@ import type {
 } from '@kubernetes/client-node';
 import type * as containerDesktopAPI from '@podman-desktop/api';
 import type {
-  CliToolInfo,
   ColorInfo,
   CommandInfo,
   CommandPaletteSearchOption,
@@ -1810,20 +1809,12 @@ export class PluginSystem {
       },
     );
 
-    this.ipcHandle('cli-tool-registry:getCliToolInfos', async (): Promise<CliToolInfo[]> => {
-      return cliToolRegistry.getCliToolInfos();
-    });
-
     this.ipcHandle(
       'troubleshooting:saveLogs',
       async (_listener, consoleLogs: { logType: LogType; message: string }[]): Promise<string[]> => {
         return troubleshooting.saveLogs(consoleLogs);
       },
     );
-
-    this.ipcHandle('cli-tool-registry:selectCliToolVersionToUpdate', async (_listener, id: string): Promise<string> => {
-      return cliToolRegistry.selectCliToolVersionToUpdate(id);
-    });
 
     this.ipcHandle(
       'cli-tool-registry:updateCliTool',
@@ -1857,13 +1848,6 @@ export class PluginSystem {
           .finally(() => {
             logger.onEnd();
           });
-      },
-    );
-
-    this.ipcHandle(
-      'cli-tool-registry:selectCliToolVersionToInstall',
-      async (_listener, id: string, latest = true): Promise<string> => {
-        return cliToolRegistry.selectCliToolVersionToInstall(id, latest);
       },
     );
 

@@ -19,6 +19,8 @@
 import type { CliToolInfo } from '@podman-desktop/core-api';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents: string[] = ['extensions-started', 'cli-tool-create', 'cli-tool-remove', 'cli-tool-change'];
@@ -49,6 +51,6 @@ const eventStore = new EventStore<CliToolInfo[]>(
   checkForUpdate,
   windowEvents,
   windowListeners,
-  window.getCliToolInfos,
+  () => client.cliTool.getInfos(),
 );
 eventStore.setup();

@@ -25,6 +25,8 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import PreferencesCliTool from './PreferencesCliTool.svelte';
 
 const cliToolInfoItem1: CliToolInfo = {
@@ -251,8 +253,7 @@ describe('CLI Tool item', () => {
   });
 
   test('check version is sent to updateCliTool', async () => {
-    const selectCliToolVersionToUpdateMock = vi.fn().mockResolvedValue('1.1.1');
-    (window as any).selectCliToolVersionToUpdate = selectCliToolVersionToUpdateMock;
+    vi.mocked(client.cliTool.selectVersionToUpdate).mockResolvedValue('1.1.1');
     render(PreferencesCliTool, {
       cliTool: cliToolInfoItem4,
     });
@@ -262,7 +263,7 @@ describe('CLI Tool item', () => {
 
     await userEvent.click(updateAvailableElement);
 
-    expect(selectCliToolVersionToUpdateMock).toBeCalledWith(cliToolInfoItem4.id);
+    expect(client.cliTool.selectVersionToUpdate).toBeCalledWith({ id: cliToolInfoItem4.id });
     expect(vi.mocked(window.updateCliTool)).toBeCalledWith(
       cliToolInfoItem4.id,
       expect.any(Symbol),

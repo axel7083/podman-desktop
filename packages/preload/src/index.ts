@@ -42,7 +42,6 @@ import type {
 } from '@kubernetes/client-node';
 import type * as containerDesktopAPI from '@podman-desktop/api';
 import type {
-  CliToolInfo,
   ColorInfo,
   CommandInfo,
   CommandPaletteSearchOption,
@@ -1411,14 +1410,6 @@ export function initExposure(): void {
     return ipcInvoke('provider-registry:getProviderInfos');
   });
 
-  contextBridge.exposeInMainWorld('getCliToolInfos', async (): Promise<CliToolInfo[]> => {
-    return ipcInvoke('cli-tool-registry:getCliToolInfos');
-  });
-
-  contextBridge.exposeInMainWorld('selectCliToolVersionToUpdate', async (id: string): Promise<string> => {
-    return ipcInvoke('cli-tool-registry:selectCliToolVersionToUpdate', id);
-  });
-
   contextBridge.exposeInMainWorld(
     'updateCliTool',
     async (
@@ -1431,13 +1422,6 @@ export function initExposure(): void {
       onDataCallbacksTaskConnectionKeys.set(onDataCallbacksTaskConnectionId, key);
       onDataCallbacksTaskConnectionLogs.set(onDataCallbacksTaskConnectionId, keyLogger);
       return ipcInvoke('cli-tool-registry:updateCliTool', id, version, onDataCallbacksTaskConnectionId);
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'selectCliToolVersionToInstall',
-    async (id: string, latest = true): Promise<string> => {
-      return ipcInvoke('cli-tool-registry:selectCliToolVersionToInstall', id, latest);
     },
   );
 

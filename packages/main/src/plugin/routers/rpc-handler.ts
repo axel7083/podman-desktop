@@ -22,6 +22,7 @@ import { Container as InversifyContainer, inject, injectable } from 'inversify';
 
 import { IPCMainOn } from '/@/plugin/api.js';
 import { AuthenticationRouter } from '/@/plugin/routers/authentication.router.js';
+import { CliToolRouter } from '/@/plugin/routers/cli-tool.router.js';
 import { ConfigurationRouter } from '/@/plugin/routers/configuration.router.js';
 import { NotificationRouter } from '/@/plugin/routers/notification.router.js';
 import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
@@ -41,6 +42,8 @@ export class RpcHandler {
     protected readonly ipcHandle: IPCMainOn,
     @inject(AuthenticationRouter)
     readonly authentication: AuthenticationRouter,
+    @inject(CliToolRouter)
+    readonly cliTool: CliToolRouter,
     @inject(ConfigurationRouter)
     readonly configuration: ConfigurationRouter,
     @inject(NotificationRouter)
@@ -54,6 +57,7 @@ export class RpcHandler {
   ) {
     const router = implementer.router({
       authentication: authentication.router,
+      cliTool: cliTool.router,
       configuration: configuration.router,
       notification: notification.router,
       planet: planet.router,
