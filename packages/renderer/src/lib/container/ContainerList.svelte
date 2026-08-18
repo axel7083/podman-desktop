@@ -15,6 +15,7 @@ import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
 import moment from 'moment';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import { withBulkConfirmation } from '/@/lib/actions/BulkActions';
 import Dialog from '/@/lib/dialogs/Dialog.svelte';
 import Prune from '/@/lib/engine/Prune.svelte';
@@ -98,7 +99,7 @@ async function deleteSelectedContainers(): Promise<void> {
       podGroups.map(async podGroup => {
         if (podGroup.engineId && podGroup.id) {
           try {
-            await window.removePod(podGroup.engineId, podGroup.id);
+            await client.container.removePod({ engine: podGroup.engineId, podId: podGroup.id });
           } catch (e) {
             console.error('error while removing pod', e);
           }
@@ -116,7 +117,7 @@ async function deleteSelectedContainers(): Promise<void> {
         container.actionError = '';
         containerGroups = [...containerGroups];
         try {
-          await window.deleteContainer(container.engineId, container.id);
+          await client.container.deleteContainer({ engine: container.engineId, containerId: container.id });
         } catch (e) {
           console.log('error while removing container', e);
           container.actionError = String(e);
@@ -154,7 +155,7 @@ async function runSelectedContainers(): Promise<void> {
       podGroups.map(async podGroup => {
         if (podGroup.engineId && podGroup.id && podGroup.status !== 'RUNNING') {
           try {
-            await window.startPod(podGroup.engineId, podGroup.id);
+            await client.container.startPod({ engine: podGroup.engineId, podId: podGroup.id });
             podGroup.status = 'RUNNING';
           } catch (e) {
             console.error('error while running pod', e);
@@ -176,7 +177,7 @@ async function runSelectedContainers(): Promise<void> {
         container.actionError = '';
         containerGroups = [...containerGroups];
         try {
-          await window.startContainer(container.engineId, container.id);
+          await client.container.startContainer({ engine: container.engineId, containerId: container.id });
           container.state = 'RUNNING';
         } catch (e) {
           console.log('error while runnings container', e);

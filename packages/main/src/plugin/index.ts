@@ -20,7 +20,6 @@
  * @module preload
  */
 import { EventEmitter } from 'node:events';
-import * as os from 'node:os';
 import * as path from 'node:path';
 
 import type {
@@ -43,114 +42,45 @@ import type {
 } from '@kubernetes/client-node';
 import type * as containerDesktopAPI from '@podman-desktop/api';
 import type {
-  CliToolInfo,
-  ColorInfo,
-  CommandInfo,
-  CommandPaletteSearchOption,
-  ContainerCreateOptions,
   ContainerExportOptions,
   ContainerImportOptions,
-  ContainerInfo,
-  ContainerInspectInfo,
   ContainerStatsInfo,
   ContextGeneralState,
   ContextHealth,
   ContextPermission,
-  ContributionInfo,
-  DockerSocketMappingStatusInfo,
-  DocumentationInfo,
-  ExtensionDevelopmentFolderInfo,
   ExtensionInfo,
-  FeedbackMessages,
-  FeedbackProperties,
   ForwardConfig,
   ForwardOptions,
-  GitHubIssue,
-  HistoryInfo,
-  IconInfo,
   IDisposable,
-  ImageCheckerInfo,
-  ImageFilesInfo,
-  ImageFilesystemLayersUI,
-  ImageInfo,
-  ImageInspectInfo,
   ImageLoadOptions,
-  ImageSearchOptions,
-  ImageSearchResult,
   ImagesSaveOptions,
-  ImageTagsListOptions,
   ImageUpdateStatus,
   KubeContext,
   KubernetesContextResources,
   KubernetesTroubleshootingInformation,
-  ListImagesOptions,
-  ListOrganizerItem,
   LogType,
-  ManifestCreateOptions,
-  ManifestInspectInfo,
-  ManifestPushOptions,
-  Menu,
-  MessageBoxOptions,
-  MessageBoxReturnValue,
-  NetworkCreateOptions,
-  NetworkCreateResult,
-  NetworkInspectInfo,
-  NotificationCard,
   NotificationCardOptions,
-  OnboardingInfo,
-  OnboardingStatus,
-  PodInfo,
-  PodInspectInfo,
   PreflightCheckEvent,
   PreflightChecksCallback,
   ProviderConnectionInfo,
   ProviderContainerConnectionInfo,
   ProviderInfo,
   ProviderKubernetesConnectionInfo,
-  ProxyState,
   PullEvent,
-  ReleaseNotesInfo,
   ResourceCount,
   ResourceName,
-  SecretCreateOptions,
-  SecretCreateResult,
-  SecretInfo,
-  SimpleContainerInfo,
-  StatusBarEntryDescriptor,
-  TelemetryMessages,
-  ThemeInfo,
   V1Route,
-  ViewInfoUI,
-  VolumeCreateOptions,
-  VolumeCreateResponseInfo,
-  VolumeInspectInfo,
-  VolumeListInfo,
-  WebviewInfo,
-  WelcomeMessages,
 } from '@podman-desktop/core-api';
 import type { ApiSenderChannelMap } from '@podman-desktop/core-api/api-sender';
 import { ApiSenderType } from '@podman-desktop/core-api/api-sender';
-import type { AuthenticationProviderInfo } from '@podman-desktop/core-api/authentication';
-import {
-  type IConfigurationPropertyRecordedSchema,
-  IConfigurationRegistry,
-} from '@podman-desktop/core-api/configuration';
-import type { CatalogExtension } from '@podman-desktop/core-api/extension-catalog';
-import type { FeaturedExtension } from '@podman-desktop/core-api/featured';
+import { IConfigurationRegistry } from '@podman-desktop/core-api/configuration';
 import type {
   GenerateKubeResult,
   KubernetesGeneratorArgument,
   KubernetesGeneratorInfo,
   KubernetesGeneratorSelector,
 } from '@podman-desktop/core-api/kubernetes';
-import type {
-  ContainerCreateOptions as PodmanContainerCreateOptions,
-  PlayKubeInfo,
-} from '@podman-desktop/core-api/libpod';
-import type { ExtensionBanner, RecommendedRegistry } from '@podman-desktop/core-api/recommendations';
-import type { PinOption } from '@podman-desktop/core-api/status-bar';
-import checkDiskSpacePkg from 'check-disk-space';
-import type Dockerode from 'dockerode';
+import type { PlayKubeInfo } from '@podman-desktop/core-api/libpod';
 import type { IpcMainEvent, WebContents } from 'electron';
 import { app, BrowserWindow, clipboard, ipcMain, shell } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron/main';
@@ -167,17 +97,17 @@ import { KubeGeneratorRegistry } from '/@/plugin/kubernetes/kube-generator-regis
 import { LockedConfiguration } from '/@/plugin/locked-configuration.js';
 import { MenuRegistry } from '/@/plugin/menu-registry.js';
 import { NavigationManager } from '/@/plugin/navigation/navigation-manager.js';
+import { routersModule } from '/@/plugin/routers/$module.js';
+import { RpcHandler } from '/@/plugin/routers/rpc-handler.js';
 import { TaskManager } from '/@/plugin/tasks/task-manager.js';
 import { Uri } from '/@/plugin/types/uri.js';
 import { Updater } from '/@/plugin/updater.js';
 import { Welcome } from '/@/plugin/welcome.js';
 import { securityRestrictionCurrentHandler } from '/@/security-restrictions-handler.js';
 import { TrayMenu } from '/@/tray-menu.js';
-import { createHash, isMac } from '/@/util.js';
-import product from '/@product.json' with { type: 'json' };
+import { isMac } from '/@/util.js';
 
 // eslint-disable-next-line no-restricted-imports
-import rootPackage from '../../../../package.json' with { type: 'json' };
 import { AppearanceInit } from './appearance-init.js';
 import { AuthenticationImpl } from './authentication.js';
 import { AutostartEngine } from './autostart-engine.js';
@@ -225,7 +155,6 @@ import { ImageRegistry } from './image-registry.js';
 import { InputQuickPickRegistry } from './input-quickpick/input-quickpick-registry.js';
 import { ExtensionInstaller } from './install/extension-installer.js';
 import { KubernetesClient } from './kubernetes/kubernetes-client.js';
-import { downloadGuideList } from './learning-center/learning-center.js';
 import { LearningCenterInit } from './learning-center-init.js';
 import { LibpodApiInit } from './libpod-api-enable/libpod-api-init.js';
 import { ListOrganizerRegistry } from './list-organizer.js';
@@ -244,7 +173,7 @@ import { StatusbarProvidersInit } from './statusbar/statusbar-providers-init.js'
 import { StatusBarRegistry } from './statusbar/statusbar-registry.js';
 import { NotificationRegistry } from './tasks/notification-registry.js';
 import { ProgressImpl } from './tasks/progress-impl.js';
-import { EventType, Telemetry } from './telemetry/telemetry.js';
+import { Telemetry } from './telemetry/telemetry.js';
 import { TempFileService } from './temp-file-service.js';
 import { TerminalInit } from './terminal-init.js';
 import { TrayIconColor } from './tray-icon-color.js';
@@ -253,17 +182,11 @@ import { TrayVisibility } from './tray-visibility.js';
 import { Troubleshooting } from './troubleshooting.js';
 import { DirectoryStrategy } from './util/directory-strategy.js';
 import { Exec } from './util/exec.js';
-import { getFreePort, getFreePortRange, isFreePort } from './util/port.js';
 import { TaskConnectionUtils } from './util/task-connection-utils.js';
 import { ViewRegistry } from './view-registry.js';
 import { DevToolsManager } from './webview/devtools-manager.js';
 import { WebviewRegistry } from './webview/webview-registry.js';
 import { WelcomeInit } from './welcome/welcome-init.js';
-
-// workaround for ESM
-const checkDiskSpace: (path: string) => Promise<{ free: number }> = checkDiskSpacePkg as unknown as (
-  path: string,
-) => Promise<{ free: number }>;
 
 export const UPDATER_UPDATE_AVAILABLE_ICON = 'fa fa-exclamation-triangle';
 
@@ -518,8 +441,8 @@ export class PluginSystem {
     const apiSender = this.getApiSender(this.getWebContentsSender());
     const container = new Container();
     container.bind<ApiSenderType>(ApiSenderType).toConstantValue(apiSender);
-    container.bind<IPCHandle>(IPCHandle).toConstantValue(this.ipcHandle);
-    container.bind<IPCMainOn>(IPCMainOn).toConstantValue(this.ipcMainOn);
+    container.bind<IPCHandle>(IPCHandle).toConstantValue(this.ipcHandle.bind(this));
+    container.bind<IPCMainOn>(IPCMainOn).toConstantValue(this.ipcMainOn.bind(this));
     container.bind<TrayMenu>(TrayMenu).toConstantValue(this.trayMenu);
     container.bind<IconRegistry>(IconRegistry).toSelf().inSingletonScope();
     const directoryStrategy = new DirectoryStrategy();
@@ -538,11 +461,7 @@ export class PluginSystem {
     container.bind<ConfigurationRegistry>(ConfigurationRegistry).toSelf().inSingletonScope();
     container.bind<LockedConfiguration>(LockedConfiguration).toSelf().inSingletonScope();
     container.bind<IConfigurationRegistry>(IConfigurationRegistry).toService(ConfigurationRegistry);
-    const configurationRegistry = await this.initConfigurationRegistry(
-      container,
-      notifications,
-      configurationRegistryEmitter,
-    );
+    await this.initConfigurationRegistry(container, notifications, configurationRegistryEmitter);
 
     container.bind<ColorRegistry>(ColorRegistry).to(InjectableColorRegistry).inSingletonScope();
     const colorRegistry = container.get<ColorRegistry>(ColorRegistry);
@@ -564,9 +483,6 @@ export class PluginSystem {
     await telemetry.init();
 
     container.bind<ExperimentalConfigurationManager>(ExperimentalConfigurationManager).toSelf().inSingletonScope();
-    const experimentalConfigurationManager = container.get<ExperimentalConfigurationManager>(
-      ExperimentalConfigurationManager,
-    );
 
     container.bind<CommandRegistry>(CommandRegistry).toSelf().inSingletonScope();
     const commandRegistry = container.get<CommandRegistry>(CommandRegistry);
@@ -728,7 +644,6 @@ export class PluginSystem {
     terminalInit.init();
 
     container.bind<Welcome>(Welcome).toSelf().inSingletonScope();
-    const welcome = container.get<Welcome>(Welcome);
 
     container.bind<NavigationItemsInit>(NavigationItemsInit).toSelf().inSingletonScope();
     const navigationItems = container.get<NavigationItemsInit>(NavigationItemsInit);
@@ -794,7 +709,6 @@ export class PluginSystem {
     extensionDevelopmentFolders.init();
 
     container.bind<ListOrganizerRegistry>(ListOrganizerRegistry).toSelf().inSingletonScope();
-    const listOrganizerRegistry = container.get<ListOrganizerRegistry>(ListOrganizerRegistry);
 
     container.bind<PinRegistry>(PinRegistry).toSelf().inSingletonScope();
     const pinRegistry = container.get<PinRegistry>(PinRegistry);
@@ -816,7 +730,6 @@ export class PluginSystem {
     extensionsCatalog.init();
 
     container.bind<DocumentationService>(DocumentationService).toSelf().inSingletonScope();
-    const documentationService = container.get<DocumentationService>(DocumentationService);
 
     container.bind<Featured>(Featured).toSelf().inSingletonScope();
     const featured = container.get<Featured>(Featured);
@@ -837,26 +750,13 @@ export class PluginSystem {
 
     // setup security restrictions on links
     const messageBox = container.get<MessageBox>(MessageBox);
-    const imageChecker = container.get<ImageCheckerImpl>(ImageCheckerImpl);
-    const imageFiles = container.get<ImageFilesRegistry>(ImageFilesRegistry);
-    const viewRegistry = container.get<ViewRegistry>(ViewRegistry);
-    const feedback = container.get<FeedbackHandler>(FeedbackHandler);
     const cancellationTokenRegistry = container.get<CancellationTokenRegistry>(CancellationTokenRegistry);
     const cliToolRegistry = container.get<CliToolRegistry>(CliToolRegistry);
     const troubleshooting = container.get<Troubleshooting>(Troubleshooting);
     troubleshooting.init();
-    const menuRegistry = container.get<MenuRegistry>(MenuRegistry);
     const contributionManager = container.get<ContributionManager>(ContributionManager);
-    const iconRegistry = container.get<IconRegistry>(IconRegistry);
-    const onboardingRegistry = container.get<OnboardingRegistry>(OnboardingRegistry);
     const directories = container.get<Directories>(Directories);
-    const context = container.get<Context>(Context);
-    const inputQuickPickRegistry = container.get<InputQuickPickRegistry>(InputQuickPickRegistry);
-    const customPickRegistry = container.get<CustomPickRegistry>(CustomPickRegistry);
-    const authentication = container.get<AuthenticationImpl>(AuthenticationImpl);
     const imageRegistry = container.get<ImageRegistry>(ImageRegistry);
-    const tempFileService = container.get<TempFileService>(TempFileService);
-
     container.bind<ExperimentalFeatureFeedbackHandler>(ExperimentalFeatureFeedbackHandler).toSelf().inSingletonScope();
     const experimentalFeatureFeedbackHandler = container.get<ExperimentalFeatureFeedbackHandler>(
       ExperimentalFeatureFeedbackHandler,
@@ -865,257 +765,9 @@ export class PluginSystem {
 
     await this.setupSecurityRestrictionsOnLinks(messageBox);
 
-    this.ipcHandle('tasks:clear-all', async (): Promise<void> => {
-      return taskManager.clearTasks();
-    });
-
-    this.ipcHandle('tasks:clear', async (_listener, taskId: string): Promise<void> => {
-      return taskManager.getTask(taskId).dispose();
-    });
-
-    this.ipcHandle('tasks:execute', async (_listener, taskId: string): Promise<void> => {
-      return taskManager.execute(taskId);
-    });
-
-    this.ipcHandle('container-provider-registry:listContainers', async (): Promise<ContainerInfo[]> => {
-      return containerProviderRegistry.listContainers();
-    });
-
-    this.ipcHandle('container-provider-registry:listSecrets', async (): Promise<Array<SecretInfo>> => {
-      return containerProviderRegistry.listSecrets();
-    });
-
-    this.ipcHandle(
-      'container-provider-registry:removeSecret',
-      async (_listener, engineId: string, secretId: string): Promise<void> => {
-        return containerProviderRegistry.removeSecret(engineId, secretId);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:inspectSecret',
-      async (_listener, engineId: string, secretId: string): Promise<SecretInfo> => {
-        return containerProviderRegistry.inspectSecret(engineId, secretId);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:createSecret',
-      async (_listener, options: SecretCreateOptions): Promise<SecretCreateResult> => {
-        return containerProviderRegistry.createSecret(options);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:listSimpleContainersByLabel',
-      async (_listener, label: string, key: string): Promise<SimpleContainerInfo[]> => {
-        return containerProviderRegistry.listSimpleContainersByLabel(label, key);
-      },
-    );
-
-    this.ipcHandle('container-provider-registry:listSimpleContainers', async (): Promise<SimpleContainerInfo[]> => {
-      return containerProviderRegistry.listSimpleContainers();
-    });
-    this.ipcHandle(
-      'container-provider-registry:listImages',
-      async (_listener, options?: ListImagesOptions): Promise<ImageInfo[]> => {
-        return containerProviderRegistry.listImages(options);
-      },
-    );
-    this.ipcHandle('container-provider-registry:listPods', async (): Promise<PodInfo[]> => {
-      return containerProviderRegistry.listPods();
-    });
-    this.ipcHandle('container-provider-registry:listNetworks', async (): Promise<NetworkInspectInfo[]> => {
-      return containerProviderRegistry.listNetworks();
-    });
-    this.ipcHandle(
-      'container-provider-registry:removeNetwork',
-      async (_listener, engine: string, networkId: string): Promise<void> => {
-        return containerProviderRegistry.removeNetwork(engine, networkId);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:updateNetwork',
-      async (
-        _listener,
-        engineId: string,
-        networkId: string,
-        addDNSServers: string[],
-        removeDNSServers: string[],
-      ): Promise<void> => {
-        return containerProviderRegistry.updateNetwork(engineId, networkId, addDNSServers, removeDNSServers);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:createNetwork',
-      async (
-        _listener,
-        providerContainerConnectionInfo: ProviderContainerConnectionInfo,
-        options: NetworkCreateOptions,
-      ): Promise<NetworkCreateResult> => {
-        return containerProviderRegistry.createNetwork(providerContainerConnectionInfo, options);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:inspectNetwork',
-      async (_listener, engine: string, networkId: string): Promise<NetworkInspectInfo> => {
-        return containerProviderRegistry.inspectNetwork(engine, networkId);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:getNetworkDrivers',
-      async (_listener, providerContainerConnectionInfo: ProviderContainerConnectionInfo): Promise<string[]> => {
-        return containerProviderRegistry.getNetworkDrivers(providerContainerConnectionInfo);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:listVolumes',
-      async (_listener, fetchUsage: boolean): Promise<VolumeListInfo[]> => {
-        return containerProviderRegistry.listVolumes(fetchUsage);
-      },
-    );
-
-    this.ipcHandle('container-provider-registry:reconnectContainerProviders', async (): Promise<void> => {
-      return containerProviderRegistry.reconnectContainerProviders();
-    });
-
-    this.ipcHandle(
-      'container-provider-registry:pingContainerEngine',
-      async (_listener, providerContainerConnectionInfo: ProviderContainerConnectionInfo): Promise<unknown> => {
-        return containerProviderRegistry.pingContainerEngine(providerContainerConnectionInfo);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:listContainersFromEngine',
-      async (
-        _listener,
-        providerContainerConnectionInfo: ProviderContainerConnectionInfo,
-      ): Promise<{ Id: string; Names: string[] }[]> => {
-        return containerProviderRegistry.listContainersFromEngine(providerContainerConnectionInfo);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:pruneVolumes',
-      async (_listener, engine: string): Promise<Dockerode.PruneVolumesInfo> => {
-        return containerProviderRegistry.pruneVolumes(engine);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:getVolumeInspect',
-      async (_listener, engine: string, volumeName: string): Promise<VolumeInspectInfo> => {
-        return containerProviderRegistry.getVolumeInspect(engine, volumeName);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:removeVolume',
-      async (_listener, engine: string, volumeName: string): Promise<void> => {
-        return containerProviderRegistry.removeVolume(engine, volumeName);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:replicatePodmanContainer',
-      async (
-        _listener,
-        source: { engineId: string; id: string },
-        target: { engineId: string },
-        overrideParameters: PodmanContainerCreateOptions,
-      ): Promise<{ Id: string; Warnings: string[] }> => {
-        return containerProviderRegistry.replicatePodmanContainer(source, target, overrideParameters);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:createPod',
-      async (
-        _listener,
-        createOptions: containerDesktopAPI.PodCreateOptions,
-      ): Promise<{ engineId: string; Id: string }> => {
-        return containerProviderRegistry.createPod(createOptions);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:startPod',
-      async (_listener, engine: string, podId: string): Promise<void> => {
-        return containerProviderRegistry.startPod(engine, podId);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:unpausePod',
-      async (_listener, engine: string, podId: string): Promise<void> => {
-        return containerProviderRegistry.unpausePod(engine, podId);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:restartPod',
-      async (_listener, engine: string, podId: string): Promise<void> => {
-        return containerProviderRegistry.restartPod(engine, podId);
-      },
-    );
     this.ipcHandle('kubernetes-client:restartPod', async (_listener, name: string): Promise<void> => {
       return kubernetesClient.restartPod(name);
     });
-    this.ipcHandle(
-      'container-provider-registry:stopPod',
-      async (_listener, engine: string, podId: string): Promise<void> => {
-        return containerProviderRegistry.stopPod(engine, podId);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:removePod',
-      async (_listener, engine: string, podId: string): Promise<void> => {
-        return containerProviderRegistry.removePod(engine, podId);
-      },
-    );
-
-    // manifest
-    this.ipcHandle(
-      'container-provider-registry:createManifest',
-      async (_listener, manifestOptions: ManifestCreateOptions): Promise<{ engineId: string; Id: string }> => {
-        return containerProviderRegistry.createManifest(manifestOptions);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:pushManifest',
-      async (_listener, manifestOptions: ManifestPushOptions): Promise<void> => {
-        return containerProviderRegistry.pushManifest(manifestOptions);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:inspectManifest',
-      async (_listener, engine: string, manifestId: string): Promise<ManifestInspectInfo> => {
-        return containerProviderRegistry.inspectManifest(engine, manifestId);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:removeManifest',
-      async (_listener, engine: string, manifestId: string): Promise<void> => {
-        return containerProviderRegistry.removeManifest(engine, manifestId);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:generatePodmanKube',
-      async (_listener, engine: string, names: string[]): Promise<string> => {
-        const kubeGenerator = kubeGeneratorRegistry.getKubeGenerator();
-        if (!kubeGenerator) throw new Error(`Cannot find default KubeGenerator.`);
-
-        return (
-          await kubeGenerator.generate([
-            {
-              engineId: engine,
-              containers: names,
-            },
-          ])
-        ).yaml;
-      },
-    );
 
     this.ipcHandle(
       'kubernetes-generator-registry:generateKube',
@@ -1169,170 +821,12 @@ export class PluginSystem {
       },
     );
 
-    this.ipcHandle('temp-file-service:createTempFile', async (_listener, content: string): Promise<string> => {
-      return tempFileService.createTempFile(content);
-    });
-
-    this.ipcHandle('temp-file-service:removeTempFile', async (_listener, filePath: string): Promise<void> => {
-      return tempFileService.removeTempFile(filePath);
-    });
-
-    this.ipcHandle(
-      'container-provider-registry:startContainer',
-      async (_listener, engine: string, containerId: string): Promise<void> => {
-        return containerProviderRegistry.startContainer(engine, containerId);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:unpauseContainer',
-      async (_listener, engine: string, containerId: string): Promise<void> => {
-        return containerProviderRegistry.unpauseContainer(engine, containerId);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:stopContainer',
-      async (_listener, engine: string, containerId: string): Promise<void> => {
-        return containerProviderRegistry.stopContainer(engine, containerId);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:deleteContainer',
-      async (_listener, engine: string, containerId: string): Promise<void> => {
-        return containerProviderRegistry.deleteContainer(engine, containerId);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:deleteImage',
-      async (_listener, engine: string, imageId: string): Promise<void> => {
-        return containerProviderRegistry.deleteImage(engine, imageId);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:tagImage',
-      async (_listener, engine: string, imageTag: string, repo: string, tag?: string): Promise<void> => {
-        return containerProviderRegistry.tagImage(engine, imageTag, repo, tag);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:getImageInspect',
-      async (_listener, engine: string, imageId: string): Promise<ImageInspectInfo> => {
-        return containerProviderRegistry.getImageInspect(engine, imageId);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:getImageHistory',
-      async (_listener, engine: string, imageId: string): Promise<HistoryInfo[]> => {
-        return containerProviderRegistry.getImageHistory(engine, imageId);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:getContainerInspect',
-      async (_listener, engine: string, containerId: string): Promise<ContainerInspectInfo> => {
-        return containerProviderRegistry.getContainerInspect(engine, containerId);
-      },
-    );
-    this.ipcHandle(
-      'container-provider-registry:getPodInspect',
-      async (_listener, engine: string, podId: string): Promise<PodInspectInfo> => {
-        return containerProviderRegistry.getPodInspect(engine, podId);
-      },
-    );
     this.ipcHandle(
       'container-provider-registry:getContainerStats',
       async (_listener, engine: string, containerId: string, onDataId: number): Promise<number> => {
         return containerProviderRegistry.getContainerStats(engine, containerId, (stats: ContainerStatsInfo) => {
           this.getWebContentsSender().send('container-provider-registry:getContainerStats-onData', onDataId, stats);
         });
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:stopContainerStats',
-      async (_listener, containerStatsId: number): Promise<void> => {
-        return containerProviderRegistry.stopContainerStats(containerStatsId);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:pruneContainers',
-      async (_listener, engine: string): Promise<Dockerode.PruneContainersInfo> => {
-        return containerProviderRegistry.pruneContainers(engine);
-      },
-    );
-
-    this.ipcHandle('container-provider-registry:prunePods', async (_listener, engine: string): Promise<void> => {
-      return containerProviderRegistry.prunePods(engine);
-    });
-
-    this.ipcHandle(
-      'container-provider-registry:pruneImages',
-      async (_listener, engine: string, all: boolean): Promise<void> => {
-        return containerProviderRegistry.pruneImages(engine, all);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:restartContainer',
-      async (_listener, engine: string, containerId: string): Promise<void> => {
-        return containerProviderRegistry.restartContainer(engine, containerId);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:restartContainersByLabel',
-      async (_listener, engine: string, label: string, key: string): Promise<void> => {
-        return containerProviderRegistry.restartContainersByLabel(engine, label, key);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:startContainersByLabel',
-      async (_listener, engine: string, label: string, key: string): Promise<void> => {
-        return containerProviderRegistry.startContainersByLabel(engine, label, key);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:stopContainersByLabel',
-      async (_listener, engine: string, label: string, key: string): Promise<void> => {
-        return containerProviderRegistry.stopContainersByLabel(engine, label, key);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:deleteContainersByLabel',
-      async (_listener, engine: string, label: string, key: string): Promise<void> => {
-        return containerProviderRegistry.deleteContainersByLabel(engine, label, key);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:createAndStartContainer',
-      async (_listener, engine: string, options: ContainerCreateOptions): Promise<{ id: string }> => {
-        options.start = true;
-        return containerProviderRegistry.createContainer(engine, options);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:createVolume',
-      async (
-        _listener,
-        providerContainerConnectionInfo: ProviderContainerConnectionInfo,
-        options: VolumeCreateOptions,
-      ): Promise<VolumeCreateResponseInfo> => {
-        return containerProviderRegistry.createVolume(providerContainerConnectionInfo, options);
-      },
-    );
-
-    this.ipcHandle(
-      'container-provider-registry:resolveShortnameImage',
-      async (
-        _listener,
-        providerContainerConnectionInfo: ProviderContainerConnectionInfo,
-        shortName: string,
-      ): Promise<string[]> => {
-        return containerProviderRegistry.resolveShortnameImage(providerContainerConnectionInfo, shortName);
       },
     );
 
@@ -1428,27 +922,7 @@ export class PluginSystem {
           since?: string;
         },
       ): Promise<void> => {
-        const abortController = this.createAbortControllerOnCancellationToken(
-          cancellationTokenRegistry,
-          logsParams.cancellableTokenId,
-        );
-
-        return containerProviderRegistry.logsContainer({
-          engineId: logsParams.engineId,
-          id: logsParams.containerId,
-          callback: (name: string, data: string) => {
-            this.getWebContentsSender().send(
-              'container-provider-registry:logsContainer-onData',
-              logsParams.onDataId,
-              name,
-              data,
-            );
-          },
-          abortController,
-          timestamps: logsParams.timestamps,
-          tail: logsParams.tail,
-          since: logsParams.since,
-        });
+        throw new Error('deprecated');
       },
     );
 
@@ -1459,25 +933,7 @@ export class PluginSystem {
     this.ipcHandle(
       'container-provider-registry:shellInContainer',
       async (_listener, engine: string, containerId: string, onDataId: number): Promise<number> => {
-        // provide the data content to the remote side
-        const shellInContainerInvocation = await containerProviderRegistry.shellInContainer(
-          engine,
-          containerId,
-          (content: Buffer) => {
-            this.getWebContentsSender().send('container-provider-registry:shellInContainer-onData', onDataId, content);
-          },
-          (error: string) => {
-            this.getWebContentsSender().send('container-provider-registry:shellInContainer-onError', onDataId, error);
-          },
-          () => {
-            this.getWebContentsSender().send('container-provider-registry:shellInContainer-onEnd', onDataId);
-            // delete the callback
-            containerProviderRegistryShellInContainerSendCallback.delete(onDataId);
-          },
-        );
-        // store the callback
-        containerProviderRegistryShellInContainerSendCallback.set(onDataId, shellInContainerInvocation);
-        return onDataId;
+        throw new Error('deprecated');
       },
     );
 
@@ -1778,42 +1234,6 @@ export class PluginSystem {
       },
     );
 
-    this.ipcHandle('status-bar:getStatusBarEntries', async (): Promise<StatusBarEntryDescriptor[]> => {
-      return statusBarRegistry.getStatusBarEntries();
-    });
-
-    this.ipcHandle(
-      'status-bar:executeStatusBarEntryCommand',
-      async (
-        _,
-        command: string,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        args: any[],
-      ): Promise<void> => {
-        await commandRegistry.executeCommand(command, args);
-      },
-    );
-
-    this.ipcHandle('app:update', async (): Promise<void> => {
-      await commandRegistry.executeCommand('update');
-    });
-
-    this.ipcHandle('app:update-available', async (): Promise<boolean> => {
-      return podmanDesktopUpdater.updateAvailable();
-    });
-
-    this.ipcHandle('app:get-release-notes', async (): Promise<ReleaseNotesInfo> => {
-      return podmanDesktopUpdater.getReleaseNotes();
-    });
-
-    this.ipcHandle('app:getTitleBarText', async (_listener): Promise<string> => {
-      return product.name;
-    });
-
-    this.ipcHandle('app:getAppRepository', async (_listener): Promise<string | undefined> => {
-      return rootPackage.repository;
-    });
-
     this.ipcHandle('provider-registry:getProviderInfos', async (): Promise<ProviderInfo[]> => {
       return providerRegistry.getProviderInfos();
     });
@@ -1830,20 +1250,12 @@ export class PluginSystem {
       },
     );
 
-    this.ipcHandle('cli-tool-registry:getCliToolInfos', async (): Promise<CliToolInfo[]> => {
-      return cliToolRegistry.getCliToolInfos();
-    });
-
     this.ipcHandle(
       'troubleshooting:saveLogs',
       async (_listener, consoleLogs: { logType: LogType; message: string }[]): Promise<string[]> => {
         return troubleshooting.saveLogs(consoleLogs);
       },
     );
-
-    this.ipcHandle('cli-tool-registry:selectCliToolVersionToUpdate', async (_listener, id: string): Promise<string> => {
-      return cliToolRegistry.selectCliToolVersionToUpdate(id);
-    });
 
     this.ipcHandle(
       'cli-tool-registry:updateCliTool',
@@ -1877,13 +1289,6 @@ export class PluginSystem {
           .finally(() => {
             logger.onEnd();
           });
-      },
-    );
-
-    this.ipcHandle(
-      'cli-tool-registry:selectCliToolVersionToInstall',
-      async (_listener, id: string, latest = true): Promise<string> => {
-        return cliToolRegistry.selectCliToolVersionToInstall(id, latest);
       },
     );
 
@@ -1957,10 +1362,6 @@ export class PluginSystem {
       },
     );
 
-    this.ipcHandle('menu-registry:getContributedMenus', async (_, context: string): Promise<Menu[]> => {
-      return menuRegistry.getContributedMenus(context);
-    });
-
     this.ipcHandle(
       'kube-generator-registry:getKubeGeneratorsInfos',
       async (_, selector?: KubernetesGeneratorSelector): Promise<KubernetesGeneratorInfo[]> => {
@@ -1974,10 +1375,6 @@ export class PluginSystem {
         return commandRegistry.executeCommand(command, ...args);
       },
     );
-
-    this.ipcHandle('clipboard:writeText', async (_, text: string, type?: 'selection' | 'clipboard'): Promise<void> => {
-      return clipboard.writeText(text, type);
-    });
 
     this.ipcHandle(
       'provider-registry:onDidUpdateProviderStatus',
@@ -2057,18 +1454,6 @@ export class PluginSystem {
       return providerRegistry.initializeProvider(providerInternalId);
     });
 
-    this.ipcHandle('system:get-free-port', async (_, port: number): Promise<number> => {
-      return getFreePort(port);
-    });
-
-    this.ipcHandle('system:get-free-port-range', async (_, rangeSize: number): Promise<string> => {
-      return getFreePortRange(rangeSize);
-    });
-
-    this.ipcHandle('system:is-port-free', async (_, port: number): Promise<boolean> => {
-      return isFreePort(port);
-    });
-
     this.ipcHandle(
       'provider-registry:startReceiveLogs',
       async (
@@ -2115,374 +1500,6 @@ export class PluginSystem {
     );
 
     this.ipcHandle(
-      'showInputBox:value',
-      async (_listener, id: number, value: string | undefined, error?: string): Promise<void> => {
-        return inputQuickPickRegistry.onInputBoxValueEntered(id, value, error);
-      },
-    );
-
-    this.ipcHandle(
-      'showQuickPick:values',
-      async (_listener, id: number, indexes: number[] | undefined): Promise<void> => {
-        return inputQuickPickRegistry.onQuickPickValuesSelected(id, indexes);
-      },
-    );
-
-    this.ipcHandle(
-      'showInputBox:validate',
-      async (
-        _listener,
-        id: number,
-        value: string,
-      ): Promise<string | containerDesktopAPI.InputBoxValidationMessage | undefined | null> => {
-        return inputQuickPickRegistry.validate(id, value);
-      },
-    );
-
-    this.ipcHandle('showQuickPick:onSelect', async (_listener, id: number, selectedId: number): Promise<void> => {
-      return inputQuickPickRegistry.onDidSelectQuickPickItem(id, selectedId);
-    });
-
-    this.ipcHandle('showMessageBox', async (_listener, options: MessageBoxOptions): Promise<MessageBoxReturnValue> => {
-      return messageBox.showMessageBox(options);
-    });
-
-    this.ipcHandle(
-      'showMessageBox:onSelect',
-      async (_listener, id: number, index: number | undefined, dropdownIndex?: number): Promise<void> => {
-        return messageBox.onDidSelectButton(id, index, dropdownIndex);
-      },
-    );
-
-    this.ipcHandle(
-      'util:createHash',
-      async (_listener, input: string, algorithm: string = 'sha512'): Promise<string> => {
-        return createHash(algorithm, input);
-      },
-    );
-
-    this.ipcHandle('customPick:values', async (_listener, id: number, indexes: number[]): Promise<void> => {
-      return customPickRegistry.onConfirmSelection(id, indexes);
-    });
-
-    this.ipcHandle('customPick:close', async (_listener, id: number): Promise<void> => {
-      return customPickRegistry.onClose(id);
-    });
-
-    this.ipcHandle('image-registry:getRegistries', async (): Promise<readonly containerDesktopAPI.Registry[]> => {
-      return imageRegistry.getRegistries();
-    });
-
-    this.ipcHandle(
-      'image-registry:getSuggestedRegistries',
-      async (): Promise<containerDesktopAPI.RegistrySuggestedProvider[]> => {
-        return imageRegistry.getSuggestedRegistries();
-      },
-    );
-
-    this.ipcHandle('image-registry:hasAuthconfigForImage', async (_listener, imageName: string): Promise<boolean> => {
-      if (imageName.indexOf(',') !== -1) {
-        const allImageNames = imageName.split(',');
-        let hasAuth = false;
-        for (const imageName of allImageNames) {
-          hasAuth = hasAuth || imageRegistry.getAuthconfigForImage(imageName) !== undefined;
-        }
-        return hasAuth;
-      }
-      const authconfig = imageRegistry.getAuthconfigForImage(imageName);
-      return authconfig !== undefined;
-    });
-
-    this.ipcHandle('image-registry:getProviderNames', async (): Promise<string[]> => {
-      return imageRegistry.getProviderNames();
-    });
-
-    this.ipcHandle(
-      'image-registry:unregisterRegistry',
-      async (_listener, registry: containerDesktopAPI.Registry): Promise<void> => {
-        return imageRegistry.unregisterRegistry(registry);
-      },
-    );
-
-    // Check credentials for a registry
-    this.ipcHandle(
-      'image-registry:checkCredentials',
-      async (_listener, registryCreateOptions: containerDesktopAPI.RegistryCreateOptions): Promise<void> => {
-        return imageRegistry.checkCredentials(
-          registryCreateOptions.serverUrl,
-          registryCreateOptions.username,
-          registryCreateOptions.secret,
-        );
-      },
-    );
-
-    this.ipcHandle(
-      'image-registry:createRegistry',
-      async (
-        _listener,
-        providerName: string,
-        registryCreateOptions: containerDesktopAPI.RegistryCreateOptions,
-      ): Promise<void> => {
-        await imageRegistry.createRegistry(providerName, registryCreateOptions);
-      },
-    );
-
-    this.ipcHandle(
-      'image-registry:updateRegistry',
-      async (_listener, registry: containerDesktopAPI.Registry): Promise<void> => {
-        await imageRegistry.updateRegistry(registry);
-      },
-    );
-
-    this.ipcHandle(
-      'image-registry:searchImages',
-      async (_listener, options: ImageSearchOptions): Promise<ImageSearchResult[]> => {
-        return imageRegistry.searchImages(options);
-      },
-    );
-
-    this.ipcHandle(
-      'image-registry:listImageTags',
-      async (_listener, options: ImageTagsListOptions): Promise<string[]> => {
-        return imageRegistry.listImageTags(options);
-      },
-    );
-
-    this.ipcHandle(
-      'authentication-provider-registry:getAuthenticationProvidersInfo',
-      async (): Promise<readonly AuthenticationProviderInfo[]> => {
-        return authentication.getAuthenticationProvidersInfo();
-      },
-    );
-
-    this.ipcHandle(
-      'authentication-provider-registry:requestAuthenticationProviderSignOut',
-      async (_listener, providerId: string, sessionId): Promise<void> => {
-        return authentication.signOut(providerId, sessionId);
-      },
-    );
-
-    this.ipcHandle(
-      'authentication-provider-registry:requestAuthenticationProviderSignIn',
-      async (_listener, requestId: string): Promise<void> => {
-        await authentication.executeSessionRequest(requestId);
-      },
-    );
-
-    this.ipcHandle(
-      'configuration-registry:getConfigurationProperties',
-      async (): Promise<Record<string, IConfigurationPropertyRecordedSchema>> => {
-        return configurationRegistry.getConfigurationProperties();
-      },
-    );
-    this.ipcHandle(
-      'configuration-registry:getConfigurationValue',
-      async <T>(
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        scope?: containerDesktopAPI.ConfigurationScope,
-      ): Promise<T | undefined> => {
-        // extract parent key with first name before first . notation
-        const parentKey = key.substring(0, key.indexOf('.'));
-        // extract child key with first name after first . notation
-        const childKey = key.substring(key.indexOf('.') + 1);
-        return configurationRegistry.getConfiguration(parentKey, scope).get(childKey);
-      },
-    );
-
-    this.ipcHandle(
-      'list-organizer-registry:loadListConfig',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        availableColumns: string[],
-      ): Promise<ListOrganizerItem[]> => {
-        return listOrganizerRegistry.loadListConfig(key, availableColumns);
-      },
-    );
-
-    this.ipcHandle(
-      'list-organizer-registry:saveListConfig',
-      async (_listener: Electron.IpcMainInvokeEvent, key: string, items: ListOrganizerItem[]): Promise<void> => {
-        return listOrganizerRegistry.saveListConfig(key, items);
-      },
-    );
-
-    this.ipcHandle(
-      'list-organizer-registry:resetListConfig',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        availableColumns: string[],
-      ): Promise<ListOrganizerItem[]> => {
-        return listOrganizerRegistry.resetListConfig(key, availableColumns);
-      },
-    );
-
-    this.ipcHandle(
-      'configuration-registry:updateConfigurationValue',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        value: unknown,
-        scope?: containerDesktopAPI.ConfigurationScope | containerDesktopAPI.ConfigurationScope[],
-      ): Promise<void> => {
-        return configurationRegistry.updateConfigurationValue(key, value, scope);
-      },
-    );
-
-    this.ipcHandle(
-      'experimental-configuration-manager:updateExperimentalConfigurationValue',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        value: unknown,
-        scope?: containerDesktopAPI.ConfigurationScope | containerDesktopAPI.ConfigurationScope[],
-      ): Promise<void> => {
-        return experimentalConfigurationManager.updateExperimentalConfigurationValue(key, value, scope);
-      },
-    );
-
-    this.ipcHandle(
-      'experimental-configuration-manager:isExperimentalConfigurationEnabled',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        scope?: containerDesktopAPI.ConfigurationScope | containerDesktopAPI.ConfigurationScope[],
-      ): Promise<boolean> => {
-        return experimentalConfigurationManager.isExperimentalConfigurationEnabled(key, scope);
-      },
-    );
-
-    this.ipcHandle(
-      'experimental-configuration-manager:enableExperimentalConfiguration',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        scope?: containerDesktopAPI.ConfigurationScope | containerDesktopAPI.ConfigurationScope[],
-      ): Promise<void> => {
-        return experimentalConfigurationManager.enableExperimentalConfiguration(key, scope);
-      },
-    );
-
-    this.ipcHandle(
-      'experimental-configuration-manager:disableExperimentalConfiguration',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        scope?: containerDesktopAPI.ConfigurationScope | containerDesktopAPI.ConfigurationScope[],
-      ): Promise<void> => {
-        return experimentalConfigurationManager.disableExperimentalConfiguration(key, scope);
-      },
-    );
-
-    this.ipcHandle('contributions:listContributions', async (): Promise<ContributionInfo[]> => {
-      return contributionManager.listContributions();
-    });
-
-    this.ipcHandle('extension-loader:listExtensions', async (): Promise<ExtensionInfo[]> => {
-      return this.extensionLoader.listExtensions();
-    });
-
-    this.ipcHandle('featured:getFeaturedExtensions', async (): Promise<FeaturedExtension[]> => {
-      return featured.getFeaturedExtensions();
-    });
-
-    this.ipcHandle('recommended:getExtensionBanners', async (): Promise<ExtensionBanner[]> => {
-      return recommendationsRegistry.getExtensionBanners();
-    });
-
-    this.ipcHandle('recommended:getRegistries', async (): Promise<RecommendedRegistry[]> => {
-      return recommendationsRegistry.getRegistries();
-    });
-
-    this.ipcHandle('catalog:getExtensions', async (): Promise<CatalogExtension[]> => {
-      return extensionsCatalog.getExtensions();
-    });
-
-    this.ipcHandle('catalog:refreshExtensions', async (): Promise<void> => {
-      return extensionsCatalog.refreshCatalog();
-    });
-
-    this.ipcHandle('documentation:getItems', async (): Promise<DocumentationInfo[]> => {
-      return documentationService.getDocumentationItems();
-    });
-
-    this.ipcHandle('documentation:refresh', async (): Promise<void> => {
-      return documentationService.refreshDocumentation();
-    });
-
-    this.ipcHandle('commands:getCommandPaletteCommands', async (): Promise<CommandInfo[]> => {
-      return commandRegistry.getCommandPaletteCommands();
-    });
-
-    this.ipcHandle('commands:getCommandPaletteSearchOptions', async (): Promise<CommandPaletteSearchOption[]> => {
-      return commandRegistry.getCommandPaletteSearchOptions();
-    });
-
-    this.ipcHandle(
-      'extension-loader:stopExtension',
-      async (_listener: Electron.IpcMainInvokeEvent, extensionId: string): Promise<void> => {
-        return this.extensionLoader.stopExtension(extensionId);
-      },
-    );
-    this.ipcHandle(
-      'extension-loader:startExtension',
-      async (_listener: Electron.IpcMainInvokeEvent, extensionId: string): Promise<void> => {
-        return this.extensionLoader.startExtension(extensionId);
-      },
-    );
-    this.ipcHandle(
-      'extension-updater:updateExtension',
-      async (_listener: Electron.IpcMainInvokeEvent, extensionId: string, ociUri: string): Promise<void> => {
-        return extensionsUpdater.updateExtension(extensionId, ociUri);
-      },
-    );
-    this.ipcHandle(
-      'extension-loader:removeExtension',
-      async (_listener: Electron.IpcMainInvokeEvent, extensionId: string): Promise<void> => {
-        return this.extensionLoader.removeExtensionPerUserRequest(extensionId);
-      },
-    );
-
-    this.ipcHandle(
-      'extension-loader:ensureExtensionIsEnabled',
-      async (_listener: Electron.IpcMainInvokeEvent, extensionId: string): Promise<void> => {
-        return this.extensionLoader.ensureExtensionIsEnabled(extensionId);
-      },
-    );
-
-    this.ipcHandle(
-      'shell:openExternal',
-      async (_listener: Electron.IpcMainInvokeEvent, link: string): Promise<void> => {
-        if (securityRestrictionCurrentHandler.handler) {
-          await securityRestrictionCurrentHandler.handler(link);
-        } else {
-          await shell.openExternal(link);
-        }
-      },
-    );
-
-    this.ipcHandle('os:getPlatform', async (): Promise<string> => {
-      return os.platform();
-    });
-    this.ipcHandle('os:getArch', async (): Promise<string> => {
-      return os.arch();
-    });
-    this.ipcHandle('os:getHostname', async (): Promise<string> => {
-      return os.hostname();
-    });
-    this.ipcHandle('os:getHostFreeDiskSize', async (): Promise<number> => {
-      return (await checkDiskSpace(os.homedir())).free;
-    });
-    this.ipcHandle('os:getHostMemory', async (): Promise<number> => {
-      return os.totalmem();
-    });
-    this.ipcHandle('os:getHostCpu', async (): Promise<number> => {
-      return os.cpus().length;
-    });
-
-    this.ipcHandle(
       'provider-registry:startProviderLifecycle',
       async (_listener: Electron.IpcMainInvokeEvent, providerId: string): Promise<void> => {
         return providerRegistry.startProviderLifecycle(providerId);
@@ -2495,31 +1512,6 @@ export class PluginSystem {
         return providerRegistry.stopProviderLifecycle(providerId);
       },
     );
-
-    this.ipcHandle(
-      'proxy:updateSettings',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        proxySettings: containerDesktopAPI.ProxySettings,
-      ): Promise<void> => {
-        return proxy.setProxy(proxySettings);
-      },
-    );
-
-    this.ipcHandle(
-      'proxy:setState',
-      async (_listener: Electron.IpcMainInvokeEvent, state: ProxyState): Promise<void> => {
-        return proxy.setState(state);
-      },
-    );
-
-    this.ipcHandle('proxy:getSettings', async (): Promise<containerDesktopAPI.ProxySettings | undefined> => {
-      return proxy.proxy;
-    });
-
-    this.ipcHandle('proxy:getState', async (): Promise<ProxyState> => {
-      return proxy.getState();
-    });
 
     this.ipcHandle(
       'provider-registry:startProviderConnectionLifecycle',
@@ -3122,148 +2114,6 @@ export class PluginSystem {
       return kubernetesClient.refreshContextState(context);
     });
 
-    this.ipcHandle('feedback:send', async (_listener, feedbackProperties: FeedbackProperties): Promise<void> => {
-      return telemetry.sendFeedback(feedbackProperties);
-    });
-
-    this.ipcHandle('feedback:GitHubPreview', async (_listener, properties: GitHubIssue): Promise<void> => {
-      return feedback.openGitHubIssue(properties);
-    });
-
-    this.ipcHandle(
-      'feedback:getGitHubFeedbackLinks',
-      async (_listener): Promise<{ [category: string]: string } | undefined> => {
-        return feedback.getGitHubFeedbackLinks();
-      },
-    );
-
-    this.ipcHandle(
-      'feedback:getFeedbackLinks',
-      async (_listener): Promise<{ [category: string]: string } | undefined> => {
-        return feedback.getFeedbackLinks();
-      },
-    );
-
-    this.ipcHandle('feedback:getFeedbackMessages', async (): Promise<FeedbackMessages> => {
-      return feedback.getFeedbackMessages();
-    });
-
-    this.ipcHandle('cancellableTokenSource:create', async (): Promise<number> => {
-      return cancellationTokenRegistry.createCancellationTokenSource();
-    });
-
-    this.ipcHandle('cancellableToken:cancel', async (_listener, id: number): Promise<void> => {
-      const tokenSource = cancellationTokenRegistry.getCancellationTokenSource(id);
-      if (!tokenSource?.token.isCancellationRequested) {
-        tokenSource?.dispose(true);
-      }
-    });
-
-    this.ipcHandle('telemetry:getTelemetryMessages', async (): Promise<TelemetryMessages> => {
-      return telemetry.getTelemetryMessages();
-    });
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.ipcHandle(
-      'telemetry:track',
-      async (_listener, event: string, eventProperties?: FeedbackProperties): Promise<void> => {
-        return telemetry.track(event, eventProperties);
-      },
-    );
-
-    this.ipcHandle('telemetry:page', async (_listener, name: string): Promise<void> => {
-      return telemetry.track(EventType.PAGE, { name: name });
-    });
-
-    this.ipcHandle('telemetry:configure', async (): Promise<void> => {
-      return telemetry.configureTelemetry();
-    });
-
-    this.ipcHandle('app:getVersion', async (): Promise<string> => {
-      return app.getVersion();
-    });
-
-    this.ipcHandle('iconRegistry:listIcons', async (): Promise<IconInfo[]> => {
-      return iconRegistry.listIcons();
-    });
-
-    this.ipcHandle('colorRegistry:listColors', async (_listener, themeId: string): Promise<ColorInfo[]> => {
-      return colorRegistry.listColors(themeId);
-    });
-
-    this.ipcHandle('colorRegistry:getThemeInfo', async (_listener, themeId: string): Promise<ThemeInfo> => {
-      return colorRegistry.getThemeInfo(themeId);
-    });
-
-    this.ipcHandle('viewRegistry:listViewsContributions', async (_listener): Promise<ViewInfoUI[]> => {
-      return viewRegistry.listViewsContributions();
-    });
-
-    this.ipcHandle('webview:devtools:register', async (_listener, webcontentId: number): Promise<void> => {
-      return webviewRegistry.registerWebviewDevTools(webcontentId);
-    });
-
-    this.ipcHandle('webview:devtools:cleanup', async (_listener, webcontentId: number): Promise<void> => {
-      return webviewRegistry.cleanupWebviewDevTools(webcontentId);
-    });
-
-    this.ipcHandle('webviewRegistry:listWebviews', async (_listener): Promise<WebviewInfo[]> => {
-      return webviewRegistry.listWebviews();
-    });
-    this.ipcHandle(
-      'webviewRegistry:post-message',
-      async (_listener, id: string, message: { data: unknown }): Promise<void> => {
-        return webviewRegistry.postMessageToWebview(id, message);
-      },
-    );
-    this.ipcHandle('webviewRegistry:update-state', async (_listener, id: string, state: unknown): Promise<void> => {
-      return webviewRegistry.updateWebviewState(id, state);
-    });
-
-    this.ipcHandle('webviewRegistry:makeDefaultWebviewVisible', async (_listener, webviewId: string): Promise<void> => {
-      return webviewRegistry.makeDefaultWebviewVisible(webviewId);
-    });
-
-    this.ipcHandle('viewRegistry:fetchViewsContributions', async (_listener, id: string): Promise<ViewInfoUI[]> => {
-      return viewRegistry.fetchViewsContributions(id);
-    });
-
-    this.ipcHandle('window:minimize', async (): Promise<void> => {
-      const window = BrowserWindow.getAllWindows().find(w => !w.isDestroyed());
-      if (!window) {
-        return;
-      }
-      window.minimize();
-    });
-
-    this.ipcHandle('window:maximize', async (): Promise<void> => {
-      const window = BrowserWindow.getAllWindows().find(w => !w.isDestroyed());
-      if (!window) {
-        return;
-      }
-      if (window.isMaximized()) {
-        window.unmaximize();
-        return;
-      }
-      window.maximize();
-    });
-
-    this.ipcHandle('window:close', async (): Promise<void> => {
-      const window = BrowserWindow.getAllWindows().find(w => !w.isDestroyed());
-      if (!window) {
-        return;
-      }
-      window.close();
-    });
-
-    this.ipcHandle('welcome:getWelcomeMessages', async (): Promise<WelcomeMessages> => {
-      return welcome.getWelcomeMessages();
-    });
-
-    this.ipcHandle('product:getUrlProtocol', async (): Promise<string> => {
-      return product.urlProtocol;
-    });
-
     this.ipcHandle(
       'navigation:navigateToRoute',
       async (_listener, routeId: string, ...args: unknown[]): Promise<void> => {
@@ -3278,190 +2128,12 @@ export class PluginSystem {
       },
     );
 
-    this.ipcHandle('onboardingRegistry:listOnboarding', async (): Promise<OnboardingInfo[]> => {
-      return onboardingRegistry.listOnboarding();
-    });
-
-    this.ipcHandle(
-      'onboardingRegistry:getOnboarding',
-      async (_listener, extension: string): Promise<OnboardingInfo | undefined> => {
-        return onboardingRegistry.getOnboarding(extension);
-      },
-    );
-
-    this.ipcHandle(
-      'onboardingRegistry:updateStepState',
-      async (_listener, status: OnboardingStatus, extension: string, stepId?: string): Promise<void> => {
-        return onboardingRegistry.updateStepState(status, extension, stepId);
-      },
-    );
-
-    this.ipcHandle('onboardingRegistry:resetOnboarding', async (_listener, extensions: string[]): Promise<void> => {
-      return onboardingRegistry.resetOnboarding(extensions);
-    });
-
-    this.ipcHandle('notificationRegistry:listNotifications', async (): Promise<NotificationCard[]> => {
-      return notificationRegistry.getNotifications();
-    });
-
-    this.ipcHandle(
-      'notificationRegistry:addNotification',
-      async (_listener, notification: NotificationCardOptions): Promise<void> => {
-        notificationRegistry.addNotification(notification);
-      },
-    );
-
-    this.ipcHandle('notificationRegistry:removeNotification', async (_listener, id: number): Promise<void> => {
-      return notificationRegistry.removeNotificationById(id);
-    });
-
-    this.ipcHandle('notificationRegistry:clearNotificationsQueue', async (): Promise<void> => {
-      return notificationRegistry.removeAll();
-    });
-
-    this.ipcHandle('image-checker:getProviders', async (): Promise<ImageCheckerInfo[]> => {
-      return imageChecker.getImageCheckerProviders();
-    });
-
-    this.ipcHandle(
-      'image-checker:check',
-      async (
-        _listener,
-        id: string,
-        image: ImageInfo,
-        tokenId?: number,
-      ): Promise<containerDesktopAPI.ImageChecks | undefined> => {
-        let token;
-        if (tokenId) {
-          const tokenSource = cancellationTokenRegistry.getCancellationTokenSource(tokenId);
-          token = tokenSource?.token;
-        }
-        return imageChecker.check(id, image, token);
-      },
-    );
-
-    this.ipcHandle('image-files:getProviders', async (): Promise<ImageFilesInfo[]> => {
-      return imageFiles.getImageFilesProviders();
-    });
-
-    this.ipcHandle(
-      'image-files:getFilesystemLayers',
-      async (
-        _listener,
-        id: string,
-        image: ImageInfo,
-        tokenId?: number,
-      ): Promise<ImageFilesystemLayersUI | undefined> => {
-        let token;
-        if (tokenId) {
-          const tokenSource = cancellationTokenRegistry.getCancellationTokenSource(tokenId);
-          token = tokenSource?.token;
-        }
-        return imageFiles.getFilesystemLayers(id, image, token);
-      },
-    );
-
-    this.ipcHandle('webview:get-preload-script', async (): Promise<string> => {
-      const preloadScriptPath = path.join(__dirname, '../../preload-webview/dist/index.cjs');
-      return `file://${preloadScriptPath}`;
-    });
-
-    this.ipcHandle('webview:get-registry-http-port', async (): Promise<number> => {
-      return webviewRegistry.getRegistryHttpPort();
-    });
-
-    this.ipcHandle('learning-center:listGuides', async () => {
-      return downloadGuideList();
-    });
-
-    this.ipcHandle('explore-features:listFeatures', async () => {
-      return exploreFeatures.downloadFeaturesList();
-    });
-
-    this.ipcHandle('explore-features:closeFeatureCard', async (_listener, featureId: string): Promise<void> => {
-      return exploreFeatures.closeFeatureCard(featureId);
-    });
-
-    this.ipcHandle(
-      'dialog:openDialog',
-      async (_listener, dialogId: string, options: containerDesktopAPI.OpenDialogOptions): Promise<void> => {
-        dialogRegistry.openDialog(options, dialogId).catch((error: unknown) => {
-          console.error('Error opening dialog', error);
-        });
-      },
-    );
-    this.ipcHandle(
-      'dialog:saveDialog',
-      async (
-        _listener,
-        dialogId: string,
-        options: containerDesktopAPI.SaveDialogOptions,
-      ): Promise<containerDesktopAPI.Uri | undefined> => {
-        return dialogRegistry.saveDialog(options, dialogId);
-      },
-    );
-    this.ipcHandle(
-      'context:collectAllValues',
-      async (): Promise<Record<string, unknown>> => context.collectAllValues(),
-    );
-
-    this.ipcHandle(
-      'docker-compatibility:getSystemDockerSocketMappingStatus',
-      async (): Promise<DockerSocketMappingStatusInfo> => {
-        return dockerCompatibility.getSystemDockerSocketMappingStatus();
-      },
-    );
-
-    this.ipcHandle('path:relative', async (_listener, from: string, to: string): Promise<string> => {
-      return path.relative(from, to);
-    });
-
-    this.ipcHandle(
-      'extension-development-folders:getDevelopmentFolders',
-      async (): Promise<ExtensionDevelopmentFolderInfo[]> => {
-        return extensionDevelopmentFolders.getDevelopmentFolders();
-      },
-    );
-
-    this.ipcHandle(
-      'extension-development-folders:addDevelopmentFolder',
-      async (_listener: unknown, path: string): Promise<void> => {
-        return extensionDevelopmentFolders.addDevelopmentFolder(path);
-      },
-    );
-
-    this.ipcHandle(
-      'extension-development-folders:removeDevelopmentFolder',
-      async (_listener: unknown, path: string): Promise<void> => {
-        return extensionDevelopmentFolders.removeDevelopmentFolder(path);
-      },
-    );
-
-    this.ipcHandle(
-      'extension-development:getExtensionDevelopmentDocsLink',
-      async (_listener): Promise<string | undefined> => {
-        return product.extensions.developmentDocumentation;
-      },
-    );
-
     this.ipcHandle(
       'kubernetes:getTroubleshootingInformation',
       async (_listener: unknown): Promise<KubernetesTroubleshootingInformation> => {
         return kubernetesClient.getTroubleshootingInformation();
       },
     );
-
-    this.ipcHandle('statusbar:pin:get-options', async (): Promise<Array<PinOption>> => {
-      return pinRegistry.getOptions();
-    });
-
-    this.ipcHandle('statusbar:pin', async (_listener, optionId: string): Promise<void> => {
-      return pinRegistry.pin(optionId);
-    });
-
-    this.ipcHandle('statusbar:unpin', async (_listener, optionId: string): Promise<void> => {
-      return pinRegistry.unpin(optionId);
-    });
 
     const dockerDesktopInstallation = new DockerDesktopInstallation(
       apiSender,
@@ -3498,6 +2170,11 @@ export class PluginSystem {
     autoStartEngine.start().catch((err: unknown) => console.error('Unable to perform autostart', err));
     await exploreFeatures.init();
     apiSender.send('explore-features-loaded');
+
+    container.load(routersModule);
+    const rpcHandler = container.get<RpcHandler>(RpcHandler);
+    rpcHandler.init(container);
+
     return this.extensionLoader;
   }
 

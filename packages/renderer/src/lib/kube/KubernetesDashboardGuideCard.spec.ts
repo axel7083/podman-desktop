@@ -22,6 +22,8 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { expect, test } from 'vitest';
 
+import { client } from '/@/client';
+
 import KubernetesDashboardGuideCard from './KubernetesDashboardGuideCard.svelte';
 
 test('Verify basic card format', async () => {
@@ -51,9 +53,12 @@ test('Expect clicking works', async () => {
   expect(button).toBeInTheDocument();
 
   await userEvent.click(button);
-  expect(window.openExternal).toHaveBeenCalledWith(params.link);
-  expect(window.telemetryTrack).toHaveBeenCalledWith('kubernetes.dashboard.guide', {
-    title: params.title,
-    link: params.link,
+  expect(client.system.openExternal).toHaveBeenCalledWith({ link: params.link });
+  expect(client.telemetry.track).toHaveBeenCalledWith({
+    event: 'kubernetes.dashboard.guide',
+    eventProperties: {
+      title: params.title,
+      link: params.link,
+    },
   });
 });

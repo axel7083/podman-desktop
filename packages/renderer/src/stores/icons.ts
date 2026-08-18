@@ -20,6 +20,8 @@ import type { IconInfo } from '@podman-desktop/core-api';
 import type { Writable } from 'svelte/store';
 import { writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = ['icon-update', 'extension-stopped', 'extensions-started'];
@@ -39,7 +41,7 @@ export const iconsInfos: Writable<IconInfo[]> = writable([]);
 
 // use helper here as window methods are initialized after the store in tests
 const listIcons = (): Promise<IconInfo[]> => {
-  return window.listIcons();
+  return client.uiRegistry.listIcons();
 };
 
 const iconsEventStore = new EventStore<IconInfo[]>(

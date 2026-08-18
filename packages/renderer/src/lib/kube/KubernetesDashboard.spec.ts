@@ -23,8 +23,9 @@ import type { ContextGeneralState, ContextPermission, KubeContext, ResourceCount
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { readable, writable } from 'svelte/store';
-import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { listenActiveResourcesCount } from '/@/lib/kube/active-resources-count-listen';
 import * as kubernetesPermissions from '/@/stores/kubernetes-context-permission';
 import { kubernetesContexts } from '/@/stores/kubernetes-contexts';
@@ -50,15 +51,6 @@ vi.mock(import('/@/lib/kube/active-resources-count-listen'));
 
 vi.mock(import('/@/stores/kubernetes-context-permission'));
 vi.mock(import('/@/stores/kubernetes-no-current-context'));
-
-const openExternalMock = vi.fn();
-
-// fake the window object
-beforeAll(() => {
-  Object.defineProperty(window, 'openExternal', {
-    value: openExternalMock,
-  });
-});
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -92,9 +84,9 @@ test('Verify documentation link works', async () => {
   const docs = screen.getByText('Kubernetes documentation');
   expect(docs).toBeInTheDocument();
 
-  expect(openExternalMock).not.toHaveBeenCalled();
+  expect(client.system.openExternal).not.toHaveBeenCalled();
   await userEvent.click(docs);
-  expect(openExternalMock).toHaveBeenCalledWith('https://podman-desktop.io/docs/kubernetes');
+  expect(client.system.openExternal).toHaveBeenCalledWith({ link: 'https://podman-desktop.io/docs/kubernetes' });
 });
 
 test('Verify basic page with cluster', async () => {

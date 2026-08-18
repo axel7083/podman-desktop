@@ -25,14 +25,6 @@ import PreferencesDockerCompatibilityRendering from './PreferencesDockerCompatib
 
 beforeAll(() => {
   vi.resetAllMocks();
-  Object.defineProperty(global, 'window', {
-    value: {
-      getOsPlatform: vi.fn(),
-      getSystemDockerSocketMappingStatus: vi.fn(),
-      getDockerContexts: vi.fn().mockResolvedValue([]),
-    },
-    writable: true,
-  });
 });
 
 test('Expect title is displayed', async () => {

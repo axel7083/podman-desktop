@@ -6,6 +6,7 @@ import { FitAddon } from '@xterm/addon-fit';
 import { Terminal } from '@xterm/xterm';
 import { createEventDispatcher, onDestroy, onMount } from 'svelte';
 
+import { client } from '/@/client';
 import { getTerminalTheme } from '/@/lib/terminal/terminal-theme';
 import TerminalSearchControls from '/@/lib/ui/TerminalSearchControls.svelte';
 
@@ -40,16 +41,16 @@ async function refreshTerminal(): Promise<void> {
     return;
   }
   // grab font size
-  const fontSize = await window.getConfigurationValue<number>(
-    TerminalSettings.SectionName + '.' + TerminalSettings.FontSize,
-  );
-  const lineHeight = await window.getConfigurationValue<number>(
-    TerminalSettings.SectionName + '.' + TerminalSettings.LineHeight,
-  );
+  const fontSize = (await client.configuration.getValue({
+    key: TerminalSettings.SectionName + '.' + TerminalSettings.FontSize,
+  })) as number | undefined;
+  const lineHeight = (await client.configuration.getValue({
+    key: TerminalSettings.SectionName + '.' + TerminalSettings.LineHeight,
+  })) as number | undefined;
 
-  const scrollback = await window.getConfigurationValue<number>(
-    TerminalSettings.SectionName + '.' + TerminalSettings.Scrollback,
-  );
+  const scrollback = (await client.configuration.getValue({
+    key: TerminalSettings.SectionName + '.' + TerminalSettings.Scrollback,
+  })) as number | undefined;
 
   terminal = new Terminal({
     fontSize,

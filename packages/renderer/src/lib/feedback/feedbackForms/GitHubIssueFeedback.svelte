@@ -3,6 +3,7 @@ import type { GitHubFeedbackCategory, GitHubIssue } from '@podman-desktop/core-a
 import { Button, Checkbox, ErrorMessage, Link } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import FeedbackForm from '/@/lib/feedback/FeedbackForm.svelte';
 
 interface Props {
@@ -41,12 +42,12 @@ let existingIssuesLink = $derived(category === 'bug' ? categoryLinks.bug : categ
 $effect(() => contentChange(Boolean(issueTitle || issueDescription)));
 
 onMount(async () => {
-  await window.telemetryTrack(`feedback.FormOpened`, { feedbackCategory: category });
+  await client.telemetry.track({ event: 'feedback.FormOpened', eventProperties: { feedbackCategory: category } });
 });
 
 async function openGitHubIssues(): Promise<void> {
   if (existingIssuesLink || categoryLinks.issues) {
-    await window.openExternal(existingIssuesLink ?? categoryLinks.issues);
+    await client.system.openExternal({ link: existingIssuesLink ?? categoryLinks.issues });
   }
 }
 
@@ -60,8 +61,8 @@ async function previewOnGitHub(): Promise<void> {
   };
   let telemetryEventProperties: { [property: string]: unknown } = { feedbackCategory: category };
 
-  window
-    .previewOnGitHub(issueProperties)
+  client.feedback
+    .githubPreview({ properties: issueProperties })
     .then(() => {
       onCloseForm(false);
     })
@@ -70,8 +71,8 @@ async function previewOnGitHub(): Promise<void> {
       console.error('There was a problem with preview on GitHub', error);
     })
     .finally(() => {
-      window
-        .telemetryTrack(`feedback.FormSubmitted`, telemetryEventProperties)
+      client.telemetry
+        .track({ event: 'feedback.FormSubmitted', eventProperties: telemetryEventProperties })
         .catch((err: unknown) => console.error('Error sending feedback.formSubmitted telemetry', err));
     });
 }

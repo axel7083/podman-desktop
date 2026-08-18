@@ -27,6 +27,7 @@ import type { IConfigurationPropertyRecordedSchema } from '@podman-desktop/core-
 import { CONFIGURATION_DEFAULT_SCOPE } from '@podman-desktop/core-api/configuration';
 import type { Terminal } from '@xterm/xterm';
 
+import { client } from '/@/client';
 import type { ContextUI } from '/@/lib/context/context';
 import { ContextKeyExpr } from '/@/lib/context/contextKey';
 
@@ -107,7 +108,7 @@ export function isDefaultScope(scope?: ConfigurationScope | ConfigurationScope[]
 export async function getInitialValue(property: IConfigurationPropertyRecordedSchema): Promise<unknown> {
   if (isDefaultScope(property.scope)) {
     if (property.id) {
-      let value = await window.getConfigurationValue(property.id, CONFIGURATION_DEFAULT_SCOPE);
+      let value = await client.configuration.getValue({ key: property.id, scope: CONFIGURATION_DEFAULT_SCOPE });
       if (property.type === 'boolean') {
         value = !!value;
       }

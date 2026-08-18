@@ -4,6 +4,8 @@ import type { CheckStatus } from '@podman-desktop/core-api';
 import { Link, Spinner } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
+
 interface Props {
   preflightChecks: CheckStatus[];
 }
@@ -11,7 +13,7 @@ interface Props {
 let { preflightChecks }: Props = $props();
 
 async function openLink(url: string): Promise<void> {
-  await window.openExternal(url);
+  await client.system.openExternal({ link: url });
 }
 </script>
 

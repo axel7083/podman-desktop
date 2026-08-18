@@ -22,17 +22,17 @@ import { render, screen } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import PreferencesResourcesRenderingCopyButton from './PreferencesResourcesRenderingCopyButton.svelte';
 
-const getOsPlatformMock = vi.fn();
-
 beforeEach(() => {
-  Object.defineProperty(window, 'getOsPlatform', { value: getOsPlatformMock });
+  vi.resetAllMocks();
 });
 
 describe('Windows', () => {
   test('Expect copy in clipboard', async () => {
-    getOsPlatformMock.mockResolvedValue('win32');
+    vi.mocked(client.system.getPlatform).mockResolvedValue('win32');
 
     const socketPath = '/socket';
 
@@ -44,7 +44,7 @@ describe('Windows', () => {
 
 describe('macOS', () => {
   test('Expect copy in clipboard', async () => {
-    getOsPlatformMock.mockResolvedValue('darwin');
+    vi.mocked(client.system.getPlatform).mockResolvedValue('darwin');
 
     const socketPath = '/socket';
 
@@ -56,7 +56,7 @@ describe('macOS', () => {
 
 describe('Linux', () => {
   test('Expect copy in clipboard', async () => {
-    getOsPlatformMock.mockResolvedValue('linux');
+    vi.mocked(client.system.getPlatform).mockResolvedValue('linux');
 
     const socketPath = '/socket';
 

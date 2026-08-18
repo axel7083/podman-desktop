@@ -5,6 +5,7 @@ import { Button, Checkbox } from '@podman-desktop/ui-svelte';
 import { onDestroy, onMount } from 'svelte';
 import type { Unsubscriber } from 'svelte/store';
 
+import { client } from '/@/client';
 import { imageFilesProviders } from '/@/stores/image-files-providers';
 
 import FilesystemLayerView from './FilesystemLayerView.svelte';
@@ -34,8 +35,12 @@ function onSelectedLayer(event: CustomEvent<ImageFilesystemLayerUI>): void {
 async function fetchImageLayers(provider: ImageFilesInfo, img: ImageInfo): Promise<void> {
   try {
     loading = true;
-    cancellableTokenId = await window.getCancellableTokenSource();
-    imageLayers = await window.imageGetFilesystemLayers(provider.id, $state.snapshot(img), cancellableTokenId);
+    cancellableTokenId = await client.cancellation.createTokenSource();
+    imageLayers = await client.imageRegistry.getFilesystemLayers({
+      id: provider.id,
+      image: $state.snapshot(img),
+      tokenId: cancellableTokenId,
+    });
   } catch (err: unknown) {
     error = String(err);
   } finally {
@@ -52,7 +57,9 @@ async function onFetchLayers(): Promise<void> {
 
 onMount(async () => {
   try {
-    const value = await window.getConfigurationValue<boolean>('userConfirmation.fetchImageFiles');
+    const value = (await client.configuration.getValue({ key: 'userConfirmation.fetchImageFiles' })) as
+      | boolean
+      | undefined;
     if (value !== undefined) {
       askFetchLayers = value;
     }
@@ -74,7 +81,7 @@ onMount(async () => {
 });
 
 onDestroy(async () => {
-  await window.cancelToken(cancellableTokenId);
+  await client.cancellation.cancelToken({ id: cancellableTokenId });
   filesProvidersUnsubscribe?.();
 });
 </script>

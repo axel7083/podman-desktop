@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Button, EmptyScreen } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
 import ImageIcon from '/@/lib/images/ImageIcon.svelte';
 import { providerInfos } from '/@/stores/providers';
 
@@ -17,7 +18,7 @@ let pullInProgress = $state(false);
 
 async function pullFirstImage(): Promise<void> {
   if (!selectedProviderConnection) {
-    await window.showMessageBox({
+    await client.dialog.showMessageBox({
       title: 'Pull Image Failed',
       message: `No provider connections found`,
       type: 'error',
@@ -31,7 +32,7 @@ async function pullFirstImage(): Promise<void> {
     await window.pullImage(selectedProviderConnection, firstImageName, () => {});
   } catch (error: unknown) {
     const errorMessage = error && typeof error === 'object' && 'message' in error ? error.message : error;
-    await window.showMessageBox({
+    await client.dialog.showMessageBox({
       title: 'Pull Image Failed',
       message: `Error while pulling image from ${selectedProviderConnection.name}: ${errorMessage}`,
       type: 'error',
@@ -47,7 +48,7 @@ async function pullFirstImage(): Promise<void> {
   title="No images"
   message="Pull a first image using the following command line:"
   commandline={commandLine}
-  onclick={(): Promise<void> => window.clipboardWriteText(commandLine)}>
+  onclick={(): Promise<void> => client.system.clipboardWriteText({ text: commandLine })}>
   {#snippet upperContent()}
     <span class="text-[var(--pd-details-empty-sub-header)] max-w-[800px] text-pretty mx-2"
       >Pull a first image by clicking on this button:</span>

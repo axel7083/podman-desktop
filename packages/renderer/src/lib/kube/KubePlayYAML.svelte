@@ -6,6 +6,7 @@ import { NavigationPage } from '@podman-desktop/core-api';
 import { Button, Checkbox, ErrorMessage } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
 import MonacoEditor from '/@/lib/editor/MonacoEditor.svelte';
 import ContainerConnectionDropdown from '/@/lib/forms/ContainerConnectionDropdown.svelte';
 import NoContainerEngineEmptyScreen from '/@/lib/image/NoContainerEngineEmptyScreen.svelte';
@@ -79,7 +80,7 @@ function removeEmptyOrNull(obj: object): object {
 async function cancel(): Promise<void> {
   if (cancellableTokenId === undefined) return;
 
-  return window.cancelToken(cancellableTokenId);
+  return client.cancellation.cancelToken({ id: cancellableTokenId });
 }
 
 async function playKubeFile(): Promise<void> {
@@ -94,7 +95,7 @@ async function playKubeFile(): Promise<void> {
 
     if (userChoice === 'custom') {
       // Create a temporary file with the custom YAML content
-      tempFilePath = await window.createTempFile(customYamlContent);
+      tempFilePath = await client.tempFile.create({ content: customYamlContent });
       yamlFilePath = tempFilePath;
     } else {
       yamlFilePath = kubernetesYamlFilePath!;
@@ -102,7 +103,7 @@ async function playKubeFile(): Promise<void> {
 
     if (yamlFilePath && selectedProviderConnection) {
       try {
-        cancellableTokenId = await window.getCancellableTokenSource();
+        cancellableTokenId = await client.cancellation.createTokenSource();
 
         const result = await window.playKube(yamlFilePath, $state.snapshot(selectedProviderConnection), {
           build: $state.snapshot(kubeBuild),
@@ -162,7 +163,7 @@ async function playKubeFile(): Promise<void> {
     // Always cleanup temp file if one was created
     if (tempFilePath && userChoice === 'custom') {
       try {
-        await window.removeTempFile(tempFilePath);
+        await client.tempFile.remove({ filePath: tempFilePath });
       } catch (error) {
         console.warn('Failed to cleanup temporary file:', error);
         // Don't show this error to the user as it's not critical

@@ -23,6 +23,7 @@ import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { readable } from 'svelte/store';
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { kubernetesContextsHealths } from '/@/stores/kubernetes-context-health';
 import { kubernetesContextsPermissions } from '/@/stores/kubernetes-context-permission';
 import { kubernetesContexts } from '/@/stores/kubernetes-contexts';
@@ -163,7 +164,7 @@ test('Test that context-name2 is the current context', async () => {
 test('when deleting the current context, a popup should ask confirmation', async () => {
   vi.mocked(kubernetesContextsState).kubernetesContextsState = readable<Map<string, ContextGeneralState>>(new Map());
   vi.mocked(kubernetesContextsState).kubernetesContextsCheckingStateDelayed = readable<Map<string, boolean>>(new Map());
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 
   render(PreferencesKubernetesContextsRendering, {});
   const currentContext = screen.getAllByRole('row')[1];
@@ -175,13 +176,13 @@ test('when deleting the current context, a popup should ask confirmation', async
   const deleteBtn = within(currentContext).getByRole('button', { name: 'Delete Context' });
   expect(deleteBtn).toBeInTheDocument();
   await fireEvent.click(deleteBtn);
-  expect(window.showMessageBox).toHaveBeenCalledOnce();
+  expect(client.dialog.showMessageBox).toHaveBeenCalledOnce();
 });
 
 test('when deleting the non current context, no popup should ask confirmation', async () => {
   vi.mocked(kubernetesContextsState).kubernetesContextsState = readable<Map<string, ContextGeneralState>>(new Map());
   vi.mocked(kubernetesContextsState).kubernetesContextsCheckingStateDelayed = readable<Map<string, boolean>>(new Map());
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 
   render(PreferencesKubernetesContextsRendering, {});
   const currentContext = screen.getAllByRole('row')[0];
@@ -193,7 +194,7 @@ test('when deleting the non current context, no popup should ask confirmation', 
   const deleteBtn = within(currentContext).getByRole('button', { name: 'Delete Context' });
   expect(deleteBtn).toBeInTheDocument();
   await fireEvent.click(deleteBtn);
-  expect(window.showMessageBox).not.toHaveBeenCalled();
+  expect(client.dialog.showMessageBox).not.toHaveBeenCalled();
 });
 
 test('when editing context a modal dialog should be oppened', async () => {
@@ -225,8 +226,6 @@ describe.each([
     initMocks: (): void => {
       Object.defineProperty(global, 'window', {
         value: {
-          isExperimentalConfigurationEnabled: vi.fn(),
-          telemetryTrack: vi.fn(),
           kubernetesRefreshContextState: vi.fn(),
         },
       });
@@ -242,7 +241,7 @@ describe.each([
           count: 2,
         },
       ]);
-      vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+      vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
       kubernetesContextsHealths.set([
         {
           contextName: 'context-name',
@@ -496,5 +495,5 @@ test('Connecting for a context sends telemetry', async () => {
 
   vi.mocked(window.kubernetesRefreshContextState).mockResolvedValue(undefined);
   await fireEvent.click(button);
-  expect(window.telemetryTrack).toHaveBeenCalledWith('kubernetes.monitoring.start.non-current');
+  expect(client.telemetry.track).toHaveBeenCalledWith({ event: 'kubernetes.monitoring.start.non-current' });
 });

@@ -20,6 +20,8 @@ import type { ContainerInfo } from '@podman-desktop/core-api';
 import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = [
@@ -53,9 +55,9 @@ async function checkForUpdate(eventName: string): Promise<boolean> {
 
 export const containersInfos: Writable<ContainerInfo[]> = writable([]);
 
-// use helper here as window methods are initialized after the store in tests
+// use helper here as client methods are initialized after the store in tests
 const listContainers = (): Promise<ContainerInfo[]> => {
-  return window.listContainers();
+  return client.container.listContainers();
 };
 
 export const containersEventStore = new EventStore<ContainerInfo[]>(

@@ -4,6 +4,8 @@ import type { ProviderInfo } from '@podman-desktop/core-api';
 import { Button } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
+
 interface Props {
   providers?: ProviderInfo[];
 }
@@ -20,7 +22,7 @@ let cleanupFailures = $state<string[]>([]);
 async function openCleanupDialog(): Promise<void> {
   let message = 'This action may delete data. Proceed?';
 
-  const result = await window.showMessageBox({
+  const result = await client.dialog.showMessageBox({
     title: 'Clean Up Data?',
     type: 'danger',
     message: message,

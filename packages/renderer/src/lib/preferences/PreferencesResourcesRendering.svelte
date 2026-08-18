@@ -12,6 +12,7 @@ import { SvelteMap } from 'svelte/reactivity';
 import type { Unsubscriber } from 'svelte/store';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import ContributionActions from '/@/lib/actions/ContributionActions.svelte';
 import type { ContextUI } from '/@/lib/context/context';
 import { ContextKeyExpr } from '/@/lib/context/contextKey';
@@ -195,7 +196,9 @@ onMount(async () => {
     globalContext = value;
   });
 
-  contributionsContainerConnection = await window.getContributedMenus(MenuContext.DASHBOARD_CONTAINER_CONNECTION);
+  contributionsContainerConnection = await client.menu.getContributedMenus({
+    context: MenuContext.DASHBOARD_CONTAINER_CONNECTION,
+  });
 });
 
 function getContainerRestarting(provider: string, container: string): IConnectionRestart {
@@ -272,9 +275,12 @@ async function doCreateNew(provider: ProviderInfo, displayName: string): Promise
     doExecuteAfterInstallation = (): void => router.goto(`/preferences/resources/provider/${provider.internalId}`);
     await performInstallation(provider);
   } else {
-    await window.telemetryTrack('createNewProviderConnectionPageRequested', {
-      providerId: provider.id,
-      name: provider.name,
+    await client.telemetry.track({
+      event: 'createNewProviderConnectionPageRequested',
+      eventProperties: {
+        providerId: provider.id,
+        name: provider.name,
+      },
     });
     router.goto(`/preferences/resources/provider/${provider.internalId}`);
   }
@@ -426,10 +432,10 @@ $effect(() => {
               return {
                 ...configurationKey,
                 value: configurationKey.id
-                  ? await window.getConfigurationValue(
-                      configurationKey.id,
-                      $state.snapshot(container) as unknown as ContainerProviderConnection,
-                    )
+                  ? await client.configuration.getValue({
+                      key: configurationKey.id,
+                      scope: $state.snapshot(container) as unknown as ContainerProviderConnection,
+                    })
                   : undefined,
                 connection: container.name,
                 providerId: provider.internalId,

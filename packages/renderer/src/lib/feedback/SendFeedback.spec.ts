@@ -22,6 +22,8 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import DirectFeedback from './feedbackForms/DirectFeedback.svelte';
 import GitHubIssueFeedback from './feedbackForms/GitHubIssueFeedback.svelte';
 import SendFeedback from './SendFeedback.svelte';
@@ -36,7 +38,7 @@ beforeEach(() => {
     func();
     return { dispose: vi.fn() };
   });
-  vi.mocked(window.getGitHubFeedbackLinks).mockResolvedValue({
+  vi.mocked(client.feedback.getGitHubFeedbackLinks).mockResolvedValue({
     bug: '/bug/link',
     feature: '/feature/link',
   });
@@ -45,7 +47,7 @@ beforeEach(() => {
 test('Expect developers feedback form to be rendered by default', async () => {
   render(SendFeedback);
 
-  await vi.waitFor(() => expect(window.getGitHubFeedbackLinks).toHaveBeenCalled());
+  await vi.waitFor(() => expect(client.feedback.getGitHubFeedbackLinks).toHaveBeenCalled());
 
   expect(DirectFeedback).toHaveBeenCalledOnce();
   expect(DirectFeedback).toHaveBeenCalledWith(expect.anything(), {
@@ -59,7 +61,7 @@ test('Expect developers feedback form to be rendered by default', async () => {
 test('Expect confirmation dialog to be displayed if content changed', async () => {
   render(SendFeedback, {});
 
-  await vi.waitFor(() => expect(window.getGitHubFeedbackLinks).toHaveBeenCalled());
+  await vi.waitFor(() => expect(client.feedback.getGitHubFeedbackLinks).toHaveBeenCalled());
 
   expect(DirectFeedback).toHaveBeenCalledWith(expect.anything(), {
     onCloseForm: expect.any(Function),
@@ -76,7 +78,7 @@ test('Expect confirmation dialog to be displayed if content changed', async () =
   onCloseForm(true);
 
   // expect confirm dialog
-  expect(window.showMessageBox).toHaveBeenCalledWith({
+  expect(client.dialog.showMessageBox).toHaveBeenCalledWith({
     title: 'Close Feedback Form?',
     message: 'Do you want to close the Feedback form?\nClosing will erase your input.',
     type: 'warning',
@@ -87,7 +89,7 @@ test('Expect confirmation dialog to be displayed if content changed', async () =
 test('Expect no confirmation dialog to be displayed if content has not changed', async () => {
   render(SendFeedback, {});
 
-  await vi.waitFor(() => expect(window.getGitHubFeedbackLinks).toHaveBeenCalled());
+  await vi.waitFor(() => expect(client.feedback.getGitHubFeedbackLinks).toHaveBeenCalled());
 
   expect(DirectFeedback).toHaveBeenCalledWith(expect.anything(), {
     onCloseForm: expect.any(Function),
@@ -101,13 +103,13 @@ test('Expect no confirmation dialog to be displayed if content has not changed',
   onCloseForm(true);
 
   // expect no confirm dialog
-  expect(window.showMessageBox).not.toHaveBeenCalled();
+  expect(client.dialog.showMessageBox).not.toHaveBeenCalled();
 });
 
 test('Expect DirectFeedback form to be rendered when design category is selected', async () => {
   render(SendFeedback, {});
 
-  await vi.waitFor(() => expect(window.getGitHubFeedbackLinks).toHaveBeenCalled());
+  await vi.waitFor(() => expect(client.feedback.getGitHubFeedbackLinks).toHaveBeenCalled());
 
   const categorySelect = screen.getByRole('button', { name: /Direct your words to the developers/ });
   expect(categorySelect).toBeInTheDocument();
@@ -130,7 +132,7 @@ test('Expect DirectFeedback form to be rendered when design category is selected
 test('Expect GitHubIssue feedback form to be rendered if category is not developers', async () => {
   render(SendFeedback, {});
 
-  await vi.waitFor(() => expect(window.getGitHubFeedbackLinks).toHaveBeenCalled());
+  await vi.waitFor(() => expect(client.feedback.getGitHubFeedbackLinks).toHaveBeenCalled());
 
   const categorySelect = screen.getByRole('button', { name: /Direct your words to the developers/ });
   expect(categorySelect).toBeInTheDocument();
@@ -170,8 +172,8 @@ test('Expect GitHubIssue feedback form to be rendered if category is not develop
 });
 
 test('Expect if there no GitHub links to have a new category other with other feedback links', async () => {
-  vi.mocked(window.getGitHubFeedbackLinks).mockResolvedValue(undefined);
-  vi.mocked(window.getFeedbackLinks).mockResolvedValue({
+  vi.mocked(client.feedback.getGitHubFeedbackLinks).mockResolvedValue(undefined);
+  vi.mocked(client.feedback.getFeedbackLinks).mockResolvedValue({
     category1: '/catgory1/link',
     category2: '/catgory2/link',
     category3: '/catgory3/link',
@@ -179,7 +181,7 @@ test('Expect if there no GitHub links to have a new category other with other fe
 
   render(SendFeedback);
 
-  await vi.waitFor(() => expect(window.getGitHubFeedbackLinks).toHaveBeenCalled());
+  await vi.waitFor(() => expect(client.feedback.getGitHubFeedbackLinks).toHaveBeenCalled());
 
   const categorySelect = screen.getByRole('button', { name: /Direct your words to the developers/ });
   expect(categorySelect).toBeInTheDocument();
@@ -205,12 +207,12 @@ test('Expect if there no GitHub links to have a new category other with other fe
 });
 
 test('Expect if there no GitHub links to not have a new category other if there are also no other feedback links', async () => {
-  vi.mocked(window.getGitHubFeedbackLinks).mockResolvedValue(undefined);
-  vi.mocked(window.getFeedbackLinks).mockResolvedValue({});
+  vi.mocked(client.feedback.getGitHubFeedbackLinks).mockResolvedValue(undefined);
+  vi.mocked(client.feedback.getFeedbackLinks).mockResolvedValue({});
 
   render(SendFeedback);
 
-  await vi.waitFor(() => expect(window.getGitHubFeedbackLinks).toHaveBeenCalled());
+  await vi.waitFor(() => expect(client.feedback.getGitHubFeedbackLinks).toHaveBeenCalled());
 
   const categorySelect = screen.getByRole('button', { name: /Direct your words to the developers/ });
   expect(categorySelect).toBeInTheDocument();

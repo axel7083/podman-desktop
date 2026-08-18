@@ -2,6 +2,7 @@
 import type { ManifestInspectInfo } from '@podman-desktop/api';
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import Cell from '/@/lib/details/DetailsCell.svelte';
 import Subtitle from '/@/lib/details/DetailsSubtitle.svelte';
 import Table from '/@/lib/details/DetailsTable.svelte';
@@ -23,7 +24,7 @@ const imageUtils = new ImageUtils();
 onMount(async () => {
   if (image.isManifest) {
     try {
-      manifestDetails = await window.inspectManifest(image.engineId, image.id);
+      manifestDetails = await client.container.inspectManifest({ engine: image.engineId, manifestId: image.id });
     } catch (err) {
       console.error(err);
     }

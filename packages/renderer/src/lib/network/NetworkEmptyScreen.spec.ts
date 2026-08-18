@@ -21,6 +21,8 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { expect, test } from 'vitest';
 
+import { client } from '/@/client';
+
 import NetworkEmptyScreen from './NetworkEmptyScreen.svelte';
 
 test('Expect to have CLI command that can be copied', async () => {
@@ -34,5 +36,5 @@ test('Expect to have CLI command that can be copied', async () => {
 
   await fireEvent.click(copyButton);
 
-  expect(window.clipboardWriteText).toHaveBeenCalledWith('podman network create my-first-network');
+  expect(client.system.clipboardWriteText).toHaveBeenCalledWith({ text: 'podman network create my-first-network' });
 });

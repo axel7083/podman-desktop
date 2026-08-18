@@ -22,6 +22,8 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import MessageBox from './MessageBox.svelte';
 import type { MessageBoxOptions } from './messagebox-input';
 
@@ -86,7 +88,11 @@ describe('MessageBox', () => {
     const dismiss = await screen.findByText('Dismiss');
     expect(dismiss).toBeInTheDocument();
     await fireEvent.click(dismiss);
-    expect(window.sendShowMessageBoxOnSelect).toBeCalledWith(idRequest, 0, undefined);
+    expect(client.dialog.sendShowMessageBoxOnSelect).toBeCalledWith({
+      id: idRequest,
+      selectedIndex: 0,
+      dropdownIndex: undefined,
+    });
   });
 
   test('Expect that Esc closes', async () => {
@@ -110,7 +116,7 @@ describe('MessageBox', () => {
     render(MessageBox, {});
 
     await userEvent.keyboard('{Escape}');
-    expect(window.sendShowMessageBoxOnSelect).toBeCalledWith(idRequest, undefined);
+    expect(client.dialog.sendShowMessageBoxOnSelect).toBeCalledWith({ id: idRequest, selectedIndex: undefined });
   });
 
   test('Expect that tabbing works', async () => {
@@ -186,7 +192,13 @@ describe('MessageBox', () => {
     const title1 = await screen.findByText(messageBoxOptions1.title);
     expect(title1).toBeInTheDocument();
     await fireEvent.click(dismiss1);
-    await vi.waitFor(() => expect(window.sendShowMessageBoxOnSelect).toBeCalledWith(idRequest1, 0, undefined));
+    await vi.waitFor(() =>
+      expect(client.dialog.sendShowMessageBoxOnSelect).toBeCalledWith({
+        id: idRequest1,
+        selectedIndex: 0,
+        dropdownIndex: undefined,
+      }),
+    );
     eventCallback?.(messageBoxOptions2);
 
     const dismiss2 = await screen.findByText('Dismiss');
@@ -222,7 +234,11 @@ describe('MessageBox', () => {
     expect(allButtons[1]).toHaveTextContent('Cancel');
     expect(allButtons[2]).toHaveTextContent('Delete');
     await fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(window.sendShowMessageBoxOnSelect).toBeCalledWith(idRequest, 1, undefined);
+    expect(client.dialog.sendShowMessageBoxOnSelect).toBeCalledWith({
+      id: idRequest,
+      selectedIndex: 1,
+      dropdownIndex: undefined,
+    });
   });
 
   test('Expect explicit default and cancel ids to be honored', async () => {
@@ -252,7 +268,7 @@ describe('MessageBox', () => {
     expect(allButtons[1]).toHaveTextContent('Cancel');
     expect(allButtons[2]).toHaveTextContent('Ignore');
     await userEvent.keyboard('{Escape}');
-    expect(window.sendShowMessageBoxOnSelect).toBeCalledWith(idRequest, 1);
+    expect(client.dialog.sendShowMessageBoxOnSelect).toBeCalledWith({ id: idRequest, selectedIndex: 1 });
   });
 
   test('Expect cancel at index 0 to move default to index 1', async () => {
@@ -279,7 +295,11 @@ describe('MessageBox', () => {
     expect(allButtons[1]).toHaveTextContent('Cancel');
     expect(allButtons[2]).toHaveTextContent('Proceed');
     await fireEvent.click(screen.getByRole('button', { name: 'Proceed' }));
-    expect(window.sendShowMessageBoxOnSelect).toBeCalledWith(idRequest, 1, undefined);
+    expect(client.dialog.sendShowMessageBoxOnSelect).toBeCalledWith({
+      id: idRequest,
+      selectedIndex: 1,
+      dropdownIndex: undefined,
+    });
   });
 
   test('Expect danger default button to use danger styling', async () => {
@@ -355,7 +375,11 @@ describe('MessageBox', () => {
 
     await fireEvent.click(screen.getByRole('button', { name: 'More' }));
     await fireEvent.click(await screen.findByText('B'));
-    expect(window.sendShowMessageBoxOnSelect).toBeCalledWith(idRequest, 0, 1);
+    expect(client.dialog.sendShowMessageBoxOnSelect).toBeCalledWith({
+      id: idRequest,
+      selectedIndex: 0,
+      dropdownIndex: 1,
+    });
   });
 
   test('Expect icon button to call selection', async () => {
@@ -380,6 +404,10 @@ describe('MessageBox', () => {
 
     await vi.waitFor(() => expect(screen.getByRole('button', { name: 'Run' })).toBeInTheDocument());
     await fireEvent.click(screen.getByRole('button', { name: 'Run' }));
-    expect(window.sendShowMessageBoxOnSelect).toBeCalledWith(idRequest, 0, undefined);
+    expect(client.dialog.sendShowMessageBoxOnSelect).toBeCalledWith({
+      id: idRequest,
+      selectedIndex: 0,
+      dropdownIndex: undefined,
+    });
   });
 });

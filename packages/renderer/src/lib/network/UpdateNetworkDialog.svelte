@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Button, Input } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
 import Dialog from '/@/lib/dialogs/Dialog.svelte';
 
 import type { NetworkInfoUI } from './NetworkInfoUI';
@@ -19,7 +20,12 @@ let removeDNSServers = $state('');
 async function updateNetwork(): Promise<void> {
   const addList = addDNSServers ? addDNSServers.trim().split(' ') : [];
   const removeList = removeDNSServers ? removeDNSServers.trim().split(' ') : [];
-  await window.updateNetwork(network.engineId, network.id, addList, removeList);
+  await client.container.updateNetwork({
+    engineId: network.engineId,
+    networkId: network.id,
+    addDNSServers: addList,
+    removeDNSServers: removeList,
+  });
   addDNSServers = '';
   removeDNSServers = '';
   onClose();

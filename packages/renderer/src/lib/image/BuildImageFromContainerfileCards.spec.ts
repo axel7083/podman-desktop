@@ -22,6 +22,8 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { beforeAll, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import BuildImageFromContainerfileCards from './BuildImageFromContainerfileCards.svelte';
 
 beforeAll(() => {
@@ -32,7 +34,7 @@ beforeAll(() => {
 });
 
 test('check default on arm64', async () => {
-  vi.mocked(window.getOsArch).mockResolvedValue('arm64');
+  vi.mocked(client.system.getArch).mockResolvedValue('arm64');
 
   const platforms = '';
   render(BuildImageFromContainerfileCards, {
@@ -53,7 +55,7 @@ test('check default on arm64', async () => {
 });
 
 test('check default on amd64', async () => {
-  vi.mocked(window.getOsArch).mockResolvedValue('x64');
+  vi.mocked(client.system.getArch).mockResolvedValue('x64');
 
   const platforms = '';
   render(BuildImageFromContainerfileCards, {

@@ -19,6 +19,8 @@
 import { get } from 'svelte/store';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { commandsEventStore, commandsEventStoreInfo, commandsInfos } from './commands';
 
 // setup() registers a real window.addEventListener that is never removed, so it must
@@ -33,14 +35,14 @@ beforeEach(() => {
 
 test('commands should be updated', async () => {
   // initial command is empty
-  vi.mocked(window.getCommandPaletteCommands).mockResolvedValue([]);
+  vi.mocked(client.commands.getCommandPaletteCommands).mockResolvedValue([]);
 
   // get list and expect nothing there
   const commands = get(commandsInfos);
   expect(commands.length).toBe(0);
 
-  vi.mocked(window.getCommandPaletteCommands).mockReset();
-  vi.mocked(window.getCommandPaletteCommands).mockResolvedValue([
+  vi.mocked(client.commands.getCommandPaletteCommands).mockReset();
+  vi.mocked(client.commands.getCommandPaletteCommands).mockResolvedValue([
     {
       id: 'first.extension1',
       title: 'test1',
@@ -55,7 +57,7 @@ test('commands should be updated', async () => {
   window.dispatchEvent(new CustomEvent('system-ready'));
 
   // check that getCommandPaletteCommands is called
-  await vi.waitFor(() => expect(window.getCommandPaletteCommands).toBeCalled());
+  await vi.waitFor(() => expect(client.commands.getCommandPaletteCommands).toBeCalled());
 
   // fetch manually
   await commandsEventStoreInfo.fetch();

@@ -1,6 +1,8 @@
 <script lang="ts">
 import { Button } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
+
 interface Props {
   title: string;
   link: string;
@@ -11,9 +13,12 @@ let { title, link, image }: Props = $props();
 
 async function openLink(): Promise<void> {
   try {
-    await window.openExternal(link);
+    await client.system.openExternal({ link });
   } finally {
-    await window.telemetryTrack('kubernetes.dashboard.guide', { title: title, link: link });
+    await client.telemetry.track({
+      event: 'kubernetes.dashboard.guide',
+      eventProperties: { title: title, link: link },
+    });
   }
 }
 </script>

@@ -24,6 +24,7 @@ import { get } from 'svelte/store';
 import { router } from 'tinro';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { lastPage } from '/@/stores/breadcrumb';
 import { networksListInfo } from '/@/stores/networks';
 
@@ -50,11 +51,11 @@ const network1: NetworkInspectInfo = {
 beforeEach(() => {
   vi.resetAllMocks();
   networksListInfo.set([]);
-  vi.mocked(window.inspectNetwork).mockResolvedValue(network1);
+  vi.mocked(client.container.inspectNetwork).mockResolvedValue(network1);
 });
 
 test('Expect to have network name and shortId and network actions in Details page', async () => {
-  vi.mocked(window.listNetworks).mockResolvedValue([network1]);
+  vi.mocked(client.container.listNetworks).mockResolvedValue([network1]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
 
@@ -78,8 +79,8 @@ test('Expect to have network name and shortId and network actions in Details pag
 test('Expect redirect to previous page if current network is deleted', async () => {
   const routerGotoSpy = vi.spyOn(router, 'goto');
   // Mock the showMessageBox to return 0 (yes)
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
-  vi.mocked(window.listNetworks).mockResolvedValue([network1]);
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.container.listNetworks).mockResolvedValue([network1]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
 
@@ -90,7 +91,7 @@ test('Expect redirect to previous page if current network is deleted', async () 
     { timeout: 2000 },
   );
 
-  vi.mocked(window.removeNetwork).mockImplementation(async () => {
+  vi.mocked(client.container.removeNetwork).mockImplementation(async () => {
     networksListInfo.update(networks => networks.filter(network => network1.Id !== network.Id));
   });
 
@@ -115,7 +116,7 @@ test('Expect redirect to previous page if current network is deleted', async () 
   await waitFor(() => expect(queryByRole('dialog')).not.toBeInTheDocument());
 
   // check that remove method has been called
-  expect(window.removeNetwork).toHaveBeenCalled();
+  expect(client.container.removeNetwork).toHaveBeenCalled();
 
   // expect that we have called the router when page has been removed
   // to jump to the previous page
@@ -127,7 +128,7 @@ test('Expect redirect to previous page if current network is deleted', async () 
 });
 
 test('Expect to have summary and inspect tabs', async () => {
-  vi.mocked(window.listNetworks).mockResolvedValue([network1]);
+  vi.mocked(client.container.listNetworks).mockResolvedValue([network1]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
 

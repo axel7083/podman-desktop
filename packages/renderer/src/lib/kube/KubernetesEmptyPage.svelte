@@ -5,6 +5,7 @@ import { Button } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import IconImage from '/@/lib/appearance/IconImage.svelte';
 import EmbeddableCatalogExtensionList from '/@/lib/extensions/EmbeddableCatalogExtensionList.svelte';
 import KubeIcon from '/@/lib/images/KubeIcon.svelte';
@@ -12,21 +13,24 @@ import Markdown from '/@/lib/markdown/Markdown.svelte';
 import { providerInfos } from '/@/stores/providers';
 
 async function createNew(provider: ProviderInfo): Promise<void> {
-  await window.telemetryTrack('kubernetes.nocontext.createNew', {
-    provider: provider.id,
+  await client.telemetry.track({
+    event: 'kubernetes.nocontext.createNew',
+    eventProperties: { provider: provider.id },
   });
   router.goto(`/preferences/resources/provider/${provider.internalId}`);
 }
 
 async function oninstall(extensionId: string): Promise<void> {
-  await window.telemetryTrack('kubernetes.nocontext.installExtension', {
-    extension: extensionId,
+  await client.telemetry.track({
+    event: 'kubernetes.nocontext.installExtension',
+    eventProperties: { extension: extensionId },
   });
 }
 
 async function ondetails(extensionId: string): Promise<void> {
-  await window.telemetryTrack('kubernetes.nocontext.showExtensionDetails', {
-    extension: extensionId,
+  await client.telemetry.track({
+    event: 'kubernetes.nocontext.showExtensionDetails',
+    eventProperties: { extension: extensionId },
   });
 }
 </script>

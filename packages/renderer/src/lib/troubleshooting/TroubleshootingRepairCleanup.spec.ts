@@ -23,6 +23,8 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { beforeAll, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import TroubleshootingRepairCleanup from './TroubleshootingRepairCleanup.svelte';
 
 const cleanupProvidersMock = vi.fn();
@@ -32,7 +34,7 @@ beforeAll(() => {
 });
 
 test('Check cleanupProviders is called and button is in progress', async () => {
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Clean Up' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Clean Up' });
 
   render(TroubleshootingRepairCleanup);
 
@@ -62,7 +64,7 @@ test('Check cleanupProviders is called and button is in progress', async () => {
   });
 
   // check that we asked for confirmation
-  expect(window.showMessageBox).toBeCalledWith({
+  expect(client.dialog.showMessageBox).toBeCalledWith({
     buttons: ['Clean Up', 'Cancel'],
     type: 'danger',
     message: 'This action may delete data. Proceed?',
@@ -74,7 +76,7 @@ test('Check cleanupProviders is called and button is in progress', async () => {
 });
 
 test('Check errors are displayed with clipboard button', async () => {
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Clean Up' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Clean Up' });
 
   render(TroubleshootingRepairCleanup);
 
@@ -90,7 +92,7 @@ test('Check errors are displayed with clipboard button', async () => {
   await fireEvent.click(cleanupButton);
 
   // check that we asked for confirmation
-  expect(window.showMessageBox).toBeCalledWith({
+  expect(client.dialog.showMessageBox).toBeCalledWith({
     buttons: ['Clean Up', 'Cancel'],
     type: 'danger',
     message: 'This action may delete data. Proceed?',

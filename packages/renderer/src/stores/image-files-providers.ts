@@ -19,6 +19,8 @@
 import type { ImageFilesInfo } from '@podman-desktop/core-api';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = ['image-files-provider-update', 'image-files-provider-remove'];
@@ -38,7 +40,7 @@ async function checkForUpdate(eventName: string): Promise<boolean> {
 export const imageFilesProviders: Writable<readonly ImageFilesInfo[]> = writable([]);
 
 const getImageFilesProvidersInfo = (): Promise<readonly ImageFilesInfo[]> => {
-  return window.getImageFilesProviders();
+  return client.imageRegistry.getFilesProviders();
 };
 
 const eventStore = new EventStore<readonly ImageFilesInfo[]>(

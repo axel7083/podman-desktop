@@ -2,6 +2,7 @@
 import type { WebviewInfo } from '@podman-desktop/core-api';
 import { onDestroy } from 'svelte';
 
+import { client } from '/@/client';
 import Route from '/@/Route.svelte';
 import { webviews } from '/@/stores/webviews';
 
@@ -14,10 +15,10 @@ interface Props {
 let { id }: Props = $props();
 
 // script to load for the webview
-let preloadPath = $derived(await window.getWebviewPreloadPath());
+let preloadPath = $derived(await client.webview.getPreloadScript());
 
 // exposed port of the server providing pages for the webview
-let webViewPort = $derived(await window.getWebviewRegistryHttpPort());
+let webViewPort = $derived(await client.webview.getRegistryHttpPort());
 
 // webview HTML element used to communicate
 let webviewElement = $state<HTMLElement | undefined>(undefined);
@@ -30,8 +31,8 @@ let lifecycleOptions = $derived({ webviewInfo });
 
 $effect(() => {
   if (webviewInfo) {
-    window
-      .makeDefaultWebviewVisible(webviewInfo.id)
+    client.webview
+      .makeDefaultWebviewVisible({ webviewId: webviewInfo.id })
       .catch((err: unknown) => console.error(`Error make default webview visible ${webviewInfo?.id}`, err));
   }
 });
@@ -83,8 +84,8 @@ onDestroy(() => {
   openDevtoolsDisposable.dispose();
 
   // no webviews are visible anymore
-  window
-    .makeDefaultWebviewVisible('')
+  client.webview
+    .makeDefaultWebviewVisible({ webviewId: '' })
     .catch((err: unknown) => console.error('Error make default webviews visible', err));
 });
 </script>

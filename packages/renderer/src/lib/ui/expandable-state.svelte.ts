@@ -18,6 +18,7 @@
 
 import { onDestroy, onMount } from 'svelte';
 
+import { client } from '/@/client';
 import { onDidChangeConfiguration } from '/@/stores/configurationProperties';
 
 /**
@@ -48,7 +49,8 @@ export class ExpandableState {
     onMount(async () => {
       onDidChangeConfiguration.addEventListener(this.#configurationKey, this.#listener);
       try {
-        this.expanded = (await window.getConfigurationValue<boolean>(this.#configurationKey)) ?? true;
+        this.expanded =
+          ((await client.configuration.getValue({ key: this.#configurationKey })) as boolean | undefined) ?? true;
       } finally {
         this.initialized = true;
       }
@@ -60,7 +62,7 @@ export class ExpandableState {
   }
 
   async toggle(value: boolean): Promise<void> {
-    await window.updateConfigurationValue(this.#configurationKey, value);
-    await window.telemetryTrack(`dashboard.healthCard.${value ? 'expanded' : 'collapsed'}`);
+    await client.configuration.updateValue({ key: this.#configurationKey, value });
+    await client.telemetry.track({ event: `dashboard.healthCard.${value ? 'expanded' : 'collapsed'}` });
   }
 }

@@ -4,6 +4,7 @@ import { DropdownMenu } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 import { SvelteMap } from 'svelte/reactivity';
 
+import { client } from '/@/client';
 import { withConfirmation } from '/@/lib/dialogs/messagebox-utils';
 import FlatMenu from '/@/lib/ui/FlatMenu.svelte';
 import ListItemButtonIcon from '/@/lib/ui/ListItemButtonIcon.svelte';
@@ -81,7 +82,7 @@ if (dropdownMenu) {
     {:else if openingKubernetesUrls.size === 1}
       <ListItemButtonIcon
         title="Open {[...openingKubernetesUrls][0][0]}"
-        onClick={(): Promise<void> => window.openExternal([...openingKubernetesUrls][0][1])}
+        onClick={(): Promise<void> => client.system.openExternal({ link: [...openingKubernetesUrls][0][1] })}
         menu={dropdownMenu}
         enabled={pod.status === 'RUNNING'}
         hidden={dropdownMenu}
@@ -96,7 +97,7 @@ if (dropdownMenu) {
         {#each Array.from(openingKubernetesUrls) as [routeName, routeHost] (routeName)}
           <ListItemButtonIcon
             title="Open {routeName}"
-            onClick={(): Promise<void>  => window.openExternal(routeHost)}
+            onClick={(): Promise<void>  => client.system.openExternal({ link: routeHost })}
             menu={!dropdownMenu}
             enabled={pod.status === 'RUNNING'}
             hidden={dropdownMenu}

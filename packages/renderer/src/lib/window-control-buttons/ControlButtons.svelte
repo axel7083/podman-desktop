@@ -1,18 +1,20 @@
 <script lang="ts">
+import { client } from '/@/client';
+
 import WindowControlButton from './ControlButton.svelte';
 
 export let platform: string;
 
 async function minimize(): Promise<void> {
-  return window.windowMinimize();
+  return client.system.windowMinimize();
 }
 
 async function maximize(): Promise<void> {
-  return window.windowMaximize();
+  return client.system.windowMaximize();
 }
 
 async function close(): Promise<void> {
-  return window.windowClose();
+  return client.system.windowClose();
 }
 </script>
 

@@ -22,6 +22,7 @@ import type { ManifestInspectInfo } from '@podman-desktop/api';
 import { render, screen, waitFor } from '@testing-library/svelte';
 import { beforeAll, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import ImageIcon from '/@/lib/images/ImageIcon.svelte';
 
 import ImageDetailsSummary from './ImageDetailsSummary.svelte';
@@ -74,7 +75,7 @@ const inspectManifest: ManifestInspectInfo = {
 };
 
 beforeAll(() => {
-  Object.defineProperty(window, 'inspectManifest', { value: vi.fn().mockResolvedValue(inspectManifest) });
+  vi.mocked(client.container.inspectManifest).mockResolvedValue(inspectManifest);
 });
 
 test('Expect render ImageDetailsSummary', async () => {
@@ -84,7 +85,7 @@ test('Expect render ImageDetailsSummary', async () => {
   expect(text).toBeInTheDocument();
 });
 
-test('if ImageInfoUI isManifest is true, expect window.inspectManifest to be called', async () => {
+test('if ImageInfoUI isManifest is true, expect inspectManifest to be called', async () => {
   const imageWithManifest: ImageInfoUI = {
     ...image,
     isManifest: true,
@@ -92,8 +93,8 @@ test('if ImageInfoUI isManifest is true, expect window.inspectManifest to be cal
 
   render(ImageDetailsSummary, { image: imageWithManifest });
 
-  // Expect window.inspectManifest to be called
-  expect(window.inspectManifest).toHaveBeenCalled();
+  // Expect client.container.inspectManifest to be called
+  expect(client.container.inspectManifest).toHaveBeenCalled();
 
   // Expect the manifest digest to be displayed
 

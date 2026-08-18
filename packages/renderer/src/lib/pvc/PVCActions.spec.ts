@@ -21,6 +21,8 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import PVCActions from './PVCActions.svelte';
 import type { PVCUI } from './PVCUI';
 
@@ -62,7 +64,7 @@ afterEach(() => {
 });
 
 test('Expect no error and status deleting PVC', async () => {
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   render(PVCActions, { pvc: fakePVC });
 
   // click on delete buttons

@@ -20,6 +20,8 @@ import type { ExploreFeature } from '@podman-desktop/core-api';
 import type { Writable } from 'svelte/store';
 import { writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = ['explore-features-loaded', 'provider-change', 'provider-container-connection-update-status'];
@@ -39,7 +41,7 @@ export const exploreFeaturesInfo: Writable<ExploreFeature[]> = writable([]);
 
 // use helper here as window methods are initialized after the store in tests
 const listExploreFeatures = (): Promise<ExploreFeature[]> => {
-  return window.listFeatures();
+  return client.exploreFeatures.listFeatures();
 };
 
 const exploreFeaturesEventStore = new EventStore<ExploreFeature[]>(

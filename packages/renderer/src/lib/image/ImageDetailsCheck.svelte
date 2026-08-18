@@ -7,6 +7,7 @@ import { Icon } from '@podman-desktop/ui-svelte/icons';
 import { onDestroy, onMount } from 'svelte';
 import type { Unsubscriber } from 'svelte/store';
 
+import { client } from '/@/client';
 import type { CheckUI, ProviderUI } from '/@/lib/ui/ProviderResultPage';
 import ProviderResultPage from '/@/lib/ui/ProviderResultPage.svelte';
 import { imageCheckerProviders } from '/@/stores/image-checker-providers';
@@ -49,7 +50,7 @@ async function callProviders(_providers: readonly ImageCheckerInfo[]): Promise<v
     state: 'running',
   }));
   const sortedProvidersIds = providers.map(p => p.info.id).toSorted();
-  cancellableTokenId = await window.getCancellableTokenSource();
+  cancellableTokenId = await client.cancellation.createTokenSource();
   remainingProviders = providers.length;
 
   providers.forEach(provider => {
@@ -60,8 +61,8 @@ async function callProviders(_providers: readonly ImageCheckerInfo[]): Promise<v
       provider: provider.info.label,
       error: '',
     };
-    window
-      .imageCheck(provider.info.id, $state.snapshot(imageInfo), cancellableTokenId)
+    client.imageRegistry
+      .check({ id: provider.info.id, image: $state.snapshot(imageInfo), tokenId: cancellableTokenId })
       .then(_result => {
         // we test if it is still running, as it could have been marked as 'canceled'
         if (provider.state === 'running') {
@@ -106,8 +107,8 @@ async function callProviders(_providers: readonly ImageCheckerInfo[]): Promise<v
         }
       })
       .finally(() => {
-        window
-          .telemetryTrack('imageCheck', telemetryOptions)
+        client.telemetry
+          .track({ event: 'imageCheck', eventProperties: telemetryOptions })
           .catch((err: unknown) => console.error('Error sending imageCheck telemetry', err));
       });
   });
@@ -119,7 +120,7 @@ async function handleAbort(): Promise<void> {
 
   if (cancellableTokenId !== 0 && remainingProviders > 0) {
     aborting = true;
-    await window.cancelToken(cancellableTokenId).finally(() => {
+    await client.cancellation.cancelToken({ id: cancellableTokenId }).finally(() => {
       aborting = false;
     });
     // reset token
@@ -135,7 +136,7 @@ async function handleAbort(): Promise<void> {
     });
 
     // telemetry
-    await window.telemetryTrack('imageCheck.aborted');
+    await client.telemetry.track({ event: 'imageCheck.aborted' });
   }
 }
 </script>

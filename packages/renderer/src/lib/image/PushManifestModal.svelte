@@ -5,6 +5,7 @@ import type { Terminal } from '@xterm/xterm';
 import { tick } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import Dialog from '/@/lib/dialogs/Dialog.svelte';
 import TerminalWindow from '/@/lib/ui/TerminalWindow.svelte';
 
@@ -32,7 +33,9 @@ async function pushManifest(): Promise<void> {
 
   try {
     logsPush?.write(`Pushing manifest ${manifestInfoToPush.name} ...\n\r`);
-    await window.pushManifest({ name: manifestInfoToPush.name, destination: manifestInfoToPush.name });
+    await client.container.pushManifest({
+      manifestOptions: { name: manifestInfoToPush.name, destination: manifestInfoToPush.name },
+    });
     logsPush?.write('Manifest pushed successfully\n\r');
     pushFinished = true;
   } catch (err) {

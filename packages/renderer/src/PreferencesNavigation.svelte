@@ -5,6 +5,7 @@ import { SettingsNavItem } from '@podman-desktop/ui-svelte';
 import { onMount, tick } from 'svelte';
 import type { TinroRouteMeta } from 'tinro';
 
+import { client } from '/@/client';
 import PreferencesIcon from '/@/lib/images/PreferencesIcon.svelte';
 import ShortcutArrowIcon from '/@/lib/images/ShortcutArrowIcon.svelte';
 import { type NavItem, settingsNavigationEntries, type SettingsNavItemConfig } from '/@/PreferencesNavigation';
@@ -149,18 +150,18 @@ function scheduleNavigationWidthUpdate(): void {
 }
 
 function updateDockerCompatibility(): void {
-  window
-    .getConfigurationValue<boolean>(`${DockerCompatibilitySettings.SectionName}.${DockerCompatibilitySettings.Enabled}`)
-    .then(result => {
+  client.configuration
+    .getValue({ key: `${DockerCompatibilitySettings.SectionName}.${DockerCompatibilitySettings.Enabled}` })
+    ?.then(result => {
       if (result !== undefined) {
         const index = settingsNavigationEntries.findIndex(entry => entry.title === 'Docker Compatibility');
         if (index !== -1) {
-          settingsNavigationItems[index].visible = result;
+          settingsNavigationItems[index].visible = result as boolean;
           scheduleNavigationWidthUpdate();
         }
       }
     })
-    .catch((err: unknown) =>
+    ?.catch((err: unknown) =>
       console.error(
         `Error getting configuration value ${DockerCompatibilitySettings.SectionName}.${DockerCompatibilitySettings.Enabled}`,
         err,

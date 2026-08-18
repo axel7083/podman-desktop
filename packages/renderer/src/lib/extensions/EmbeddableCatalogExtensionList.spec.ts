@@ -22,6 +22,7 @@ import type { CatalogExtension } from '@podman-desktop/core-api/extension-catalo
 import { render, screen } from '@testing-library/svelte';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import type { CombinedExtensionInfoUI } from '/@/stores/all-installed-extensions';
 import { catalogExtensionInfos } from '/@/stores/catalog-extensions';
 import { extensionInfos } from '/@/stores/extensions';
@@ -35,7 +36,7 @@ beforeAll(() => {
 beforeEach(() => {
   vi.resetAllMocks();
   // default to catalog enabled
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 });
 
 const aFakeExtension: CatalogExtension = {
@@ -222,7 +223,7 @@ test('empty catalog, hide if empty', async () => {
 });
 
 test('render nothing when catalog is disabled', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(false);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(false);
   catalogExtensionInfos.set([aFakeExtension, bFakeExtension]);
   extensionInfos.set(combined);
 
@@ -236,7 +237,7 @@ test('render nothing when catalog is disabled', async () => {
 });
 
 test('render extensions when catalog is enabled', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
   catalogExtensionInfos.set([aFakeExtension, bFakeExtension]);
   extensionInfos.set(combined);
 

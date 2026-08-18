@@ -6,6 +6,7 @@ import { Icon } from '@podman-desktop/ui-svelte/icons';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import Label from '/@/lib/ui/Label.svelte';
 import ProviderInfoCircle from '/@/lib/ui/ProviderInfoCircle.svelte';
 import RefreshButton from '/@/lib/ui/RefreshButton.svelte';
@@ -19,7 +20,7 @@ let dockerSocketMappingStatusInfo: DockerSocketMappingStatusInfo | undefined = $
 let engineType: 'kubernetes' | 'podman' | 'docker' | undefined = $state(undefined);
 
 async function refreshSocketMappingStatus(): Promise<void> {
-  dockerSocketMappingStatusInfo = await window.getSystemDockerSocketMappingStatus();
+  dockerSocketMappingStatusInfo = await client.troubleshooting.getDockerSocketMappingStatus();
 
   if (dockerSocketMappingStatusInfo?.serverInfo?.type === 'podman') {
     engineType = 'podman';
@@ -31,7 +32,7 @@ async function refreshSocketMappingStatus(): Promise<void> {
 }
 
 onMount(async () => {
-  const platform = await window.getOsPlatform();
+  const platform = await client.system.getPlatform();
 
   isMac = platform === 'darwin';
   isLinux = platform === 'linux';

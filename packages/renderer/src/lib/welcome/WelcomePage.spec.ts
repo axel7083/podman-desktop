@@ -26,6 +26,7 @@ import { get } from 'svelte/store';
 /* eslint-enable import/no-duplicates */
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { onboardingList } from '/@/stores/onboarding';
 import { providerInfos } from '/@/stores/providers';
 
@@ -33,8 +34,8 @@ import WelcomePage from './WelcomePage.svelte';
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.getPodmanDesktopVersion).mockResolvedValue('1.0.0');
-  vi.mocked(window.getWelcomeMessages).mockResolvedValue({
+  vi.mocked(client.app.getVersion).mockResolvedValue('1.0.0');
+  vi.mocked(client.welcome.getWelcomeMessages).mockResolvedValue({
     getStartedMessage: 'Get started with Podman Desktop',
     welcomeMessage: 'Welcome to Podman Desktop',
   });
@@ -65,7 +66,7 @@ test('Expect that the close button closes the window', async () => {
 });
 
 test('Expect that telemetry UI is hidden when telemetry has already been prompted', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue('true');
+  vi.mocked(client.configuration.getValue).mockResolvedValue('true');
   await waitRender({ showWelcome: true, showTelemetry: false });
   let checkbox;
   try {
@@ -77,7 +78,7 @@ test('Expect that telemetry UI is hidden when telemetry has already been prompte
 });
 
 test('Expect that telemetry UI is visible when necessary', async () => {
-  vi.mocked(window.getTelemetryMessages).mockResolvedValue({ acceptMessage: 'Help improve the product' });
+  vi.mocked(client.telemetry.getTelemetryMessages).mockResolvedValue({ acceptMessage: 'Help improve the product' });
   await waitRender({ showWelcome: true, showTelemetry: true });
   const checkbox = screen.getByRole('checkbox', { name: 'Enable telemetry' });
   expect(checkbox).toBeInTheDocument();
@@ -87,7 +88,7 @@ test('Expect that telemetry messages is visible', async () => {
   const telem: TelemetryMessages = {
     acceptMessage: 'Help improve the product',
   };
-  vi.mocked(window.getTelemetryMessages).mockResolvedValue(telem);
+  vi.mocked(client.telemetry.getTelemetryMessages).mockResolvedValue(telem);
 
   await waitRender({ showWelcome: true, showTelemetry: true });
 
@@ -103,7 +104,7 @@ test('Expect that telemetry link opens url', async () => {
       url: 'info-url',
     },
   };
-  vi.mocked(window.getTelemetryMessages).mockResolvedValue(telem);
+  vi.mocked(client.telemetry.getTelemetryMessages).mockResolvedValue(telem);
 
   await waitRender({ showWelcome: true, showTelemetry: true });
   const accept = screen.getByText(telem.acceptMessage);
@@ -113,14 +114,14 @@ test('Expect that telemetry link opens url', async () => {
   expect(infoLink).toBeInTheDocument();
 
   await fireEvent.click(infoLink);
-  await vi.waitFor(() => expect(vi.mocked(window.openExternal)).toBeCalledWith(telem.info?.url));
+  await vi.waitFor(() => expect(vi.mocked(client.system.openExternal)).toBeCalledWith({ link: telem.info?.url }));
 });
 
 test('Expect that telemetry link is missing when info is not provided', async () => {
   const telem = {
     acceptMessage: 'Help improve the product',
   } as TelemetryMessages;
-  vi.mocked(window.getTelemetryMessages).mockResolvedValue(telem);
+  vi.mocked(client.telemetry.getTelemetryMessages).mockResolvedValue(telem);
 
   await waitRender({ showWelcome: true, showTelemetry: true });
 
@@ -321,12 +322,18 @@ test('Make sure the provider with name podman appears first even if its 2nd in t
 test('Expect that releaseNotesBanner.show configuration value is set to current version when showWelcome is set to true', async () => {
   await waitRender({});
   await vi.waitFor(() =>
-    expect(vi.mocked(window.updateConfigurationValue)).toBeCalledWith(`releaseNotesBanner.show`, '1.0.0'),
+    expect(vi.mocked(client.configuration.updateValue)).toBeCalledWith({
+      key: `releaseNotesBanner.show`,
+      value: '1.0.0',
+    }),
   );
 });
 
 test('Expect that releaseNotesBanner.show configuration value is not set to current version when showWelcome is not set to true', async () => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValueOnce('value1');
+  vi.mocked(client.configuration.getValue).mockResolvedValueOnce('value1');
   await waitRender({});
-  expect(vi.mocked(window.updateConfigurationValue)).not.toBeCalledWith(`releaseNotesBanner.show`, '1.0.0');
+  expect(vi.mocked(client.configuration.updateValue)).not.toBeCalledWith({
+    key: `releaseNotesBanner.show`,
+    value: '1.0.0',
+  });
 });

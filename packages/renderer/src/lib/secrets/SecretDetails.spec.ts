@@ -23,6 +23,7 @@ import { render, waitFor } from '@testing-library/svelte';
 import { router } from 'tinro';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { handleNavigation } from '/@/navigation';
 import { secretsInfo } from '/@/stores/secrets';
 
@@ -43,7 +44,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   secretsInfo.set([]);
 
-  vi.mocked(window.getContributedMenus).mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 });
 
 test('expect secret details page to render when secret exists', async () => {

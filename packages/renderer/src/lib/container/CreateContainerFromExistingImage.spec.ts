@@ -31,6 +31,7 @@ import { tick } from 'svelte';
 import { get } from 'svelte/store';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { handleNavigation } from '/@/navigation';
 import { providerInfos } from '/@/stores/providers';
 
@@ -124,9 +125,9 @@ const providerInfo = {
 beforeEach(() => {
   vi.useFakeTimers({ shouldAdvanceTime: true });
   vi.resetAllMocks();
-  vi.mocked(window.listImages).mockResolvedValue(localImageList);
-  vi.mocked(window.searchImageInRegistry).mockResolvedValue(registryImageList);
-  vi.mocked(window.getConfigurationValue).mockImplementation(async (key: string) => {
+  vi.mocked(client.container.listImages).mockResolvedValue(localImageList);
+  vi.mocked(client.imageRegistry.searchImages).mockResolvedValue(registryImageList);
+  vi.mocked(client.configuration.getValue).mockImplementation(async ({ key }: { key: string }) => {
     if (key === 'terminal.integrated.scrollback') {
       return 1000;
     }
@@ -173,7 +174,7 @@ test('Expect that typeahead menu has Local Images and Registry Images headings',
 });
 
 test('Expect not a local image to have an active pull image and run button', async () => {
-  vi.mocked(window.searchImageInRegistry).mockResolvedValue([
+  vi.mocked(client.imageRegistry.searchImages).mockResolvedValue([
     { name: 'image12', description: '', star_count: 3, is_official: true },
   ]);
   render(CreateContainerFromExistingImage);
@@ -206,7 +207,7 @@ test('Expect not a local image to have an active pull image and run button', asy
 });
 
 test('Expect a local image to have an active run image button', async () => {
-  vi.mocked(window.searchImageInRegistry).mockResolvedValue([
+  vi.mocked(client.imageRegistry.searchImages).mockResolvedValue([
     { name: 'fedora21', description: '', star_count: 5, is_official: false },
   ]);
   render(CreateContainerFromExistingImage);
@@ -248,7 +249,7 @@ test('Expect a local image to have an active run image button', async () => {
 });
 
 test('Expect no user input to show only local images', async () => {
-  vi.mocked(window.searchImageInRegistry).mockResolvedValue([
+  vi.mocked(client.imageRegistry.searchImages).mockResolvedValue([
     { name: 'image12', description: '', star_count: 3, is_official: true },
   ]);
   render(CreateContainerFromExistingImage);
@@ -274,9 +275,9 @@ test('window#listImages should not be call without a selected container connecti
   const inputBox = getByPlaceholderText('Select or enter an image to run');
   expect(inputBox).toBeEnabled();
 
-  expect(window.listImages).toHaveBeenCalledOnce();
-  expect(window.listImages).toHaveBeenCalledWith({
-    provider: pInfo,
+  expect(client.container.listImages).toHaveBeenCalledOnce();
+  expect(client.container.listImages).toHaveBeenCalledWith({
+    options: { provider: pInfo },
   });
 });
 
@@ -316,7 +317,7 @@ describe('container connections', () => {
 
   test('dropdown should be disabled while pulling', async () => {
     // mock no local image
-    vi.mocked(window.searchImageInRegistry).mockResolvedValue([]);
+    vi.mocked(client.imageRegistry.searchImages).mockResolvedValue([]);
 
     providerInfos.set([MULTI_CONNECTIONS]);
 

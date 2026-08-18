@@ -20,6 +20,8 @@ import type { RecommendedRegistry } from '@podman-desktop/core-api/recommendatio
 import { RecommendationsSettings } from '@podman-desktop/core-api/recommendations';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore, fineGrainedEvents } from './event-store';
 
 let readyToUpdate = false;
@@ -48,7 +50,7 @@ async function checkForUpdate(eventName: string): Promise<boolean> {
 
 // use helper here as window methods are initialized after the store in tests
 const getRecommendedRegistries = (): Promise<RecommendedRegistry[]> => {
-  return window.getRecommendedRegistries();
+  return client.extension.getRecommendedRegistries();
 };
 
 export const recommendedRegistries: Writable<RecommendedRegistry[]> = writable([]);

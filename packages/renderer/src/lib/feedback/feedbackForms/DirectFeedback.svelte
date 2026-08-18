@@ -12,6 +12,7 @@ import type { DirectFeedbackCategory, FeedbackProperties } from '@podman-desktop
 import { Button, ErrorMessage, Link } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
 import FeedbackForm from '/@/lib/feedback/FeedbackForm.svelte';
 import WarningMessage from '/@/lib/ui/WarningMessage.svelte';
 
@@ -25,7 +26,7 @@ interface Props {
 let smileyRating = $state(0);
 let tellUsWhyFeedback = $state('');
 let contactInformation = $state('');
-let repository = $derived(await window.getAppRepository());
+let repository = $derived(await client.app.getAppRepository());
 let hasFeedback = $derived(
   (tellUsWhyFeedback && tellUsWhyFeedback.trim().length > 4) ||
     (contactInformation && contactInformation.trim().length > 4),
@@ -39,7 +40,7 @@ function selectSmiley(item: number): void {
   smileyRating = item;
 }
 
-let feedbackMessages = $derived(await window.getFeedbackMessages());
+let feedbackMessages = $derived(await client.feedback.getFeedbackMessages());
 
 async function sendFeedback(): Promise<void> {
   const properties: FeedbackProperties = {
@@ -56,13 +57,13 @@ async function sendFeedback(): Promise<void> {
   }
 
   // 1. send the feedback
-  await window.sendFeedback(properties);
+  await client.feedback.send({ properties });
 
   // 2. close the form without confirmation
   onCloseForm(false);
 
   // 3. Display confirmation dialog
-  await window.showMessageBox({
+  await client.dialog.showMessageBox({
     title: 'Feedback Submitted',
     message: feedbackMessages?.thankYouMessage ?? '',
     type: 'info',
@@ -72,8 +73,8 @@ async function sendFeedback(): Promise<void> {
 
 async function openGitHub(): Promise<void> {
   if (repository) {
-    await window.telemetryTrack('feedback.openGitHub');
-    await window.openExternal(repository);
+    await client.telemetry.track({ event: 'feedback.openGitHub' });
+    await client.system.openExternal({ link: repository });
   }
 }
 </script>

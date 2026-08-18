@@ -19,6 +19,8 @@
 import type { ImageCheckerInfo } from '@podman-desktop/core-api';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = ['image-checker-provider-update', 'image-checker-provider-remove'];
@@ -38,7 +40,7 @@ async function checkForUpdate(eventName: string): Promise<boolean> {
 export const imageCheckerProviders: Writable<readonly ImageCheckerInfo[]> = writable([]);
 
 const getImageCheckerProvidersInfo = (): Promise<readonly ImageCheckerInfo[]> => {
-  return window.getImageCheckerProviders();
+  return client.imageRegistry.getCheckerProviders();
 };
 
 const eventStore = new EventStore<readonly ImageCheckerInfo[]>(

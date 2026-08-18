@@ -1,6 +1,7 @@
 <script lang="ts">
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import MonacoEditor from '/@/lib/editor/MonacoEditor.svelte';
 
 import type { ImageInfoUI } from './ImageInfoUI';
@@ -15,7 +16,7 @@ let history: string | undefined = $state();
 
 onMount(async () => {
   // grab inspect result from the container
-  const historyResult = await window.getImageHistory(image.engineId, image.id);
+  const historyResult = await client.container.getImageHistory({ engine: image.engineId, imageId: image.id });
   // keep only instructions
   const instructions = historyResult.map(item => item.CreatedBy ?? 'None');
   history = instructions.join('\n');

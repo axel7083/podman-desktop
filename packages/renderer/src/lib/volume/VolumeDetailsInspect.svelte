@@ -2,6 +2,7 @@
 import type { VolumeInspectInfo } from '@podman-desktop/core-api';
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import MonacoEditor from '/@/lib/editor/MonacoEditor.svelte';
 
 import type { VolumeInfoUI } from './VolumeInfoUI';
@@ -16,7 +17,10 @@ let inspectDetails: string = $state('');
 
 onMount(async () => {
   // grab inspect result from the container
-  const inspectResult = (await window.getVolumeInspect(volume.engineId, volume.name)) as Partial<VolumeInspectInfo>;
+  const inspectResult = (await client.container.getVolumeInspect({
+    engine: volume.engineId,
+    volumeName: volume.name,
+  })) as Partial<VolumeInspectInfo>;
 
   // remove engine* properties from the inspect result as it's more internal
   delete inspectResult.engineId;

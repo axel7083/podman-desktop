@@ -14,6 +14,7 @@ import { DropdownMenu } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import ContributionActions from '/@/lib/actions/ContributionActions.svelte';
 import { ContainerUtils } from '/@/lib/container/container-utils';
 import { withConfirmation } from '/@/lib/dialogs/messagebox-utils';
@@ -33,7 +34,7 @@ let { pod, dropdownMenu = false, detailed = false }: Props = $props();
 
 let contributions = $state<Menu[]>([]);
 onMount(async () => {
-  contributions = await window.getContributedMenus(MenuContext.DASHBOARD_POD);
+  contributions = await client.menu.getContributedMenus({ context: MenuContext.DASHBOARD_POD });
 });
 
 let urls: Array<string> = $state([]);
@@ -50,7 +51,7 @@ onMount(async () => {
   const containerUtils = new ContainerUtils();
 
   const containerIds = pod.containers.map(podContainer => podContainer.Id);
-  const podContainers = (await window.listContainers()).filter(
+  const podContainers = (await client.container.listContainers()).filter(
     container => containerIds.findIndex(containerInfo => containerInfo === container.Id) >= 0,
   );
 
@@ -80,10 +81,10 @@ async function startPod(): Promise<void> {
 
   try {
     if (hasPaused) {
-      await window.unpausePod(pod.engineId, pod.id);
+      await client.container.unpausePod({ engine: pod.engineId, podId: pod.id });
     }
     if (hasExited) {
-      await window.startPod(pod.engineId, pod.id);
+      await client.container.startPod({ engine: pod.engineId, podId: pod.id });
     }
   } catch (error) {
     handleError(String(error));
@@ -95,7 +96,7 @@ async function startPod(): Promise<void> {
 async function restartPod(): Promise<void> {
   inProgress(false, 'RESTARTING');
   try {
-    await window.restartPod(pod.engineId, pod.id);
+    await client.container.restartPod({ engine: pod.engineId, podId: pod.id });
   } catch (error) {
     handleError(String(error));
   } finally {
@@ -106,7 +107,7 @@ async function restartPod(): Promise<void> {
 async function stopPod(): Promise<void> {
   inProgress(false, 'STOPPING');
   try {
-    await window.stopPod(pod.engineId, pod.id);
+    await client.container.stopPod({ engine: pod.engineId, podId: pod.id });
   } catch (error) {
     handleError(String(error));
   } finally {
@@ -117,7 +118,7 @@ async function stopPod(): Promise<void> {
 async function deletePod(): Promise<void> {
   inProgress(false, 'DELETING');
   try {
-    await window.removePod(pod.engineId, pod.id);
+    await client.container.removePod({ engine: pod.engineId, podId: pod.id });
   } catch (error) {
     handleError(String(error));
   } finally {
@@ -185,7 +186,7 @@ const MenuComponent = $derived(dropdownMenu ? DropdownMenu : FlatMenu);
   {:else if openingUrls.length === 1}
     <ListItemButtonIcon
       title="Open {extractPort(openingUrls[0])}"
-      onClick={(): Promise<void> => window.openExternal(openingUrls[0])}
+      onClick={(): Promise<void> => client.system.openExternal({ link: openingUrls[0] })}
       menu={dropdownMenu}
       enabled={pod.status === 'RUNNING'}
       hidden={dropdownMenu}
@@ -196,7 +197,7 @@ const MenuComponent = $derived(dropdownMenu ? DropdownMenu : FlatMenu);
       {#each openingUrls as url, index (index)}
         <ListItemButtonIcon
           title="Open {extractPort(url)}"
-          onClick={(): Promise<void> => window.openExternal(url)}
+          onClick={(): Promise<void> => client.system.openExternal({ link: url })}
           menu={!dropdownMenu}
           enabled={pod.status === 'RUNNING'}
           hidden={dropdownMenu}

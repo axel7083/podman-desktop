@@ -24,6 +24,7 @@ import { get } from 'svelte/store';
 import { router } from 'tinro';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { lastPage } from '/@/stores/breadcrumb';
 import { containersInfos } from '/@/stores/containers';
 
@@ -50,12 +51,10 @@ const myContainer: ContainerInfo = {
 vi.mock(import('@xterm/xterm'));
 vi.mock(import('@xterm/addon-search'));
 
-const getConfigurationValueMock = vi.fn().mockReturnValue(12);
-
 beforeEach(() => {
   vi.restoreAllMocks();
   vi.resetAllMocks();
-  vi.mocked(window.getContributedMenus).mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 });
 
 test('Expect logs when tty is not enabled', async () => {
@@ -66,7 +65,7 @@ test('Expect logs when tty is not enabled', async () => {
   // spy router.goto
   const routerGotoSpy = vi.spyOn(router, 'goto');
 
-  vi.mocked(window.getContainerInspect).mockResolvedValue({
+  vi.mocked(client.container.getContainerInspect).mockResolvedValue({
     Config: {
       Tty: false,
     },
@@ -95,7 +94,7 @@ test('Expect show tty if container has tty enabled', async () => {
   // spy router.goto
   const routerGotoSpy = vi.spyOn(router, 'goto');
 
-  vi.mocked(window.getContainerInspect).mockResolvedValue({
+  vi.mocked(client.container.getContainerInspect).mockResolvedValue({
     Config: {
       Tty: true,
       OpenStdin: true,
@@ -115,16 +114,15 @@ test('Expect show tty if container has tty enabled', async () => {
 });
 
 test('Expect redirect to previous page if container is deleted', async () => {
-  getConfigurationValueMock.mockResolvedValue(undefined);
   // Mock the showMessageBox to return 'Delete' (confirmed)
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   router.goto('/');
 
-  vi.mocked(window.getContainerInspect).mockResolvedValue({
+  vi.mocked(client.container.getContainerInspect).mockResolvedValue({
     Config: {},
   } as unknown as ContainerInspectInfo);
   const routerGotoSpy = vi.spyOn(router, 'goto');
-  vi.mocked(window.listContainers).mockResolvedValue([myContainer]);
+  vi.mocked(client.container.listContainers).mockResolvedValue([myContainer]);
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   while (get(containersInfos).length !== 1) {
     await new Promise(resolve => setTimeout(resolve, 500));
@@ -132,7 +130,7 @@ test('Expect redirect to previous page if container is deleted', async () => {
 
   // remove myContainer from the store when we call 'deleteContainer'
   // it will then refresh the store and update ContainerDetails page
-  vi.mocked(window.deleteContainer).mockImplementation(async (): Promise<void> => {
+  vi.mocked(client.container.deleteContainer).mockImplementation(async (): Promise<void> => {
     containersInfos.update(containers => containers.filter(container => container.Id !== myContainer.Id));
   });
 
@@ -159,7 +157,7 @@ test('Expect redirect to previous page if container is deleted', async () => {
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
   // check that delete method has been called
-  expect(vi.mocked(window.deleteContainer)).toHaveBeenCalled();
+  expect(vi.mocked(client.container.deleteContainer)).toHaveBeenCalled();
 
   // expect that we have called the router when page has been removed
   // to jump to the previous page

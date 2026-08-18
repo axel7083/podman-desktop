@@ -4,6 +4,7 @@ import type { CliToolInfo } from '@podman-desktop/core-api';
 import { Button, Tooltip } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
 import Markdown from '/@/lib/markdown/Markdown.svelte';
 import LoadingIconButton from '/@/lib/ui/LoadingIconButton.svelte';
 
@@ -48,7 +49,7 @@ async function update(cliTool: CliToolInfo): Promise<void> {
   if (!newVersion) {
     // user has to select the version to update to
     try {
-      newVersion = await window.selectCliToolVersionToUpdate(cliTool.id);
+      newVersion = await client.cliTool.selectVersionToUpdate({ id: cliTool.id });
     } catch (e) {
       // do nothing
       console.log(e);
@@ -76,7 +77,7 @@ async function install(cliTool: CliToolInfo): Promise<void> {
   // user has to select the version to install
   let versionToInstall;
   try {
-    versionToInstall = await window.selectCliToolVersionToInstall(cliTool.id);
+    versionToInstall = await client.cliTool.selectVersionToInstall({ id: cliTool.id });
   } catch (e) {
     // do nothing
     errorMessage = `Error when selecting a version: ${String(e)}`;
@@ -102,7 +103,7 @@ async function install(cliTool: CliToolInfo): Promise<void> {
 }
 
 async function uninstall(cliTool: CliToolInfo): Promise<void> {
-  const result = await window.showMessageBox({
+  const result = await client.dialog.showMessageBox({
     title: `Uninstall ${cliTool.displayName}?`,
     type: 'danger',
     message: `Uninstall ${cliTool.displayName} ${cliTool.version} ?`,

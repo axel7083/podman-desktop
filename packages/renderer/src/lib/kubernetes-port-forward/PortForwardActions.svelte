@@ -2,6 +2,7 @@
 import { faSquareUpRight, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { type ForwardConfig } from '@podman-desktop/core-api';
 
+import { client } from '/@/client';
 import { withConfirmation } from '/@/lib/dialogs/messagebox-utils';
 import ListItemButtonIcon from '/@/lib/ui/ListItemButtonIcon.svelte';
 import { kubernetesCurrentContextPortForwards } from '/@/stores/kubernetes-contexts-state';
@@ -29,7 +30,7 @@ async function deletePortForward(): Promise<void> {
 }
 
 async function openExternal(): Promise<void> {
-  return window.openExternal(`http://localhost:${object.forward.localPort}`);
+  return client.system.openExternal({ link: `http://localhost:${object.forward.localPort}` });
 }
 </script>
 

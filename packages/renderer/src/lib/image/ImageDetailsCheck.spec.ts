@@ -23,21 +23,20 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { imageCheckerProviders } from '/@/stores/image-checker-providers';
 
 import ImageDetailsCheck from './ImageDetailsCheck.svelte';
 
 const getCancellableTokenSourceMock = vi.fn();
-const imageCheckMock = vi.fn();
+const imageCheckMock = vi.mocked(client.imageRegistry.check);
 const cancelTokenSpy = vi.fn();
 
 const tokenID = 70735;
 beforeAll(() => {
   Object.defineProperty(window, 'getCancellableTokenSource', { value: getCancellableTokenSourceMock });
   getCancellableTokenSourceMock.mockReturnValue(tokenID);
-  Object.defineProperty(window, 'imageCheck', { value: imageCheckMock });
   Object.defineProperty(window, 'cancelToken', { value: cancelTokenSpy.mockResolvedValue(undefined) });
-  Object.defineProperty(window, 'telemetryTrack', { value: vi.fn().mockResolvedValue(undefined) });
 });
 
 beforeEach(() => {
@@ -55,7 +54,7 @@ test('expect to display wait message before to receive results', async () => {
   ]);
 
   // never returns results
-  vi.mocked(window.imageCheck).mockReturnValue(never());
+  vi.mocked(client.imageRegistry.check).mockReturnValue(never());
 
   render(ImageDetailsCheck, {
     imageInfo: {
@@ -90,7 +89,7 @@ test('expect to cancel when clicking the Cancel button', async () => {
   ]);
 
   // never returns results
-  vi.mocked(window.imageCheck).mockReturnValue(never());
+  vi.mocked(client.imageRegistry.check).mockReturnValue(never());
 
   render(ImageDetailsCheck, {
     imageInfo: {
@@ -131,7 +130,7 @@ test('expect to cancel when destroying the component', async () => {
   ]);
 
   // never returns results
-  vi.mocked(window.imageCheck).mockReturnValue(never());
+  vi.mocked(client.imageRegistry.check).mockReturnValue(never());
 
   const result = render(ImageDetailsCheck, {
     imageInfo: {
@@ -169,7 +168,7 @@ test('expect to not cancel again when destroying the component after manual canc
   ]);
 
   // never returns results
-  vi.mocked(window.imageCheck).mockReturnValue(never());
+  vi.mocked(client.imageRegistry.check).mockReturnValue(never());
 
   const result = render(ImageDetailsCheck, {
     imageInfo: {

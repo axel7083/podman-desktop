@@ -26,6 +26,7 @@ import type { Component, ComponentProps } from 'svelte';
 import { get } from 'svelte/store';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import PinActions from '/@/lib/statusbar/PinActions.svelte';
 import { providerInfos } from '/@/stores/providers';
 import { statusBarPinned } from '/@/stores/statusbar-pinned';
@@ -63,8 +64,8 @@ beforeEach(() => {
     },
   ]);
 
-  vi.mocked(window.unpinStatusBar).mockResolvedValue(undefined);
-  vi.mocked(window.pinStatusBar).mockResolvedValue(undefined);
+  vi.mocked(client.statusBar.unpin).mockResolvedValue(undefined);
+  vi.mocked(client.statusBar.pin).mockResolvedValue(undefined);
 });
 
 function getListener(): () => void {
@@ -174,7 +175,7 @@ describe('pin / unpin', () => {
     const btn = getByRole('button', { name: CONTAINER_CONNECTION_PROVIDER.name });
     await fireEvent.click(btn);
 
-    expect(window.unpinStatusBar).toHaveBeenCalledWith(CONTAINER_CONNECTION_PROVIDER.id);
+    expect(client.statusBar.unpin).toHaveBeenCalledWith({ optionId: CONTAINER_CONNECTION_PROVIDER.id });
   });
 
   test('expect unpinned provider to have pin command', async () => {
@@ -184,6 +185,6 @@ describe('pin / unpin', () => {
     const btn = getByRole('button', { name: KUBERNETES_CONNECTION_PROVIDER.name });
     await fireEvent.click(btn);
 
-    expect(window.pinStatusBar).toHaveBeenCalledWith(KUBERNETES_CONNECTION_PROVIDER.id);
+    expect(client.statusBar.pin).toHaveBeenCalledWith({ optionId: KUBERNETES_CONNECTION_PROVIDER.id });
   });
 });

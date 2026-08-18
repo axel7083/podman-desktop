@@ -23,6 +23,8 @@ import type { IConfigurationPropertyRecordedSchema } from '@podman-desktop/core-
 import { render, screen } from '@testing-library/svelte';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import PreferencesContainerConnectionDetailsSummary from './PreferencesContainerConnectionDetailsSummary.svelte';
 
 beforeEach(() => {
@@ -144,7 +146,7 @@ describe('resource metrics display', () => {
   ];
 
   test('renders Donut charts for resource metrics', async () => {
-    vi.mocked(window.getConfigurationValue)
+    vi.mocked(client.configuration.getValue)
       .mockResolvedValueOnce(4)
       .mockResolvedValueOnce(50)
       .mockResolvedValueOnce(8_000_000_000)
@@ -173,7 +175,7 @@ describe('resource metrics display', () => {
       format: 'boolean',
       description: 'User mode networking',
     };
-    vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+    vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
     render(PreferencesContainerConnectionDetailsSummary, {
       containerConnectionInfo: podmanContainerConnection,
@@ -187,7 +189,7 @@ describe('resource metrics display', () => {
   });
 
   test('does not render resource-format configs as plain rows', async () => {
-    vi.mocked(window.getConfigurationValue).mockResolvedValue(4);
+    vi.mocked(client.configuration.getValue).mockResolvedValue(4);
 
     render(PreferencesContainerConnectionDetailsSummary, {
       containerConnectionInfo: podmanContainerConnection,

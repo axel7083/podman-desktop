@@ -24,6 +24,7 @@ import userEvent from '@testing-library/user-event';
 import { router } from 'tinro';
 import { assert, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { providerInfos } from '/@/stores/providers';
 
 import * as preferencesConnectionActions from './PreferencesConnectionActions.svelte';
@@ -33,7 +34,7 @@ import type { IConnectionRestart } from './Util';
 beforeEach(() => {
   vi.resetAllMocks();
 
-  vi.mocked(window.showMessageBox).mockResolvedValue({
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({
     response: 'Delete',
   });
 });

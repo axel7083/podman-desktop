@@ -22,6 +22,8 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import CustomPick from './CustomPick.svelte';
 import type { CustomPickOptions } from './quickpick-input';
 
@@ -134,7 +136,7 @@ describe('CustomPick', () => {
 
     await userEvent.click(button);
 
-    expect(window.closeCustomPick).toHaveBeenCalled();
+    expect(client.picker.customPickClose).toHaveBeenCalled();
   });
 
   test('Expect that by clicking the next button it calls the senditemms and close command', async () => {
@@ -173,7 +175,7 @@ describe('CustomPick', () => {
     expect(button).toBeInTheDocument();
 
     await userEvent.click(button);
-    expect(window.sendCustomPickItemsOnConfirmation).toHaveBeenCalled();
-    expect(window.closeCustomPick).toHaveBeenCalled();
+    expect(client.picker.customPickValues).toHaveBeenCalled();
+    expect(client.picker.customPickClose).toHaveBeenCalled();
   });
 });

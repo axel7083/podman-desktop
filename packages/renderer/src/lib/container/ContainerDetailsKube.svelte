@@ -1,6 +1,7 @@
 <script lang="ts">
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import MonacoEditor from '/@/lib/editor/MonacoEditor.svelte';
 
 import type { ContainerInfoUI } from './ContainerInfoUI';
@@ -15,7 +16,7 @@ let kubeDetails: string = $state('');
 
 onMount(async () => {
   // grab kube result from the container
-  const kubeResult = await window.generatePodmanKube(container.engineId, [container.id]);
+  const kubeResult = await client.container.generatePodmanKube({ engine: container.engineId, names: [container.id] });
   kubeDetails = kubeResult;
 });
 </script>

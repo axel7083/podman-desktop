@@ -1,6 +1,7 @@
 <script lang="ts">
 import { faPlay } from '@fortawesome/free-solid-svg-icons';
 
+import { client } from '/@/client';
 import type { SelectableExtensionDevelopmentFolderInfoUI } from '/@/lib/extensions/dev-mode/development-folder-info-ui';
 import ListItemButtonIcon from '/@/lib/ui/ListItemButtonIcon.svelte';
 
@@ -13,7 +14,7 @@ async function startExtension(): Promise<void> {
   if (!extensionFolder.extension) {
     return;
   }
-  await window.startExtension(extensionFolder.extension.id);
+  await client.extension.start({ extensionId: extensionFolder.extension.id });
 }
 </script>
 

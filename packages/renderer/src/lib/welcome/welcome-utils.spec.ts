@@ -21,13 +21,11 @@
 import { WelcomeSettings } from '@podman-desktop/core-api/welcome';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { WelcomeUtils } from './welcome-utils';
 
 let welcomeUtils: WelcomeUtils;
-
-// mock window.getConfigurationValue
-const getConfigurationValueMock = vi.fn();
-(window as any).getConfigurationValue = getConfigurationValueMock;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -35,15 +33,19 @@ beforeEach(() => {
 });
 
 test('should expect no value by default', async () => {
-  getConfigurationValueMock.mockResolvedValue(undefined);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);
   const version = await welcomeUtils.getVersion();
   expect(version).toBeUndefined();
-  expect(getConfigurationValueMock).toHaveBeenCalledWith(WelcomeSettings.SectionName + '.' + WelcomeSettings.Version);
+  expect(client.configuration.getValue).toHaveBeenCalledWith({
+    key: WelcomeSettings.SectionName + '.' + WelcomeSettings.Version,
+  });
 });
 
 test('should expect value', async () => {
-  getConfigurationValueMock.mockResolvedValue('foo');
+  vi.mocked(client.configuration.getValue).mockResolvedValue('foo');
   const version = await welcomeUtils.getVersion();
   expect(version).toBe('foo');
-  expect(getConfigurationValueMock).toHaveBeenCalledWith(WelcomeSettings.SectionName + '.' + WelcomeSettings.Version);
+  expect(client.configuration.getValue).toHaveBeenCalledWith({
+    key: WelcomeSettings.SectionName + '.' + WelcomeSettings.Version,
+  });
 });

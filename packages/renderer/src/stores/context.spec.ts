@@ -19,6 +19,7 @@
 import { get } from 'svelte/store';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { ContextUI } from '/@/lib/context/context';
 
 import { setup } from './context';
@@ -63,7 +64,7 @@ test('context store values updated on context-value-updated/context-key-removed 
 });
 
 test('context store values set on extensions-already-started', async () => {
-  vi.mocked(window.contextCollectAllValues).mockResolvedValue({ a: 1, b: 'two' });
+  vi.mocked(client.uiRegistry.collectAllContextValues).mockResolvedValue({ a: 1, b: 'two' });
 
   const context = setup();
 

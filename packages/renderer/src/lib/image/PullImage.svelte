@@ -9,6 +9,7 @@ import { onMount, tick } from 'svelte';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import ContainerConnectionDropdown from '/@/lib/forms/ContainerConnectionDropdown.svelte';
 import { ImageUtils } from '/@/lib/image/image-utils';
 import EngineFormPage from '/@/lib/ui/EngineFormPage.svelte';
@@ -66,7 +67,10 @@ async function resolveShortname(): Promise<void> {
   }
   if (imageToPull && !imageToPull.includes('/')) {
     shortnameImages =
-      (await window.resolveShortnameImage($state.snapshot(selectedProviderConnection), imageToPull)) ?? [];
+      (await client.container.resolveShortnameImage({
+        providerContainerConnectionInfo: $state.snapshot(selectedProviderConnection),
+        shortName: imageToPull,
+      })) ?? [];
     // not a shortname
   } else {
     podmanFQN = '';
@@ -148,7 +152,7 @@ async function pullImage(): Promise<void> {
   pullInProgress = true;
   try {
     pullCancellationRequested = false;
-    pullCancellableTokenId = await window.getCancellableTokenSource();
+    pullCancellableTokenId = await client.cancellation.createTokenSource();
     const selectedProviderConnectionSnapshot = $state.snapshot(selectedProviderConnection);
     if (podmanFQN) {
       usePodmanFQN
@@ -209,8 +213,8 @@ async function getFirstPulledImageInfo(): Promise<ImageInfoUI | undefined> {
   if (!target) return undefined;
 
   const localImages = (
-    await window.listImages({
-      provider: $state.snapshot(selectedProviderConnection),
+    await client.container.listImages({
+      options: { provider: $state.snapshot(selectedProviderConnection) },
     })
   ).filter(image => (image.RepoTags ?? []).some(repoTag => repoTag.includes(target)));
 
@@ -245,7 +249,7 @@ async function cancelPullImage(): Promise<void> {
     return;
   }
   pullCancellationRequested = true;
-  await window.cancelToken(pullCancellableTokenId);
+  await client.cancellation.cancelToken({ id: pullCancellableTokenId });
 }
 
 async function gotoManageRegistries(): Promise<void> {
@@ -257,9 +261,9 @@ onMount(() => {
 });
 
 onMount(async () => {
-  const configuration = await window.getConfigurationValue<string>(
-    `${PreferredRegistriesSettings.SectionName}.${PreferredRegistriesSettings.Preferred}`,
-  );
+  const configuration = (await client.configuration.getValue({
+    key: `${PreferredRegistriesSettings.SectionName}.${PreferredRegistriesSettings.Preferred}`,
+  })) as string | undefined;
   if (configuration) {
     const registries = configuration
       .split(',')
@@ -299,7 +303,7 @@ async function searchImages(value: string): Promise<string[]> {
     if (image.startsWith(DOCKER_PREFIX_WITH_SLASH)) {
       image = image.slice(DOCKER_PREFIX_WITH_SLASH.length);
     }
-    const tags = await window.listImageTagsInRegistry({ image });
+    const tags = await client.imageRegistry.listImageTags({ image });
     allTags = tags.map(t => `${originalImage}:${t}`);
     return allTags.filter(i => i.startsWith(value));
   }
@@ -318,7 +322,7 @@ async function searchImages(value: string): Promise<string[]> {
           registry: registry,
           query: value,
         };
-        const searchResult = await window.searchImageInRegistry(options);
+        const searchResult = await client.imageRegistry.searchImages(options);
         // Add all results with their full registry prefix
         for (const r of searchResult) {
           const fullName = [registry, r.name].join('/');
@@ -339,7 +343,7 @@ async function searchImages(value: string): Promise<string[]> {
       registry: registry,
       query: rest.join('/'),
     };
-    const searchResult = await window.searchImageInRegistry(options);
+    const searchResult = await client.imageRegistry.searchImages(options);
     return searchResult.map(r => {
       return [options.registry, r.name].join('/');
     });
@@ -357,7 +361,7 @@ async function searchLatestTag(): Promise<void> {
     if (image.startsWith(DOCKER_PREFIX_WITH_SLASH)) {
       image = image.slice(DOCKER_PREFIX_WITH_SLASH.length);
     }
-    const tags = await window.listImageTagsInRegistry({ image });
+    const tags = await client.imageRegistry.listImageTags({ image });
     if (imageToPull.includes(':')) {
       latestTagMessage = undefined;
       checkIfTagExist(image, tags);

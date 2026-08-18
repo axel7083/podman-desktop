@@ -21,12 +21,13 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import type { ExtensionDetailsUI } from './extension-details-ui';
 import ExtensionDetailsSummaryCard from './ExtensionDetailsSummaryCard.svelte';
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.openExternal).mockResolvedValue(undefined);
 });
 
 test('Expect to have text of the card including version, release date, publisher and categories', async () => {
@@ -98,7 +99,7 @@ test('Expect repository link to open external URL', async () => {
   expect(repoLink).toBeInTheDocument();
 
   await fireEvent.click(repoLink);
-  expect(window.openExternal).toHaveBeenCalledWith('https://github.com/example/repo');
+  expect(client.system.openExternal).toHaveBeenCalledWith({ link: 'https://github.com/example/repo' });
 });
 
 test('Expect repository object link to open external URL', async () => {
@@ -133,7 +134,7 @@ test('Expect repository object link to open external URL', async () => {
   expect(repoLink).toBeInTheDocument();
 
   await fireEvent.click(repoLink);
-  expect(window.openExternal).toHaveBeenCalledWith('https://github.com/example/repo-object');
+  expect(client.system.openExternal).toHaveBeenCalledWith({ link: 'https://github.com/example/repo-object' });
 });
 
 test('Expect repository link to strip git+ prefix before opening', async () => {
@@ -168,7 +169,9 @@ test('Expect repository link to strip git+ prefix before opening', async () => {
   expect(repoLink).toBeInTheDocument();
 
   await fireEvent.click(repoLink);
-  expect(window.openExternal).toHaveBeenCalledWith('https://github.com/example/repo-with-git-plus.git');
+  expect(client.system.openExternal).toHaveBeenCalledWith({
+    link: 'https://github.com/example/repo-with-git-plus.git',
+  });
 });
 
 test('Expect homepage link to open external URL', async () => {
@@ -200,7 +203,7 @@ test('Expect homepage link to open external URL', async () => {
   expect(homepageLink).toBeInTheDocument();
 
   await fireEvent.click(homepageLink);
-  expect(window.openExternal).toHaveBeenCalledWith('https://example.com');
+  expect(client.system.openExternal).toHaveBeenCalledWith({ link: 'https://example.com' });
 });
 
 test('Expect no repository or homepage when not provided', async () => {

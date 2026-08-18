@@ -4,6 +4,7 @@ import type { ProviderInfo } from '@podman-desktop/core-api';
 import { STATUS_BAR_PIN_CONSTANTS } from '@podman-desktop/core-api/status-bar';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
 import ProviderButton from '/@/lib/statusbar/ProviderButton.svelte';
 import { providerInfos } from '/@/stores/providers';
 import { statusBarPinned } from '/@/stores/statusbar-pinned';
@@ -43,11 +44,11 @@ function onWindowClick(e: Event): void {
 }
 
 function unpin(providerId: string): void {
-  window.unpinStatusBar(providerId).catch(console.error);
+  client.statusBar.unpin({ optionId: providerId }).catch(console.error);
 }
 
 function pin(providerId: string): void {
-  window.pinStatusBar(providerId).catch(console.error);
+  client.statusBar.pin({ optionId: providerId }).catch(console.error);
 }
 </script>
 

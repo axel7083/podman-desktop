@@ -3,6 +3,7 @@ import type { Guide } from '@podman-desktop/core-api/learning-center';
 import { Carousel, Expandable } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import { ExpandableState } from '/@/lib/ui/expandable-state.svelte';
 
 import GuideCard from './GuideCard.svelte';
@@ -12,7 +13,7 @@ let guides: Guide[] = $state([]);
 const expandableState = new ExpandableState('learningCenter.expanded');
 
 onMount(async () => {
-  guides = await window.listGuides();
+  guides = await client.learningCenter.listGuides();
 });
 </script>
 

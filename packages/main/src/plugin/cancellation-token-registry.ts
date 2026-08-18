@@ -38,6 +38,17 @@ export class CancellationTokenRegistry {
     return this.callbackId;
   }
 
+  createAbortController(cancellableTokenId: number): AbortController {
+    const abortController = new AbortController();
+    const tokenSource = this.getCancellationTokenSource(cancellableTokenId);
+    const token = tokenSource?.token;
+    token?.onCancellationRequested(() => {
+      // if the token is cancelled, we trigger the abort on the AbortController
+      abortController.abort();
+    });
+    return abortController;
+  }
+
   getCancellationTokenSource(id: number): CancellationTokenSource | undefined {
     if (this.hasCancellationTokenSource(id)) {
       return this.callbacksCancellableToken.get(id);

@@ -19,6 +19,7 @@
 import { get } from 'svelte/store';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { AppearanceUtil } from '/@/lib/appearance/appearance-util';
 
 import { colorsEventStore, colorsInfos, darkContextColorsInfos, hcDarkContextColorsInfos } from './colors';
@@ -31,11 +32,11 @@ beforeEach(() => {
 });
 
 test('grab colors', async () => {
-  vi.mocked(window.listColors).mockImplementation((theme: string) => {
-    if (theme === 'dark') {
+  vi.mocked(client.uiRegistry.listColors).mockImplementation(({ themeId }: { themeId: string }) => {
+    if (themeId === 'dark') {
       return Promise.resolve([{ id: 'color-dark', value: '#dark01', cssVar: '--pd-color-dark' }]);
     }
-    if (theme === 'hc-dark') {
+    if (themeId === 'hc-dark') {
       return Promise.resolve([{ id: 'color-hcdark', value: '#hcd01', cssVar: '--pd-color-hcdark' }]);
     }
     return Promise.resolve([
@@ -49,7 +50,7 @@ test('grab colors', async () => {
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
 
   // wait listColors is called
-  await vi.waitFor(() => expect(window.listColors).toHaveBeenCalled());
+  await vi.waitFor(() => expect(client.uiRegistry.listColors).toHaveBeenCalled());
 
   // now get the current-theme list
   const colors = get(colorsInfos);

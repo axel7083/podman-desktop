@@ -6,6 +6,7 @@ import { Dropdown } from '@podman-desktop/ui-svelte';
 import { onDestroy, onMount } from 'svelte';
 import { get, type Unsubscriber, type Writable } from 'svelte/store';
 
+import { client } from '/@/client';
 import IconImage from '/@/lib/appearance/IconImage.svelte';
 import type { ContextUI } from '/@/lib/context/context';
 import Markdown from '/@/lib/markdown/Markdown.svelte';
@@ -164,7 +165,7 @@ function extractGroupItems(): void {
 
 async function onChangeProperty(property: PropertyWithDisplayName, value: unknown): Promise<void> {
   // notify a configuration change using the DockerCompatibility scope
-  await window.updateConfigurationValue(property.id, value, 'DockerCompatibility');
+  await client.configuration.updateValue({ key: property.id, value: value, scope: 'DockerCompatibility' });
 }
 </script>
 

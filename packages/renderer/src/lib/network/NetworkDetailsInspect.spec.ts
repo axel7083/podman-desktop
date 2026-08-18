@@ -22,6 +22,7 @@ import type { NetworkInspectInfo } from '@podman-desktop/core-api';
 import { render } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import MonacoEditor from '/@/lib/editor/MonacoEditor.svelte';
 
 import NetworkDetailsInspect from './NetworkDetailsInspect.svelte';
@@ -70,13 +71,13 @@ const network: NetworkInspectInfo = {
 vi.mock(import('/@/lib/editor/MonacoEditor.svelte'));
 
 beforeEach(() => {
-  vi.mocked(window.inspectNetwork).mockResolvedValue(network);
+  vi.mocked(client.container.inspectNetwork).mockResolvedValue(network);
 });
 
 test('Expect monaco editor component to be called with inspectNetwork info', async () => {
   render(NetworkDetailsInspect, { network: networkInfoUI });
 
-  expect(window.inspectNetwork).toHaveBeenCalledWith('podman', '123456789123456');
+  expect(client.container.inspectNetwork).toHaveBeenCalledWith({ engine: 'podman', networkId: '123456789123456' });
 
   const inspectInfo = network as Partial<NetworkInspectInfo>;
   delete inspectInfo.engineId;

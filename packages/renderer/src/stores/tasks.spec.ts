@@ -20,6 +20,8 @@ import { type IDisposable, type NotificationTaskInfo, TASK_STATUSES, type TaskIn
 import { get } from 'svelte/store';
 import { assert, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import {
   clearNotifications,
   filtered,
@@ -76,13 +78,12 @@ beforeEach(() => {
   });
 });
 
-test('Expect clearNotification to call window.clearTasks', async () => {
-  const clearTasksMock = vi.fn().mockResolvedValue(undefined);
-  (window as { clearTasks: () => void }).clearTasks = clearTasksMock;
+test('Expect clearNotification to call client.tasks.clearAll', async () => {
+  vi.mocked(client.tasks.clearAll).mockResolvedValue(undefined);
 
   await clearNotifications();
 
-  expect(clearTasksMock).toHaveBeenCalled();
+  expect(client.tasks.clearAll).toHaveBeenCalled();
 });
 
 describe('isNotificationTask', () => {

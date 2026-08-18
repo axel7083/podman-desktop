@@ -5,6 +5,7 @@ import { Button } from '@podman-desktop/ui-svelte';
 import { onDestroy, onMount } from 'svelte';
 import type { Unsubscriber } from 'svelte/store';
 
+import { client } from '/@/client';
 import DevelopmentExtensionListTable from '/@/lib/extensions/dev-mode/table/ListTable.svelte';
 import { extensionDevelopmentFolders } from '/@/stores/extensionDevelopmentFolders';
 import { extensionInfos } from '/@/stores/extensions';
@@ -36,9 +37,9 @@ onMount(async () => {
   //
   // Check if development mode is enabled
   isDevelopmentModeEnabled =
-    (await window.getConfigurationValue(
-      `${ExtensionLoaderSettings.SectionName}.${ExtensionLoaderSettings.DevelopmentMode}`,
-    )) ?? false;
+    ((await client.configuration.getValue({
+      key: `${ExtensionLoaderSettings.SectionName}.${ExtensionLoaderSettings.DevelopmentMode}`,
+    })) as boolean | undefined) ?? false;
 
   // subscribe to extension changes
   unsubscribers.push(
@@ -61,17 +62,17 @@ onDestroy(() => {
 
 async function addLocalFolderExtension(): Promise<void> {
   // call the openDialog
-  const result = await window.openDialog({
+  const result = await client.dialog.openDialog({
     selectors: ['openDirectory'],
     openLabel: 'Select folder',
     title: 'Track a new extension folder',
   });
   if (result?.[0]) {
     try {
-      await window.trackExtensionFolder(result[0]);
+      await client.extension.addDevelopmentFolder({ path: result[0] });
     } catch (error: unknown) {
       // show error
-      await window.showMessageBox({
+      await client.dialog.showMessageBox({
         title: 'Add Extension Failed',
         message: String(error),
         type: 'error',

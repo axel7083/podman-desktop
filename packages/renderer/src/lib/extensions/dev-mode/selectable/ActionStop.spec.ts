@@ -21,6 +21,7 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import type { SelectableExtensionDevelopmentFolderInfoUI } from '/@/lib/extensions/dev-mode/development-folder-info-ui';
 
 import ActionStop from './ActionStop.svelte';
@@ -56,7 +57,9 @@ test('Expect stop action being displayed if there is an extension started', asyn
   await fireEvent.click(stopButton);
 
   // expect the window.stopExtension to be called
-  expect(window.stopExtension).toHaveBeenCalledWith(extensionFolderWithExtensionStopped.extension?.id);
+  expect(vi.mocked(client.extension.stop)).toHaveBeenCalledWith({
+    extensionId: extensionFolderWithExtensionStopped.extension?.id,
+  });
 });
 
 test('Expect stop action being hidden if extension is stopped', async () => {

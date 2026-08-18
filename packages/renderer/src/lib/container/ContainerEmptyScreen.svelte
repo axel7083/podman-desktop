@@ -2,6 +2,7 @@
 import { Button, EmptyScreen } from '@podman-desktop/ui-svelte';
 import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
 import { providerInfos } from '/@/stores/providers';
 
 interface Props {
@@ -65,21 +66,21 @@ async function runContainer(commandLine: string): Promise<void> {
     inProgress = true;
     if (selectedProviderConnection) {
       await window.pullImage(selectedProviderConnection, helloImage, () => {});
-      const listImages = await window.listImages();
+      const listImages = await client.container.listImages({});
       const image = listImages.find(item => item.RepoTags?.includes(helloImage));
       if (image) {
-        await window.createAndStartContainer(image.engineId, { Image: helloImage });
+        await client.container.createAndStartContainer({ engine: image.engineId, options: { Image: helloImage } });
       } else {
-        await window.showMessageBox({
+        await client.dialog.showMessageBox({
           title: 'Run Container Failed',
           message: `Could not find ${helloImage} in images`,
           buttons: ['Dismiss'],
         });
       }
-      await window.telemetryTrack('startFirstContainerByButton');
+      await client.telemetry.track({ event: 'startFirstContainerByButton' });
     }
   } catch (err) {
-    await window.showMessageBox({
+    await client.dialog.showMessageBox({
       title: 'Run Container Failed',
       message: `Error while executing ${commandLine}: ${err instanceof Error ? err.message : String(err)}`,
       buttons: ['Dismiss'],
@@ -94,7 +95,7 @@ async function runContainer(commandLine: string): Promise<void> {
   title={title}
   message={messageCommandLine}
   commandline={commandLine}
-  onclick={(): Promise<void> => window.clipboardWriteText(commandLine)}>
+  onclick={(): Promise<void> => client.system.clipboardWriteText({ text: commandLine })}>
   {#snippet upperContent()}
   <div hidden={stoppedOnly}>
     <span class="text-[var(--pd-details-empty-sub-header)] max-w-[800px] text-pretty mx-2">{messageButton}</span>

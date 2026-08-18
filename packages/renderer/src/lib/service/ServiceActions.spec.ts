@@ -21,6 +21,8 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import ServiceActions from './ServiceActions.svelte';
 import type { ServiceUI } from './ServiceUI';
 
@@ -63,7 +65,7 @@ afterEach(() => {
 
 test('Expect no error and status deleting service', async () => {
   // Mock the showMessageBox to return 'Delete' (yes)
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   render(ServiceActions, { service });
 
   // click on delete button

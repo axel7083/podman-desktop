@@ -4,6 +4,7 @@ import type { ReleaseNotes } from '@podman-desktop/core-api';
 import { Button, CloseButton, Link } from '@podman-desktop/ui-svelte';
 import { onDestroy, onMount } from 'svelte';
 
+import { client } from '/@/client';
 import Markdown from '/@/lib/markdown/Markdown.svelte';
 import { onDidChangeConfiguration } from '/@/stores/configurationProperties';
 import { updateAvailable } from '/@/stores/update-store';
@@ -29,29 +30,30 @@ function onDidChangeConfigurationCallback(e: Event): void {
 
 async function openReleaseNotes(): Promise<void> {
   if (!notesURL) return;
-  await window.openExternal(notesURL);
+  await client.system.openExternal({ link: notesURL });
 }
 
 async function updatePodmanDesktop(): Promise<void> {
-  await window.updatePodmanDesktop();
+  await client.app.update();
 }
 
 async function getInfoFromNotes(): Promise<void> {
-  const releaseNotes = await window.podmanDesktopGetReleaseNotes();
+  const releaseNotes = await client.app.getReleaseNotes();
   notesInfo = releaseNotes.notes;
   notesAvailable = notesInfo !== undefined;
   notesURL = releaseNotes.notesURL;
 }
 
 async function onClose(): Promise<void> {
-  await window.updateConfigurationValue(`releaseNotesBanner.show`, currentVersion);
+  await client.configuration.updateValue({ key: `releaseNotesBanner.show`, value: currentVersion });
   showBanner = false;
 }
 
 onMount(async () => {
   onDidChangeConfiguration.addEventListener('releaseNotesBanner.show', onDidChangeConfigurationCallback);
-  currentVersion = await window.getPodmanDesktopVersion();
-  showBanner = (await window.getConfigurationValue(`releaseNotesBanner.show`)) !== currentVersion ? true : false;
+  currentVersion = await client.app.getVersion();
+  showBanner =
+    (await client.configuration.getValue({ key: `releaseNotesBanner.show` })) !== currentVersion ? true : false;
   await getInfoFromNotes();
 });
 

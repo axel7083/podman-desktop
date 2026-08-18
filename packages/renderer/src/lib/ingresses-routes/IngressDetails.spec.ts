@@ -23,6 +23,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { router } from 'tinro';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { isKubernetesExperimentalMode } from '/@/lib/kube/resources-listen';
 import {
   initListExperimental,
@@ -81,7 +82,7 @@ describe.each<{
   });
 
   test('Expect redirect to previous page if ingress is deleted', async () => {
-    vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+    vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
     const routerGotoSpy = vi.spyOn(router, 'goto');
 
     // mock object store
@@ -110,7 +111,7 @@ describe.each<{
     const deleteButton = screen.getByRole('button', { name: 'Delete Ingress' });
     await fireEvent.click(deleteButton);
 
-    expect(window.showMessageBox).toHaveBeenCalledOnce();
+    expect(client.dialog.showMessageBox).toHaveBeenCalledOnce();
 
     // Wait for confirmation modal to disappear after clicking on delete
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());

@@ -4,6 +4,7 @@ import { Button, ErrorMessage, Input } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import EngineFormPage from '/@/lib/ui//EngineFormPage.svelte';
 import { Uri } from '/@/lib/uri/Uri';
 import { saveImagesInfo } from '/@/stores/save-images-store';
@@ -48,7 +49,7 @@ async function selectTargetFilePath(): Promise<void> {
     }
     targetFile = `${imagesToSave[0].name.substring(lastSlashPos, lastColon)}.tar`;
   }
-  const result = await window.saveDialog({
+  const result = await client.dialog.saveDialog({
     title: 'Select the directory to export the container content',
     defaultUri: {
       fsPath: targetFile,
@@ -68,7 +69,7 @@ async function selectTargetFilePath(): Promise<void> {
 }
 
 async function selectOutputDirectoryPath(): Promise<void> {
-  const result = await window.openDialog({
+  const result = await client.dialog.openDialog({
     title: `Select the directory to save the ${singleItemMode ? 'image' : 'images'}`,
     selectors: ['openDirectory'],
   });

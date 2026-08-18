@@ -22,6 +22,8 @@ import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { tick } from 'svelte';
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import Markdown from './Markdown.svelte';
 
 async function waitRender(customProperties: object): Promise<void> {
@@ -35,7 +37,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.getUrlProtocol).mockResolvedValue('podman-desktop');
+  vi.mocked(client.system.getUrlProtocol).mockResolvedValue('podman-desktop');
 });
 
 test('Expect to have bold', async () => {

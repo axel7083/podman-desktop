@@ -1,6 +1,7 @@
 <script lang="ts">
 import { Button, EmptyScreen } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
 import PodIcon from '/@/lib/images/PodIcon.svelte';
 import { providerInfos } from '/@/stores/providers';
 
@@ -22,13 +23,16 @@ async function startPod(): Promise<void> {
   if (selectedProviderConnection) {
     try {
       await window.pullImage(selectedProviderConnection, helloImage, () => {});
-      const listImages = await window.listImages();
+      const listImages = await client.container.listImages({});
       const image = listImages.find(item => item.RepoTags?.includes(helloImage));
-      await window.createPod({ name: myFirstPod });
+      await client.container.createPod({ createOptions: { name: myFirstPod } });
       if (image) {
-        await window.createAndStartContainer(image.engineId, { Image: helloImage, pod: myFirstPod });
+        await client.container.createAndStartContainer({
+          engine: image.engineId,
+          options: { Image: helloImage, pod: myFirstPod },
+        });
       } else {
-        await window.showMessageBox({
+        await client.dialog.showMessageBox({
           title: 'Run Pod Failed',
           message: `Could not find '${helloImage}' in images`,
           type: 'error',
@@ -36,7 +40,7 @@ async function startPod(): Promise<void> {
         });
       }
     } catch (error) {
-      await window.showMessageBox({
+      await client.dialog.showMessageBox({
         title: 'Run Pod Failed',
         message: String(error),
         type: 'error',
@@ -46,7 +50,7 @@ async function startPod(): Promise<void> {
       inProgress = false;
     }
   } else {
-    await window.showMessageBox({
+    await client.dialog.showMessageBox({
       title: 'Run Pod Failed',
       message: `No provider connections found`,
       type: 'error',
@@ -61,7 +65,7 @@ async function startPod(): Promise<void> {
   title="No pods"
   message="Run a first pod using the following command line:"
   commandline={commandLine}
-  onclick={(): Promise<void> => window.clipboardWriteText(commandLine)}>
+  onclick={(): Promise<void> => client.system.clipboardWriteText({ text: commandLine })}>
   {#snippet upperContent()}
     <div class="flex gap-2 justify-center p-3">
       <Button title="Start your first pod" type="primary" inProgress={inProgress} on:click={startPod}

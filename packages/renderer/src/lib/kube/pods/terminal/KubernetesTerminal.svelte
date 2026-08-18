@@ -6,6 +6,7 @@ import { type IDisposable, Terminal } from '@xterm/xterm';
 import { onDestroy, onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import { getTerminalTheme } from '/@/lib/terminal/terminal-theme';
 import { terminalStates } from '/@/stores/kubernetes-terminal-state-store';
 
@@ -92,16 +93,15 @@ async function initializeNewTerminal(container: HTMLElement): Promise<void> {
     return;
   }
 
-  const fontSize = await window.getConfigurationValue<number>(
-    TerminalSettings.SectionName + '.' + TerminalSettings.FontSize,
-  );
-  const lineHeight = await window.getConfigurationValue<number>(
-    TerminalSettings.SectionName + '.' + TerminalSettings.LineHeight,
-  );
-
-  const scrollback = await window.getConfigurationValue<number>(
-    TerminalSettings.SectionName + '.' + TerminalSettings.Scrollback,
-  );
+  const fontSize = (await client.configuration.getValue({
+    key: TerminalSettings.SectionName + '.' + TerminalSettings.FontSize,
+  })) as number | undefined;
+  const lineHeight = (await client.configuration.getValue({
+    key: TerminalSettings.SectionName + '.' + TerminalSettings.LineHeight,
+  })) as number | undefined;
+  const scrollback = (await client.configuration.getValue({
+    key: TerminalSettings.SectionName + '.' + TerminalSettings.Scrollback,
+  })) as number | undefined;
 
   shellTerminal = new Terminal({
     fontSize,

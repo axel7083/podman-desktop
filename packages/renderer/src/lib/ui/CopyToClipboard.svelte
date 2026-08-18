@@ -3,6 +3,8 @@ import { faPaste } from '@fortawesome/free-solid-svg-icons';
 import { Tooltip } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
+
 interface Props {
   clipboardData: string;
   title: string;
@@ -12,7 +14,7 @@ interface Props {
 let { clipboardData, title, class: className = '' }: Props = $props();
 
 async function copyTextToClipboard(): Promise<void> {
-  await window.clipboardWriteText(clipboardData);
+  await client.system.clipboardWriteText({ text: clipboardData });
 }
 </script>
 

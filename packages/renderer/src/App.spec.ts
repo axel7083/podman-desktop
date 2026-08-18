@@ -23,6 +23,7 @@ import { get, writable } from 'svelte/store';
 import { router } from 'tinro';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import * as kubernetesNoCurrentContext from '/@/stores/kubernetes-no-current-context';
 
 import App from './App.svelte';
@@ -100,7 +101,7 @@ beforeEach(() => {
     return { dispose: vi.fn() };
   });
   Object.defineProperty(window, 'dispatchEvent', { value: dispatchEventMock });
-  (window.getConfigurationValue as unknown) = vi.fn();
+  vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);
   vi.mocked(kubernetesNoCurrentContext).kubernetesNoCurrentContext = writable(false);
 });
 
@@ -341,7 +342,7 @@ describe('Table persistence functionality', () => {
   });
 
   test('should provide working load callback through store', async () => {
-    vi.mocked(window.loadListConfig).mockResolvedValue([
+    vi.mocked(client.listOrganizer.loadListConfig).mockResolvedValue([
       { id: 'Name', label: 'Name', enabled: true, originalOrder: 0 },
     ]);
     render(App);
@@ -352,22 +353,28 @@ describe('Table persistence functionality', () => {
     // Test the load callback
     const result = await tablePersistence.storage!.load('test-kind', ['Name', 'Age']);
 
-    expect(vi.mocked(window.loadListConfig)).toHaveBeenCalledWith('test-kind', ['Name', 'Age']);
+    expect(vi.mocked(client.listOrganizer.loadListConfig)).toHaveBeenCalledWith({
+      key: 'test-kind',
+      availableColumns: ['Name', 'Age'],
+    });
     expect(result).toEqual([{ id: 'Name', label: 'Name', enabled: true, originalOrder: 0 }]);
   });
 
   test('should provide working save callback through store', async () => {
-    vi.mocked(window.saveListConfig).mockResolvedValue(undefined);
+    vi.mocked(client.listOrganizer.saveListConfig).mockResolvedValue(undefined);
     render(App);
 
     // Test the save callback
     const items = [{ id: 'Name', label: 'Name', enabled: true, originalOrder: 0 }];
     await tablePersistence.storage!.save('test-kind', items);
-    expect(vi.mocked(window.saveListConfig)).toHaveBeenCalledWith('test-kind', items);
+    expect(vi.mocked(client.listOrganizer.saveListConfig)).toHaveBeenCalledWith({
+      key: 'test-kind',
+      items,
+    });
   });
 
   test('should provide working reset callback through store', async () => {
-    vi.mocked(window.resetListConfig).mockResolvedValue([
+    vi.mocked(client.listOrganizer.resetListConfig).mockResolvedValue([
       { id: 'Name', label: 'Name', enabled: true, originalOrder: 0 },
     ]);
 
@@ -378,7 +385,10 @@ describe('Table persistence functionality', () => {
     // Test the reset callback
     const result = await tablePersistence.storage!.reset('test-kind', ['Name', 'Age']);
 
-    expect(vi.mocked(window.resetListConfig)).toHaveBeenCalledWith('test-kind', ['Name', 'Age']);
+    expect(vi.mocked(client.listOrganizer.resetListConfig)).toHaveBeenCalledWith({
+      key: 'test-kind',
+      availableColumns: ['Name', 'Age'],
+    });
     expect(result).toEqual([{ id: 'Name', label: 'Name', enabled: true, originalOrder: 0 }]);
   });
 });

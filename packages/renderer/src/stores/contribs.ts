@@ -19,6 +19,8 @@
 import type { ContributionInfo } from '@podman-desktop/core-api';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = ['contribution-register', 'contribution-unregister'];
@@ -32,7 +34,7 @@ export const contributions: Writable<readonly ContributionInfo[]> = writable([])
 
 // use helper here as window methods are initialized after the store in tests
 const listContributions = (): Promise<readonly ContributionInfo[]> => {
-  return window.listContributions();
+  return client.uiRegistry.listContributions();
 };
 
 const eventStore = new EventStore<readonly ContributionInfo[]>(

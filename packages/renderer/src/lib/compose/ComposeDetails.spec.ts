@@ -26,6 +26,7 @@ import { get } from 'svelte/store';
 /* eslint-enable import/no-duplicates */
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { mockBreadcrumb } from '/@/stores/breadcrumb.spec';
 import { containersInfos } from '/@/stores/containers';
 import { providerInfos } from '/@/stores/providers';
@@ -47,12 +48,12 @@ beforeEach(() => {
     return { dispose: vi.fn() };
   });
 
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(undefined);
-  vi.mocked(window.getConfigurationProperties).mockResolvedValue({});
+  vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);
+  vi.mocked(client.configuration.getProperties).mockResolvedValue({});
   vi.mocked(window.initializeProvider).mockResolvedValue([]);
-  vi.mocked(window.getContainerInspect).mockResolvedValue(containerInspectInfo);
-  vi.mocked(window.listNetworks).mockResolvedValue([]);
-  vi.mocked(window.getContributedMenus).mockResolvedValue([]);
+  vi.mocked(client.container.getContainerInspect).mockResolvedValue(containerInspectInfo);
+  vi.mocked(client.container.listNetworks).mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
   vi.mocked(window.getProviderInfos).mockResolvedValue([]);
   vi.mocked(window.onDidUpdateProviderStatus).mockResolvedValue(undefined);
 });
@@ -238,7 +239,7 @@ test('Compose details inspect is clickable and loadable', async () => {
     },
   ] as unknown as ContainerInfo[];
 
-  vi.mocked(window.listContainers).mockResolvedValue(mockedContainers);
+  vi.mocked(client.container.listContainers).mockResolvedValue(mockedContainers);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -258,7 +259,7 @@ test('Compose details inspect is clickable and loadable', async () => {
 });
 
 test('Test that compose kube tab is clickable and loadable', async () => {
-  vi.mocked(window.listContainers).mockResolvedValue([]);
+  vi.mocked(client.container.listContainers).mockResolvedValue([]);
 
   render(ComposeDetails, { composeName: 'foobar', engineId: 'engine' });
   const kubeHref = screen.getByRole('link', { name: 'Kube' });

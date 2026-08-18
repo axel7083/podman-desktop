@@ -20,6 +20,8 @@ import type { ViewInfoUI } from '@podman-desktop/core-api';
 import type { Writable } from 'svelte/store';
 import { writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = ['extension-stopped', 'extensions-started', 'extension-started'];
@@ -39,7 +41,7 @@ export const viewsContributions: Writable<ViewInfoUI[]> = writable([]);
 
 // use helper here as window methods are initialized after the store in tests
 const listViewsContributions = (): Promise<ViewInfoUI[]> => {
-  return window.listViewsContributions();
+  return client.uiRegistry.listViews();
 };
 
 export const viewsEventStore = new EventStore<ViewInfoUI[]>(

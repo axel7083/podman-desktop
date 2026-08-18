@@ -6,6 +6,7 @@ import { DropdownMenu } from '@podman-desktop/ui-svelte';
 import { createEventDispatcher, onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import ContributionActions from '/@/lib/actions/ContributionActions.svelte';
 import { withConfirmation } from '/@/lib/dialogs/messagebox-utils';
 import FlatMenu from '/@/lib/ui/FlatMenu.svelte';
@@ -35,7 +36,7 @@ const composeLabel = 'com.docker.compose.project';
 
 let contributions: Menu[] = $state([]);
 onMount(async () => {
-  contributions = await window.getContributedMenus(MenuContext.DASHBOARD_COMPOSE);
+  contributions = await client.menu.getContributedMenus({ context: MenuContext.DASHBOARD_COMPOSE });
 });
 
 let hideStartForStop = $state(false);
@@ -78,7 +79,7 @@ async function startCompose(): Promise<void> {
   hideStopForStart = !someNeedStop;
   inProgress(true, 'STARTING');
   try {
-    await window.startContainersByLabel(compose.engineId, composeLabel, compose.name);
+    await client.container.startContainersByLabel({ engine: compose.engineId, label: composeLabel, key: compose.name });
   } catch (error) {
     handleError(String(error));
   } finally {
@@ -89,7 +90,7 @@ async function stopCompose(): Promise<void> {
   hideStartForStop = !someNeedStart;
   inProgress(true, 'STOPPING');
   try {
-    await window.stopContainersByLabel(compose.engineId, composeLabel, compose.name);
+    await client.container.stopContainersByLabel({ engine: compose.engineId, label: composeLabel, key: compose.name });
   } catch (error) {
     handleError(String(error));
   } finally {
@@ -100,7 +101,11 @@ async function stopCompose(): Promise<void> {
 async function deleteCompose(): Promise<void> {
   inProgress(true, 'DELETING');
   try {
-    await window.deleteContainersByLabel(compose.engineId, composeLabel, compose.name);
+    await client.container.deleteContainersByLabel({
+      engine: compose.engineId,
+      label: composeLabel,
+      key: compose.name,
+    });
   } catch (error) {
     handleError(String(error));
   } finally {
@@ -111,7 +116,11 @@ async function deleteCompose(): Promise<void> {
 async function restartCompose(): Promise<void> {
   inProgress(true, 'RESTARTING');
   try {
-    await window.restartContainersByLabel(compose.engineId, composeLabel, compose.name);
+    await client.container.restartContainersByLabel({
+      engine: compose.engineId,
+      label: composeLabel,
+      key: compose.name,
+    });
   } catch (error) {
     handleError(String(error));
   } finally {

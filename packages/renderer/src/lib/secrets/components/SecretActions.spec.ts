@@ -22,6 +22,8 @@ import type { SecretInfo } from '@podman-desktop/core-api';
 import { fireEvent, render, waitFor } from '@testing-library/svelte';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import SecretActions from './SecretActions.svelte';
 
 const secret: SecretInfo = {
@@ -35,11 +37,11 @@ const secret: SecretInfo = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.getContributedMenus).mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 });
 
 test('Expect delete button to be visible and trigger confirmation', async () => {
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
 
   const { getByTitle } = render(SecretActions, { object: secret });
 
@@ -49,10 +51,10 @@ test('Expect delete button to be visible and trigger confirmation', async () => 
   await fireEvent.click(deleteButton);
 
   await waitFor(() => {
-    expect(window.showMessageBox).toHaveBeenCalledOnce();
+    expect(client.dialog.showMessageBox).toHaveBeenCalledOnce();
   });
 
-  expect(window.removeSecret).toHaveBeenCalledWith(secret.engineId, secret.Id);
+  expect(client.container.removeSecret).toHaveBeenCalledWith({ engineId: secret.engineId, secretId: secret.Id });
 });
 
 describe('contributions', () => {
@@ -60,12 +62,12 @@ describe('contributions', () => {
     render(SecretActions, { object: secret });
 
     await waitFor(() => {
-      expect(window.getContributedMenus).toHaveBeenCalledWith('dashboard/secret');
+      expect(client.menu.getContributedMenus).toHaveBeenCalledWith({ context: 'dashboard/secret' });
     });
   });
 
   test('Expect contributed menus to be visible', async () => {
-    vi.mocked(window.getContributedMenus).mockResolvedValue([
+    vi.mocked(client.menu.getContributedMenus).mockResolvedValue([
       {
         command: 'foo',
         title: 'Open foo',

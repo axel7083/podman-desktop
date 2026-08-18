@@ -9,6 +9,7 @@ import { SvelteMap } from 'svelte/reactivity';
 import type { Unsubscriber } from 'svelte/store';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import ContainerConnectionDropdown from '/@/lib/forms/ContainerConnectionDropdown.svelte';
 import SolidPodIcon from '/@/lib/images/SolidPodIcon.svelte';
 import EngineFormPage from '/@/lib/ui/EngineFormPage.svelte';
@@ -51,7 +52,10 @@ async function doCreatePodFromContainers(): Promise<void> {
   // fetch port info from all containers
   const portmappingsArray = await Promise.all(
     podCreation.containers.map(async container => {
-      const containerInspect = await window.getContainerInspect(container.engineId, container.id);
+      const containerInspect = await client.container.getContainerInspect({
+        engine: container.engineId,
+        containerId: container.id,
+      });
 
       // convert port bindings to an port mapping object
       return Object.entries(containerInspect.HostConfig.PortBindings).map(([key, value]) => {
@@ -88,7 +92,9 @@ async function doCreatePodFromContainers(): Promise<void> {
     .filter(item => item !== undefined) as PodCreatePortOptions[];
 
   // first create pod
-  const { Id, engineId } = await window.createPod({ name: podCreation.name, portmappings, provider: selectedProvider });
+  const { Id, engineId } = await client.container.createPod({
+    createOptions: { name: podCreation.name, portmappings, provider: selectedProvider },
+  });
   // now, for each container, recreate it with the pod
   // but before, stop the container
 
@@ -96,7 +102,7 @@ async function doCreatePodFromContainers(): Promise<void> {
   for (const container of podCreation.containers) {
     // make sure it is stopped
     try {
-      await window.stopContainer(container.engineId, container.id);
+      await client.container.stopContainer({ engine: container.engineId, containerId: container.id });
     } catch (error) {
       // already stopped
     }
@@ -106,15 +112,15 @@ async function doCreatePodFromContainers(): Promise<void> {
   for (const container of podCreation.containers) {
     // recreate the container but adding the pod and using a different name
 
-    await window.replicatePodmanContainer(
-      { ...container },
-      { engineId },
-      { pod: Id, name: container.name + '-podified' },
-    );
+    await client.container.replicatePodmanContainer({
+      source: { ...container },
+      target: { engineId },
+      overrideParameters: { pod: Id, name: container.name + '-podified' },
+    });
   }
 
   // finally, start the pod
-  await window.startPod(engineId, Id);
+  await client.container.startPod({ engine: engineId, podId: Id });
 
   // ok now, redirect to the pods
   router.goto('/pods/');

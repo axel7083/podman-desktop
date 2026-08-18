@@ -16,11 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import { client } from '/@/client';
 import { type ConfirmationOptions, withConfirmation } from '/@/lib/dialogs/messagebox-utils';
 
 export function withBulkConfirmation(callback: () => unknown, text: string, options: ConfirmationOptions): void {
-  window
-    .getConfigurationValue('userConfirmation.bulk')
-    .then(confirm => (confirm ? withConfirmation(callback, text, options) : callback()))
-    .catch((err: unknown) => console.error('Error getting configuration value userConfirmation.bulk', err));
+  client.configuration
+    .getValue({ key: 'userConfirmation.bulk' })
+    ?.then(confirm => (confirm ? withConfirmation(callback, text, options) : callback()))
+    ?.catch((err: unknown) => console.error('Error getting configuration value userConfirmation.bulk', err));
 }

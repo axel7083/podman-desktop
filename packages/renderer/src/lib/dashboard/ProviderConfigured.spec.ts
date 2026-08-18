@@ -22,6 +22,7 @@ import type { ProviderInfo } from '@podman-desktop/core-api';
 import { render, screen } from '@testing-library/svelte';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import ProviderConfigured from '/@/lib/dashboard/ProviderConfigured.svelte';
 import { InitializeOnlyMode } from '/@/lib/dashboard/ProviderInitUtils';
 import { providerInfos } from '/@/stores/providers';
@@ -29,7 +30,7 @@ import { providerInfos } from '/@/stores/providers';
 import { verifyStatus } from './ProviderStatusTestHelper.spec';
 
 beforeAll(() => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
   vi.mocked(window.events.receive).mockImplementation((_channel, func) => {
     func();
     return { dispose: vi.fn() };

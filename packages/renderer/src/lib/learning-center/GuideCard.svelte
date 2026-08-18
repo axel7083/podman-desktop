@@ -2,6 +2,8 @@
 import type { Guide } from '@podman-desktop/core-api/learning-center';
 import { Button } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
+
 interface Props {
   guide: Guide;
   width?: number;
@@ -11,10 +13,13 @@ interface Props {
 let { guide, width = 300, height = 300 }: Props = $props();
 
 async function openGuide(guide: Guide): Promise<void> {
-  await window.telemetryTrack('openLearningCenterGuide', {
-    guideId: guide.id,
+  await client.telemetry.track({
+    event: 'openLearningCenterGuide',
+    eventProperties: {
+      guideId: guide.id,
+    },
   });
-  await window.openExternal(guide.url);
+  await client.system.openExternal({ link: guide.url });
 }
 </script>
 

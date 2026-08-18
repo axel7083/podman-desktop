@@ -23,6 +23,7 @@ import { fireEvent, render } from '@testing-library/svelte';
 import { readable } from 'svelte/store';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import PortForwardActions from '/@/lib/kubernetes-port-forward/PortForwardActions.svelte';
 import * as kubeContextStore from '/@/stores/kubernetes-contexts-state';
 
@@ -43,12 +44,10 @@ beforeEach(() => {
   vi.resetAllMocks();
 
   vi.mocked(kubeContextStore).kubernetesCurrentContextPortForwards = readable([MOCKED_USER_FORWARD_CONFIG]);
-  (window.openExternal as unknown) = vi.fn();
   (window.deleteKubernetesPortForward as unknown) = vi.fn();
-  (window.showMessageBox as unknown) = vi.fn();
 
   // mock resolved `Delete`
-  vi.mocked(window.showMessageBox).mockResolvedValue({
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({
     response: 'Delete',
   });
 });
@@ -73,7 +72,7 @@ test('open should call openExternal', async () => {
   const openBtn = getByTitle('Open forwarded port');
   await fireEvent.click(openBtn);
 
-  expect(window.openExternal).toHaveBeenCalledWith('http://localhost:55087');
+  expect(client.system.openExternal).toHaveBeenCalledWith({ link: 'http://localhost:55087' });
 });
 
 test('remove should call deleteKubernetesPortForward', async () => {

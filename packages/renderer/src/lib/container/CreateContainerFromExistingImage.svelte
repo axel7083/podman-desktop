@@ -14,6 +14,7 @@ import { onMount, tick } from 'svelte';
 import { SvelteMap } from 'svelte/reactivity';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import ContainerConnectionDropdown from '/@/lib/forms/ContainerConnectionDropdown.svelte';
 import { ImageUtils } from '/@/lib/image/image-utils';
 import RecommendedRegistry from '/@/lib/image/RecommendedRegistry.svelte';
@@ -65,7 +66,10 @@ async function resolveShortname(): Promise<void> {
   }
   if (imageToPull && !imageToPull.includes('/')) {
     shortnameImages =
-      (await window.resolveShortnameImage($state.snapshot(selectedProviderConnection), imageToPull)) ?? [];
+      (await client.container.resolveShortnameImage({
+        providerContainerConnectionInfo: $state.snapshot(selectedProviderConnection),
+        shortName: imageToPull,
+      })) ?? [];
     // not a shortname
   } else {
     podmanFQN = '';
@@ -200,7 +204,7 @@ async function searchImages(value: string): Promise<{ images: string[]; tags: st
     if (image.startsWith(DOCKER_PREFIX_WITH_SLASH)) {
       image = image.slice(DOCKER_PREFIX_WITH_SLASH.length);
     }
-    const tags = await window.listImageTagsInRegistry({ image });
+    const tags = await client.imageRegistry.listImageTags({ image });
     const computedTags = tags.map(t => `${originalImage}:${t}`);
     return { images: computedTags.filter(i => i.startsWith(value)), tags: computedTags };
   }
@@ -218,7 +222,7 @@ async function searchImages(value: string): Promise<{ images: string[]; tags: st
     options.registry = registry;
     options.query = rest.join('/');
   }
-  const searchResult = await window.searchImageInRegistry(options);
+  const searchResult = await client.imageRegistry.searchImages(options);
   const result = searchResult.map(r => {
     return [options.registry, r.name].join('/');
   });
@@ -226,8 +230,8 @@ async function searchImages(value: string): Promise<{ images: string[]; tags: st
 }
 
 async function searchLocalImages(value: string): Promise<string[]> {
-  const listImages: ImageInfo[] = await window.listImages({
-    provider: $state.snapshot(selectedProviderConnection),
+  const listImages: ImageInfo[] = await client.container.listImages({
+    options: { provider: $state.snapshot(selectedProviderConnection) },
   });
   const localImagesNames = listImages.map(image => {
     if (image.RepoTags) {
@@ -249,7 +253,7 @@ async function searchLatestTag(): Promise<void> {
     if (image.startsWith(DOCKER_PREFIX_WITH_SLASH)) {
       image = image.slice(DOCKER_PREFIX_WITH_SLASH.length);
     }
-    const tags = await window.listImageTagsInRegistry({ image });
+    const tags = await client.imageRegistry.listImageTags({ image });
     if (imageToPull.includes(':')) {
       latestTagMessage = undefined;
       checkIfTagExist(image, tags);
@@ -283,8 +287,8 @@ async function buildContainerFromImage(): Promise<void> {
     dockerLibraryImage = `${registry}/library/${imageName}`;
   }
   const localImages = (
-    await window.listImages({
-      provider: $state.snapshot(selectedProviderConnection),
+    await client.container.listImages({
+      options: { provider: $state.snapshot(selectedProviderConnection) },
     })
   ).filter(
     image =>

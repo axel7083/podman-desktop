@@ -10,11 +10,13 @@ import { Terminal } from '@xterm/xterm';
 import { onDestroy, onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import { getTerminalTheme } from '/@/lib/terminal/terminal-theme';
 import NoLogIcon from '/@/lib/ui/NoLogIcon.svelte';
 import { getExistingTerminal, registerTerminal } from '/@/stores/container-terminal-store';
 
 import type { ContainerInfoUI } from './ContainerInfoUI';
+import { Shell } from '/@/lib/shell/shell';
 
 interface ContainerDetailsTerminalProps {
   container: ContainerInfoUI;
@@ -28,16 +30,18 @@ let currentRouterPath: string;
 let sendCallbackId: number | undefined;
 let terminalContent: string = '';
 let serializeAddon: SerializeAddon;
+let shell: Shell;
 let lastState = $state('');
 let containerState = $derived(container.state);
 let reconnectTimer: ReturnType<typeof setTimeout> | undefined;
 let onDataDisposable: IDisposable | undefined;
 let reconnecting = false;
 
-function registerInputHandler(callbackId: number): void {
+function registerInputHandler(shell: Shell): void {
   onDataDisposable?.dispose();
   onDataDisposable = shellTerminal?.onData(data => {
-    window.shellInContainerSend(callbackId, data).catch((error: unknown) => console.log(String(error)));
+    console.log('write data', data);
+    shell.write(data).catch((error: unknown) => console.log(String(error)));
   });
 }
 
@@ -126,17 +130,21 @@ async function executeShellIntoContainer(): Promise<void> {
   if (container.state !== 'RUNNING') {
     return;
   }
-  // grab logs of the container
-  const callbackId = await window.shellInContainer(
-    container.engineId,
-    container.id,
-    createDataCallback(),
-    () => {},
-    receiveEndCallback,
-  );
-  await window.shellInContainerResize(callbackId, shellTerminal.cols, shellTerminal.rows);
-  registerInputHandler(callbackId);
-  sendCallbackId = callbackId;
+
+  console.log('executeShellIntoContainer creating shell client')
+  shell = new Shell(container.engineId, container.id);
+  shell.subscribe((data) => {
+    shellTerminal.write(data);
+  });
+
+  console.log('open shell');
+  await shell.open();
+
+  console.log('resizing shell', shellTerminal.cols, shellTerminal.rows);
+  await shell.resize(shellTerminal.cols, shellTerminal.rows);
+
+  console.log('registerInputHandler');
+  registerInputHandler(shell);
 }
 
 // refresh
@@ -147,16 +155,16 @@ async function refreshTerminal(): Promise<void> {
   }
 
   // grab font size
-  const fontSize = await window.getConfigurationValue<number>(
-    TerminalSettings.SectionName + '.' + TerminalSettings.FontSize,
-  );
-  const lineHeight = await window.getConfigurationValue<number>(
-    TerminalSettings.SectionName + '.' + TerminalSettings.LineHeight,
-  );
+  const fontSize = (await client.configuration.getValue({
+    key: TerminalSettings.SectionName + '.' + TerminalSettings.FontSize,
+  })) as number | undefined;
+  const lineHeight = (await client.configuration.getValue({
+    key: TerminalSettings.SectionName + '.' + TerminalSettings.LineHeight,
+  })) as number | undefined;
 
-  const scrollback = await window.getConfigurationValue<number>(
-    TerminalSettings.SectionName + '.' + TerminalSettings.Scrollback,
-  );
+  const scrollback = (await client.configuration.getValue({
+    key: TerminalSettings.SectionName + '.' + TerminalSettings.Scrollback,
+  })) as number | undefined;
 
   // get terminal if any
   const existingTerminal = getExistingTerminal(container.engineId, container.id);
@@ -188,11 +196,7 @@ async function refreshTerminal(): Promise<void> {
   window.addEventListener('resize', () => {
     if (currentRouterPath === `/containers/${container.id}/terminal`) {
       fitAddon.fit();
-      if (sendCallbackId) {
-        window
-          .shellInContainerResize(sendCallbackId, shellTerminal.cols, shellTerminal.rows)
-          .catch((err: unknown) => console.error(`Error resizing terminal for container ${container.id}`, err));
-      }
+      shell.resize(shellTerminal.cols, shellTerminal.rows).catch(console.error);
     }
   });
   fitAddon.fit();

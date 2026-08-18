@@ -22,6 +22,7 @@ import type { ProviderContainerConnectionInfo, ProviderInfo } from '@podman-desk
 import { render, screen } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { configurationProperties } from '/@/stores/configurationProperties';
 
 import SystemOverviewResourceUsage from './SystemOverviewResourceUsage.svelte';
@@ -67,7 +68,7 @@ const containerConnection: ProviderContainerConnectionInfo = {
 beforeEach(() => {
   vi.resetAllMocks();
   configurationProperties.set([]);
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(undefined);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);
 });
 
 test('should not render resource bars when no configuration keys', async () => {

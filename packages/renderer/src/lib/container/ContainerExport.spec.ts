@@ -18,7 +18,6 @@
 
 import '@testing-library/jest-dom/vitest';
 
-import type { Uri } from '@podman-desktop/api';
 import type { ContainerInfo } from '@podman-desktop/core-api';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
@@ -26,6 +25,7 @@ import { tick } from 'svelte';
 import { router } from 'tinro';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { containersInfos } from '/@/stores/containers';
 
 import ContainerExport from './ContainerExport.svelte';
@@ -60,7 +60,7 @@ test('Expect export button to be disabled', async () => {
 
 test('Expect export button to be enabled when output target is selected', async () => {
   containersInfos.set([container]);
-  vi.mocked(window.saveDialog).mockResolvedValue({ scheme: 'file', path: '/tmp/my/path' } as Uri);
+  vi.mocked(client.dialog.saveDialog).mockResolvedValue({ scheme: 'file', path: '/tmp/my/path' });
   await waitRender();
   const btnSelectOutputDir = screen.getByRole('button', { name: 'Select output file' });
   expect(btnSelectOutputDir).toBeInTheDocument();
@@ -73,7 +73,7 @@ test('Expect export button to be enabled when output target is selected', async 
 
 test('Expect export function called when export button is clicked', async () => {
   containersInfos.set([container]);
-  vi.mocked(window.saveDialog).mockResolvedValue({ scheme: 'file', path: '/tmp/my/path' } as Uri);
+  vi.mocked(client.dialog.saveDialog).mockResolvedValue({ scheme: 'file', path: '/tmp/my/path' });
   vi.mocked(window.exportContainer).mockResolvedValue(undefined);
   const goToMock = vi.spyOn(router, 'goto');
   await waitRender();
@@ -94,7 +94,7 @@ test('Expect export function called when export button is clicked', async () => 
 
 test('Expect error shown if export function fails', async () => {
   containersInfos.set([container]);
-  vi.mocked(window.saveDialog).mockResolvedValue({ scheme: 'file', path: '/tmp/my/path' } as Uri);
+  vi.mocked(client.dialog.saveDialog).mockResolvedValue({ scheme: 'file', path: '/tmp/my/path' });
   vi.mocked(window.exportContainer).mockRejectedValue('error while exporting');
   const goToMock = vi.spyOn(router, 'goto');
   await waitRender();

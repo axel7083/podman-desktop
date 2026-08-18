@@ -23,6 +23,8 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import { router } from 'tinro';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import SystemOverviewProviderSetup from './SystemOverviewProviderSetup.svelte';
 
 vi.mock(import('tinro'));
@@ -144,8 +146,11 @@ describe('configured provider', () => {
     await fireEvent.click(button);
 
     await vi.waitFor(() =>
-      expect(window.telemetryTrack).toHaveBeenCalledWith('dashboard.healthCard.provider.started', {
-        providerName: 'Podman',
+      expect(client.telemetry.track).toHaveBeenCalledWith({
+        event: 'dashboard.healthCard.provider.started',
+        eventProperties: {
+          providerName: 'Podman',
+        },
       }),
     );
   });

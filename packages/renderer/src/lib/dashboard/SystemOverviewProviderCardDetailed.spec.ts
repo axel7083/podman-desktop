@@ -29,6 +29,8 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import { router } from 'tinro';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import SystemOverviewProviderCardDetailed from './SystemOverviewProviderCardDetailed.svelte';
 
 vi.mock(import('/@/lib/dashboard/SystemOverviewResourceUsage.svelte'));
@@ -345,8 +347,11 @@ test('should track dashboard.healthCard.provider.started telemetry when starting
   await fireEvent.click(button);
 
   await vi.waitFor(() =>
-    expect(window.telemetryTrack).toHaveBeenCalledWith('dashboard.healthCard.provider.started', {
-      providerName: 'Podman',
+    expect(client.telemetry.track).toHaveBeenCalledWith({
+      event: 'dashboard.healthCard.provider.started',
+      eventProperties: {
+        providerName: 'Podman',
+      },
     }),
   );
 });

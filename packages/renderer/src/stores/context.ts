@@ -19,6 +19,7 @@
 import type { Writable } from 'svelte/store';
 import { writable } from 'svelte/store';
 
+import { client } from '/@/client';
 import { ContextUI } from '/@/lib/context/context';
 
 export const context: Writable<ContextUI> = setup();
@@ -43,9 +44,8 @@ export function setup(): Writable<ContextUI> {
   });
 
   window.addEventListener('extensions-already-started', () => {
-    // this function can be undefined during tests
-    window
-      .contextCollectAllValues?.()
+    client.uiRegistry
+      .collectAllContextValues()
       ?.then(values => {
         const currentContext = Object.entries(values).reduce((result, [key, value]) => {
           result.setValue(key, value);

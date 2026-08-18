@@ -20,6 +20,8 @@ import type { ListOrganizerItem } from '@podman-desktop/ui-svelte';
 import type { Component } from 'svelte';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import {
   convertFromListOrganizerItems,
   dashboardPageRegistry,
@@ -37,12 +39,12 @@ vi.mock(import('/@/lib/explore-features/ExploreFeatures.svelte'));
 
 beforeEach(async () => {
   vi.resetAllMocks();
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(false);
+  vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(false);
 });
 
 describe('defaultSection', () => {
   test('should return section names in correct order when enhanced dashboard is enabled', async () => {
-    vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+    vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
     await setupDashboardPageRegistry();
 
     await vi.waitFor(() => {
@@ -62,7 +64,7 @@ describe('defaultSection', () => {
   });
 
   test('should return section names with Providers when enhanced dashboard is disabled', async () => {
-    vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(false);
+    vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(false);
     await setupDashboardPageRegistry();
 
     await vi.waitFor(() => {

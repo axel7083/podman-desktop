@@ -9,6 +9,7 @@ import { Button, Checkbox, Input } from '@podman-desktop/ui-svelte';
 import { onDestroy } from 'svelte';
 import { get, type Unsubscriber } from 'svelte/store';
 
+import { client } from '/@/client';
 import ContainerConnectionDropdown from '/@/lib/forms/ContainerConnectionDropdown.svelte';
 import EngineFormPage from '/@/lib/ui/EngineFormPage.svelte';
 import FileInput from '/@/lib/ui/FileInput.svelte';
@@ -117,12 +118,12 @@ async function buildSinglePlatformImage(): Promise<void> {
   buildImageInfo.buildRunning = true;
 
   // Extract the relative path from the containerFilePath and containerBuildContextDirectory
-  const relativeContainerfilePath = await window.pathRelative(
-    buildImageInfo.containerBuildContextDirectory,
-    buildImageInfo.containerFilePath,
-  );
+  const relativeContainerfilePath = await client.system.pathRelative({
+    from: buildImageInfo.containerBuildContextDirectory,
+    to: buildImageInfo.containerFilePath,
+  });
 
-  buildImageInfo.cancellableTokenId = await window.getCancellableTokenSource();
+  buildImageInfo.cancellableTokenId = await client.cancellation.createTokenSource();
 
   buildImagesInfo.update(map => {
     taskId = getNextTaskId();
@@ -173,12 +174,12 @@ async function buildMultiplePlatformImagesAndCreateManifest(): Promise<void> {
   let buildIDs = [];
 
   // Extract the relative path from the containerFilePath and containerBuildContextDirectory
-  const relativeContainerfilePath = await window.pathRelative(
-    buildImageInfo.containerBuildContextDirectory,
-    buildImageInfo.containerFilePath,
-  );
+  const relativeContainerfilePath = await client.system.pathRelative({
+    from: buildImageInfo.containerBuildContextDirectory,
+    to: buildImageInfo.containerFilePath,
+  });
 
-  buildImageInfo.cancellableTokenId = await window.getCancellableTokenSource();
+  buildImageInfo.cancellableTokenId = await client.cancellation.createTokenSource();
 
   // We'll be using the same terminal for all builds (getTerminalCallback)
   // similar to how Podman CLI does it.
@@ -223,9 +224,11 @@ async function buildMultiplePlatformImagesAndCreateManifest(): Promise<void> {
         }
       }
     }
-    await window.createManifest({
-      images: buildIDs,
-      name: buildImageInfo.containerImageName!,
+    await client.container.createManifest({
+      manifestOptions: {
+        images: buildIDs,
+        name: buildImageInfo.containerImageName!,
+      },
     });
   } catch (error) {
     eventCollect(buildImageInfo.buildImageKey, 'error', `${String(error)}\r\n`);
@@ -282,7 +285,7 @@ onDestroy(() => {
 
 async function abortBuild(): Promise<void> {
   if (buildImageInfo.cancellableTokenId) {
-    await window.cancelToken(buildImageInfo.cancellableTokenId);
+    await client.cancellation.cancelToken({ id: buildImageInfo.cancellableTokenId });
     buildImageInfo.cancellableTokenId = undefined;
   }
   buildImageInfo.buildRunning = false;

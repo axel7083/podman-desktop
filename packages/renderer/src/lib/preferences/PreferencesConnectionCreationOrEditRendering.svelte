@@ -15,6 +15,7 @@ import { onDestroy, onMount } from 'svelte';
 import { get, type Unsubscriber } from 'svelte/store';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import type { ContextUI } from '/@/lib/context/context';
 import Markdown from '/@/lib/markdown/Markdown.svelte';
 import AuditMessageBox from '/@/lib/ui/AuditMessageBox.svelte';
@@ -109,9 +110,9 @@ $effect(() => {
 });
 
 onMount(async () => {
-  osMemory = await window.getOsMemory();
-  osCpu = await window.getOsCpu();
-  osFreeDisk = await window.getOsFreeDiskSize();
+  osMemory = await client.system.getHostMemory();
+  osCpu = await client.system.getHostCpu();
+  osFreeDisk = await client.system.getHostFreeDiskSize();
   contextsUnsubscribe = context.subscribe(value => {
     globalContext = value;
     loadConnectionParams().catch(() => console.error('unable to reload connection params'));
@@ -282,10 +283,10 @@ function setConfigurationValue(id: string, value: string | boolean | number): vo
 async function getConfigurationValue(configurationKey: IConfigurationPropertyRecordedSchema): Promise<any> {
   if (configurationKey?.id) {
     if (connectionInfo) {
-      const value = await window.getConfigurationValue(
-        configurationKey.id,
-        connectionInfo as unknown as ConfigurationScope,
-      );
+      const value = await client.configuration.getValue({
+        key: configurationKey.id,
+        scope: connectionInfo as unknown as ConfigurationScope,
+      });
       internalSetConfigurationValue(configurationKey.id, false, value as string);
       return value;
     }
@@ -423,7 +424,7 @@ async function handleOnSubmit(e: SubmitEvent): Promise<void> {
     existingFormData = data;
 
     try {
-      tokenId = await window.getCancellableTokenSource();
+      tokenId = await client.cancellation.createTokenSource();
       // clear terminal
       logsTerminal?.clear();
       loggerHandlerKey = registerConnectionCallback(getLoggerHandler());
@@ -453,17 +454,19 @@ async function handleOnSubmit(e: SubmitEvent): Promise<void> {
 
 async function cancelCreation(): Promise<void> {
   if (tokenId) {
-    await window.cancelToken(tokenId);
+    await client.cancellation.cancelToken({ id: tokenId });
     operationCancelled = true;
     tokenId = undefined;
   }
-  await window.telemetryTrack(
-    connectionInfo ? 'updateProviderConnectionRequestUserCanceled' : 'createNewProviderConnectionRequestUserCanceled',
-    {
+  await client.telemetry.track({
+    event: connectionInfo
+      ? 'updateProviderConnectionRequestUserCanceled'
+      : 'createNewProviderConnectionRequestUserCanceled',
+    eventProperties: {
       providerId: providerInfo.id,
       name: providerInfo.name,
     },
-  );
+  });
 }
 
 async function closePanel(): Promise<void> {
@@ -472,13 +475,13 @@ async function closePanel(): Promise<void> {
 
 async function closePage(): Promise<void> {
   router.goto('/preferences/resources');
-  await window.telemetryTrack(
-    connectionInfo ? 'updateProviderConnectionPageUserClosed' : 'createNewProviderConnectionPageUserClosed',
-    {
+  await client.telemetry.track({
+    event: connectionInfo ? 'updateProviderConnectionPageUserClosed' : 'createNewProviderConnectionPageUserClosed',
+    eventProperties: {
       providerId: providerInfo.id,
       name: providerInfo.name,
     },
-  );
+  });
 }
 
 function getConnectionResourceConfigurationValue(

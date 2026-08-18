@@ -20,8 +20,9 @@ import '@testing-library/jest-dom/vitest';
 
 import type { ImageInfo, ProviderContainerConnectionInfo, ProviderInfo } from '@podman-desktop/core-api';
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { providerInfos } from '/@/stores/providers';
 
 import PodEmptyScreen from './PodEmptyScreen.svelte';
@@ -33,13 +34,8 @@ vi.mock(import('/@/stores/providers'), async () => {
   };
 });
 
-beforeAll(() => {
-  Object.defineProperty(window, 'createPod', { value: vi.fn(), writable: true });
-  Object.defineProperty(window, 'clipboardWriteText', { value: vi.fn() });
-  Object.defineProperty(window, 'pullImage', { value: vi.fn() });
-  Object.defineProperty(window, 'listImages', { value: vi.fn() });
-  Object.defineProperty(window, 'createAndStartContainer', { value: vi.fn(), writable: true });
-  Object.defineProperty(window, 'getProviderInfos', { value: vi.fn() });
+beforeEach(() => {
+  vi.resetAllMocks();
   providerInfos.set([
     {
       containerConnections: [
@@ -49,10 +45,6 @@ beforeAll(() => {
       ],
     } as unknown as ProviderInfo,
   ]);
-});
-
-beforeEach(() => {
-  vi.resetAllMocks();
 });
 
 const helloImage = 'quay.io/podman/hello:latest';
@@ -87,7 +79,7 @@ const podCreateCommand = `podman run -dt --pod new:my-first-pod ${helloImage}`;
 
 function testComponent(name: string, fn: () => Promise<unknown>): void {
   test(name, () => {
-    vi.mocked(window.listImages).mockResolvedValue([imageInfo]);
+    vi.mocked(client.container.listImages).mockResolvedValue([imageInfo]);
     render(PodEmptyScreen);
     return fn();
   });
@@ -98,45 +90,48 @@ testComponent('renders button to run first pod', async () => {
 });
 
 testComponent('button click creates and starts a pod', async () => {
-  vi.spyOn(window, 'createPod').mockResolvedValue(podInfo);
+  vi.mocked(client.container.createPod).mockResolvedValue(podInfo);
   await fireEvent.click(getButton());
-  expect(window.createPod).toBeCalledWith({ name: 'my-first-pod' });
+  expect(client.container.createPod).toBeCalledWith({ createOptions: { name: 'my-first-pod' } });
   await vi.waitFor(() =>
-    expect(window.createAndStartContainer).toBeCalledWith(podInfo.engineId, {
-      Image: helloImage,
-      pod: 'my-first-pod',
+    expect(client.container.createAndStartContainer).toBeCalledWith({
+      engine: podInfo.engineId,
+      options: {
+        Image: helloImage,
+        pod: 'my-first-pod',
+      },
     }),
   );
 });
 
 testComponent('button click shows error message if creating pod fails', async () => {
-  vi.spyOn(window, 'createPod').mockRejectedValue(error);
+  vi.mocked(client.container.createPod).mockRejectedValue(error);
   await fireEvent.click(getButton());
-  await vi.waitFor(() => expect(window.showMessageBox).toBeCalledWith(errorMessage));
+  await vi.waitFor(() => expect(client.dialog.showMessageBox).toBeCalledWith(errorMessage));
 });
 
 testComponent('button click shows error message if starting pod fails', async () => {
-  vi.spyOn(window, 'createPod').mockResolvedValue(podInfo);
-  vi.spyOn(window, 'createAndStartContainer').mockRejectedValue(error);
+  vi.mocked(client.container.createPod).mockResolvedValue(podInfo);
+  vi.mocked(client.container.createAndStartContainer).mockRejectedValue(error);
   await fireEvent.click(getButton());
-  await vi.waitFor(() => expect(window.showMessageBox).toBeCalledWith(errorMessage));
+  await vi.waitFor(() => expect(client.dialog.showMessageBox).toBeCalledWith(errorMessage));
 });
 
 test('button click shows error if image could not be pulled', async () => {
-  vi.mocked(window.listImages).mockResolvedValue([]);
+  vi.mocked(client.container.listImages).mockResolvedValue([]);
   render(PodEmptyScreen);
   await fireEvent.click(getButton());
-  await vi.waitFor(() => expect(window.showMessageBox).toBeCalledWith(imageErrorMessage));
+  await vi.waitFor(() => expect(client.dialog.showMessageBox).toBeCalledWith(imageErrorMessage));
 });
 
 test('button click shows error message if there is no active provider connection', async () => {
   providerInfos.set([]);
   render(PodEmptyScreen);
   await fireEvent.click(getButton());
-  await vi.waitFor(() => expect(window.showMessageBox).toBeCalledWith(providerErrorMessage));
+  await vi.waitFor(() => expect(client.dialog.showMessageBox).toBeCalledWith(providerErrorMessage));
 });
 
 testComponent(`${copyToClipboard} button click puts starting pod command to clipboard`, async () => {
   await fireEvent.click(screen.getByTitle(copyToClipboard));
-  expect(window.clipboardWriteText).toBeCalledWith(podCreateCommand);
+  expect(client.system.clipboardWriteText).toBeCalledWith({ text: podCreateCommand });
 });

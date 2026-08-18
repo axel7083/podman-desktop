@@ -4,6 +4,7 @@ import type { Menu, SecretInfo } from '@podman-desktop/core-api';
 import { MenuContext } from '@podman-desktop/core-api';
 import { DropdownMenu } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
 import ContributionActions from '/@/lib/actions/ContributionActions.svelte';
 import { withConfirmation } from '/@/lib/dialogs/messagebox-utils';
 import FlatMenu from '/@/lib/ui/FlatMenu.svelte';
@@ -18,7 +19,9 @@ interface Props {
 let { object, dropdownMenu = true, detailed = false }: Props = $props();
 
 let loading: boolean = $state(false);
-let contributions: Promise<Menu[]> = $derived(window.getContributedMenus(MenuContext.DASHBOARD_SECRET));
+let contributions: Promise<Menu[]> = $derived(
+  client.menu.getContributedMenus({ context: MenuContext.DASHBOARD_SECRET }),
+);
 
 const MenuComponent = $derived(dropdownMenu ? DropdownMenu : FlatMenu);
 
@@ -27,7 +30,7 @@ function onDeleteSecret(): void {
     async () => {
       try {
         loading = true;
-        await window.removeSecret(object.engineId, object.Id);
+        await client.container.removeSecret({ engineId: object.engineId, secretId: object.Id });
       } finally {
         loading = false;
       }

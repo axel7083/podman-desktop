@@ -22,6 +22,7 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { expect, test } from 'vitest';
 
+import { client } from '/@/client';
 import NodeIcon from '/@/lib/images/NodeIcon.svelte';
 
 import KubernetesDashboardResourceCard from './KubernetesDashboardResourceCard.svelte';
@@ -62,8 +63,11 @@ test.each([true, false])('Expect clicking works when permitted is %s', async per
 
   await userEvent.click(type);
   expect(window.navigateToRoute).toBeCalledWith('kubernetes', { kind: params.kind });
-  expect(window.telemetryTrack).toBeCalledWith('kubernetes.dashboard.resource', {
-    type: params.type,
-    kind: params.kind,
+  expect(client.telemetry.track).toBeCalledWith({
+    event: 'kubernetes.dashboard.resource',
+    eventProperties: {
+      type: params.type,
+      kind: params.kind,
+    },
   });
 });

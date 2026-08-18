@@ -19,6 +19,8 @@
 import type { CatalogExtension } from '@podman-desktop/core-api/extension-catalog';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents: string[] = ['refresh-catalog'];
@@ -32,7 +34,7 @@ export const catalogExtensionInfos: Writable<CatalogExtension[]> = writable([]);
 
 // use helper here as window methods are initialized after the store in tests
 const getCatalogExtensions = (): Promise<CatalogExtension[]> => {
-  return window.getCatalogExtensions();
+  return client.extension.getCatalog();
 };
 
 export const catalogExtensionEventStore = new EventStore<CatalogExtension[]>(

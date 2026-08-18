@@ -6,6 +6,7 @@ import { Icon } from '@podman-desktop/ui-svelte/icons';
 import { onMount } from 'svelte';
 import { SvelteMap } from 'svelte/reactivity';
 
+import { client } from '/@/client';
 import Markdown from '/@/lib/markdown/Markdown.svelte';
 
 import type { CustomPickOptions } from './quickpick-input';
@@ -79,7 +80,7 @@ function handleSelection(
 }
 
 async function cancel(): Promise<void> {
-  await window.closeCustomPick(id);
+  await client.picker.customPickClose({ id });
   display = false;
 }
 
@@ -90,8 +91,8 @@ async function next(): Promise<void> {
       indexes.push(i);
     }
   }
-  await window.sendCustomPickItemsOnConfirmation(id, indexes);
-  await window.closeCustomPick(id);
+  await client.picker.customPickValues({ id, indexes });
+  await client.picker.customPickClose({ id });
   display = false;
 }
 

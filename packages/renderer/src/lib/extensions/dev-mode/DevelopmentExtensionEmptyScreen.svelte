@@ -2,11 +2,13 @@
 import { faCog } from '@fortawesome/free-solid-svg-icons';
 import { Button, EmptyScreen } from '@podman-desktop/ui-svelte';
 
-let extDevelopementLink = $derived(await window.getExtensionDevelopmentDocsLink());
+import { client } from '/@/client';
+
+let extDevelopementLink = $derived(await client.extension.getDevelopmentDocsLink());
 
 async function openExtensionDocumentation(): Promise<void> {
   if (extDevelopementLink) {
-    await window.openExternal(extDevelopementLink);
+    await client.system.openExternal({ link: extDevelopementLink });
   }
 }
 </script>

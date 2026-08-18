@@ -4,6 +4,7 @@ import type { ForwardConfig, PortMapping, WorkloadKind } from '@podman-desktop/c
 import { Button, ErrorMessage, Tooltip } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
 import CopyToClipboard from '/@/lib/ui/CopyToClipboard.svelte';
 
 import type { KubePortInfo } from './kube-port';
@@ -28,7 +29,7 @@ async function onForwardRequest(port: KubePortInfo): Promise<void> {
   error = undefined;
 
   // get a free port starting from 50k
-  const freePort = await window.getFreePort(50_000);
+  const freePort = await client.system.getFreePort({ port: 50_000 });
 
   // snapshot the object as Proxy cannot be serialized
   const snapshot: KubePortInfo = $state.snapshot(port);
@@ -55,7 +56,7 @@ let localhostAddress = $derived(mapping ? `http://localhost:${mapping.localPort}
 
 async function openExternal(): Promise<void> {
   if (!localhostAddress) return;
-  return window.openExternal(localhostAddress);
+  return client.system.openExternal({ link: localhostAddress });
 }
 
 async function removePortForward(): Promise<void> {

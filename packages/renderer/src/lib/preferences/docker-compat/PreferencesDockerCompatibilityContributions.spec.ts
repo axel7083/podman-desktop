@@ -23,6 +23,7 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { ContextUI } from '/@/lib/context/context';
 import { configurationProperties } from '/@/stores/configurationProperties';
 import { context } from '/@/stores/context';
@@ -175,7 +176,7 @@ test('display enum', async () => {
   ]);
 
   // mock the configuration
-  vi.mocked(window.updateConfigurationValue).mockResolvedValue();
+  vi.mocked(client.configuration.updateValue).mockResolvedValue();
 
   render(PreferencesDockerCompatibilityContributions);
 
@@ -215,7 +216,11 @@ test('display enum', async () => {
 
   // now expect that there is a call to update the configuration
   await vi.waitFor(() =>
-    expect(window.updateConfigurationValue).toHaveBeenCalledWith('my.property', 'value1', 'DockerCompatibility'),
+    expect(client.configuration.updateValue).toHaveBeenCalledWith({
+      key: 'my.property',
+      value: 'value1',
+      scope: 'DockerCompatibility',
+    }),
   );
 });
 
@@ -258,7 +263,7 @@ test('check invalid enum (not array) makes no renderim as enum', async () => {
   ]);
 
   // mock the configuration
-  vi.mocked(window.updateConfigurationValue).mockResolvedValue();
+  vi.mocked(client.configuration.updateValue).mockResolvedValue();
 
   render(PreferencesDockerCompatibilityContributions);
 
@@ -309,7 +314,7 @@ test('check invalid enum (missing fields) makes no renderim as enum', async () =
   ]);
 
   // mock the configuration
-  vi.mocked(window.updateConfigurationValue).mockResolvedValue();
+  vi.mocked(client.configuration.updateValue).mockResolvedValue();
 
   render(PreferencesDockerCompatibilityContributions);
 

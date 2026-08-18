@@ -3,6 +3,8 @@ import { faSignal } from '@fortawesome/free-solid-svg-icons';
 import type { ProviderContainerConnectionInfo } from '@podman-desktop/core-api';
 import { Button, ErrorMessage } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
+
 interface Props {
   providerContainerEngine: ProviderContainerConnectionInfo;
 }
@@ -19,7 +21,9 @@ async function grabContainers(): Promise<void> {
   listError = '';
   listContainersResult = 'Waiting for response...';
   try {
-    const result = await window.listContainersFromEngine($state.snapshot(providerContainerEngine));
+    const result = await client.container.listContainersFromEngine({
+      providerContainerConnectionInfo: $state.snapshot(providerContainerEngine),
+    });
     listContainersResult = `Responded: ${result.length} containers`;
   } catch (e) {
     listError = String(e);

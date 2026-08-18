@@ -21,6 +21,7 @@ import { writable } from 'svelte/store';
 import { router, type TinroRoute } from 'tinro';
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { extensionInfos } from '/@/stores/extensions';
 import * as kubernetesNoCurrentContext from '/@/stores/kubernetes-no-current-context';
 import { navigationRegistry, type NavigationRegistryEntry } from '/@/stores/navigation/navigation-registry';
@@ -121,7 +122,7 @@ beforeAll(() => {
 beforeEach(() => {
   vi.resetAllMocks();
 
-  vi.mocked(window.telemetryTrack).mockResolvedValue(undefined);
+  vi.mocked(client.telemetry.track).mockResolvedValue(undefined);
   vi.mocked(window.navigateToExtensionHistoryEntry).mockResolvedValue(undefined);
   vi.mocked(kubernetesNoCurrentContext).kubernetesNoCurrentContext = writable(true);
   extensionInfos.set([]);
@@ -150,7 +151,7 @@ describe('goBack', () => {
     goBack();
 
     expect(router.goto).not.toHaveBeenCalled();
-    expect(window.telemetryTrack).not.toHaveBeenCalled();
+    expect(client.telemetry.track).not.toHaveBeenCalled();
   });
 
   test('should not navigate when at first entry', () => {
@@ -160,7 +161,7 @@ describe('goBack', () => {
     goBack();
 
     expect(router.goto).not.toHaveBeenCalled();
-    expect(window.telemetryTrack).not.toHaveBeenCalled();
+    expect(client.telemetry.track).not.toHaveBeenCalled();
   });
 
   test('should navigate to previous entry', () => {
@@ -171,7 +172,7 @@ describe('goBack', () => {
 
     expect(navigationHistory.index).toBe(0);
     expect(router.goto).toHaveBeenCalledWith('/containers');
-    expect(window.telemetryTrack).toHaveBeenCalledWith('navigation.back');
+    expect(client.telemetry.track).toHaveBeenCalledWith({ event: 'navigation.back' });
   });
 });
 
@@ -184,7 +185,7 @@ describe('goForward', () => {
     goForward();
 
     expect(router.goto).not.toHaveBeenCalled();
-    expect(window.telemetryTrack).not.toHaveBeenCalled();
+    expect(client.telemetry.track).not.toHaveBeenCalled();
   });
 
   test('should not navigate when at last entry', () => {
@@ -194,7 +195,7 @@ describe('goForward', () => {
     goForward();
 
     expect(router.goto).not.toHaveBeenCalled();
-    expect(window.telemetryTrack).not.toHaveBeenCalled();
+    expect(client.telemetry.track).not.toHaveBeenCalled();
   });
 
   test('should navigate to next entry', () => {
@@ -205,7 +206,7 @@ describe('goForward', () => {
 
     expect(navigationHistory.index).toBe(1);
     expect(router.goto).toHaveBeenCalledWith('/images');
-    expect(window.telemetryTrack).toHaveBeenCalledWith('navigation.forward');
+    expect(client.telemetry.track).toHaveBeenCalledWith({ event: 'navigation.forward' });
   });
 });
 

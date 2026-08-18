@@ -23,6 +23,7 @@ import { render, screen } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import { beforeAll, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { featuredExtensionInfos } from '/@/stores/featuredExtensions';
 
 import FeaturedExtensions from './FeaturedExtensions.svelte';
@@ -70,7 +71,7 @@ test('Expect that featured extensions are displayed', async () => {
     installed: false,
   };
 
-  vi.mocked(window.getFeaturedExtensions).mockResolvedValue([
+  vi.mocked(client.extension.getFeatured).mockResolvedValue([
     featuredExtension1,
     featuredExtension2,
     featuredExtension3,

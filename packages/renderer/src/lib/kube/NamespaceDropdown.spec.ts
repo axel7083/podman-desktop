@@ -24,6 +24,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { writable } from 'svelte/store';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import * as kubernetesContextsStateStore from '/@/stores/kubernetes-contexts-state';
 
 import NamespaceDropdown from './NamespaceDropdown.svelte';
@@ -111,5 +112,5 @@ test('Expect clicking works', async () => {
   await fireEvent.click(item);
 
   await waitFor(() => expect(window.kubernetesSetCurrentNamespace).toHaveBeenCalledWith(secondNS));
-  expect(window.telemetryTrack).toHaveBeenCalledWith('kubernetes.set.namespace');
+  expect(client.telemetry.track).toHaveBeenCalledWith({ event: 'kubernetes.set.namespace' });
 });

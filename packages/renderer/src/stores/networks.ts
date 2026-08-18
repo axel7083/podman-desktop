@@ -21,6 +21,8 @@ import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
 import type { Writable } from 'svelte/store';
 import { derived, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 import { findMatchInLeaves } from './search-util';
 
@@ -54,7 +56,7 @@ async function checkForUpdate(eventName: string): Promise<boolean> {
 export const networksListInfo: Writable<NetworkInspectInfo[]> = writable([]);
 
 const listNetworks = (): Promise<NetworkInspectInfo[]> => {
-  return window.listNetworks();
+  return client.container.listNetworks();
 };
 
 export const networksEventStore = new EventStore<NetworkInspectInfo[]>(

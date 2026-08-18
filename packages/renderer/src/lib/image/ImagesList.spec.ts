@@ -29,6 +29,7 @@ import { get } from 'svelte/store';
 import { router } from 'tinro';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { IMAGE_LIST_VIEW_BADGES, IMAGE_LIST_VIEW_ICONS, IMAGE_VIEW_BADGES, IMAGE_VIEW_ICONS } from '/@/lib/view/views';
 import { imagesInfos } from '/@/stores/images';
 import { providerInfos } from '/@/stores/providers';
@@ -40,10 +41,10 @@ beforeEach(() => {
   providerInfos.set([]);
   imagesInfos.set([]);
   viewsContributions.set([]);
-  vi.mocked(window.hasAuthconfigForImage).mockResolvedValue(false);
-  vi.mocked(window.listViewsContributions).mockResolvedValue([]);
-  vi.mocked(window.getConfigurationProperties).mockResolvedValue({});
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(false);
+  vi.mocked(client.imageRegistry.hasAuthconfigForImage).mockResolvedValue(false);
+  vi.mocked(client.uiRegistry.listViews).mockResolvedValue([]);
+  vi.mocked(client.configuration.getProperties).mockResolvedValue({});
+  vi.mocked(client.configuration.getValue).mockResolvedValue(false);
   vi.mocked(window.onDidUpdateProviderStatus).mockResolvedValue(undefined);
 
   vi.mocked(window.events.receive).mockImplementation((_channel, func) => {
@@ -78,7 +79,7 @@ test('Expect images being ordered by newest first', async () => {
     } as unknown as ProviderInfo,
   ]);
 
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890123',
       RepoTags: ['fedora:old'],
@@ -149,7 +150,7 @@ test('Expect filter empty screen', async () => {
     } as unknown as ProviderInfo,
   ]);
 
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890123',
       RepoTags: ['fedora:old'],
@@ -194,7 +195,7 @@ test('Expect two images in list given image id and engine id', async () => {
     } as unknown as ProviderInfo,
   ]);
 
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890123',
       RepoTags: ['fedora:old'],
@@ -290,7 +291,7 @@ describe('Contributions', () => {
         'podman-desktop.label': true,
       };
 
-      vi.mocked(window.listImages).mockResolvedValue([
+      vi.mocked(client.container.listImages).mockResolvedValue([
         {
           Id: 'sha256:1234567890123',
           RepoTags: ['fedora:old'],
@@ -318,8 +319,8 @@ describe('Contributions', () => {
         },
       ];
 
-      vi.mocked(window.listViewsContributions).mockReset();
-      vi.mocked(window.listViewsContributions).mockResolvedValue(contribs);
+      vi.mocked(client.uiRegistry.listViews).mockReset();
+      vi.mocked(client.uiRegistry.listViews).mockResolvedValue(contribs);
       // set viewsContributions
       viewsContributions.set(contribs);
 
@@ -368,7 +369,7 @@ describe('Contributions', () => {
         'podman-desktop.label': true,
       };
 
-      vi.mocked(window.listImages).mockResolvedValue([
+      vi.mocked(client.container.listImages).mockResolvedValue([
         {
           Id: 'sha256:1234567890123',
           RepoTags: ['fedora:old'],
@@ -399,8 +400,8 @@ describe('Contributions', () => {
         },
       ];
 
-      vi.mocked(window.listViewsContributions).mockReset();
-      vi.mocked(window.listViewsContributions).mockResolvedValue(contribs);
+      vi.mocked(client.uiRegistry.listViews).mockReset();
+      vi.mocked(client.uiRegistry.listViews).mockResolvedValue(contribs);
       // set viewsContributions
       viewsContributions.set(contribs);
 
@@ -457,7 +458,7 @@ test('expect redirect to saveImage page when at least one image is selected and 
     } as unknown as ProviderInfo,
   ]);
 
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890123',
       RepoTags: ['fedora:old'],
@@ -538,7 +539,7 @@ test('Manifest images display without actions', async () => {
   ]);
 
   // Set up the image list with one normal image and one manifest image
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890123',
       RepoTags: ['normalimage:latest'],
@@ -614,7 +615,7 @@ test('Expect user confirmation to pop up when preferences require', async () => 
     } as unknown as ProviderInfo,
   ]);
 
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890',
       RepoTags: ['mockimage:latest'],
@@ -644,19 +645,19 @@ test('Expect user confirmation to pop up when preferences require', async () => 
   const checkboxes = screen.getAllByRole('checkbox', { name: 'Toggle image' });
   await fireEvent.click(checkboxes[0]);
 
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 
   const deleteButton = screen.getByRole('button', { name: 'Delete 1 selected items' });
   await fireEvent.click(deleteButton);
 
-  expect(window.showMessageBox).toHaveBeenCalledOnce();
+  expect(client.dialog.showMessageBox).toHaveBeenCalledOnce();
 
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   await fireEvent.click(deleteButton);
-  expect(window.showMessageBox).toHaveBeenCalledTimes(2);
-  await vi.waitFor(() => expect(window.deleteImage).toHaveBeenCalled());
+  expect(client.dialog.showMessageBox).toHaveBeenCalledTimes(2);
+  await vi.waitFor(() => expect(client.container.deleteImage).toHaveBeenCalled());
 });
 
 test('Expect to see empty page and no table when no container engine is running', async () => {
@@ -673,7 +674,7 @@ test('Expect to see empty page and no table when no container engine is running'
       ],
     } as unknown as ProviderInfo,
   ]);
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890',
       RepoTags: ['mockimage:latest'],
@@ -716,7 +717,7 @@ test('Expect environment column sorted by engineId', async () => {
     } as unknown as ProviderInfo,
   ]);
 
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890123',
       RepoTags: ['fedora:latest'],
@@ -788,7 +789,7 @@ test('Expect environment dropdown to appear with multiple running connections', 
     } as unknown as ProviderInfo,
   ]);
 
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890123',
       RepoTags: ['podman-image:latest'],
@@ -857,7 +858,7 @@ test('Expect environment dropdown to filter images by selected environment', asy
     } as unknown as ProviderInfo,
   ]);
 
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: 'sha256:1234567890123',
       RepoTags: ['podman-image:latest'],

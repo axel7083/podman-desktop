@@ -20,6 +20,8 @@ import type { NotificationCard } from '@podman-desktop/core-api';
 import type { Writable } from 'svelte/store';
 import { writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = ['notifications-updated'];
@@ -37,9 +39,8 @@ async function checkForUpdate(eventName: string): Promise<boolean> {
 }
 export const notificationQueue: Writable<NotificationCard[]> = writable([]);
 
-// use helper here as window methods are initialized after the store in tests
 const listNotifications = (): Promise<NotificationCard[]> => {
-  return window.listNotifications();
+  return client.notification.list();
 };
 
 export const notificationEventStore = new EventStore<NotificationCard[]>(

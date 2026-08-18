@@ -20,6 +20,8 @@ import type { NetworkInspectInfo } from '@podman-desktop/core-api';
 import { get } from 'svelte/store';
 import { assert, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { networksEventStore, networksListInfo } from './networks';
 
 const callbacks = new Map<string, (data?: unknown) => void | Promise<void>>();
@@ -48,15 +50,15 @@ test.each([
   networksEventStore.setupWithDebounce(10, 10);
 
   // empty list
-  vi.mocked(window.listNetworks).mockResolvedValue([]);
+  vi.mocked(client.container.listNetworks).mockResolvedValue([]);
 
   // mark as ready to receive updates
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
 
   // clear mock calls
-  vi.mocked(window.listNetworks).mockClear();
+  vi.mocked(client.container.listNetworks).mockClear();
 
-  vi.mocked(window.listNetworks).mockResolvedValue([
+  vi.mocked(client.container.listNetworks).mockResolvedValue([
     {
       Name: 'network1',
       Id: 'network1',
@@ -69,7 +71,7 @@ test.each([
   await callback();
 
   await vi.waitFor(() => {
-    expect(vi.mocked(window.listNetworks).mock.calls.length).not.equal(0);
+    expect(vi.mocked(client.container.listNetworks).mock.calls.length).not.equal(0);
     const networkListResult = get(networksListInfo);
     expect(networkListResult).toHaveLength(1);
     expect(networkListResult[0].Id).toEqual('network1');

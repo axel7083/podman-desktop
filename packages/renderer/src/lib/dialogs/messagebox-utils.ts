@@ -15,6 +15,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import { client } from '/@/client';
+
 type ConfirmationVariant = 'default' | 'delete';
 
 export interface ConfirmationOptions {
@@ -36,7 +38,7 @@ export function withConfirmation(func: (err?: unknown) => unknown, action: strin
   const isDelete = options.variant === 'delete';
   const activationButton = isDelete ? 'Delete' : (options.buttonLabel ?? 'Continue');
   const title = options.title;
-  window
+  client.dialog
     .showMessageBox({
       title,
       message: 'Are you sure you want to ' + action + '?',

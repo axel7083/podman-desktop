@@ -19,15 +19,12 @@
 import '@testing-library/jest-dom/vitest';
 
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { beforeAll, expect, test, vi } from 'vitest';
+import { expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import type { CombinedExtensionInfoUI } from '/@/stores/all-installed-extensions';
 
 import InstalledExtensionCardLeftLifecycleStop from './InstalledExtensionCardLeftLifecycleStop.svelte';
-
-beforeAll(() => {
-  Object.defineProperty(window, 'stopExtension', { value: vi.fn() });
-});
 
 test('Expect unable to stop dd Extension if started', async () => {
   const extension: CombinedExtensionInfoUI = {
@@ -77,7 +74,7 @@ test('Expect to stop pd Extension if started', async () => {
   await fireEvent.click(button);
 
   // expect the delete function to be called
-  expect(vi.mocked(window.stopExtension)).toHaveBeenCalledWith('idExtension');
+  expect(vi.mocked(client.extension.stop)).toHaveBeenCalledWith({ extensionId: 'idExtension' });
 });
 
 test('Expect unable to stop if already stopped', async () => {
@@ -127,5 +124,5 @@ test('Expect to stop pd Extension if starting', async () => {
   await fireEvent.click(button);
 
   // expect the delete function to be called
-  expect(vi.mocked(window.stopExtension)).toHaveBeenCalledWith('idExtension');
+  expect(vi.mocked(client.extension.stop)).toHaveBeenCalledWith({ extensionId: 'idExtension' });
 });

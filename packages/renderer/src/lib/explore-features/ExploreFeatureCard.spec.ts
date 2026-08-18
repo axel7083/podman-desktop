@@ -23,6 +23,8 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import { router } from 'tinro';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import ExploreFeatureCard from './ExploreFeatureCard.svelte';
 
 vi.mock(import('tinro'));
@@ -79,9 +81,12 @@ test('Click on close card', async () => {
   await fireEvent.click(closeButton);
 
   expect(closeFeature).toHaveBeenCalledWith('feature1');
-  expect(window.closeFeatureCard).toHaveBeenCalledWith('feature1');
-  expect(vi.mocked(window.telemetryTrack)).toHaveBeenCalledWith('dashboard.exploreFeatureDismissed', {
-    feature: 'feature1',
+  expect(client.exploreFeatures.closeFeatureCard).toHaveBeenCalledWith({ featureId: 'feature1' });
+  expect(vi.mocked(client.telemetry.track)).toHaveBeenCalledWith({
+    event: 'dashboard.exploreFeatureDismissed',
+    eventProperties: {
+      feature: 'feature1',
+    },
   });
 });
 
@@ -93,7 +98,7 @@ test('Click on learn more link', async () => {
 
   await fireEvent.click(learnMoreLink);
 
-  expect(window.openExternal).toHaveBeenCalledWith(featureMock.learnMore);
+  expect(client.system.openExternal).toHaveBeenCalledWith({ link: featureMock.learnMore });
 });
 
 test('Click on primary button', async () => {
@@ -104,8 +109,11 @@ test('Click on primary button', async () => {
 
   await fireEvent.click(primaryButton);
 
-  expect(vi.mocked(window.telemetryTrack)).toHaveBeenCalledWith('dashboard.exploreFeatureClicked', {
-    feature: 'Feature 1',
+  expect(vi.mocked(client.telemetry.track)).toHaveBeenCalledWith({
+    event: 'dashboard.exploreFeatureClicked',
+    eventProperties: {
+      feature: 'Feature 1',
+    },
   });
   expect(router.goto).toHaveBeenCalledWith(featureMock.buttonLink);
 });
@@ -121,5 +129,5 @@ test('Click on tutorial button', async () => {
 
   await fireEvent.click(tutorialButton);
 
-  expect(window.openExternal).toHaveBeenCalledWith('/link/to/tutorial');
+  expect(client.system.openExternal).toHaveBeenCalledWith({ link: '/link/to/tutorial' });
 });

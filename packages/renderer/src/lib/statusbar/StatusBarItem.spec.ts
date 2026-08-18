@@ -21,6 +21,8 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { iconClass } from './StatusBarItem';
 import StatusBarItem from './StatusBarItem.svelte';
 
@@ -105,7 +107,7 @@ test('expect click on the item with command/args', async () => {
   await userEvent.click(item);
 
   // check we've called executeStatusBarEntryCommand
-  expect(window.executeStatusBarEntryCommand).toHaveBeenCalledWith('my.command', ['arg1', 'arg2']);
+  expect(client.statusBar.executeCommand).toHaveBeenCalledWith({ command: 'my.command', args: ['arg1', 'arg2'] });
 });
 
 test('expect click on the item with command but proxy args', async () => {
@@ -137,5 +139,5 @@ test('expect click on the item with command but proxy args', async () => {
   await userEvent.click(item);
 
   // check we've called executeStatusBarEntryCommand but not with uncloneable objects, but with their values
-  expect(window.executeStatusBarEntryCommand).toHaveBeenCalledWith('my.command', ['arg1', 'arg2']);
+  expect(client.statusBar.executeCommand).toHaveBeenCalledWith({ command: 'my.command', args: ['arg1', 'arg2'] });
 });

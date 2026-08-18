@@ -21,6 +21,8 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import JobActions from './JobActions.svelte';
 import type { JobUI } from './JobUI';
 
@@ -44,7 +46,7 @@ beforeEach(() => {
 
 test('Expect no error and status deleting job', async () => {
   // Mock the showMessageBox to return 0 (yes)
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   render(JobActions, { job, detailed: false });
 
   // click on delete button

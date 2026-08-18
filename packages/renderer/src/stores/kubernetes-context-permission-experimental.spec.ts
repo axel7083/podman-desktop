@@ -20,6 +20,8 @@ import type { ContextPermission } from '@podman-desktop/core-api';
 import { get } from 'svelte/store';
 import { assert, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { kubernetesContextsPermissions, kubernetesContextsPermissionsStore } from './kubernetes-context-permission';
 
 const callbacks = new Map<string, (data?: unknown) => void | Promise<void>>();
@@ -34,7 +36,7 @@ beforeEach(() => {
 });
 
 test('kubernetesContextsPermissions in experimental states mode', async () => {
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+  vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
 
   const initialValues: ContextPermission[] = [];
   const nextValues: ContextPermission[] = [

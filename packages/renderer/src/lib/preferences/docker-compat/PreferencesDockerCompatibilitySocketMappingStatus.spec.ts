@@ -18,10 +18,12 @@
 
 import '@testing-library/jest-dom/vitest';
 
-import type { DockerSocketMappingStatusInfo, DockerSocketServerInfoType } from '@podman-desktop/core-api';
+import type { DockerSocketServerInfoType } from '@podman-desktop/core-api';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { router } from 'tinro';
-import { beforeEach, expect, type Mock, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
+
+import { client } from '/@/client';
 
 import PreferencesDockerCompatibilitySocketMappingStatus from './PreferencesDockerCompatibilitySocketMappingStatus.svelte';
 
@@ -54,22 +56,12 @@ const podmanConnectionInfo = {
 // mock the router
 vi.mock(import('tinro'));
 
-const getOsPlatformMock: Mock<() => Promise<string>> = vi.fn();
-const getSystemDockerSocketMappingStatusMock: Mock<() => Promise<DockerSocketMappingStatusInfo>> = vi.fn();
-
 beforeEach(() => {
   vi.resetAllMocks();
-  Object.defineProperty(global, 'window', {
-    value: {
-      getOsPlatform: getOsPlatformMock,
-      getSystemDockerSocketMappingStatus: getSystemDockerSocketMappingStatusMock,
-    },
-    writable: true,
-  });
 });
 
 test('socket running', async () => {
-  getSystemDockerSocketMappingStatusMock.mockResolvedValue({
+  vi.mocked(client.troubleshooting.getDockerSocketMappingStatus).mockResolvedValue({
     status: 'running',
     serverInfo: podmanServerInfo,
   });
@@ -77,34 +69,34 @@ test('socket running', async () => {
   render(PreferencesDockerCompatibilitySocketMappingStatus);
 
   // wait for the promise to resolve
-  await vi.waitFor(() => expect(getSystemDockerSocketMappingStatusMock).toBeCalled());
+  await vi.waitFor(() => expect(client.troubleshooting.getDockerSocketMappingStatus).toBeCalled());
 
   expect(screen.getByText('podman is listening')).toBeInTheDocument();
 });
 
 test('socket unreachable', async () => {
-  getSystemDockerSocketMappingStatusMock.mockResolvedValue({
+  vi.mocked(client.troubleshooting.getDockerSocketMappingStatus).mockResolvedValue({
     status: 'unreachable',
   });
 
   render(PreferencesDockerCompatibilitySocketMappingStatus);
 
   // wait for the promise to resolve
-  await vi.waitFor(() => expect(getSystemDockerSocketMappingStatusMock).toBeCalled());
+  await vi.waitFor(() => expect(client.troubleshooting.getDockerSocketMappingStatus).toBeCalled());
 
   expect(screen.getByText('socket not reachable')).toBeInTheDocument();
 });
 
 test('socket status link on Windows', async () => {
-  getOsPlatformMock.mockResolvedValue('win32');
-  getSystemDockerSocketMappingStatusMock.mockResolvedValue({
+  vi.mocked(client.system.getPlatform).mockResolvedValue('win32');
+  vi.mocked(client.troubleshooting.getDockerSocketMappingStatus).mockResolvedValue({
     status: 'running',
   });
 
   render(PreferencesDockerCompatibilitySocketMappingStatus);
 
   // wait for the promise to resolve
-  await vi.waitFor(() => expect(getSystemDockerSocketMappingStatusMock).toBeCalled());
+  await vi.waitFor(() => expect(client.troubleshooting.getDockerSocketMappingStatus).toBeCalled());
 
   // get div description of the status
   const description = screen.getByRole('status', { name: 'description of the status' });
@@ -113,8 +105,8 @@ test('socket status link on Windows', async () => {
 });
 
 test('socket status link on macOS', async () => {
-  getOsPlatformMock.mockResolvedValue('darwin');
-  getSystemDockerSocketMappingStatusMock.mockResolvedValue({
+  vi.mocked(client.system.getPlatform).mockResolvedValue('darwin');
+  vi.mocked(client.troubleshooting.getDockerSocketMappingStatus).mockResolvedValue({
     status: 'running',
     serverInfo: dockerServerInfo,
   });
@@ -122,7 +114,7 @@ test('socket status link on macOS', async () => {
   render(PreferencesDockerCompatibilitySocketMappingStatus);
 
   // wait for the promise to resolve
-  await vi.waitFor(() => expect(getSystemDockerSocketMappingStatusMock).toBeCalled());
+  await vi.waitFor(() => expect(client.troubleshooting.getDockerSocketMappingStatus).toBeCalled());
 
   // get div description of the status
   const description = screen.getByRole('status', { name: 'description of the status' });
@@ -131,8 +123,8 @@ test('socket status link on macOS', async () => {
 });
 
 test('socket status link on Linux', async () => {
-  getOsPlatformMock.mockResolvedValue('linux');
-  getSystemDockerSocketMappingStatusMock.mockResolvedValue({
+  vi.mocked(client.system.getPlatform).mockResolvedValue('linux');
+  vi.mocked(client.troubleshooting.getDockerSocketMappingStatus).mockResolvedValue({
     status: 'running',
     serverInfo: dockerServerInfo,
   });
@@ -140,7 +132,7 @@ test('socket status link on Linux', async () => {
   render(PreferencesDockerCompatibilitySocketMappingStatus);
 
   // wait for the promise to resolve
-  await vi.waitFor(() => expect(getSystemDockerSocketMappingStatusMock).toBeCalled());
+  await vi.waitFor(() => expect(client.troubleshooting.getDockerSocketMappingStatus).toBeCalled());
 
   // get div description of the status
   const description = screen.getByRole('status', { name: 'description of the status' });
@@ -149,8 +141,8 @@ test('socket status link on Linux', async () => {
 });
 
 test('podman text', async () => {
-  getOsPlatformMock.mockResolvedValue('linux');
-  getSystemDockerSocketMappingStatusMock.mockResolvedValue({
+  vi.mocked(client.system.getPlatform).mockResolvedValue('linux');
+  vi.mocked(client.troubleshooting.getDockerSocketMappingStatus).mockResolvedValue({
     status: 'running',
     serverInfo: podmanServerInfo,
   });
@@ -158,7 +150,7 @@ test('podman text', async () => {
   render(PreferencesDockerCompatibilitySocketMappingStatus);
 
   // wait for the promise to resolve
-  await vi.waitFor(() => expect(getSystemDockerSocketMappingStatusMock).toBeCalled());
+  await vi.waitFor(() => expect(client.troubleshooting.getDockerSocketMappingStatus).toBeCalled());
 
   // check we have text for podman if podman engine
   expect(
@@ -167,8 +159,8 @@ test('podman text', async () => {
 });
 
 test('check connection info', async () => {
-  getOsPlatformMock.mockResolvedValue('darwin');
-  getSystemDockerSocketMappingStatusMock.mockResolvedValue({
+  vi.mocked(client.system.getPlatform).mockResolvedValue('darwin');
+  vi.mocked(client.troubleshooting.getDockerSocketMappingStatus).mockResolvedValue({
     status: 'running',
     serverInfo: podmanServerInfo,
     connectionInfo: podmanConnectionInfo,
@@ -177,7 +169,7 @@ test('check connection info', async () => {
   render(PreferencesDockerCompatibilitySocketMappingStatus);
 
   // wait for the promise to resolve
-  await vi.waitFor(() => expect(getSystemDockerSocketMappingStatusMock).toBeCalled());
+  await vi.waitFor(() => expect(client.troubleshooting.getDockerSocketMappingStatus).toBeCalled());
 
   // check we have the connection link
   const connectionInfo = screen.getByRole('status', { name: 'Connection information' });
@@ -194,8 +186,8 @@ test('check connection info', async () => {
 });
 
 test('check server info grid', async () => {
-  getOsPlatformMock.mockResolvedValue('win32');
-  getSystemDockerSocketMappingStatusMock.mockResolvedValue({
+  vi.mocked(client.system.getPlatform).mockResolvedValue('win32');
+  vi.mocked(client.troubleshooting.getDockerSocketMappingStatus).mockResolvedValue({
     status: 'running',
     serverInfo: podmanServerInfo,
   });
@@ -203,7 +195,7 @@ test('check server info grid', async () => {
   render(PreferencesDockerCompatibilitySocketMappingStatus);
 
   // wait for the promise to resolve
-  await vi.waitFor(() => expect(getSystemDockerSocketMappingStatusMock).toBeCalled());
+  await vi.waitFor(() => expect(client.troubleshooting.getDockerSocketMappingStatus).toBeCalled());
 
   // check we have the connection link
   const serverInfo = screen.getByRole('status', { name: 'Server information' });

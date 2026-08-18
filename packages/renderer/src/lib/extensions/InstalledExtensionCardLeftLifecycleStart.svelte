@@ -1,6 +1,7 @@
 <script lang="ts">
 import { faPlay } from '@fortawesome/free-solid-svg-icons';
 
+import { client } from '/@/client';
 import LoadingIconButton from '/@/lib/ui/LoadingIconButton.svelte';
 import type { CombinedExtensionInfoUI } from '/@/stores/all-installed-extensions';
 
@@ -14,7 +15,7 @@ let inProgress = $state(false);
 
 async function startExtension(): Promise<void> {
   inProgress = true;
-  await window.startExtension(extension.id);
+  await client.extension.start({ extensionId: extension.id });
   inProgress = false;
 }
 </script>

@@ -24,6 +24,7 @@ import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { writable } from 'svelte/store';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { listenResourcePermitted } from '/@/lib/kube/resource-permission';
 import * as resourcesListen from '/@/lib/kube/resources-listen';
 import * as states from '/@/stores/kubernetes-contexts-state';
@@ -212,18 +213,18 @@ describe.each<{
       await fireEvent.click(checkboxes[0]);
     });
 
-    vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+    vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
-    vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
+    vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 
     const deleteButton = screen.getByRole('button', { name: 'Delete 1 selected items' });
     await fireEvent.click(deleteButton);
 
-    expect(window.showMessageBox).toHaveBeenCalledOnce();
+    expect(client.dialog.showMessageBox).toHaveBeenCalledOnce();
 
-    vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+    vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
     await fireEvent.click(deleteButton);
-    expect(window.showMessageBox).toHaveBeenCalledTimes(2);
+    expect(client.dialog.showMessageBox).toHaveBeenCalledTimes(2);
     await vi.waitFor(() => expect(window.kubernetesDeleteDeployment).toHaveBeenCalled());
   });
 

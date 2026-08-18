@@ -19,6 +19,8 @@
 import { get } from 'svelte/store';
 import { assert, beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import {
   catalogExtensionEventStore,
   catalogExtensionEventStoreInfo,
@@ -43,14 +45,14 @@ beforeEach(() => {
 
 test('catalog extension should be updated in case of a container is removed', async () => {
   // initial catalog is empty
-  vi.mocked(window.getCatalogExtensions).mockResolvedValue([]);
+  vi.mocked(client.extension.getCatalog).mockResolvedValue([]);
 
   // get list and expect nothing there
   const catalogExtensions = get(catalogExtensionInfos);
   expect(catalogExtensions.length).toBe(0);
 
-  vi.mocked(window.getCatalogExtensions).mockReset();
-  vi.mocked(window.getCatalogExtensions).mockResolvedValue([
+  vi.mocked(client.extension.getCatalog).mockReset();
+  vi.mocked(client.extension.getCatalog).mockResolvedValue([
     {
       id: 'first.extension1',
       displayName: 'test1',
@@ -97,7 +99,7 @@ test('catalog extension should be updated in case of a container is removed', as
   window.dispatchEvent(new CustomEvent('system-ready'));
 
   // check that getCatalogExtensions is called
-  await vi.waitFor(() => expect(window.getCatalogExtensions).toBeCalled());
+  await vi.waitFor(() => expect(client.extension.getCatalog).toBeCalled());
 
   // fetch manually
   await catalogExtensionEventStoreInfo.fetch();
@@ -119,8 +121,8 @@ test('catalog extension should be updated in case of a container is removed', as
 
 test('catalog extension should be updated in refresh event is published', async () => {
   // initial catalog is empty
-  vi.mocked(window.getCatalogExtensions).mockResolvedValue([]);
-  vi.mocked(window.getCatalogExtensions).mockReset();
+  vi.mocked(client.extension.getCatalog).mockResolvedValue([]);
+  vi.mocked(client.extension.getCatalog).mockReset();
 
   const callback = callbacks.get('refresh-catalog');
   // send 'refresh-catalog' event
@@ -128,5 +130,5 @@ test('catalog extension should be updated in refresh event is published', async 
   await callback();
 
   // check that getCatalogExtensions is called
-  expect(window.getCatalogExtensions).toBeCalled();
+  expect(client.extension.getCatalog).toBeCalled();
 });

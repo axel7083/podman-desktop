@@ -24,6 +24,7 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { afterEach, beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { AppearanceUtil } from '/@/lib/appearance/appearance-util';
 import { authenticationProviders } from '/@/stores/authenticationProviders';
 
@@ -115,10 +116,9 @@ test('Expect Sign Out button click calls window.requestAuthenticationProviderSig
   const signoutButton = await waitFor(() =>
     screen.getByRole('button', { name: `Sign out of ${testProvidersInfo[0].accounts[0].label}` }),
   );
-  const requestSignOutMock = vi.fn().mockImplementation(() => {});
-  (window as any).requestAuthenticationProviderSignOut = requestSignOutMock;
+  vi.mocked(client.authentication.signOut).mockResolvedValue(undefined);
   await fireEvent.click(signoutButton);
-  expect(requestSignOutMock).toBeCalledWith('test', 'test-account');
+  expect(client.authentication.signOut).toBeCalledWith({ providerId: 'test', sessionId: 'test-account' });
 });
 
 const testProvidersInfoWithoutSessionRequests = [
@@ -157,8 +157,7 @@ const testProvidersInfoWithSessionRequests = [
 
 test('Expect Sign In button to be visible when there is only one session request', async () => {
   authenticationProviders.set(testProvidersInfoWithSessionRequests);
-  const requestSignInMock = vi.fn();
-  (window as any).requestAuthenticationProviderSignIn = requestSignInMock;
+  vi.mocked(client.authentication.signIn).mockResolvedValue(undefined);
   render(PreferencesAuthenticationProvidersRendering, {});
   const menuButton = await waitFor(() => screen.getByRole('button', { name: 'Sign in' }));
 
@@ -168,7 +167,7 @@ test('Expect Sign In button to be visible when there is only one session request
   const tooltip = await screen.findByText('Sign in to use Extension Label');
   expect(tooltip).toBeInTheDocument();
   await fireEvent.click(menuButton);
-  expect(requestSignInMock).toBeCalled();
+  expect(client.authentication.signIn).toBeCalled();
 });
 
 const testProvidersInfoWithMultipleSessionRequests = [
@@ -197,22 +196,21 @@ const testProvidersInfoWithMultipleSessionRequests = [
 
 test('Expect Sign In popup menu to be visible when there is more than one session request', async () => {
   authenticationProviders.set(testProvidersInfoWithMultipleSessionRequests);
-  (window as any).requestAuthenticationProviderSignIn = vi.fn();
+  vi.mocked(client.authentication.signIn).mockResolvedValue(undefined);
   render(PreferencesAuthenticationProvidersRendering, {});
   const menuButton = await waitFor(() => screen.getByRole('button', { name: 'kebab menu' }));
   await fireEvent.click(menuButton);
   // test sign in with extension1
   const menuItem1 = screen.getByText('Sign in to use Extension1 Label');
-  const requestSignInMock = vi.fn();
-  (window as any).requestAuthenticationProviderSignIn = requestSignInMock;
   await fireEvent.click(menuItem1);
-  expect(requestSignInMock).toBeCalledWith('ext:test1');
+  expect(client.authentication.signIn).toBeCalledWith({ requestId: 'ext:test1' });
   // test sign in with extension2
-  requestSignInMock.mockReset();
+  vi.mocked(client.authentication.signIn).mockReset();
+  vi.mocked(client.authentication.signIn).mockResolvedValue(undefined);
   await fireEvent.click(menuButton);
   const menuItem2 = screen.getByText('Sign in to use Extension2 Label');
   await fireEvent.click(menuItem2);
-  expect(requestSignInMock).toBeCalledWith('ext:test2');
+  expect(client.authentication.signIn).toBeCalledWith({ requestId: 'ext:test2' });
 });
 
 test('Expects default icon to be used when provider has no images option', async () => {

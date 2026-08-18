@@ -5,6 +5,7 @@ import { MenuContext } from '@podman-desktop/core-api';
 import { DropdownMenu } from '@podman-desktop/ui-svelte';
 import { createEventDispatcher, onMount } from 'svelte';
 
+import { client } from '/@/client';
 import ContributionActions from '/@/lib/actions/ContributionActions.svelte';
 import { withConfirmation } from '/@/lib/dialogs/messagebox-utils';
 import FlatMenu from '/@/lib/ui/FlatMenu.svelte';
@@ -25,7 +26,7 @@ const dispatch = createEventDispatcher<{ update: VolumeInfoUI }>();
 let contributions: Menu[] = $state([]);
 onMount(async () => {
   try {
-    contributions = await window.getContributedMenus(MenuContext.DASHBOARD_VOLUME);
+    contributions = await client.menu.getContributedMenus({ context: MenuContext.DASHBOARD_VOLUME });
   } catch (error) {
     console.error('Error fetching contributed menus for volumes:', error);
   }
@@ -35,7 +36,7 @@ async function removeVolume(): Promise<void> {
   volume.status = 'DELETING';
   dispatch('update', volume);
 
-  await window.removeVolume(volume.engineId, volume.name);
+  await client.container.removeVolume({ engine: volume.engineId, volumeName: volume.name });
 }
 
 // If dropdownMenu = true, we'll change style to the imported dropdownMenu style

@@ -3,10 +3,12 @@ import type { TelemetryMessages } from '@podman-desktop/core-api';
 import { Link } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
+
 let telemetryMessages: TelemetryMessages;
 
 onMount(async () => {
-  telemetryMessages = await window.getTelemetryMessages();
+  telemetryMessages = await client.telemetry.getTelemetryMessages();
 });
 </script>
 <div>
@@ -17,7 +19,7 @@ onMount(async () => {
       <div class="pt-6">
         <Link
           on:click={async (): Promise<void> => {
-          await window.openExternal(telemetryMessages.privacy?.url ?? '');
+          await client.system.openExternal({ link: telemetryMessages.privacy?.url ?? '' });
           }}>{telemetryMessages?.privacy.link}</Link>
       </div>
     {/if}

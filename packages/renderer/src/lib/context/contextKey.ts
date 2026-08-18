@@ -33,6 +33,8 @@ import type { IDisposable } from '@podman-desktop/core-api';
 import type { ContextKeyValue, IContext } from '@podman-desktop/core-api/context';
 import { CharCode } from '@podman-desktop/core-api/context';
 
+import { client } from '/@/client';
+
 import type { LexingError, Token } from './scanner.js';
 import { Scanner, TokenType } from './scanner.js';
 
@@ -41,7 +43,7 @@ CONSTANT_VALUES.set('false', false);
 CONSTANT_VALUES.set('true', true);
 
 export async function initContextKeysPlatform(): Promise<void> {
-  const platform = await window.getOsPlatform();
+  const platform = await client.system.getPlatform();
   CONSTANT_VALUES.set('isMac', platform === 'darwin');
   CONSTANT_VALUES.set('isLinux', platform === 'linux');
   CONSTANT_VALUES.set('isWindows', platform === 'win32');

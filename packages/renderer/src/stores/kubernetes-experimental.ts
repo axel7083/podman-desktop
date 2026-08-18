@@ -18,14 +18,16 @@
 
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { configurationProperties } from './configurationProperties';
 
 export const isKubernetesExperimentalModeStore: Writable<boolean | undefined> = writable();
 
 configurationProperties.subscribe(() => {
-  if (window?.isExperimentalConfigurationEnabled) {
-    window
-      ?.isExperimentalConfigurationEnabled('kubernetes.statesExperimental')
+  if (client?.configuration?.isExperimentalEnabled) {
+    client.configuration
+      .isExperimentalEnabled({ key: 'kubernetes.statesExperimental' })
       ?.then(value => isKubernetesExperimentalModeStore.set(value ?? false))
       ?.catch((err: unknown) =>
         console.error(`Error getting configuration value 'kubernetes.statesExperimental'}`, err),

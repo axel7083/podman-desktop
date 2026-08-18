@@ -3,6 +3,7 @@ import { Button, ErrorMessage, Input } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import Dialog from '/@/lib/dialogs/Dialog.svelte';
 
 import type { ImageInfoUI } from './ImageInfoUI';
@@ -47,9 +48,14 @@ async function renameImage(imageName: string, imageTag: string): Promise<void> {
   }
 
   try {
-    await window.tagImage(imageInfoToRename.engineId, currentImageNameTag, imageName, imageTag);
+    await client.container.tagImage({
+      engine: imageInfoToRename.engineId,
+      imageTag: currentImageNameTag,
+      repo: imageName,
+      tag: imageTag,
+    });
     if (shouldDelete) {
-      await window.deleteImage(imageInfoToRename.engineId, currentImageNameTag);
+      await client.container.deleteImage({ engine: imageInfoToRename.engineId, imageId: currentImageNameTag });
     }
     closeCallback();
   } catch (error: unknown) {

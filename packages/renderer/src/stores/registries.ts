@@ -20,9 +20,11 @@ import type * as containerDesktopAPI from '@podman-desktop/api';
 import type { Writable } from 'svelte/store';
 import { writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 async function fetchRegistries(): Promise<void> {
-  const registries = await window.getImageRegistries();
-  const suggestedRegistries = await window.getImageSuggestedRegistries();
+  const registries = await client.imageRegistry.getRegistries();
+  const suggestedRegistries = await client.imageRegistry.getSuggestedRegistries();
 
   // Before we set the registry, let's try and find an appropriate icon and name.
   // Go through each registry, search if it's within the "suggestedRegistry" list,

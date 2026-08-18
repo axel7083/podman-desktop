@@ -20,6 +20,7 @@ import type { ImageInfo } from '@podman-desktop/core-api';
 import type { Writable } from 'svelte/store';
 import { derived, writable } from 'svelte/store';
 
+import { client } from '/@/client';
 import ImageIcon from '/@/lib/images/ImageIcon.svelte';
 
 import { EventStore } from './event-store';
@@ -55,9 +56,9 @@ async function checkForUpdate(eventName: string): Promise<boolean> {
 
 export const imagesInfos: Writable<ImageInfo[]> = writable([]);
 
-// use helper here as window methods are initialized after the store in tests
+// use helper here as client methods are initialized after the store in tests
 const listImages = (): Promise<ImageInfo[]> => {
-  return window.listImages();
+  return client.container.listImages({});
 };
 
 export const imagesEventStore = new EventStore<ImageInfo[]>(

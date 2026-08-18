@@ -19,6 +19,8 @@
 import type { ExtensionInfo } from '@podman-desktop/core-api';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = [
@@ -49,7 +51,7 @@ const eventStore = new EventStore<ExtensionInfo[]>(
 eventStore.setup();
 
 async function fetchExtensions(): Promise<ExtensionInfo[]> {
-  const result = await window.listExtensions();
+  const result = await client.extension.list();
   result.sort((a, b) => a.displayName.localeCompare(b.displayName));
   return result;
 }

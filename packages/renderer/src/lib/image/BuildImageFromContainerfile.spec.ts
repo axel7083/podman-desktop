@@ -26,6 +26,7 @@ import { type Component, tick } from 'svelte';
 import { get } from 'svelte/store';
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import BuildImageFromContainerfile from '/@/lib/image/BuildImageFromContainerfile.svelte';
 import { buildImagesInfo, getNextTaskId } from '/@/stores/build-images';
 import { providerInfos } from '/@/stores/providers';
@@ -35,8 +36,8 @@ import { recommendedRegistries } from '/@/stores/recommendedRegistries';
 vi.mock(import('@xterm/xterm'));
 
 beforeAll(() => {
-  vi.mocked(window.openDialog).mockResolvedValue(['Containerfile']);
-  vi.mocked(window.getCancellableTokenSource).mockResolvedValue(1234);
+  vi.mocked(client.dialog.openDialog).mockResolvedValue(['Containerfile']);
+  vi.mocked(client.cancellation.createTokenSource).mockResolvedValue(1234);
 });
 
 beforeEach(() => {
@@ -140,8 +141,8 @@ test('Expect Done button is enabled once build is done', async () => {
 
 test('Select multiple platforms and expect pressing Build will do two buildImage builds', async () => {
   // Auto select amd64
-  vi.mocked(window.getOsArch).mockResolvedValue('amd64');
-  vi.mocked(window.pathRelative).mockResolvedValue('containerfile');
+  vi.mocked(client.system.getArch).mockResolvedValue('amd64');
+  vi.mocked(client.system.pathRelative).mockResolvedValue('containerfile');
   setup();
   await waitRender();
 
@@ -228,7 +229,7 @@ test('Select multiple platforms and expect pressing Build will do two buildImage
 
 test('Select multiple platforms without image name should disable Build button', async () => {
   // Auto select amd64
-  vi.mocked(window.getOsArch).mockResolvedValue('amd64');
+  vi.mocked(client.system.getArch).mockResolvedValue('amd64');
   setup();
   await waitRender();
 
@@ -259,7 +260,7 @@ test('Select multiple platforms without image name should disable Build button',
 
 test('Selecting no platforms should disable Build button', async () => {
   // Auto select amd64
-  vi.mocked(window.getOsArch).mockResolvedValue('amd64');
+  vi.mocked(client.system.getArch).mockResolvedValue('amd64');
   setup();
   await waitRender();
 
@@ -286,11 +287,11 @@ test('Selecting no platforms should disable Build button', async () => {
 
 test('Selecting one platform only calls buildImage once with the selected platform, make sure that it has a name', async () => {
   // Auto select amd64
-  vi.mocked(window.getOsArch).mockResolvedValue('amd64');
+  vi.mocked(client.system.getArch).mockResolvedValue('amd64');
   setup();
   await waitRender();
 
-  vi.mocked(window.pathRelative).mockResolvedValue('containerfile');
+  vi.mocked(client.system.pathRelative).mockResolvedValue('containerfile');
   const containerFilePath = screen.getByRole('textbox', { name: 'Containerfile path' });
   expect(containerFilePath).toBeInTheDocument();
   await userEvent.type(containerFilePath, '/somepath/containerfile');
@@ -333,13 +334,13 @@ test('Expect Abort button to hidden when image build is not in progress', async 
 
 test('Expect Abort button to being visible when image build is in progress', async () => {
   // Auto select amd64
-  vi.mocked(window.getOsArch).mockResolvedValue('amd64');
+  vi.mocked(client.system.getArch).mockResolvedValue('amd64');
   let resolveCallback: (value?: unknown) => void = () => {};
   vi.mocked(window.buildImage).mockResolvedValue(new Promise(resolve => (resolveCallback = resolve)));
   setup();
   await waitRender();
 
-  vi.mocked(window.pathRelative).mockResolvedValue('containerfile');
+  vi.mocked(client.system.pathRelative).mockResolvedValue('containerfile');
   const containerFilePath = screen.getByRole('textbox', { name: 'Containerfile path' });
   expect(containerFilePath).toBeInTheDocument();
   await userEvent.type(containerFilePath, '/somepath/containerfile');
@@ -626,12 +627,12 @@ describe('Build image that has an intermediate target', () => {
     vi.mocked(window.containerfileGetInfo).mockResolvedValue({
       targets: ['custom-target'],
     });
-    vi.mocked(window.getOsArch).mockResolvedValue('amd64');
+    vi.mocked(client.system.getArch).mockResolvedValue('amd64');
     setup();
 
     const { getByRole } = await waitRender();
 
-    vi.mocked(window.pathRelative).mockResolvedValue('containerfile');
+    vi.mocked(client.system.pathRelative).mockResolvedValue('containerfile');
     const containerFilePath = getByRole('textbox', { name: 'Containerfile path' });
     await userEvent.type(containerFilePath, '/somepath/containerfile');
 
@@ -677,7 +678,7 @@ test('Expect to have a checkbox on by default to validate registries before buil
 
   expect(validateRegistriesCheckbox).not.toBeChecked();
 
-  vi.mocked(window.pathRelative).mockResolvedValue('containerfile');
+  vi.mocked(client.system.pathRelative).mockResolvedValue('containerfile');
   const containerFilePath = screen.getByRole('textbox', { name: 'Containerfile path' });
   await userEvent.type(containerFilePath, '/somepath/containerfile');
 

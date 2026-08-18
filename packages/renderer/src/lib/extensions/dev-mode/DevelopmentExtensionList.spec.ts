@@ -23,6 +23,7 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { extensionDevelopmentFolders } from '/@/stores/extensionDevelopmentFolders';
 import { extensionInfos } from '/@/stores/extensions';
 
@@ -39,12 +40,12 @@ const devModeNotEnabledText = 'Enable Preferences > Extensions > Development Mod
 
 test('Expect empty list if dev mode is not enabled', async () => {
   // not enabled
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(false);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(false);
 
   render(DevelopmentExtensionList);
 
   // wait the getConfigurationValue to be called
-  await vi.waitFor(() => expect(window.getConfigurationValue).toHaveBeenCalled());
+  await vi.waitFor(() => expect(client.configuration.getValue).toHaveBeenCalled());
 
   // expect to find the text devModeNotEnabledText
   expect(screen.getByText(devModeNotEnabledText)).toBeInTheDocument();
@@ -52,12 +53,12 @@ test('Expect empty list if dev mode is not enabled', async () => {
 
 test('Expect no empty screen if dev mode is enabled but table is empty', async () => {
   // enabled
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
   render(DevelopmentExtensionList);
 
   // wait the getConfigurationValue to be called
-  await vi.waitFor(() => expect(window.getConfigurationValue).toHaveBeenCalled());
+  await vi.waitFor(() => expect(client.configuration.getValue).toHaveBeenCalled());
 
   // expect the text devModeNotEnabledText is not there
   await vi.waitFor(() => expect(screen.queryByText(devModeNotEnabledText)).not.toBeInTheDocument());
@@ -68,12 +69,12 @@ test('Expect no empty screen if dev mode is enabled but table is empty', async (
 
 test('expect addLocalFolderExtension is working', async () => {
   // enabled
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
   render(DevelopmentExtensionList);
 
   // mock openDialog and returning the foo folder
-  vi.mocked(window.openDialog).mockResolvedValue(['foo']);
+  vi.mocked(client.dialog.openDialog).mockResolvedValue(['foo']);
 
   // wait the button 'Add a local folder extension is there
   await vi.waitFor(() =>
@@ -84,20 +85,20 @@ test('expect addLocalFolderExtension is working', async () => {
   await userEvent.click(addButton);
 
   // check it call trackExtensionFolder with the foo folder
-  await vi.waitFor(() => expect(window.trackExtensionFolder).toHaveBeenCalledWith('foo'));
+  await vi.waitFor(() => expect(client.extension.addDevelopmentFolder).toHaveBeenCalledWith({ path: 'foo' }));
 });
 
 test('expect report error of addLocalFolderExtension', async () => {
   // enabled
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
   render(DevelopmentExtensionList);
 
   // mock openDialog and returning the foo folder
-  vi.mocked(window.openDialog).mockResolvedValue(['foo']);
+  vi.mocked(client.dialog.openDialog).mockResolvedValue(['foo']);
 
   // mock trackExtensionFolder to throw an error
-  vi.mocked(window.trackExtensionFolder).mockRejectedValue(new Error('dummy error'));
+  vi.mocked(client.extension.addDevelopmentFolder).mockRejectedValue(new Error('dummy error'));
 
   // wait the button 'Add a local folder extension is there
   await vi.waitFor(() =>
@@ -108,10 +109,12 @@ test('expect report error of addLocalFolderExtension', async () => {
   await userEvent.click(addButton);
 
   // check it call trackExtensionFolder with the foo folder
-  await vi.waitFor(() => expect(window.trackExtensionFolder).toHaveBeenCalledWith('foo'));
+  await vi.waitFor(() => expect(client.extension.addDevelopmentFolder).toHaveBeenCalledWith({ path: 'foo' }));
 
   // expect the error to be displayed
-  await vi.waitFor(() => expect(vi.mocked(window.showMessageBox).mock.calls[0][0].message).toContain('dummy error'));
+  await vi.waitFor(() =>
+    expect(vi.mocked(client.dialog.showMessageBox).mock.calls[0][0].message).toContain('dummy error'),
+  );
 });
 
 test('expect list displayed if enabled', async () => {
@@ -120,7 +123,7 @@ test('expect list displayed if enabled', async () => {
   extensionInfos.set([{ id: 'extensionid', name: 'extension A', path: 'foo' } as ExtensionInfo]);
 
   // enabled
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
   render(DevelopmentExtensionList);
 

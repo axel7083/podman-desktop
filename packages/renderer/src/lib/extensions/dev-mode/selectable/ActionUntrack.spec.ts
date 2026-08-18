@@ -21,6 +21,7 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import type { SelectableExtensionDevelopmentFolderInfoUI } from '/@/lib/extensions/dev-mode/development-folder-info-ui';
 
 import ActionUntrack from './ActionUntrack.svelte';
@@ -55,8 +56,10 @@ test('Expect untrack action being displayed if there is stopped extension', asyn
   // click on the button
   await fireEvent.click(untrackButton);
 
-  // expect the window.untrackExtensionFolder to be called
-  expect(window.untrackExtensionFolder).toHaveBeenCalledWith(extensionFolderWithExtensionFound.path);
+  // expect the client.extension.removeDevelopmentFolder to be called
+  expect(client.extension.removeDevelopmentFolder).toHaveBeenCalledWith({
+    path: extensionFolderWithExtensionFound.path,
+  });
 });
 
 test('Expect untrack action being hidden if there is started extension', async () => {

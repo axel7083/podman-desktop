@@ -3,6 +3,7 @@ import { faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { ProgressBar, Tooltip } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
 import { tasksInfo } from '/@/stores/tasks';
 
 let runningTasks = $derived($tasksInfo.filter(task => task.state === 'running'));
@@ -35,7 +36,7 @@ async function toggleTaskManager(): Promise<void> {
 
 async function cancelTask(): Promise<void> {
   if (cancellableToken) {
-    await window.cancelToken(cancellableToken);
+    await client.cancellation.cancelToken({ id: cancellableToken });
   }
 }
 </script>

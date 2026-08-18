@@ -27,6 +27,7 @@ import { tick } from 'svelte';
 import { router } from 'tinro';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { lastPage } from '/@/stores/breadcrumb';
 import { registeredFeatures } from '/@/stores/registered-features';
 
@@ -81,7 +82,7 @@ beforeEach(() => {
     },
   };
 
-  vi.mocked(window.generatePodmanKube).mockResolvedValue(jsYaml.dump(podYaml));
+  vi.mocked(client.container.generatePodmanKube).mockResolvedValue(jsYaml.dump(podYaml));
 
   // Mock listSimpleContainersByLabel with a SimpleContainerInfo[] array of 1 container
   const simpleContainerInfo = {
@@ -93,7 +94,7 @@ beforeEach(() => {
       'com.docker.compose.project': 'hello',
     },
   } as unknown as SimpleContainerInfo;
-  vi.mocked(window.listSimpleContainersByLabel).mockResolvedValue([simpleContainerInfo]);
+  vi.mocked(client.container.listSimpleContainersByLabel).mockResolvedValue([simpleContainerInfo]);
 });
 
 async function waitRender(customProperties: Partial<DeployPodToKube>): Promise<void> {
@@ -151,11 +152,14 @@ test('Expect to create routes with OpenShift and open Link', async () => {
   await vi.waitFor(() => expect(vi.mocked(window.openshiftCreateRoute).mock.calls).not.toHaveLength(0));
 
   await vi.waitFor(() =>
-    expect(window.telemetryTrack).toBeCalledWith('deployToKube', {
-      useRoutes: true,
-      useServices: true,
-      isOpenshift: true,
-      createIngress: false,
+    expect(client.telemetry.track).toBeCalledWith({
+      event: 'deployToKube',
+      eventProperties: {
+        useRoutes: true,
+        useServices: true,
+        isOpenshift: true,
+        createIngress: false,
+      },
     }),
   );
 
@@ -190,7 +194,7 @@ test('Expect to create routes with OpenShift and open Link', async () => {
   await fireEvent.click(openRouteButton);
 
   // expect the router to be called with the correct url
-  expect(window.openExternal).toBeCalledWith('https://my-spec-host');
+  expect(client.system.openExternal).toBeCalledWith({ link: 'https://my-spec-host' });
 });
 
 test('Expect to send telemetry event', async () => {
@@ -201,10 +205,13 @@ test('Expect to send telemetry event', async () => {
 
   await fireEvent.click(createButton);
   await waitFor(() =>
-    expect(window.telemetryTrack).toBeCalledWith('deployToKube', {
-      useRoutes: true,
-      useServices: true,
-      createIngress: false,
+    expect(client.telemetry.track).toBeCalledWith({
+      event: 'deployToKube',
+      eventProperties: {
+        useRoutes: true,
+        useServices: true,
+        createIngress: false,
+      },
     }),
   );
 });
@@ -223,11 +230,14 @@ test('Expect to send telemetry event with OpenShift', async () => {
 
   await fireEvent.click(createButton);
   await waitFor(() =>
-    expect(window.telemetryTrack).toBeCalledWith('deployToKube', {
-      useRoutes: true,
-      useServices: true,
-      isOpenshift: true,
-      createIngress: false,
+    expect(client.telemetry.track).toBeCalledWith({
+      event: 'deployToKube',
+      eventProperties: {
+        useRoutes: true,
+        useServices: true,
+        isOpenshift: true,
+        createIngress: false,
+      },
     }),
   );
 });
@@ -244,11 +254,14 @@ test('Expect to send telemetry error event', async () => {
   // expect it throws a telemetry event reporting an error
   await fireEvent.click(createButton);
   await waitFor(() =>
-    expect(window.telemetryTrack).toHaveBeenCalledWith('deployToKube', {
-      errorMessage: 'Custom Error',
-      useRoutes: true,
-      useServices: true,
-      createIngress: false,
+    expect(client.telemetry.track).toHaveBeenCalledWith({
+      event: 'deployToKube',
+      eventProperties: {
+        errorMessage: 'Custom Error',
+        useRoutes: true,
+        useServices: true,
+        createIngress: false,
+      },
     }),
   );
 });
@@ -606,8 +619,11 @@ test('ImagePullBackOff error should be reported', async () => {
 
   await waitFor(() => {
     // The error is reported to the telemetry and to the user
-    expect(window.telemetryTrack).toBeCalledWith('deployToKube', {
-      errorMessage: 'ImagePullBackOff',
+    expect(client.telemetry.track).toBeCalledWith({
+      event: 'deployToKube',
+      eventProperties: {
+        errorMessage: 'ImagePullBackOff',
+      },
     });
     expect(screen.getByRole('alert')).toHaveTextContent(
       'ImagePullBackOff error, please check that the image is accessible from the Kubernetes cluster',

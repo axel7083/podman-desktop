@@ -22,6 +22,7 @@ import { NavigationPage, type ProviderInfo } from '@podman-desktop/core-api';
 import { fireEvent, render } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { handleNavigation } from '/@/navigation';
 import { providerInfos } from '/@/stores/providers';
 
@@ -49,7 +50,7 @@ beforeEach(() => {
 });
 
 test('Expect create secret to call API and navigate back', async () => {
-  vi.mocked(window.createSecret).mockResolvedValue({
+  vi.mocked(client.container.createSecret).mockResolvedValue({
     id: 'secret-id',
     engineId: 'podman.podman-machine-default',
   });
@@ -64,12 +65,12 @@ test('Expect create secret to call API and navigate back', async () => {
   const createButton = getByRole('button', { name: 'Create' });
   await fireEvent.click(createButton);
 
-  expect(window.createSecret).toHaveBeenCalledTimes(1);
+  expect(client.container.createSecret).toHaveBeenCalledTimes(1);
   expect(handleNavigation).toHaveBeenCalledWith({ page: NavigationPage.SECRETS });
 });
 
 test('Expect create secret error to be displayed', async () => {
-  vi.mocked(window.createSecret).mockRejectedValue(new Error('create failed'));
+  vi.mocked(client.container.createSecret).mockRejectedValue(new Error('create failed'));
 
   const { getByPlaceholderText, getByRole, getByText } = render(SecretCreate);
 

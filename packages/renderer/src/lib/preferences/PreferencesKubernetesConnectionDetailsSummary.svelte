@@ -3,6 +3,8 @@ import type { KubernetesProviderConnection } from '@podman-desktop/api';
 import type { ProviderKubernetesConnectionInfo } from '@podman-desktop/core-api';
 import type { IConfigurationPropertyRecordedSchema } from '@podman-desktop/core-api/configuration';
 
+import { client } from '/@/client';
+
 import type { IProviderConnectionConfigurationPropertyRecorded } from './Util';
 
 export let properties: IConfigurationPropertyRecordedSchema[] = [];
@@ -19,10 +21,10 @@ $: Promise.all(
     return {
       ...configurationKey,
       value: configurationKey.id
-        ? await window.getConfigurationValue(
-            configurationKey.id,
-            kubernetesConnectionInfo as unknown as KubernetesProviderConnection,
-          )
+        ? await client.configuration.getValue({
+            key: configurationKey.id,
+            scope: kubernetesConnectionInfo as unknown as KubernetesProviderConnection,
+          })
         : undefined,
       connection: kubernetesConnectionInfo?.name ?? '',
       providerId: providerInternalId ?? '',

@@ -1,6 +1,7 @@
 <script lang="ts">
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import CopyToClipboard from '/@/lib/ui/CopyToClipboard.svelte';
 
 interface Props {
@@ -14,7 +15,7 @@ let url: string | undefined = $state();
 
 onMount(async () => {
   try {
-    const platform = await window.getOsPlatform();
+    const platform = await client.system.getPlatform();
 
     let prefix = '';
     if (platform === 'win32') {

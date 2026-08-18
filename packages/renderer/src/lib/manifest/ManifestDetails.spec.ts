@@ -20,18 +20,12 @@ import '@testing-library/jest-dom/vitest';
 
 import type { ImageInfo } from '@podman-desktop/core-api';
 import { render, screen } from '@testing-library/svelte';
-import { afterEach, beforeAll, beforeEach, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { imagesInfos } from '/@/stores/images';
 
 import ManifestDetails from './ManifestDetails.svelte';
-
-const listImagesMock = vi.fn();
-
-beforeAll(() => {
-  Object.defineProperty(window, 'listImages', { value: listImagesMock });
-  Object.defineProperty(window, 'listContainers', { value: vi.fn() });
-});
 
 beforeEach(() => {
   imagesInfos.set([]);
@@ -50,7 +44,7 @@ test('It should render correctly with given image information', async () => {
     Size: 0,
   } as unknown as ImageInfo;
   imagesInfos.set([myImage]);
-  listImagesMock.mockResolvedValue([myImage]);
+  vi.mocked(client.container.listImages).mockResolvedValue([myImage]);
 
   render(ManifestDetails, {
     imageID,

@@ -18,6 +18,7 @@
 
 import { derived, type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
 import PodIcon from '/@/lib/images/PodIcon.svelte';
 import { PodUtils } from '/@/lib/pod/pod-utils';
 import type { PodInfoUI } from '/@/lib/pod/PodInfoUI';
@@ -85,7 +86,7 @@ export const filtered = derived([searchPattern, podsInfos], ([$searchPattern, $p
 const podUtils = new PodUtils();
 
 const listPods = async (): Promise<PodInfoUI[]> => {
-  return (await window.listPods()).map(podInfo => podUtils.getPodInfoUI(podInfo));
+  return (await client.container.listPods()).map(podInfo => podUtils.getPodInfoUI(podInfo));
 };
 
 export function setPodStatus(engineId: string, podId: string, status: string): void {

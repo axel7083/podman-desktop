@@ -2,6 +2,7 @@
 import { onMount } from 'svelte';
 import { derived, type Readable } from 'svelte/store';
 
+import { client } from '/@/client';
 import { combinedInstalledExtensions } from '/@/stores/all-installed-extensions';
 import { catalogExtensionInfos } from '/@/stores/catalog-extensions';
 import { featuredExtensionInfos } from '/@/stores/featuredExtensions';
@@ -32,7 +33,7 @@ let {
 let enableCatalog = $state(true);
 
 onMount(async () => {
-  const value = await window.getConfigurationValue<boolean>('extensions.catalog.enabled');
+  const value = (await client.configuration.getValue({ key: 'extensions.catalog.enabled' })) as boolean | undefined;
   enableCatalog = value ?? true;
 });
 

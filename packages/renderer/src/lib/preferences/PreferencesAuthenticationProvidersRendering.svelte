@@ -8,6 +8,7 @@ import {
 import { Button, DropdownMenu, EmptyScreen, Tooltip } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
 import IconImage from '/@/lib/appearance/IconImage.svelte';
 import EmbeddableCatalogExtensionList from '/@/lib/extensions/EmbeddableCatalogExtensionList.svelte';
 import KeyIcon from '/@/lib/images/KeyIcon.svelte';
@@ -91,7 +92,7 @@ import SettingsPage from './SettingsPage.svelte';
                           <button
                             aria-label="Sign out of {account.label}"
                             class="pl-2 hover:cursor-pointer"
-                            on:click={(): Promise<void> => window.requestAuthenticationProviderSignOut(provider.id, account.id)}>
+                            on:click={(): Promise<void> => client.authentication.signOut({ providerId: provider.id, sessionId: account.id })}>
                             <Icon class="h-3 w-3 text-md mr-2" icon={faRightFromBracket} />
                           </button>
                         </Tooltip>
@@ -111,7 +112,7 @@ import SettingsPage from './SettingsPage.svelte';
                 <Button
                   aria-label="Sign in"
                   class="pl-2 mr-4"
-                  on:click={(): Promise<void> => window.requestAuthenticationProviderSignIn(request.id)}>
+                  on:click={(): Promise<void> => client.authentication.signIn({ requestId: request.id })}>
                   <div class="flex flex-row items-center">
                     <Icon class="h-3 w-3 text-md mr-2" icon={faRightToBracket} />Sign in
                   </div>
@@ -124,7 +125,7 @@ import SettingsPage from './SettingsPage.svelte';
                 {#each sessionRequests as request (request.id)}
                   <DropdownMenu.Item
                     title="Sign in to use {request.extensionLabel}"
-                    onClick={(): Promise<void> => window.requestAuthenticationProviderSignIn(request.id)}
+                    onClick={(): Promise<void> => client.authentication.signIn({ requestId: request.id })}
                     icon={faArrowRightToBracket} />
                 {/each}
               </DropdownMenu>

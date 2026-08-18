@@ -23,6 +23,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { providerInfos } from '/@/stores/providers';
 import { searchPattern, secretsInfo } from '/@/stores/secrets';
 
@@ -60,7 +61,7 @@ const providerInfoMock = {
 
 async function init(searchTerm?: string): Promise<void> {
   vi.mocked(window.getProviderInfos).mockResolvedValue([providerInfoMock]);
-  vi.mocked(window.listSecrets).mockResolvedValue([secret1, secret2]);
+  vi.mocked(client.container.listSecrets).mockResolvedValue([secret1, secret2]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -82,16 +83,16 @@ async function init(searchTerm?: string): Promise<void> {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.listSecrets).mockResolvedValue([]);
+  vi.mocked(client.container.listSecrets).mockResolvedValue([]);
   vi.mocked(window.getProviderInfos).mockResolvedValue([]);
-  vi.mocked(window.getContributedMenus).mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
   providerInfos.set([]);
   secretsInfo.set([]);
   searchPattern.set('');
 });
 
 test('Expect no container engines being displayed', async () => {
-  vi.mocked(window.listSecrets).mockResolvedValue([secret1, secret2]);
+  vi.mocked(client.container.listSecrets).mockResolvedValue([secret1, secret2]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -171,18 +172,18 @@ test('Expect user confirmation for bulk delete', async () => {
   expect(checkboxes).toHaveLength(2);
   await fireEvent.click(checkboxes[0]);
 
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 
   const deleteButton = screen.getByRole('button', { name: 'Delete 1 selected items' });
   await fireEvent.click(deleteButton);
 
-  expect(window.showMessageBox).toHaveBeenCalledOnce();
+  expect(client.dialog.showMessageBox).toHaveBeenCalledOnce();
 
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   await fireEvent.click(deleteButton);
-  expect(window.showMessageBox).toHaveBeenCalledTimes(2);
-  await waitFor(() => expect(window.removeSecret).toHaveBeenCalled());
+  expect(client.dialog.showMessageBox).toHaveBeenCalledTimes(2);
+  await waitFor(() => expect(client.container.removeSecret).toHaveBeenCalled());
 });
 
 test('Expect search to filter secrets by name', async () => {
@@ -198,7 +199,7 @@ test('Expect environment column sorted by engineName', async () => {
   const secret1Modified = { ...secret1, engineId: 'engine-zzz', engineName: 'name-aaa' };
   const secret2Modified = { ...secret2, engineId: 'engine-aaa', engineName: 'name-zzz' };
 
-  vi.mocked(window.listSecrets).mockResolvedValue([secret1Modified, secret2Modified]);
+  vi.mocked(client.container.listSecrets).mockResolvedValue([secret1Modified, secret2Modified]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));

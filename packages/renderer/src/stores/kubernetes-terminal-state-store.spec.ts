@@ -20,12 +20,13 @@ import { render, waitFor } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import KubernetesTerminal from '/@/lib/kube/pods/terminal/KubernetesTerminal.svelte';
 import { terminalStates } from '/@/stores/kubernetes-terminal-state-store';
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.getConfigurationValue).mockImplementation(async (key: string) => {
+  vi.mocked(client.configuration.getValue).mockImplementation(async ({ key }: { key: string }) => {
     if (key === 'terminal.integrated.scrollback') {
       return 1000;
     }

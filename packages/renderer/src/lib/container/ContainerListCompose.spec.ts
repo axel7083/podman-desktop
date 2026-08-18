@@ -26,6 +26,7 @@ import { get } from 'svelte/store';
 /* eslint-enable import/no-duplicates */
 import { beforeAll, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { containersInfos } from '/@/stores/containers';
 import { providerInfos } from '/@/stores/providers';
 
@@ -33,8 +34,8 @@ import ContainerList from './ContainerList.svelte';
 
 // Mocked window methods
 beforeAll(() => {
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
-  vi.mocked(window.listViewsContributions).mockResolvedValue([]);
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.uiRegistry.listViews).mockResolvedValue([]);
   vi.mocked(window.onDidUpdateProviderStatus).mockResolvedValue(undefined);
   vi.mocked(window.events.receive).mockImplementation((_channel, func) => {
     func();
@@ -91,7 +92,7 @@ test('Delete a group of compose containers successfully', async () => {
       ImageID: 'dummy-image-id',
     } as unknown as ContainerInfo,
   ];
-  vi.mocked(window.listContainers).mockResolvedValue(mockedContainers);
+  vi.mocked(client.container.listContainers).mockResolvedValue(mockedContainers);
 
   // Send over custom events to simulate PD being started
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
@@ -118,11 +119,15 @@ test('Delete a group of compose containers successfully', async () => {
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
   // wait deleteContainerMock is called
-  while (vi.mocked(window.deleteContainersByLabel).mock.calls.length === 0) {
+  while (vi.mocked(client.container.deleteContainersByLabel).mock.calls.length === 0) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 
   // Expect deleteContainerMock to be called / successfully clicked
-  expect(window.deleteContainersByLabel).toBeCalledWith('podman', 'com.docker.compose.project', groupName);
-  expect(window.deleteContainersByLabel).toBeCalledTimes(1);
+  expect(client.container.deleteContainersByLabel).toHaveBeenCalledWith({
+    engine: 'podman',
+    label: 'com.docker.compose.project',
+    key: groupName,
+  });
+  expect(client.container.deleteContainersByLabel).toHaveBeenCalledTimes(1);
 });

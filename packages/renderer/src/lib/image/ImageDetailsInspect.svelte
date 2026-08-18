@@ -2,6 +2,7 @@
 import type { ImageInspectInfo } from '@podman-desktop/core-api';
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import MonacoEditor from '/@/lib/editor/MonacoEditor.svelte';
 
 import type { ImageInfoUI } from './ImageInfoUI';
@@ -16,7 +17,10 @@ let inspectDetails: string | undefined = $state();
 
 onMount(async () => {
   // grab inspect result from the container
-  const inspectResult = (await window.getImageInspect(image.engineId, image.id)) as Partial<ImageInspectInfo>;
+  const inspectResult = (await client.container.getImageInspect({
+    engine: image.engineId,
+    imageId: image.id,
+  })) as Partial<ImageInspectInfo>;
 
   // remove engine* properties from the inspect result as it's more internal
   delete inspectResult.engineId;

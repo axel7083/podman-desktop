@@ -22,6 +22,7 @@ import type { V1Route } from '@podman-desktop/core-api';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import type { PodInfoContainerUI } from '/@/lib/pod/PodInfoUI';
 
 import PodActions from './PodActions.svelte';
@@ -69,18 +70,17 @@ beforeEach(() => {
   vi.mocked(window.kubernetesReadNamespacedPod).mockResolvedValue({ metadata: { labels: { app: 'foo' } } });
   vi.mocked(window.restartKubernetesPod).mockImplementation(restartMock);
   vi.mocked(window.kubernetesDeletePod).mockImplementation(deleteMock);
-  vi.mocked(window.openExternal).mockResolvedValue(undefined);
 });
 
 test('Check deleting pod', async () => {
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
 
   render(PodActions, { pod });
 
   // click on delete button
   const deleteButton = screen.getByRole('button', { name: 'Delete Pod' });
   await fireEvent.click(deleteButton);
-  expect(window.showMessageBox).toHaveBeenCalledOnce();
+  expect(client.dialog.showMessageBox).toHaveBeenCalledOnce();
 
   // Wait for confirmation modal to disappear after clicking on delete
   await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
@@ -90,7 +90,7 @@ test('Check deleting pod', async () => {
 });
 
 test('Check restarting pod', async () => {
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
 
   render(PodActions, { pod });
 
@@ -119,7 +119,7 @@ test('Expect kubernetes route to be displayed', async () => {
 
   await fireEvent.click(openRouteButton);
 
-  expect(window.openExternal).toHaveBeenCalledWith(`http://${routeHost}`);
+  expect(client.system.openExternal).toHaveBeenCalledWith({ link: `http://${routeHost}` });
 });
 
 test('Expect kubernetes route to be displayed but disabled', async () => {

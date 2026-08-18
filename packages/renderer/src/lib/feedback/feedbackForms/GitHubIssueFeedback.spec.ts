@@ -24,23 +24,18 @@ import userEvent from '@testing-library/user-event';
 import { type Component, type ComponentProps } from 'svelte';
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import GitHubIssueFeedback from './GitHubIssueFeedback.svelte';
+import { client } from '/@/client';
 
-const openExternalMock = vi.fn();
-const previewOnGitHubMock = vi.fn();
+import GitHubIssueFeedback from './GitHubIssueFeedback.svelte';
 
 beforeAll(() => {
   Object.defineProperty(global, 'window', {
     value: {
-      openExternal: openExternalMock,
-      previewOnGitHub: previewOnGitHubMock,
-      telemetryTrack: vi.fn(),
       navigator: {
         clipboard: {
           writeText: vi.fn(),
         },
       },
-      getTelemetryMessages: vi.fn(),
     },
     writable: true,
   });
@@ -48,8 +43,8 @@ beforeAll(() => {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.previewOnGitHub).mockResolvedValue(undefined);
-  vi.mocked(window.telemetryTrack).mockResolvedValue(undefined);
+  vi.mocked(client.feedback.githubPreview).mockResolvedValue(undefined);
+  vi.mocked(client.telemetry.track).mockResolvedValue(undefined);
 });
 
 /**
@@ -191,7 +186,7 @@ test.each([
   expect(existingIssues).toBeInTheDocument();
 
   await userEvent.click(existingIssues);
-  expect(openExternalMock).toHaveBeenCalledWith(link);
+  expect(client.system.openExternal).toHaveBeenCalledWith({ link });
 });
 
 test.each<GitHubFeedbackCategory>(['bug', 'feature'])(
@@ -220,11 +215,11 @@ test.each<GitHubFeedbackCategory>(['bug', 'feature'])(
     // preview
     await userEvent.click(preview);
 
-    expect(previewOnGitHubMock).toHaveBeenCalledWith(
-      expect.objectContaining({
+    expect(client.feedback.githubPreview).toHaveBeenCalledWith({
+      properties: expect.objectContaining({
         category: category,
       }),
-    );
+    });
 
     expect(onCloseFormMock).toHaveBeenCalled();
   },
@@ -283,11 +278,11 @@ describe('includeSystemInfo', () => {
     // open in GitHub
     await userEvent.click(preview);
 
-    expect(previewOnGitHubMock).toHaveBeenCalledWith(
-      expect.objectContaining({
+    expect(client.feedback.githubPreview).toHaveBeenCalledWith({
+      properties: expect.objectContaining({
         includeSystemInfo: false,
       }),
-    );
+    });
   });
 });
 
@@ -344,11 +339,11 @@ describe('includeExtensionInfo', () => {
     // open in GitHub
     await userEvent.click(preview);
 
-    expect(previewOnGitHubMock).toHaveBeenCalledWith(
-      expect.objectContaining({
+    expect(client.feedback.githubPreview).toHaveBeenCalledWith({
+      properties: expect.objectContaining({
         includeExtensionInfo: false,
       }),
-    );
+    });
   });
 });
 
@@ -365,15 +360,21 @@ test.each<GitHubFeedbackCategory>(['bug', 'feature'])(
       },
     });
 
-    expect(window.telemetryTrack).toHaveBeenNthCalledWith(1, `feedback.FormOpened`, { feedbackCategory: category });
+    expect(client.telemetry.track).toHaveBeenNthCalledWith(1, {
+      event: `feedback.FormOpened`,
+      eventProperties: { feedbackCategory: category },
+    });
 
     await userEvent.type(title, `${category} title`);
     await userEvent.type(description, `${category} description`);
     await userEvent.click(preview);
 
     await vi.waitFor(() =>
-      expect(window.telemetryTrack).toHaveBeenNthCalledWith(2, `feedback.FormSubmitted`, {
-        feedbackCategory: category,
+      expect(client.telemetry.track).toHaveBeenNthCalledWith(2, {
+        event: `feedback.FormSubmitted`,
+        eventProperties: {
+          feedbackCategory: category,
+        },
       }),
     );
   },
@@ -382,7 +383,7 @@ test.each<GitHubFeedbackCategory>(['bug', 'feature'])(
 test.each<GitHubFeedbackCategory>(['bug', 'feature'])(
   'Expect %s to have specific telemetry track events with error if the preview on GitHub fails',
   async category => {
-    vi.mocked(window.previewOnGitHub).mockRejectedValue('error: unable to preview on GitHub');
+    vi.mocked(client.feedback.githubPreview).mockRejectedValue('error: unable to preview on GitHub');
     const { title, description, preview } = renderGitHubIssueFeedback({
       category: category,
       onCloseForm: vi.fn(),
@@ -393,16 +394,22 @@ test.each<GitHubFeedbackCategory>(['bug', 'feature'])(
       },
     });
 
-    expect(window.telemetryTrack).toHaveBeenNthCalledWith(1, `feedback.FormOpened`, { feedbackCategory: category });
+    expect(client.telemetry.track).toHaveBeenNthCalledWith(1, {
+      event: `feedback.FormOpened`,
+      eventProperties: { feedbackCategory: category },
+    });
 
     await userEvent.type(title, `${category} title`);
     await userEvent.type(description, `${category} description`);
     await userEvent.click(preview);
 
     await vi.waitFor(() =>
-      expect(window.telemetryTrack).toHaveBeenNthCalledWith(2, `feedback.FormSubmitted`, {
-        feedbackCategory: category,
-        error: 'error: unable to preview on GitHub',
+      expect(client.telemetry.track).toHaveBeenNthCalledWith(2, {
+        event: `feedback.FormSubmitted`,
+        eventProperties: {
+          feedbackCategory: category,
+          error: 'error: unable to preview on GitHub',
+        },
       }),
     );
   },
@@ -445,6 +452,6 @@ test('Expect opening existing GitHub issues to not close the feedback window', a
 
   await userEvent.click(gitHubLink);
 
-  expect(window.openExternal).toHaveBeenCalled();
+  expect(client.system.openExternal).toHaveBeenCalled();
   expect(onCloseFormMock).not.toHaveBeenCalled();
 });

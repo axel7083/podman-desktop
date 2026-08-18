@@ -19,22 +19,12 @@
 import '@testing-library/jest-dom/vitest';
 
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { type TaskInfoUI, tasksInfo } from '/@/stores/tasks';
 
 import TaskManagerBulkDeleteButton from './TaskManagerBulkDeleteButton.svelte';
-
-beforeAll(() => {
-  Object.defineProperty(global, 'window', {
-    value: {
-      getConfigurationValue: vi.fn(),
-      showMessageBox: vi.fn(),
-      clearTask: vi.fn(),
-    },
-    writable: true,
-  });
-});
 
 // set 3 tasks
 const selectedTask1: TaskInfoUI = {
@@ -64,13 +54,13 @@ const bulkOperationTitle = 'bulk delete operation';
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.getConfigurationValue).mockResolvedValue({});
+  vi.mocked(client.configuration.getValue).mockResolvedValue({});
   tasksInfo.set([selectedTask1, selectedTask2, unselectedTask]);
 });
 
 test('Expect bulk button is bringing confirmation but not deleting anything', async () => {
   // return No for the confirmation
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 
   render(TaskManagerBulkDeleteButton, { title, bulkOperationTitle });
   // expect the button is there
@@ -79,20 +69,19 @@ test('Expect bulk button is bringing confirmation but not deleting anything', as
   // click the button
   await fireEvent.click(bulkButton);
 
-  expect(window.showMessageBox).toHaveBeenCalledWith({
+  expect(client.dialog.showMessageBox).toHaveBeenCalledWith({
     buttons: ['Delete', 'Cancel'],
     message: 'Are you sure you want to bulk delete operation?',
     title: 'Delete Tasks?',
     type: 'danger',
   });
 
-  // expect we did not call the clearTask method
-  expect(window.clearTask).not.toHaveBeenCalled();
+  expect(client.tasks.clear).not.toHaveBeenCalled();
 });
 
 test('Expect delete is called after confirming', async () => {
   // return Yes for the confirmation
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
 
   render(TaskManagerBulkDeleteButton, { title, bulkOperationTitle });
   // expect the button is there
@@ -101,8 +90,7 @@ test('Expect delete is called after confirming', async () => {
   // click the button
   await fireEvent.click(bulkButton);
 
-  // expect we called the clearTask method for each selected task
-  expect(window.clearTask).toHaveBeenCalledWith('1');
-  expect(window.clearTask).toHaveBeenCalledWith('2');
-  expect(window.clearTask).not.toHaveBeenCalledWith('3');
+  expect(client.tasks.clear).toHaveBeenCalledWith('1');
+  expect(client.tasks.clear).toHaveBeenCalledWith('2');
+  expect(client.tasks.clear).not.toHaveBeenCalledWith('3');
 });

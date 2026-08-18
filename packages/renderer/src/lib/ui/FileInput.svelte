@@ -3,6 +3,8 @@ import { faFolderOpen } from '@fortawesome/free-solid-svg-icons';
 import type { OpenDialogOptions } from '@podman-desktop/api';
 import { Button, Input } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
+
 interface Props {
   placeholder?: string;
   id?: string;
@@ -33,7 +35,7 @@ let {
 }: Props = $props();
 
 async function openDialog(): Promise<void> {
-  const result = await window.openDialog(options);
+  const result = await client.dialog.openDialog(options);
   if (result?.[0]) {
     value = result[0];
     onChange(value);

@@ -1,6 +1,7 @@
 <script lang="ts">
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
+import { client } from '/@/client';
 import type { SelectableExtensionDevelopmentFolderInfoUI } from '/@/lib/extensions/dev-mode/development-folder-info-ui';
 import ListItemButtonIcon from '/@/lib/ui/ListItemButtonIcon.svelte';
 
@@ -10,10 +11,10 @@ interface Props {
 const { extensionFolder }: Props = $props();
 
 async function untrackExtensionFolder(): Promise<void> {
-  await window.untrackExtensionFolder(extensionFolder.path);
+  await client.extension.removeDevelopmentFolder({ path: extensionFolder.path });
   // ensure it's cleared from the disabled list
   if (extensionFolder.extension) {
-    await window.removeExtension(extensionFolder.extension.id);
+    await client.extension.remove({ extensionId: extensionFolder.extension.id });
   }
 }
 </script>

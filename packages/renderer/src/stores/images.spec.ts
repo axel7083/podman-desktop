@@ -20,6 +20,8 @@ import type { ImageInfo } from '@podman-desktop/core-api';
 import { get } from 'svelte/store';
 import { assert, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { filtered, imagesEventStore, imagesInfos } from './images';
 
 const callbacks = new Map<string, (data?: unknown) => void | Promise<void>>();
@@ -41,7 +43,7 @@ beforeEach(() => {
 
 test('images should be updated in case of a image is loaded from an archive', async () => {
   // initial images
-  vi.mocked(window.listImages).mockResolvedValue([
+  vi.mocked(client.container.listImages).mockResolvedValue([
     {
       Id: '1',
     } as unknown as ImageInfo,
@@ -60,7 +62,7 @@ test('images should be updated in case of a image is loaded from an archive', as
   expect(images[0].Id).toBe('1');
 
   // ok now mock the listImages function to return an empty list
-  vi.mocked(window.listImages).mockResolvedValue([]);
+  vi.mocked(client.container.listImages).mockResolvedValue([]);
 
   // call 'image-loadfromarchive-event' event
   const imageLoadFromArchiveCallback = callbacks.get('image-loadfromarchive-event');
@@ -78,7 +80,7 @@ test('images should be updated in case of a image is loaded from an archive', as
 describe('filtered images tests', () => {
   test('images with isManifest field missing should be included', async () => {
     // No isManifest field
-    vi.mocked(window.listImages).mockResolvedValue([
+    vi.mocked(client.container.listImages).mockResolvedValue([
       { Id: '2' } as unknown as ImageInfo, // Simulate isManifest field missing
     ]);
 
@@ -94,7 +96,7 @@ describe('filtered images tests', () => {
 
   test('images with isManifest false should be included', async () => {
     // isManifest but set to false
-    vi.mocked(window.listImages).mockResolvedValue([{ Id: '3', isManifest: false } as unknown as ImageInfo]);
+    vi.mocked(client.container.listImages).mockResolvedValue([{ Id: '3', isManifest: false } as unknown as ImageInfo]);
 
     // Setup, callback and fetch the images
     const storeInfo = imagesEventStore.setup();
@@ -110,7 +112,7 @@ describe('filtered images tests', () => {
 
   test('images with isManifest true should be included', async () => {
     // isManifest but set to true
-    vi.mocked(window.listImages).mockResolvedValue([{ Id: '4', isManifest: true } as unknown as ImageInfo]);
+    vi.mocked(client.container.listImages).mockResolvedValue([{ Id: '4', isManifest: true } as unknown as ImageInfo]);
 
     // Setup, callback and fetch the images
     const storeInfo = imagesEventStore.setup();
@@ -125,7 +127,7 @@ describe('filtered images tests', () => {
 
   test('check against 3 images with different isManifest values', async () => {
     // 3 images with different isManifest values
-    vi.mocked(window.listImages).mockResolvedValue([
+    vi.mocked(client.container.listImages).mockResolvedValue([
       { Id: '5', isManifest: false } as unknown as ImageInfo,
       { Id: '6', isManifest: true } as unknown as ImageInfo,
       { Id: '7' } as unknown as ImageInfo, // Simulate isManifest field missing

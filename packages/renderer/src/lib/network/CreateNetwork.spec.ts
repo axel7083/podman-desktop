@@ -25,6 +25,7 @@ import userEvent from '@testing-library/user-event';
 import { router } from 'tinro';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import CreateNetwork from '/@/lib/network/CreateNetwork.svelte';
 import { mockBreadcrumb } from '/@/stores/breadcrumb.spec';
 import { networksListInfo } from '/@/stores/networks';
@@ -40,7 +41,7 @@ beforeEach(() => {
   // Mock breadcrumb for Route components
   mockBreadcrumb();
 
-  vi.mocked(window.getNetworkDrivers).mockResolvedValue(['bridge', 'ipvlan', 'macvlan']);
+  vi.mocked(client.container.getNetworkDrivers).mockResolvedValue(['bridge', 'ipvlan', 'macvlan']);
 
   // Navigate to basic tab
   router.goto('/basic');
@@ -116,7 +117,7 @@ test('Expect all basic form fields to be present', async () => {
 });
 
 test('Expect createNetwork to be called with correct parameters', async () => {
-  vi.mocked(window.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
+  vi.mocked(client.container.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
   renderCreate();
 
   const networkName = screen.getByRole('textbox', { name: 'Name *' });
@@ -125,20 +126,20 @@ test('Expect createNetwork to be called with correct parameters', async () => {
   const createButton = screen.getByRole('button', { name: 'Create' });
   await userEvent.click(createButton);
 
-  expect(window.createNetwork).toHaveBeenCalledWith(
-    expect.anything(),
-    expect.objectContaining({
+  expect(client.container.createNetwork).toHaveBeenCalledWith({
+    providerContainerConnectionInfo: expect.anything(),
+    options: expect.objectContaining({
       Name: 'my-test-network',
       Driver: 'bridge',
       EnableIPv6: false,
       Internal: false,
     }),
-  );
+  });
 });
 
 test('Expect error message to be displayed when network creation fails', async () => {
   const errorMessage = 'Failed to create network: network already exists';
-  vi.mocked(window.createNetwork).mockRejectedValue(new Error(errorMessage));
+  vi.mocked(client.container.createNetwork).mockRejectedValue(new Error(errorMessage));
   renderCreate();
 
   const networkName = screen.getByRole('textbox', { name: 'Name *' });
@@ -173,7 +174,7 @@ test('Expect container engine dropdown to appear when multiple providers', async
 
 test('Expect driver to reset to bridge when switching providers', async () => {
   // Docker has more drivers including 'host' which Podman doesn't support
-  vi.mocked(window.getNetworkDrivers).mockResolvedValue(['bridge', 'host', 'ipvlan', 'macvlan']);
+  vi.mocked(client.container.getNetworkDrivers).mockResolvedValue(['bridge', 'host', 'ipvlan', 'macvlan']);
 
   const podman = createProviderConnection({
     name: 'podman',
@@ -228,7 +229,7 @@ test('Expect empty screen when no providers available', async () => {
 });
 
 test('Expect createNetwork to be called with subnet when provided', async () => {
-  vi.mocked(window.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
+  vi.mocked(client.container.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
   renderCreate();
 
   const networkName = screen.getByRole('textbox', { name: 'Name *' });
@@ -244,9 +245,9 @@ test('Expect createNetwork to be called with subnet when provided', async () => 
   const createButton = screen.getByRole('button', { name: 'Create' });
   await userEvent.click(createButton);
 
-  expect(window.createNetwork).toHaveBeenCalledWith(
-    expect.anything(),
-    expect.objectContaining({
+  expect(client.container.createNetwork).toHaveBeenCalledWith({
+    providerContainerConnectionInfo: expect.anything(),
+    options: expect.objectContaining({
       Name: 'my-test-network',
       IPAM: expect.objectContaining({
         Driver: 'default',
@@ -257,7 +258,7 @@ test('Expect createNetwork to be called with subnet when provided', async () => 
         ]),
       }),
     }),
-  );
+  });
 });
 
 test('Expect cancel button to navigate to networks page', async () => {
@@ -274,7 +275,7 @@ test('Expect automatic routing to network details after successful network creat
   const gotoSpy = vi.spyOn(router, 'goto');
   const networkId = 'network123';
   const engineId = 'engine1';
-  vi.mocked(window.createNetwork).mockResolvedValue({ Id: networkId, engineId });
+  vi.mocked(client.container.createNetwork).mockResolvedValue({ Id: networkId, engineId });
 
   renderCreate();
 
@@ -352,7 +353,7 @@ test('Expect Advanced tab to show network driver dropdown with ipvlan/macvlan op
 });
 
 test('Expect createNetwork to be called with IPv6 enabled', async () => {
-  vi.mocked(window.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
+  vi.mocked(client.container.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
   renderCreate();
 
   const networkName = screen.getByRole('textbox', { name: 'Name *' });
@@ -369,17 +370,17 @@ test('Expect createNetwork to be called with IPv6 enabled', async () => {
   const createButton = screen.getByRole('button', { name: 'Create' });
   await userEvent.click(createButton);
 
-  expect(window.createNetwork).toHaveBeenCalledWith(
-    expect.anything(),
-    expect.objectContaining({
+  expect(client.container.createNetwork).toHaveBeenCalledWith({
+    providerContainerConnectionInfo: expect.anything(),
+    options: expect.objectContaining({
       Name: 'ipv6-network',
       EnableIPv6: true,
     }),
-  );
+  });
 });
 
 test('Expect createNetwork to be called with Internal network enabled', async () => {
-  vi.mocked(window.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
+  vi.mocked(client.container.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
   renderCreate();
 
   const networkName = screen.getByRole('textbox', { name: 'Name *' });
@@ -396,17 +397,17 @@ test('Expect createNetwork to be called with Internal network enabled', async ()
   const createButton = screen.getByRole('button', { name: 'Create' });
   await userEvent.click(createButton);
 
-  expect(window.createNetwork).toHaveBeenCalledWith(
-    expect.anything(),
-    expect.objectContaining({
+  expect(client.container.createNetwork).toHaveBeenCalledWith({
+    providerContainerConnectionInfo: expect.anything(),
+    options: expect.objectContaining({
       Name: 'internal-network',
       Internal: true,
     }),
-  );
+  });
 });
 
 test('Expect createNetwork to be called with gateway when provided', async () => {
-  vi.mocked(window.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
+  vi.mocked(client.container.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
   renderCreate();
 
   const networkName = screen.getByRole('textbox', { name: 'Name *' });
@@ -426,9 +427,9 @@ test('Expect createNetwork to be called with gateway when provided', async () =>
   const createButton = screen.getByRole('button', { name: 'Create' });
   await userEvent.click(createButton);
 
-  expect(window.createNetwork).toHaveBeenCalledWith(
-    expect.anything(),
-    expect.objectContaining({
+  expect(client.container.createNetwork).toHaveBeenCalledWith({
+    providerContainerConnectionInfo: expect.anything(),
+    options: expect.objectContaining({
       Name: 'gateway-network',
       IPAM: expect.objectContaining({
         Driver: 'default',
@@ -440,11 +441,11 @@ test('Expect createNetwork to be called with gateway when provided', async () =>
         ]),
       }),
     }),
-  );
+  });
 });
 
 test('Expect createNetwork to be called with IP range when provided', async () => {
-  vi.mocked(window.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
+  vi.mocked(client.container.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
   renderCreate();
 
   const networkName = screen.getByRole('textbox', { name: 'Name *' });
@@ -464,9 +465,9 @@ test('Expect createNetwork to be called with IP range when provided', async () =
   const createButton = screen.getByRole('button', { name: 'Create' });
   await userEvent.click(createButton);
 
-  expect(window.createNetwork).toHaveBeenCalledWith(
-    expect.anything(),
-    expect.objectContaining({
+  expect(client.container.createNetwork).toHaveBeenCalledWith({
+    providerContainerConnectionInfo: expect.anything(),
+    options: expect.objectContaining({
       Name: 'iprange-network',
       IPAM: expect.objectContaining({
         Driver: 'default',
@@ -478,12 +479,12 @@ test('Expect createNetwork to be called with IP range when provided', async () =
         ]),
       }),
     }),
-  );
+  });
 });
 
 test('Expect updateNetwork to be called with DNS servers after network creation for Podman', async () => {
-  vi.mocked(window.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
-  vi.mocked(window.updateNetwork).mockResolvedValue();
+  vi.mocked(client.container.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
+  vi.mocked(client.container.updateNetwork).mockResolvedValue();
   renderCreate();
 
   const networkName = screen.getByRole('textbox', { name: 'Name *' });
@@ -501,19 +502,24 @@ test('Expect updateNetwork to be called with DNS servers after network creation 
   await userEvent.click(createButton);
 
   // Network should be created without DNS options (compat API doesn't support it)
-  expect(window.createNetwork).toHaveBeenCalledWith(
-    expect.anything(),
-    expect.objectContaining({
+  expect(client.container.createNetwork).toHaveBeenCalledWith({
+    providerContainerConnectionInfo: expect.anything(),
+    options: expect.objectContaining({
       Name: 'dns-network',
     }),
-  );
+  });
 
   // DNS servers should be added via updateNetwork (libpod API)
-  expect(window.updateNetwork).toHaveBeenCalledWith('engine1', 'network123', ['8.8.8.8'], []);
+  expect(client.container.updateNetwork).toHaveBeenCalledWith({
+    engineId: 'engine1',
+    networkId: 'network123',
+    addDNSServers: ['8.8.8.8'],
+    removeDNSServers: [],
+  });
 });
 
 test('Expect createNetwork to be called with ipvlan driver and explicit subnet', async () => {
-  vi.mocked(window.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
+  vi.mocked(client.container.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
   renderCreate();
 
   const networkName = screen.getByRole('textbox', { name: 'Name *' });
@@ -536,9 +542,9 @@ test('Expect createNetwork to be called with ipvlan driver and explicit subnet',
   const createButton = screen.getByRole('button', { name: 'Create' });
   await userEvent.click(createButton);
 
-  expect(window.createNetwork).toHaveBeenCalledWith(
-    expect.anything(),
-    expect.objectContaining({
+  expect(client.container.createNetwork).toHaveBeenCalledWith({
+    providerContainerConnectionInfo: expect.anything(),
+    options: expect.objectContaining({
       Name: 'ipvlan-network',
       Driver: 'ipvlan',
       IPAM: expect.objectContaining({
@@ -549,12 +555,12 @@ test('Expect createNetwork to be called with ipvlan driver and explicit subnet',
         ]),
       }),
     }),
-  );
+  });
 });
 
 test('Expect createNetwork to be called with all advanced options combined', async () => {
-  vi.mocked(window.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
-  vi.mocked(window.updateNetwork).mockResolvedValue();
+  vi.mocked(client.container.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
+  vi.mocked(client.container.updateNetwork).mockResolvedValue();
   renderCreate();
 
   const networkName = screen.getByRole('textbox', { name: 'Name *' });
@@ -588,9 +594,9 @@ test('Expect createNetwork to be called with all advanced options combined', asy
   const createButton = screen.getByRole('button', { name: 'Create' });
   await userEvent.click(createButton);
 
-  expect(window.createNetwork).toHaveBeenCalledWith(
-    expect.anything(),
-    expect.objectContaining({
+  expect(client.container.createNetwork).toHaveBeenCalledWith({
+    providerContainerConnectionInfo: expect.anything(),
+    options: expect.objectContaining({
       Name: 'full-network',
       Driver: 'bridge',
       EnableIPv6: true,
@@ -606,14 +612,19 @@ test('Expect createNetwork to be called with all advanced options combined', asy
         ]),
       }),
     }),
-  );
+  });
 
   // DNS servers should be added via updateNetwork (libpod API)
-  expect(window.updateNetwork).toHaveBeenCalledWith('engine1', 'network123', ['1.1.1.1'], []);
+  expect(client.container.updateNetwork).toHaveBeenCalledWith({
+    engineId: 'engine1',
+    networkId: 'network123',
+    addDNSServers: ['1.1.1.1'],
+    removeDNSServers: [],
+  });
 });
 
 test('Expect Create button to be disabled when ipvlan selected without subnet', async () => {
-  vi.mocked(window.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
+  vi.mocked(client.container.createNetwork).mockResolvedValue({ Id: 'network123', engineId: 'engine1' });
   renderCreate();
 
   const networkName = screen.getByRole('textbox', { name: 'Name *' });
@@ -640,9 +651,9 @@ test('Expect Create button to be disabled when ipvlan selected without subnet', 
 
   await userEvent.click(createButton);
 
-  expect(window.createNetwork).toHaveBeenCalledWith(
-    expect.anything(),
-    expect.objectContaining({
+  expect(client.container.createNetwork).toHaveBeenCalledWith({
+    providerContainerConnectionInfo: expect.anything(),
+    options: expect.objectContaining({
       Name: 'ipvlan-network',
       Driver: 'ipvlan',
       IPAM: expect.objectContaining({
@@ -653,7 +664,7 @@ test('Expect Create button to be disabled when ipvlan selected without subnet', 
         ]),
       }),
     }),
-  );
+  });
 });
 
 test('Expect DNS checkbox to disable DNS servers input when unchecked', async () => {

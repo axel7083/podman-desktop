@@ -18,10 +18,12 @@
 
 import '@testing-library/jest-dom/vitest';
 
-import type { ContainerInfo, Port } from '@podman-desktop/api';
+import type { Port } from '@podman-desktop/api';
+import type { ContainerInfo } from '@podman-desktop/core-api';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
-import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { setPodStatus } from '/@/stores/pods';
 
 import PodActions from './PodActions.svelte';
@@ -50,40 +52,18 @@ const podmanPod: PodInfoUI = {
   containers: [{ Id: 'pod', Names: 'container1', Status: 'running' }],
 };
 
-const listContainersMock = vi.fn();
-const getContributedMenusMock = vi.fn();
-const openExternalSpy = vi.fn();
-
-class ResizeObserver {
-  observe = vi.fn();
-  disconnect = vi.fn();
-  unobserve = vi.fn();
-}
-
-beforeAll(() => {
-  Object.defineProperty(window, 'ResizeObserver', { value: ResizeObserver });
-  Object.defineProperty(window, 'listContainers', { value: listContainersMock });
-  Object.defineProperty(window, 'startPod', { value: vi.fn() });
-  Object.defineProperty(window, 'unpausePod', { value: vi.fn() });
-  Object.defineProperty(window, 'stopPod', { value: vi.fn() });
-  Object.defineProperty(window, 'restartPod', { value: vi.fn() });
-  Object.defineProperty(window, 'removePod', { value: vi.fn() });
-  Object.defineProperty(window, 'getContributedMenus', { value: getContributedMenusMock });
-  Object.defineProperty(window, 'openExternal', { value: openExternalSpy });
-});
-
 beforeEach(() => {
   vi.resetAllMocks();
 
-  listContainersMock.mockResolvedValue([
-    { Id: 'pod', Ports: [{ PublicPort: 8080 } as Port] as Port[] } as ContainerInfo,
+  vi.mocked(client.container.listContainers).mockResolvedValue([
+    { Id: 'pod', Ports: [{ PublicPort: 8080 } as Port] as Port[] } as unknown as ContainerInfo,
   ]);
 
-  getContributedMenusMock.mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 });
 
 test('Expect setPodStatus called with STARTING when starting pod', async () => {
-  listContainersMock.mockResolvedValue([]);
+  vi.mocked(client.container.listContainers).mockResolvedValue([]);
 
   render(PodActions, { pod: podmanPod });
 
@@ -95,7 +75,7 @@ test('Expect setPodStatus called with STARTING when starting pod', async () => {
 });
 
 test('Expect unpausePod called when pod has paused containers', async () => {
-  listContainersMock.mockResolvedValue([]);
+  vi.mocked(client.container.listContainers).mockResolvedValue([]);
 
   // set status to paused
   podmanPod.containers[0].Status = 'paused';
@@ -106,12 +86,12 @@ test('Expect unpausePod called when pod has paused containers', async () => {
   await fireEvent.click(startButton);
 
   expect(setPodStatus).toHaveBeenCalledWith('engine1', 'pod', 'STARTING');
-  expect(window.unpausePod).toHaveBeenCalledWith('engine1', 'pod');
-  expect(window.startPod).not.toHaveBeenCalled();
+  expect(client.container.unpausePod).toHaveBeenCalledWith({ engine: 'engine1', podId: 'pod' });
+  expect(client.container.startPod).not.toHaveBeenCalled();
 });
 
 test('Expect setPodStatus called with STOPPING when stopping pod', async () => {
-  listContainersMock.mockResolvedValue([]);
+  vi.mocked(client.container.listContainers).mockResolvedValue([]);
 
   render(PodActions, { pod: podmanPod });
 
@@ -122,7 +102,7 @@ test('Expect setPodStatus called with STOPPING when stopping pod', async () => {
 });
 
 test('Expect setPodStatus called with RESTARTING when restarting pod', async () => {
-  listContainersMock.mockResolvedValue([]);
+  vi.mocked(client.container.listContainers).mockResolvedValue([]);
 
   render(PodActions, { pod: podmanPod });
 
@@ -135,8 +115,8 @@ test('Expect setPodStatus called with RESTARTING when restarting pod', async () 
 
 test('Expect setPodStatus called with DELETING when deleting pod', async () => {
   // Mock the showMessageBox to return 'Delete' (confirmed)
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
-  listContainersMock.mockResolvedValue([]);
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.container.listContainers).mockResolvedValue([]);
 
   render(PodActions, { pod: podmanPod });
   // click on delete button

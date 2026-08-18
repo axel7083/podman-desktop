@@ -474,6 +474,10 @@ export class Updater {
       });
   }
 
+  public getRepository(): string | undefined {
+    return rootPackage.repository as string | undefined;
+  }
+
   public updateAvailable(): boolean {
     if (!this.getAppUpdateEnabled()) {
       console.log('Application update is disabled with preferences.update.appUpdate settings');

@@ -19,26 +19,16 @@
 import '@testing-library/jest-dom/vitest';
 
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import type { TaskInfoUI } from '/@/stores/tasks';
 
 import TaskManagerActionsCancel from './TaskManagerActionsCancel.svelte';
 
-beforeAll(() => {
-  Object.defineProperty(global, 'window', {
-    value: {
-      getConfigurationValue: vi.fn(),
-      showMessageBox: vi.fn(),
-      cancelToken: vi.fn(),
-    },
-    writable: true,
-  });
-});
-
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.getConfigurationValue).mockResolvedValue({});
+  vi.mocked(client.configuration.getValue).mockResolvedValue({});
 });
 
 const completedTask: TaskInfoUI = {
@@ -61,7 +51,7 @@ const inProgressCancellableTask: TaskInfoUI = {
 
 test('Expect cancellable action being displayed if cancellable', async () => {
   // return Yes for the confirmation
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel Task' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Cancel Task' });
 
   render(TaskManagerActionsCancel, { task: inProgressCancellableTask });
   const cancelButton = screen.getByRole('button', { name: 'Cancel task' });
@@ -70,11 +60,11 @@ test('Expect cancellable action being displayed if cancellable', async () => {
   // click on the button
   await fireEvent.click(cancelButton);
 
-  // expect the window.showMessageBox to be called
-  expect(window.showMessageBox).toHaveBeenCalled();
+  // expect the client.dialog.showMessageBox to be called
+  expect(client.dialog.showMessageBox).toHaveBeenCalled();
 
   // expect the window.cancelToken to be called
-  expect(window.cancelToken).toHaveBeenCalledWith('1234');
+  expect(client.cancellation.cancelToken).toHaveBeenCalledWith({ id: '1234' });
 });
 
 test('Expect cancellable action not being displayed if not cancellable', async () => {

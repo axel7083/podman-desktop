@@ -28,6 +28,7 @@ import userEvent from '@testing-library/user-event';
 import { router } from 'tinro';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { lastPage } from '/@/stores/breadcrumb';
 import { providerInfos } from '/@/stores/providers';
 
@@ -64,7 +65,7 @@ const EMPTY_PROVIDER_MOCK: ProviderInfo = {
 beforeEach(() => {
   vi.resetAllMocks();
 
-  vi.mocked(window.showMessageBox).mockResolvedValue({
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({
     response: 'Delete',
   });
 });

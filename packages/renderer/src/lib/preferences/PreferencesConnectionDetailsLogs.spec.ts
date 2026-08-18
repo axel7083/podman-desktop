@@ -28,6 +28,8 @@ import { Terminal } from '@xterm/xterm';
 import type { Mock } from 'vitest';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import PreferencesConnectionDetailsLogs from './PreferencesConnectionDetailsLogs.svelte';
 
 const containerConnection: ProviderContainerConnectionInfo = {
@@ -46,7 +48,7 @@ const containerConnection: ProviderContainerConnectionInfo = {
 };
 
 beforeAll(async () => {
-  vi.mocked(window.getConfigurationValue).mockImplementation(async (key: string) => {
+  vi.mocked(client.configuration.getValue).mockImplementation(async ({ key }: { key: string }) => {
     if (key === 'terminal.integrated.scrollback') {
       return 1000;
     }

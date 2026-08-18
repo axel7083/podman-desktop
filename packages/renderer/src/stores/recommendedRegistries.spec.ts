@@ -20,6 +20,8 @@ import type { RecommendedRegistry } from '@podman-desktop/core-api/recommendatio
 import { get } from 'svelte/store';
 import { assert, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import {
   fetchRecommendedRegistries,
   recommendedRegistries,
@@ -38,7 +40,7 @@ beforeEach(() => {
 });
 
 test('recommendedRegistries should be updated in case of an extension is stopped', async () => {
-  vi.mocked(window.getRecommendedRegistries).mockResolvedValue([
+  vi.mocked(client.extension.getRecommendedRegistries).mockResolvedValue([
     {
       extensionId: 'my.extensionId',
       name: 'Hello',
@@ -60,7 +62,7 @@ test('recommendedRegistries should be updated in case of an extension is stopped
   expect(registries[0].extensionId).toEqual('my.extensionId');
 
   // ok now mock the getRecommendedRegistries function to return an empty list
-  vi.mocked(window.getRecommendedRegistries).mockResolvedValue([]);
+  vi.mocked(client.extension.getRecommendedRegistries).mockResolvedValue([]);
 
   // call 'container-removed-event' event
   const extensionStoppedCallback = callbacks.get('extension-stopped');
@@ -70,7 +72,7 @@ test('recommendedRegistries should be updated in case of an extension is stopped
   // wait a little
   await new Promise(resolve => setTimeout(resolve, 100));
 
-  expect(vi.mocked(window.getRecommendedRegistries)).toHaveBeenCalled();
+  expect(vi.mocked(client.extension.getRecommendedRegistries)).toHaveBeenCalled();
 
   // check if the registries are updated
   const registries2 = get(recommendedRegistries);
@@ -78,7 +80,7 @@ test('recommendedRegistries should be updated in case of an extension is stopped
 });
 
 test('recommendedRegistries should be updated in case configuration changed is called with expected key', async () => {
-  vi.mocked(window.getRecommendedRegistries).mockResolvedValue([
+  vi.mocked(client.extension.getRecommendedRegistries).mockResolvedValue([
     {
       extensionId: 'my.extensionId',
       name: 'Hello',
@@ -100,8 +102,8 @@ test('recommendedRegistries should be updated in case configuration changed is c
   expect(registries[0].extensionId).toEqual('my.extensionId');
 
   // ok now mock the getRecommendedRegistries function to return an empty list
-  vi.mocked(window.getRecommendedRegistries).mockResolvedValue([]);
-  vi.mocked(window.getRecommendedRegistries).mockClear();
+  vi.mocked(client.extension.getRecommendedRegistries).mockResolvedValue([]);
+  vi.mocked(client.extension.getRecommendedRegistries).mockClear();
   // call 'container-removed-event' event
   const configurationChangedCallback = callbacks.get('configuration-changed');
   assert(configurationChangedCallback);
@@ -110,11 +112,11 @@ test('recommendedRegistries should be updated in case configuration changed is c
   // wait a little
   await new Promise(resolve => setTimeout(resolve, 100));
 
-  expect(vi.mocked(window.getRecommendedRegistries)).toHaveBeenCalled();
+  expect(vi.mocked(client.extension.getRecommendedRegistries)).toHaveBeenCalled();
 });
 
 test('recommendedRegistries should not be updated in case configuration changed is called with unexpected key', async () => {
-  vi.mocked(window.getRecommendedRegistries).mockResolvedValue([
+  vi.mocked(client.extension.getRecommendedRegistries).mockResolvedValue([
     {
       extensionId: 'my.extensionId',
       name: 'Hello',
@@ -136,8 +138,8 @@ test('recommendedRegistries should not be updated in case configuration changed 
   expect(registries[0].extensionId).toEqual('my.extensionId');
 
   // ok now mock the getRecommendedRegistries function to return an empty list
-  vi.mocked(window.getRecommendedRegistries).mockResolvedValue([]);
-  vi.mocked(window.getRecommendedRegistries).mockClear();
+  vi.mocked(client.extension.getRecommendedRegistries).mockResolvedValue([]);
+  vi.mocked(client.extension.getRecommendedRegistries).mockClear();
   // call 'container-removed-event' event
   const configurationChangedCallback = callbacks.get('configuration-changed');
   assert(configurationChangedCallback);
@@ -146,5 +148,5 @@ test('recommendedRegistries should not be updated in case configuration changed 
   // wait a little
   await new Promise(resolve => setTimeout(resolve, 100));
 
-  expect(vi.mocked(window.getRecommendedRegistries)).not.toHaveBeenCalled();
+  expect(vi.mocked(client.extension.getRecommendedRegistries)).not.toHaveBeenCalled();
 });

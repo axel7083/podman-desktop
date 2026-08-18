@@ -19,12 +19,12 @@
 import '@testing-library/jest-dom/vitest';
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
-import { beforeAll, expect, test, vi } from 'vitest';
+import { expect, test, vi } from 'vitest';
+
+import { client } from '/@/client';
 
 import VolumeActions from './VolumeActions.svelte';
 import type { VolumeInfoUI } from './VolumeInfoUI';
-
-const removeVolumeMock = vi.fn();
 
 class VolumeInfoUIImpl {
   #status: string;
@@ -43,14 +43,10 @@ class VolumeInfoUIImpl {
   }
 }
 
-beforeAll(() => {
-  Object.defineProperty(window, 'removeVolume', { value: removeVolumeMock });
-});
-
 test('Expect prompt dialog and deletion', async () => {
-  vi.mocked(window.getContributedMenus).mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
   // Mock the showMessageBox to return 0 (yes)
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
 
   const volume: VolumeInfoUI = new VolumeInfoUIImpl('dummy', 'UNUSED') as unknown as VolumeInfoUI;
 
@@ -62,9 +58,9 @@ test('Expect prompt dialog and deletion', async () => {
   await fireEvent.click(button);
 
   await waitFor(() => {
-    expect(window.showMessageBox).toHaveBeenCalledOnce();
+    expect(client.dialog.showMessageBox).toHaveBeenCalledOnce();
   });
 
   expect(volume.status).toBe('DELETING');
-  expect(removeVolumeMock).toHaveBeenCalled();
+  expect(client.container.removeVolume).toHaveBeenCalled();
 });

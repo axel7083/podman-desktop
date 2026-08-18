@@ -2,6 +2,7 @@
 import type { V1Route } from '@podman-desktop/core-api';
 import { Link } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
 import Cell from '/@/lib/details/DetailsCell.svelte';
 import Title from '/@/lib/details/DetailsTitle.svelte';
 
@@ -71,7 +72,7 @@ let { artifact }: Props = $props();
       <Cell>Link</Cell>
       <Cell>
         {@const link = `${artifact.spec.tls ? 'https' : 'http'}://${artifact.spec.host}${artifact.spec.path ?? ''}`}
-        <Link on:click={(): Promise<void> => window.openExternal(link)}>
+        <Link on:click={(): Promise<void> => client.system.openExternal({ link })}>
           {link}
         </Link>
       </Cell>

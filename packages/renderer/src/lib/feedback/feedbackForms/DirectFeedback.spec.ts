@@ -20,30 +20,20 @@ import '@testing-library/jest-dom/vitest';
 
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, expect, test, vi } from 'vitest';
+
+import { client } from '/@/client';
 
 import DirectFeedback from './DirectFeedback.svelte';
 
-beforeAll(() => {
-  Object.defineProperty(window, 'openExternal', {
-    value: vi.fn(),
-  });
-  Object.defineProperty(window, 'telemetryTrack', {
-    value: vi.fn(),
-  });
-  Object.defineProperty(window, 'sendFeedback', {
-    value: vi.fn(),
-  });
-});
-
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.getFeedbackMessages).mockResolvedValue({
+  vi.mocked(client.feedback.getFeedbackMessages).mockResolvedValue({
     experienceLabel: 'How was your experience with Podman Desktop',
     thankYouMessage: 'Your input is valuable in helping us better understand and tailor Podman Desktop.',
     gitHubStarsMessage: 'Like Podman Desktop? Give us a star on GitHub',
   });
-  vi.mocked(window.getAppRepository).mockResolvedValue('https://github.com/test/test-repo');
+  vi.mocked(client.app.getAppRepository).mockResolvedValue('https://github.com/test/test-repo');
 });
 
 test('Expect that the button is disabled when loading the page', async () => {
@@ -173,8 +163,8 @@ test('Expect GitHub dialog visible when very-happy-smiley selected', async () =>
   await fireEvent.click(link);
 
   await vi.waitFor(() => {
-    expect(window.telemetryTrack).toHaveBeenCalledWith('feedback.openGitHub');
-    expect(window.openExternal).toHaveBeenCalledWith('https://github.com/test/test-repo');
+    expect(client.telemetry.track).toHaveBeenCalledWith({ event: 'feedback.openGitHub' });
+    expect(client.system.openExternal).toHaveBeenCalledWith({ link: 'https://github.com/test/test-repo' });
   });
 
   expect(onCloseFormMock).not.toHaveBeenCalled();
@@ -195,14 +185,16 @@ test('Expect category to be sent', async () => {
   await fireEvent.click(button);
 
   await vi.waitFor(() => {
-    expect(window.sendFeedback).toHaveBeenCalledWith({
-      category: 'developers',
-      rating: 4,
+    expect(client.feedback.send).toHaveBeenCalledWith({
+      properties: {
+        category: 'developers',
+        rating: 4,
+      },
     });
   });
 
   // expect nice message to be displayed
-  expect(window.showMessageBox).toHaveBeenCalledWith({
+  expect(client.dialog.showMessageBox).toHaveBeenCalledWith({
     title: 'Feedback Submitted',
     message: 'Your input is valuable in helping us better understand and tailor Podman Desktop.',
     type: 'info',
@@ -228,14 +220,16 @@ test('Expect design category to be sent when design category is used', async () 
   await fireEvent.click(button);
 
   await vi.waitFor(() => {
-    expect(window.sendFeedback).toHaveBeenCalledWith({
-      category: 'design',
-      rating: 4,
+    expect(client.feedback.send).toHaveBeenCalledWith({
+      properties: {
+        category: 'design',
+        rating: 4,
+      },
     });
   });
 
   // expect nice message to be displayed
-  expect(window.showMessageBox).toHaveBeenCalledWith({
+  expect(client.dialog.showMessageBox).toHaveBeenCalledWith({
     title: 'Feedback Submitted',
     message: 'Your input is valuable in helping us better understand and tailor Podman Desktop.',
     type: 'info',
@@ -261,7 +255,7 @@ test('Expect email field has correct text', async () => {
 });
 
 test('Expect GitHub section hidden when repository is not a GitHub URL', async () => {
-  vi.mocked(window.getAppRepository).mockResolvedValue('https://gitlab.com/test/test-repo');
+  vi.mocked(client.app.getAppRepository).mockResolvedValue('https://gitlab.com/test/test-repo');
 
   render(DirectFeedback, { category: 'developers', contentChange: vi.fn(), onCloseForm: vi.fn() });
 
@@ -275,7 +269,7 @@ test('Expect GitHub section hidden when repository is not a GitHub URL', async (
 });
 
 test('Expect GitHub section hidden when repository is undefined', async () => {
-  vi.mocked(window.getAppRepository).mockResolvedValue(undefined);
+  vi.mocked(client.app.getAppRepository).mockResolvedValue(undefined);
 
   render(DirectFeedback, { category: 'developers', contentChange: vi.fn(), onCloseForm: vi.fn() });
 

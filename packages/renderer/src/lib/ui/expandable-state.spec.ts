@@ -21,6 +21,7 @@ import '@testing-library/jest-dom/vitest';
 import { render, waitFor } from '@testing-library/svelte';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { onDidChangeConfiguration } from '/@/stores/configurationProperties';
 
 import ExpandableStateTest from './ExpandableStateTest.svelte';
@@ -29,8 +30,8 @@ const CONFIG_KEY = 'test.expanded';
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
-  vi.mocked(window.updateConfigurationValue).mockResolvedValue(undefined);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.updateValue).mockResolvedValue(undefined);
 });
 
 test('initialized defaults to false and becomes true after mount', async () => {
@@ -41,10 +42,10 @@ test('initialized defaults to false and becomes true after mount', async () => {
 
 test.each([
   { configValue: undefined, expected: 'true', description: 'defaults to true when no config value is set' },
-  { configValue: false, expected: 'false', description: 'reflects false from getConfigurationValue' },
-  { configValue: true, expected: 'true', description: 'reflects true from getConfigurationValue' },
+  { configValue: false, expected: 'false', description: 'reflects false from getValue' },
+  { configValue: true, expected: 'true', description: 'reflects true from getValue' },
 ])('expanded $description', async ({ configValue, expected }) => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(configValue);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(configValue);
 
   const { getByTestId } = render(ExpandableStateTest, { configKey: CONFIG_KEY });
 
@@ -52,21 +53,21 @@ test.each([
   expect(getByTestId('expanded')).toHaveTextContent(expected);
 });
 
-test('getConfigurationValue is called with the correct key on mount', async () => {
+test('getValue is called with the correct key on mount', async () => {
   render(ExpandableStateTest, { configKey: CONFIG_KEY });
 
-  await waitFor(() => expect(window.getConfigurationValue).toHaveBeenCalledWith(CONFIG_KEY));
+  await waitFor(() => expect(client.configuration.getValue).toHaveBeenCalledWith({ key: CONFIG_KEY }));
 });
 
-test('toggle calls updateConfigurationValue with correct key and value', async () => {
+test('toggle calls updateValue with correct key and value', async () => {
   const { getByRole } = render(ExpandableStateTest, { configKey: CONFIG_KEY });
 
-  await waitFor(() => expect(window.getConfigurationValue).toHaveBeenCalled());
+  await waitFor(() => expect(client.configuration.getValue).toHaveBeenCalled());
 
   const button = getByRole('button', { name: 'toggle' });
   button.click();
 
-  await waitFor(() => expect(window.updateConfigurationValue).toHaveBeenCalledWith(CONFIG_KEY, false));
+  await waitFor(() => expect(client.configuration.updateValue).toHaveBeenCalledWith({ key: CONFIG_KEY, value: false }));
 });
 
 test.each([
@@ -86,7 +87,7 @@ test.each([
     expected: 'true',
   },
 ])('expanded state $description', async ({ event, expected }) => {
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
   const { getByTestId } = render(ExpandableStateTest, { configKey: CONFIG_KEY });
 
@@ -102,7 +103,7 @@ test('event listener is removed on destroy', async () => {
 
   const { unmount } = render(ExpandableStateTest, { configKey: CONFIG_KEY });
 
-  await waitFor(() => expect(window.getConfigurationValue).toHaveBeenCalled());
+  await waitFor(() => expect(client.configuration.getValue).toHaveBeenCalled());
 
   unmount();
 

@@ -18,13 +18,13 @@
 
 import '@testing-library/jest-dom/vitest';
 
-import type { Uri } from '@podman-desktop/api';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { router } from 'tinro';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { saveImagesInfo } from '/@/stores/save-images-store';
 
 import type { ImageInfoUI } from './ImageInfoUI';
@@ -90,7 +90,7 @@ test('Expect deleteImage is visible if page has been opened with multiple item',
 });
 
 test('Expect save button to be enabled if output target is selected and saveImages function called', async () => {
-  vi.mocked(window.saveDialog).mockResolvedValue({ scheme: 'file', path: '/tmp/my/path' } as Uri);
+  vi.mocked(client.dialog.saveDialog).mockResolvedValue({ scheme: 'file', path: '/tmp/my/path' });
   vi.mocked(window.saveImages).mockResolvedValue();
   const goToMock = vi.spyOn(router, 'goto');
 
@@ -125,7 +125,7 @@ test('Expect save button to be enabled if output target is selected and saveImag
 });
 
 test('Expect saveImages function called with tagged images', async () => {
-  vi.mocked(window.saveDialog).mockResolvedValue({ scheme: 'file', path: '/tmp/my/path' } as Uri);
+  vi.mocked(client.dialog.saveDialog).mockResolvedValue({ scheme: 'file', path: '/tmp/my/path' });
   vi.mocked(window.saveImages).mockResolvedValue();
   const goToMock = vi.spyOn(router, 'goto');
 
@@ -190,7 +190,7 @@ test('Expect saveImages function called with tagged images', async () => {
 });
 
 test('Expect error message dispayed if saveImages fails', async () => {
-  vi.mocked(window.saveDialog).mockResolvedValue({ scheme: 'file', path: '/tmp/my/path' } as Uri);
+  vi.mocked(client.dialog.saveDialog).mockResolvedValue({ scheme: 'file', path: '/tmp/my/path' });
   vi.mocked(window.saveImages).mockRejectedValue('error while saving');
   const goToMock = vi.spyOn(router, 'goto');
 

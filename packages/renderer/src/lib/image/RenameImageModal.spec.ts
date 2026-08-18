@@ -20,8 +20,9 @@ import '@testing-library/jest-dom/vitest';
 
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import type { ImageInfoUI } from '/@/lib/image/ImageInfoUI';
 
 import RenameImageModal from './RenameImageModal.svelte';
@@ -46,11 +47,6 @@ const imageInfo: ImageInfoUI = {
   icon: undefined,
 };
 const closeCallback = (): void => {};
-
-beforeAll(() => {
-  Object.defineProperty(window, 'tagImage', { value: vi.fn() });
-  Object.defineProperty(window, 'deleteImage', { value: vi.fn() });
-});
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -212,8 +208,13 @@ describe('RenameImageModel', () => {
     await userEvent.click(saveButton);
 
     await vi.waitFor(() => {
-      expect(window.tagImage).toHaveBeenCalledWith(imageInfo.engineId, imageInfo.id, 'random image', 'some-valid-tag');
-      expect(window.deleteImage).not.toHaveBeenCalled();
+      expect(client.container.tagImage).toHaveBeenCalledWith({
+        engine: imageInfo.engineId,
+        imageTag: imageInfo.id,
+        repo: 'random image',
+        tag: 'some-valid-tag',
+      });
+      expect(client.container.deleteImage).not.toHaveBeenCalled();
     });
   });
 

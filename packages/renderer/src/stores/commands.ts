@@ -19,6 +19,8 @@
 import type { CommandInfo } from '@podman-desktop/core-api';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents: string[] = ['commands-added', 'commands-removed'];
@@ -32,7 +34,7 @@ export const commandsInfos: Writable<CommandInfo[]> = writable([]);
 
 // use helper here as window methods are initialized after the store in tests
 const getCommands = async (): Promise<CommandInfo[]> => {
-  return window.getCommandPaletteCommands();
+  return client.commands.getCommandPaletteCommands();
 };
 
 export const commandsEventStore = new EventStore<CommandInfo[]>(

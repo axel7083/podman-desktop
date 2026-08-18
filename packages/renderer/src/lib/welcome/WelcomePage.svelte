@@ -4,6 +4,7 @@ import { Button, Checkbox, Link, Tooltip } from '@podman-desktop/ui-svelte';
 import { onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import IconImage from '/@/lib/appearance/IconImage.svelte';
 import DesktopIcon from '/@/lib/images/DesktopIcon.svelte';
 import { onboardingList } from '/@/stores/onboarding';
@@ -57,17 +58,17 @@ onMount(async () => {
     showWelcome = true;
   }
   router.goto('/');
-  welcomeMessages = await window.getWelcomeMessages();
+  welcomeMessages = await client.welcome.getWelcomeMessages();
 
   const telemetryPrompt = await welcomeUtils.havePromptedForTelemetry();
   if (!telemetryPrompt) {
-    telemetryMessages = await window.getTelemetryMessages();
+    telemetryMessages = await client.telemetry.getTelemetryMessages();
     showTelemetry = true;
   }
-  podmanDesktopVersion = await window.getPodmanDesktopVersion();
+  podmanDesktopVersion = await client.app.getVersion();
 
   if (showWelcome) {
-    await window.updateConfigurationValue(`releaseNotesBanner.show`, podmanDesktopVersion);
+    await client.configuration.updateValue({ key: `releaseNotesBanner.show`, value: podmanDesktopVersion });
   }
 });
 
@@ -170,7 +171,7 @@ function startOnboardingQueue(): void {
               {#if telemetryMessages?.info}
                 <Link
                   on:click={async (): Promise<void> => {
-                    await window.openExternal(telemetryMessages.info?.url ?? '');
+                    await client.system.openExternal({ link: telemetryMessages.info?.url ?? '' });
                   }}>{telemetryMessages?.info.link}</Link>
               {/if}
             {/if}

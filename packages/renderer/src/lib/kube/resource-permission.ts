@@ -18,6 +18,7 @@
 
 import type { ContextPermission, IDisposable } from '@podman-desktop/core-api';
 
+import { client } from '/@/client';
 import { kubernetesContextsPermissions } from '/@/stores/kubernetes-context-permission';
 import { kubernetesContexts } from '/@/stores/kubernetes-contexts';
 
@@ -25,7 +26,7 @@ export async function listenResourcePermitted(
   resourceName: string,
   callback: (permitted: boolean) => void,
 ): Promise<IDisposable> {
-  const experimental = await window.isExperimentalConfigurationEnabled('kubernetes.statesExperimental');
+  const experimental = await client.configuration.isExperimentalEnabled({ key: 'kubernetes.statesExperimental' });
 
   let contextName = '';
   let permissions: ContextPermission[] = [];

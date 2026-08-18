@@ -22,6 +22,8 @@ import type {
 } from '@podman-desktop/core-api/configuration';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = ['extensions-started', 'extension-started', 'extension-stopped', 'configuration-changed'];
@@ -44,7 +46,7 @@ const eventStore = new EventStore<IConfigurationPropertyRecordedSchema[]>(
 eventStore.setup();
 
 async function fetchConfigurationProperties(): Promise<IConfigurationPropertyRecordedSchema[]> {
-  const result: Record<string, IConfigurationPropertyRecordedSchema> = await window.getConfigurationProperties();
+  const result: Record<string, IConfigurationPropertyRecordedSchema> = await client.configuration.getProperties();
   const properties: IConfigurationPropertyRecordedSchema[] = [];
   for (const key in result) {
     properties.push(result[key]);

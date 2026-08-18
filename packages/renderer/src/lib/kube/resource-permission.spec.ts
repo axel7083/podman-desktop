@@ -19,6 +19,7 @@
 import type { KubeContext } from '@podman-desktop/core-api';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { kubernetesContextsPermissions } from '/@/stores/kubernetes-context-permission';
 import { kubernetesContexts } from '/@/stores/kubernetes-contexts';
 
@@ -52,7 +53,7 @@ beforeEach(() => {
 describe('listenResourcePermitted', () => {
   test('resource should be permitted', async () => {
     const callbackMock = vi.fn();
-    vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+    vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
 
     kubernetesContexts.set([mockContext1, mockContext2]);
     kubernetesContextsPermissions.set([{ contextName: 'context-name2', resourceName: 'deployments', permitted: true }]);
@@ -63,7 +64,7 @@ describe('listenResourcePermitted', () => {
 
   test('resource should be not permitted', async () => {
     const callbackMock = vi.fn();
-    vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+    vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
 
     kubernetesContexts.set([mockContext1, mockContext2]);
     kubernetesContextsPermissions.set([
@@ -76,7 +77,7 @@ describe('listenResourcePermitted', () => {
 
   test('shopuld be permitted if kubernetes experimental is not enabled', async () => {
     const callbackMock = vi.fn();
-    vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(false);
+    vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(false);
 
     kubernetesContexts.set([mockContext1, mockContext2]);
     kubernetesContextsPermissions.set([

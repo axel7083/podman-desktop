@@ -19,27 +19,27 @@
 import { AppearanceSettings } from '@podman-desktop/core-api/appearance';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { configurationProperties } from './configurationProperties';
 
 export const isDark: Writable<boolean> = writable(false);
 export const isHighContrast: Writable<boolean> = writable(false);
 
 configurationProperties.subscribe(() => {
-  if (window?.getConfigurationValue) {
-    window
-      ?.getConfigurationValue<string>(AppearanceSettings.SectionName + '.' + AppearanceSettings.Appearance)
-      ?.then(value => {
-        if (value) {
-          updateAppearance(value);
-        }
-      })
-      ?.catch((err: unknown) =>
-        console.error(
-          `Error getting configuration value ${AppearanceSettings.SectionName + '.' + AppearanceSettings.Appearance}`,
-          err,
-        ),
-      );
-  }
+  client.configuration
+    .getValue({ key: AppearanceSettings.SectionName + '.' + AppearanceSettings.Appearance })
+    ?.then(value => {
+      if (value) {
+        updateAppearance(value as string);
+      }
+    })
+    ?.catch((err: unknown) =>
+      console.error(
+        `Error getting configuration value ${AppearanceSettings.SectionName + '.' + AppearanceSettings.Appearance}`,
+        err,
+      ),
+    );
 });
 
 function updateAppearance(appearance: string): void {
@@ -59,7 +59,7 @@ function updateAppearance(appearance: string): void {
     isDark.set(true);
     isHighContrast.set(true);
   } else {
-    window.getThemeInfo(appearance).then(
+    client.uiRegistry.getThemeInfo({ themeId: appearance }).then(
       info => {
         isDark.set(info.isDark);
         isHighContrast.set(info.isHighContrast);

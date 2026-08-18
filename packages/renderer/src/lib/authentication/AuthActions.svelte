@@ -3,6 +3,7 @@ import { faKey, faSignIn, faSignOut } from '@fortawesome/free-solid-svg-icons';
 import { NavigationPage } from '@podman-desktop/core-api';
 import { DropdownMenu } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
 import { handleNavigation } from '/@/navigation';
 import { authenticationProviders } from '/@/stores/authenticationProviders';
 
@@ -55,7 +56,7 @@ export function onButtonClick(e: MouseEvent): void {
         {#each provider.accounts as account (account.id)}
           <DropdownMenu.Item
             title="Sign out of {provider.displayName} ({account.label})"
-            onClick={(): Promise<void> => window.requestAuthenticationProviderSignOut(provider.id, account.id)}
+            onClick={(): Promise<void> => client.authentication.signOut({ providerId: provider.id, sessionId: account.id })}
             icon={faSignOut} />
         {/each}
       {/if}
@@ -63,7 +64,7 @@ export function onButtonClick(e: MouseEvent): void {
       {#each sessionRequests as request (request.id)}
         <DropdownMenu.Item
           title="Sign in with {provider.displayName} to use {request.extensionLabel}"
-          onClick={(): Promise<void> => window.requestAuthenticationProviderSignIn(request.id)}
+          onClick={(): Promise<void> => client.authentication.signIn({ requestId: request.id })}
           icon={faSignIn} />
       {/each}
     {/each}

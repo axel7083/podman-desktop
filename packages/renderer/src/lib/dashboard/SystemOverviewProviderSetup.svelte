@@ -2,6 +2,7 @@
 import { NavigationPage, type ProviderInfo } from '@podman-desktop/core-api';
 import { Button } from '@podman-desktop/ui-svelte';
 
+import { client } from '/@/client';
 import { handleNavigation } from '/@/navigation';
 
 import { getConnectionStatusConfig, hasStartLifecycle } from './system-overview-utils.svelte';
@@ -31,7 +32,12 @@ function handleClick(): void {
     startInProgress = true;
     window
       .startProvider(provider.internalId)
-      .then(() => window.telemetryTrack('dashboard.healthCard.provider.started', { providerName: provider.name }))
+      .then(() =>
+        client.telemetry.track({
+          event: 'dashboard.healthCard.provider.started',
+          eventProperties: { providerName: provider.name },
+        }),
+      )
       .catch((err: unknown) => console.error('Provider failed to start:', err))
       .finally(() => (startInProgress = false));
   } else {

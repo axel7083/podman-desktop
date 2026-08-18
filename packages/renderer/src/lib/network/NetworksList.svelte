@@ -4,6 +4,7 @@ import { NavigationPage } from '@podman-desktop/core-api';
 import { Button, FilteredEmptyScreen, NavPage, Table, TableColumn, TableRow } from '@podman-desktop/ui-svelte';
 import { ContainerIcon } from '@podman-desktop/ui-svelte/icons';
 
+import { client } from '/@/client';
 import { withBulkConfirmation } from '/@/lib/actions/BulkActions';
 import NoContainerEngineEmptyScreen from '/@/lib/image/NoContainerEngineEmptyScreen.svelte';
 import ContainerEngineEnvironmentColumn from '/@/lib/table/columns/ContainerEngineEnvironmentColumn.svelte';
@@ -67,7 +68,7 @@ async function deleteSelectedNetworks(): Promise<void> {
       const oldStatus = network.status;
       try {
         network.status = 'DELETING';
-        await window.removeNetwork(network.engineId, network.id);
+        await client.container.removeNetwork({ engine: network.engineId, networkId: network.id });
       } catch (error) {
         console.error(`error while removing network ${network.name}`, error);
         network.status = oldStatus;

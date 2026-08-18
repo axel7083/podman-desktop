@@ -18,6 +18,8 @@
 
 import type { IDisposable, ResourceCount } from '@podman-desktop/core-api';
 
+import { client } from '/@/client';
+
 // listenActiveResourcesCount listens the count of active resources
 export async function listenActiveResourcesCount(
   callback: (activeResourcesCounts: ResourceCount[]) => void,
@@ -52,7 +54,7 @@ function collectAndSendCount(callback: (activeResourcesCount: ResourceCount[]) =
 
 async function isKubernetesExperimentalMode(): Promise<boolean> {
   try {
-    return await window.isExperimentalConfigurationEnabled('kubernetes.statesExperimental');
+    return await client.configuration.isExperimentalEnabled({ key: 'kubernetes.statesExperimental' });
   } catch {
     return false;
   }

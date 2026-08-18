@@ -28,6 +28,7 @@ import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { getInitialValue } from '/@/lib/preferences/Util';
 import { onDidChangeConfiguration } from '/@/stores/configurationProperties';
 
@@ -428,8 +429,8 @@ test('Expect value is updated from an external change', async () => {
   // initial value should be 1
   expect(inputField.value).toBe('1');
 
-  // change getConfigurationValue to return 5
-  (window as any).getConfigurationValue = vi.fn().mockResolvedValue(5);
+  // change getValue to return 5
+  vi.mocked(client.configuration.getValue).mockResolvedValue(5);
 
   // now update the configuration value
   onDidChangeConfiguration.dispatchEvent(
@@ -457,8 +458,8 @@ test('Expect boolean record to be updated from checked to not checked', async ()
     default: true,
   };
 
-  // getConfigurationValue to return true
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+  // getValue to return true
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
   // render
   await awaitRender(BOOLEAN_RECORD, {});
@@ -470,8 +471,8 @@ test('Expect boolean record to be updated from checked to not checked', async ()
     expect(checkbox).toBeChecked();
   });
 
-  // getConfigurationValue to return false
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(false);
+  // getValue to return false
+  vi.mocked(client.configuration.getValue).mockResolvedValue(false);
 
   // now update the configuration value
   onDidChangeConfiguration.dispatchEvent(
@@ -537,15 +538,15 @@ describe('experimental configuration update', () => {
 
     await vi.waitFor(
       () => {
-        expect(window.updateExperimentalConfigurationValue).toHaveBeenCalledWith(
-          'experimental.record',
-          expect.anything(),
-          'DEFAULT',
-        );
+        expect(client.configuration.updateExperimentalValue).toHaveBeenCalledWith({
+          key: 'experimental.record',
+          value: expect.anything(),
+          scope: 'DEFAULT',
+        });
       },
       { timeout: 3000 },
     );
-    expect(window.updateConfigurationValue).not.toHaveBeenCalled();
+    expect(client.configuration.updateValue).not.toHaveBeenCalled();
   });
 
   test('Expect updateConfigurationValue to be called for non-experimental records', async () => {
@@ -570,10 +571,14 @@ describe('experimental configuration update', () => {
 
     await vi.waitFor(
       () => {
-        expect(window.updateConfigurationValue).toHaveBeenCalledWith('regular.record', expect.anything(), 'DEFAULT');
+        expect(client.configuration.updateValue).toHaveBeenCalledWith({
+          key: 'regular.record',
+          value: expect.anything(),
+          scope: 'DEFAULT',
+        });
       },
       { timeout: 3000 },
     );
-    expect(window.updateExperimentalConfigurationValue).not.toHaveBeenCalled();
+    expect(client.configuration.updateExperimentalValue).not.toHaveBeenCalled();
   });
 });

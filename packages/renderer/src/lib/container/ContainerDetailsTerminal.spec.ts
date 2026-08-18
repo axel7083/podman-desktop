@@ -23,6 +23,7 @@ import { Terminal } from '@xterm/xterm';
 import { get } from 'svelte/store';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { containerTerminals } from '/@/stores/container-terminal-store';
 
 import ContainerDetailsTerminal from './ContainerDetailsTerminal.svelte';
@@ -32,7 +33,7 @@ let shellInContainerMock = vi.fn();
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.getConfigurationValue).mockImplementation(async (key: string) => {
+  vi.mocked(client.configuration.getValue).mockImplementation(async ({ key }: { key: string }) => {
     if (key === 'terminal.integrated.scrollback') {
       return 1000;
     }

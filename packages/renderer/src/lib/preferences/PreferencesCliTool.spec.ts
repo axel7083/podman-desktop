@@ -25,6 +25,8 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import PreferencesCliTool from './PreferencesCliTool.svelte';
 
 const cliToolInfoItem1: CliToolInfo = {
@@ -142,7 +144,7 @@ beforeAll(() => {
       uninstallCliTool: vi.fn(),
       showMessageBox: vi.fn(),
       executeCommand: vi.fn(),
-      getUrlProtocol: vi.fn().mockResolvedValue('podman-desktop'),
+
       navigator: {
         clipboard: {
           writeText: vi.fn(),
@@ -155,7 +157,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.getUrlProtocol).mockResolvedValue('podman-desktop');
+  vi.mocked(client.system.getUrlProtocol).mockResolvedValue('podman-desktop');
 });
 
 describe('CLI Tool item', () => {
@@ -251,8 +253,7 @@ describe('CLI Tool item', () => {
   });
 
   test('check version is sent to updateCliTool', async () => {
-    const selectCliToolVersionToUpdateMock = vi.fn().mockResolvedValue('1.1.1');
-    (window as any).selectCliToolVersionToUpdate = selectCliToolVersionToUpdateMock;
+    vi.mocked(client.cliTool.selectVersionToUpdate).mockResolvedValue('1.1.1');
     render(PreferencesCliTool, {
       cliTool: cliToolInfoItem4,
     });
@@ -262,7 +263,7 @@ describe('CLI Tool item', () => {
 
     await userEvent.click(updateAvailableElement);
 
-    expect(selectCliToolVersionToUpdateMock).toBeCalledWith(cliToolInfoItem4.id);
+    expect(client.cliTool.selectVersionToUpdate).toBeCalledWith({ id: cliToolInfoItem4.id });
     expect(vi.mocked(window.updateCliTool)).toBeCalledWith(
       cliToolInfoItem4.id,
       expect.any(Symbol),
@@ -388,7 +389,7 @@ describe('CLI Tool item', () => {
   });
 
   test('cancelling uninstall confirmation should not call uninstallCliTool', async () => {
-    vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
+    vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 
     render(PreferencesCliTool, {
       cliTool: cliToolInfoItem7,
@@ -397,7 +398,7 @@ describe('CLI Tool item', () => {
     const uninstallButton = screen.getByRole('button', { name: 'Uninstall' });
     await fireEvent.click(uninstallButton);
 
-    expect(window.showMessageBox).toHaveBeenCalledOnce();
+    expect(client.dialog.showMessageBox).toHaveBeenCalledOnce();
     expect(window.uninstallCliTool).not.toHaveBeenCalled();
   });
 });

@@ -19,6 +19,7 @@
 import type { SecretInfo } from '@podman-desktop/core-api';
 import { derived, type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
 import SecretIcon from '/@/lib/images/SecretIcon.svelte';
 import { findMatchInLeaves } from '/@/stores/search-util';
 
@@ -40,9 +41,9 @@ export async function checkForUpdate(eventName: string): Promise<boolean> {
 
 export const secretsInfo: Writable<Array<SecretInfo>> = writable([]);
 
-// use helper here as window methods are initialized after the store in tests
+// use helper here as client methods are initialized after the store in tests
 const listSecrets = (): Promise<SecretInfo[]> => {
-  return window.listSecrets();
+  return client.container.listSecrets();
 };
 
 export const secretsEventStore = new EventStore<Array<SecretInfo>>(

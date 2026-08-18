@@ -24,8 +24,9 @@ import { fireEvent, render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
 import { router } from 'tinro';
-import { afterEach, beforeAll, beforeEach, describe, expect, type Mock, test, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import RunImage from '/@/lib/image/RunImage.svelte';
 import { mockBreadcrumb } from '/@/stores/breadcrumb.spec';
 import { imagesInfos } from '/@/stores/images';
@@ -46,9 +47,9 @@ beforeAll(() => {
     func();
     return { dispose: vi.fn() };
   });
-  vi.mocked(window.listNetworks).mockResolvedValue([]);
-  vi.mocked(window.listContainers).mockResolvedValue([]);
-  vi.mocked(window.createAndStartContainer).mockResolvedValue({ id: '1234' });
+  vi.mocked(client.container.listNetworks).mockResolvedValue([]);
+  vi.mocked(client.container.listContainers).mockResolvedValue([]);
+  vi.mocked(client.container.createAndStartContainer).mockResolvedValue({ id: '1234' });
 
   mockBreadcrumb();
 });
@@ -139,7 +140,7 @@ async function createRunImage(entrypoint?: string | string[], cmd?: string[]): P
     engineName: 'engineName',
     engineType: 'podman',
   };
-  (window.getImageInspect as Mock).mockResolvedValue(imageInfo);
+  vi.mocked(client.container.getImageInspect).mockResolvedValue(imageInfo);
   await waitRender();
 }
 
@@ -211,9 +212,8 @@ describe('RunImage', () => {
 
     await fireEvent.click(button);
 
-    expect(window.createAndStartContainer).toHaveBeenCalledWith(
-      'engineid',
-      expect.objectContaining({ Entrypoint: ['entrypoint'] }),
+    expect(client.container.createAndStartContainer).toHaveBeenCalledWith(
+      expect.objectContaining({ engine: 'engineid', options: expect.objectContaining({ Entrypoint: ['entrypoint'] }) }),
     );
   });
 
@@ -224,9 +224,8 @@ describe('RunImage', () => {
 
     await fireEvent.click(button);
 
-    expect(window.createAndStartContainer).toHaveBeenCalledWith(
-      'engineid',
-      expect.objectContaining({ Entrypoint: ['entrypoint'] }),
+    expect(client.container.createAndStartContainer).toHaveBeenCalledWith(
+      expect.objectContaining({ engine: 'engineid', options: expect.objectContaining({ Entrypoint: ['entrypoint'] }) }),
     );
   });
 
@@ -237,9 +236,11 @@ describe('RunImage', () => {
 
     await fireEvent.click(button);
 
-    expect(window.createAndStartContainer).toHaveBeenCalledWith(
-      'engineid',
-      expect.objectContaining({ Entrypoint: ['entrypoint with space'] }),
+    expect(client.container.createAndStartContainer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        engine: 'engineid',
+        options: expect.objectContaining({ Entrypoint: ['entrypoint with space'] }),
+      }),
     );
   });
 
@@ -250,9 +251,11 @@ describe('RunImage', () => {
 
     await fireEvent.click(button);
 
-    expect(window.createAndStartContainer).toHaveBeenCalledWith(
-      'engineid',
-      expect.objectContaining({ Entrypoint: ['entrypoint1', 'entrypoint2'] }),
+    expect(client.container.createAndStartContainer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        engine: 'engineid',
+        options: expect.objectContaining({ Entrypoint: ['entrypoint1', 'entrypoint2'] }),
+      }),
     );
   });
 
@@ -263,9 +266,11 @@ describe('RunImage', () => {
 
     await fireEvent.click(button);
 
-    expect(window.createAndStartContainer).toHaveBeenCalledWith(
-      'engineid',
-      expect.objectContaining({ Entrypoint: ['entrypoint1', 'entrypoint2'] }),
+    expect(client.container.createAndStartContainer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        engine: 'engineid',
+        options: expect.objectContaining({ Entrypoint: ['entrypoint1', 'entrypoint2'] }),
+      }),
     );
   });
 
@@ -276,9 +281,8 @@ describe('RunImage', () => {
 
     await fireEvent.click(button);
 
-    expect(window.createAndStartContainer).toHaveBeenCalledWith(
-      'engineid',
-      expect.objectContaining({ Cmd: ['command'] }),
+    expect(client.container.createAndStartContainer).toHaveBeenCalledWith(
+      expect.objectContaining({ engine: 'engineid', options: expect.objectContaining({ Cmd: ['command'] }) }),
     );
   });
 
@@ -289,9 +293,11 @@ describe('RunImage', () => {
 
     await fireEvent.click(button);
 
-    expect(window.createAndStartContainer).toHaveBeenCalledWith(
-      'engineid',
-      expect.objectContaining({ Cmd: ['command with space'] }),
+    expect(client.container.createAndStartContainer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        engine: 'engineid',
+        options: expect.objectContaining({ Cmd: ['command with space'] }),
+      }),
     );
   });
   test('Expect that two elements array command is sent to API', async () => {
@@ -301,9 +307,11 @@ describe('RunImage', () => {
 
     await fireEvent.click(button);
 
-    expect(window.createAndStartContainer).toHaveBeenCalledWith(
-      'engineid',
-      expect.objectContaining({ Cmd: ['command1', 'command2'] }),
+    expect(client.container.createAndStartContainer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        engine: 'engineid',
+        options: expect.objectContaining({ Cmd: ['command1', 'command2'] }),
+      }),
     );
   });
 
@@ -314,14 +322,16 @@ describe('RunImage', () => {
 
     await fireEvent.click(button);
 
-    expect(window.createAndStartContainer).toHaveBeenCalledWith(
-      'engineid',
-      expect.objectContaining({ Cmd: ['command1', 'command2'] }),
+    expect(client.container.createAndStartContainer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        engine: 'engineid',
+        options: expect.objectContaining({ Cmd: ['command1', 'command2'] }),
+      }),
     );
   });
 
   test('Expect to see an error if the container/host ranges have different size', async () => {
-    (window.isFreePort as Mock).mockResolvedValue(true);
+    vi.mocked(client.system.isPortFree).mockResolvedValue(true);
 
     await createRunImage(undefined, ['command1', 'command2']);
 
@@ -450,9 +460,11 @@ describe('RunImage', () => {
     await fireEvent.click(button);
 
     // should have item 1 and item 3 as we deleted item 2
-    expect(window.createAndStartContainer).toHaveBeenCalledWith(
-      'engineid',
-      expect.objectContaining({ EnvFiles: [customEnvFile, 'foo3'] }),
+    expect(client.container.createAndStartContainer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        engine: 'engineid',
+        options: expect.objectContaining({ EnvFiles: [customEnvFile, 'foo3'] }),
+      }),
     );
   });
 
@@ -461,7 +473,7 @@ describe('RunImage', () => {
       shouldAdvanceTime: true,
     });
 
-    vi.mocked(window.isFreePort).mockRejectedValue(new Error('Port 8080 is already in use.'));
+    vi.mocked(client.system.isPortFree).mockRejectedValue(new Error('Port 8080 is already in use.'));
     router.goto('/basic');
 
     await createRunImage(undefined, ['command1', 'command2']);
@@ -489,7 +501,7 @@ describe('RunImage', () => {
   });
 
   test('Expect "start container" button to be disabled when port is not free', async () => {
-    (window.isFreePort as Mock).mockRejectedValue(new Error('Error Message'));
+    vi.mocked(client.system.isPortFree).mockRejectedValue(new Error('Error Message'));
     router.goto('/basic');
 
     await createRunImage(undefined, ['command1', 'command2']);
@@ -563,11 +575,13 @@ describe('RunImage', () => {
     const button = screen.getByRole('button', { name: 'Start Container' });
     await fireEvent.click(button);
 
-    expect(window.createAndStartContainer).toHaveBeenCalledWith(
-      'engineid',
+    expect(client.container.createAndStartContainer).toHaveBeenCalledWith(
       expect.objectContaining({
-        Secrets: [{ Source: 'my-secret', Target: '/run/secrets/my-secret' }],
-        SecretEnv: {},
+        engine: 'engineid',
+        options: expect.objectContaining({
+          Secrets: [{ Source: 'my-secret', Target: '/run/secrets/my-secret' }],
+          SecretEnv: {},
+        }),
       }),
     );
   });
@@ -598,11 +612,13 @@ describe('RunImage', () => {
     const button = screen.getByRole('button', { name: 'Start Container' });
     await fireEvent.click(button);
 
-    expect(window.createAndStartContainer).toHaveBeenCalledWith(
-      'engineid',
+    expect(client.container.createAndStartContainer).toHaveBeenCalledWith(
       expect.objectContaining({
-        Secrets: [],
-        SecretEnv: { FOO_SECRET: 'foo-data' },
+        engine: 'engineid',
+        options: expect.objectContaining({
+          Secrets: [],
+          SecretEnv: { FOO_SECRET: 'foo-data' },
+        }),
       }),
     );
   });
@@ -625,11 +641,13 @@ describe('RunImage', () => {
     const button = screen.getByRole('button', { name: 'Start Container' });
     await fireEvent.click(button);
 
-    expect(window.createAndStartContainer).toHaveBeenCalledWith(
-      'engineid',
+    expect(client.container.createAndStartContainer).toHaveBeenCalledWith(
       expect.objectContaining({
-        Secrets: [],
-        SecretEnv: {},
+        engine: 'engineid',
+        options: expect.objectContaining({
+          Secrets: [],
+          SecretEnv: {},
+        }),
       }),
     );
   });
@@ -673,22 +691,24 @@ describe('RunImage', () => {
     await fireEvent.click(button);
 
     // should have item 1 and item 3 as we deleted item 2
-    expect(window.createAndStartContainer).toHaveBeenCalledWith(
-      'engineid',
+    expect(client.container.createAndStartContainer).toHaveBeenCalledWith(
       expect.objectContaining({
-        HostConfig: expect.objectContaining({
-          Devices: [
-            {
-              CgroupPermissions: 'rwm',
-              PathOnHost: '/dev/tty0',
-              PathInContainer: '/dev/tty0',
-            },
-            {
-              CgroupPermissions: 'rwm',
-              PathOnHost: '/dev/tty2',
-              PathInContainer: '/dev/ttyOnContainer2',
-            },
-          ],
+        engine: 'engineid',
+        options: expect.objectContaining({
+          HostConfig: expect.objectContaining({
+            Devices: [
+              {
+                CgroupPermissions: 'rwm',
+                PathOnHost: '/dev/tty0',
+                PathInContainer: '/dev/tty0',
+              },
+              {
+                CgroupPermissions: 'rwm',
+                PathOnHost: '/dev/tty2',
+                PathInContainer: '/dev/ttyOnContainer2',
+              },
+            ],
+          }),
         }),
       }),
     );

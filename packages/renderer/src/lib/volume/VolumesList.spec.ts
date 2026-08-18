@@ -29,6 +29,7 @@ import { get } from 'svelte/store';
 /* eslint-enable import/no-duplicates */
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { providerInfos } from '/@/stores/providers';
 import { volumeListInfos, volumesEventStore } from '/@/stores/volumes';
 
@@ -45,8 +46,8 @@ beforeEach(async () => {
 
   vi.mocked(window.onDidUpdateProviderStatus).mockResolvedValue(undefined);
   vi.mocked(window.getProviderInfos).mockResolvedValue([]);
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(false);
-  vi.mocked(window.listVolumes).mockResolvedValue([]);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(false);
+  vi.mocked(client.container.listVolumes).mockResolvedValue([]);
 });
 
 async function waitRender(customProperties: object): Promise<void> {
@@ -88,7 +89,7 @@ test('Expect volumes being displayed once extensions are started (without size d
     } as ProviderInfo,
   ]);
 
-  vi.mocked(window.listVolumes).mockResolvedValue([
+  vi.mocked(client.container.listVolumes).mockResolvedValue([
     {
       Volumes: [
         {
@@ -121,7 +122,7 @@ test('Expect volumes being displayed once extensions are started (without size d
   await volumesEventStoreInfo.fetch();
 
   // first call is with listing without details
-  expect(window.listVolumes).toHaveBeenNthCalledWith(1, false);
+  expect(client.container.listVolumes).toHaveBeenNthCalledWith(1, { fetchUsage: false });
 
   await waitFor(() => {
     // wait store are populated
@@ -155,7 +156,7 @@ test('Expect volumes being displayed once extensions are started (with size data
     } as ProviderInfo,
   ]);
 
-  vi.mocked(window.listVolumes).mockResolvedValue([
+  vi.mocked(client.container.listVolumes).mockResolvedValue([
     {
       Volumes: [
         {
@@ -188,7 +189,7 @@ test('Expect volumes being displayed once extensions are started (with size data
   await volumesEventStoreInfo.fetch('fetchUsage');
 
   // first call is with listing with details
-  expect(window.listVolumes).toHaveBeenNthCalledWith(1, true);
+  expect(client.container.listVolumes).toHaveBeenNthCalledWith(1, { fetchUsage: true });
 
   await waitFor(() => {
     // wait store are populated
@@ -266,7 +267,7 @@ test('Expect filter empty screen', async () => {
     } as ProviderInfo,
   ]);
 
-  vi.mocked(window.listVolumes).mockResolvedValue([
+  vi.mocked(client.container.listVolumes).mockResolvedValue([
     {
       Volumes: [
         {
@@ -299,7 +300,7 @@ test('Expect filter empty screen', async () => {
   await volumesEventStoreInfo.fetch();
 
   // first call is with listing without details
-  expect(window.listVolumes).toHaveBeenNthCalledWith(1, false);
+  expect(client.container.listVolumes).toHaveBeenNthCalledWith(1, { fetchUsage: false });
 
   await waitFor(() => {
     // wait store are populated
@@ -328,7 +329,7 @@ test('Expect user confirmation to pop up when preferences require', async () => 
     } as ProviderInfo,
   ]);
 
-  vi.mocked(window.listVolumes).mockResolvedValue([
+  vi.mocked(client.container.listVolumes).mockResolvedValue([
     {
       Volumes: [
         {
@@ -361,7 +362,7 @@ test('Expect user confirmation to pop up when preferences require', async () => 
   await volumesEventStoreInfo.fetch();
 
   // first call is with listing without details
-  expect(window.listVolumes).toHaveBeenNthCalledWith(1, false);
+  expect(client.container.listVolumes).toHaveBeenNthCalledWith(1, { fetchUsage: false });
 
   await waitFor(() => {
     // wait store are populated
@@ -374,19 +375,18 @@ test('Expect user confirmation to pop up when preferences require', async () => 
   const checkboxes = screen.getAllByRole('checkbox', { name: 'Toggle volume' });
   await fireEvent.click(checkboxes[0]);
 
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
-  (window as any).showMessageBox = vi.fn();
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Cancel' });
+  vi.mocked(client.configuration.getValue).mockResolvedValue(true);
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Cancel' });
 
   const deleteButton = screen.getByRole('button', { name: 'Delete 1 selected items' });
   await fireEvent.click(deleteButton);
 
-  expect(window.showMessageBox).toHaveBeenCalledOnce();
+  expect(client.dialog.showMessageBox).toHaveBeenCalledOnce();
 
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Delete' });
   await fireEvent.click(deleteButton);
-  expect(window.showMessageBox).toHaveBeenCalledTimes(2);
-  await vi.waitFor(() => expect(window.removeVolume).toHaveBeenCalled());
+  expect(client.dialog.showMessageBox).toHaveBeenCalledTimes(2);
+  await vi.waitFor(() => expect(client.container.removeVolume).toHaveBeenCalled());
 });
 
 test('Expect to see empty page and no table when no container engine is running', async () => {
@@ -404,7 +404,7 @@ test('Expect to see empty page and no table when no container engine is running'
     } as ProviderInfo,
   ]);
 
-  vi.mocked(window.listVolumes).mockResolvedValue([
+  vi.mocked(client.container.listVolumes).mockResolvedValue([
     {
       Volumes: [
         {
@@ -458,7 +458,7 @@ test('Expect environment column sorted by engineId', async () => {
     } as ProviderInfo,
   ]);
 
-  vi.mocked(window.listVolumes).mockResolvedValue([
+  vi.mocked(client.container.listVolumes).mockResolvedValue([
     {
       Volumes: [
         {
@@ -549,7 +549,7 @@ test('Expect environment dropdown to appear with multiple running connections', 
     } as ProviderInfo,
   ]);
 
-  vi.mocked(window.listVolumes).mockResolvedValue([
+  vi.mocked(client.container.listVolumes).mockResolvedValue([
     {
       Volumes: [
         {
@@ -644,7 +644,7 @@ test('Expect environment dropdown to filter volumes by selected environment', as
     } as unknown as ProviderInfo,
   ]);
 
-  vi.mocked(window.listVolumes).mockResolvedValue([
+  vi.mocked(client.container.listVolumes).mockResolvedValue([
     {
       Volumes: [
         {

@@ -26,6 +26,7 @@ import userEvent from '@testing-library/user-event';
 import { router } from 'tinro';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { providerInfos } from '/@/stores/providers';
 
 import KubePlayYAML from './KubePlayYAML.svelte';
@@ -80,9 +81,9 @@ beforeEach(() => {
     return { dispose: vi.fn() };
   });
 
-  vi.mocked(window.openDialog).mockResolvedValue(['Containerfile']);
-  vi.mocked(window.telemetryPage).mockResolvedValue(undefined);
-  vi.mocked(window.getConfigurationValue).mockResolvedValue(undefined);
+  vi.mocked(client.dialog.openDialog).mockResolvedValue(['Containerfile']);
+  vi.mocked(client.telemetry.page).mockResolvedValue(undefined);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);
 });
 
 function setup(): void {
@@ -194,7 +195,7 @@ describe('cancel', () => {
 
   test('cancel action should call window#cancelToken', async () => {
     const CANCELLABLE_TOKEN_ID: number = 55;
-    vi.mocked(window.getCancellableTokenSource).mockResolvedValue(CANCELLABLE_TOKEN_ID);
+    vi.mocked(client.cancellation.createTokenSource).mockResolvedValue(CANCELLABLE_TOKEN_ID);
 
     const { promise } = Promise.withResolvers<PlayKubeInfo>();
     vi.mocked(window.playKube).mockReturnValue(promise);
@@ -222,7 +223,7 @@ describe('cancel', () => {
     await userEvent.click(cancelBtn);
 
     await vi.waitFor(() => {
-      expect(window.cancelToken).toHaveBeenCalledExactlyOnceWith(CANCELLABLE_TOKEN_ID);
+      expect(client.cancellation.cancelToken).toHaveBeenCalledExactlyOnceWith({ id: CANCELLABLE_TOKEN_ID });
     });
   });
 });
@@ -445,7 +446,7 @@ test('file mode: does not attempt temp file cleanup', async () => {
   expect(window.playKube).toHaveBeenCalledWith('Containerfile', expect.anything(), expect.anything());
 
   // Verify no temp file operations occurred
-  expect(window.removeTempFile).not.toHaveBeenCalled();
+  expect(client.tempFile.remove).not.toHaveBeenCalled();
 });
 
 test('custom YAML mode: button text changes to "Play custom YAML"', async () => {

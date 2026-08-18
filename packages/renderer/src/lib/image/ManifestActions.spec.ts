@@ -21,6 +21,7 @@ import '@testing-library/jest-dom/vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { withConfirmation } from '/@/lib/dialogs/messagebox-utils';
 import type { ImageInfoUI } from '/@/lib/image/ImageInfoUI';
 import ManifestActions from '/@/lib/image/ManifestActions.svelte';
@@ -29,8 +30,6 @@ vi.mock(import('/@/lib/dialogs/messagebox-utils'), () => ({
   withConfirmation: vi.fn(),
 }));
 
-const getContributedMenusMock = vi.fn();
-
 class ResizeObserver {
   observe = vi.fn();
   disconnect = vi.fn();
@@ -38,11 +37,6 @@ class ResizeObserver {
 }
 beforeAll(() => {
   Object.defineProperty(window, 'ResizeObserver', { value: ResizeObserver });
-
-  Object.defineProperty(window, 'getContributedMenus', { value: getContributedMenusMock });
-  Object.defineProperty(window, 'hasAuthconfigForImage', {
-    value: vi.fn().mockResolvedValue(false),
-  });
 });
 
 const fakedManifest: ImageInfoUI = {
@@ -65,8 +59,8 @@ test('Expect Delete Manifest to be there', async () => {
 
 test('Expect Push Manifest to be there', async () => {
   // Mock the showMessageBox to return 'Dismiss'
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Dismiss' });
-  getContributedMenusMock.mockResolvedValue([]);
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Dismiss' });
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 
   render(ManifestActions, { manifest: fakedManifest, onPushManifest: vi.fn() });
 
@@ -75,7 +69,7 @@ test('Expect Push Manifest to be there', async () => {
 });
 
 test('Expect withConfirmation to be called with delete variant when clicking Delete Manifest', async () => {
-  getContributedMenusMock.mockResolvedValue([]);
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 
   const manifest: ImageInfoUI = {
     ...fakedManifest,
@@ -99,9 +93,9 @@ test('Expect withConfirmation to be called with delete variant when clicking Del
 test('Expect error dialog with correct message when manifest deletion fails', async () => {
   const errorMessage = 'manifest not found';
   vi.mocked(withConfirmation).mockImplementation(f => f());
-  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Dismiss' });
-  vi.mocked(window.removeManifest).mockRejectedValueOnce(new Error(errorMessage));
-  getContributedMenusMock.mockResolvedValue([]);
+  vi.mocked(client.dialog.showMessageBox).mockResolvedValue({ response: 'Dismiss' });
+  vi.mocked(client.container.removeManifest).mockRejectedValueOnce(new Error(errorMessage));
+  vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
 
   const manifest: ImageInfoUI = {
     ...fakedManifest,
@@ -115,7 +109,7 @@ test('Expect error dialog with correct message when manifest deletion fails', as
   await fireEvent.click(button);
 
   await waitFor(() => {
-    expect(window.showMessageBox).toHaveBeenCalledWith(
+    expect(client.dialog.showMessageBox).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Delete Manifest Failed',
         message: `Error while deleting manifest: ${errorMessage}`,

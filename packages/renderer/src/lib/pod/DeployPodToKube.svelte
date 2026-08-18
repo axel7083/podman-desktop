@@ -7,6 +7,7 @@ import * as jsYaml from 'js-yaml';
 import { onDestroy, onMount } from 'svelte';
 import { router } from 'tinro';
 
+import { client } from '/@/client';
 import MonacoEditor from '/@/lib/editor/MonacoEditor.svelte';
 import { ensureRestrictedSecurityContext } from '/@/lib/pod/pod-utils';
 import EngineFormPage from '/@/lib/ui/EngineFormPage.svelte';
@@ -53,11 +54,14 @@ onMount(async () => {
   // we can then pass the array of containers to generatePodmanKube rather than the singular pod id
   let rawYAML: string;
   if (type === 'compose') {
-    const containers = await window.listSimpleContainersByLabel('com.docker.compose.project', resourceId);
+    const containers = await client.container.listSimpleContainersByLabel({
+      label: 'com.docker.compose.project',
+      key: resourceId,
+    });
     const containerIds = containers.map(container => container.Id);
-    rawYAML = await window.generatePodmanKube(engineId, containerIds);
+    rawYAML = await client.container.generatePodmanKube({ engine: engineId, names: containerIds });
   } else {
-    rawYAML = await window.generatePodmanKube(engineId, [resourceId]);
+    rawYAML = await client.container.generatePodmanKube({ engine: engineId, names: [resourceId] });
   }
 
   // parse yaml
@@ -115,7 +119,7 @@ async function openOpenshiftConsole(): Promise<void> {
   // build link to openOpenshiftConsole
   if (createdPod?.metadata?.name) {
     const linkToOpen = `${openshiftConsoleURL}/k8s/ns/${currentNamespace}/pods/${createdPod.metadata.name}`;
-    await window.openExternal(linkToOpen);
+    await client.system.openExternal({ link: linkToOpen });
   }
 }
 
@@ -129,15 +133,18 @@ async function updatePod(): Promise<void> {
   if (createdPod?.status?.phase === 'Running') {
     clearInterval(updatePodInterval);
     deployFinished = true;
-    await window.telemetryTrack('deployToKube.running', {
-      useServices: deployUsingServices,
-      useRoutes: deployUsingRoutes,
+    await client.telemetry.track({
+      event: 'deployToKube.running',
+      eventProperties: {
+        useServices: deployUsingServices,
+        useRoutes: deployUsingRoutes,
+      },
     });
   } else if (
     createdPod?.status?.containerStatuses?.some(status => status.state?.waiting?.reason === 'ImagePullBackOff')
   ) {
     clearInterval(updatePodInterval);
-    await window.telemetryTrack('deployToKube', { errorMessage: 'ImagePullBackOff' });
+    await client.telemetry.track({ event: 'deployToKube', eventProperties: { errorMessage: 'ImagePullBackOff' } });
     deployError = 'ImagePullBackOff error, please check that the image is accessible from the Kubernetes cluster.';
     deployStarted = false;
     deployFinished = false;
@@ -167,7 +174,7 @@ async function openPodDetails(): Promise<void> {
 }
 
 async function openRoute(route: V1Route): Promise<void> {
-  await window.openExternal(`https://${route.spec.host}`);
+  await client.system.openExternal({ link: `https://${route.spec.host}` });
 }
 
 async function deployToKube(): Promise<void> {
@@ -374,7 +381,7 @@ async function deployToKube(): Promise<void> {
       }
 
       // Telemetry
-      await window.telemetryTrack('deployToKube', eventProperties);
+      await client.telemetry.track({ event: 'deployToKube', eventProperties: eventProperties });
 
       // update status
       updatePodInterval = setInterval(() => {
@@ -385,7 +392,10 @@ async function deployToKube(): Promise<void> {
       // Revert back to the previous bodyPod so the user can hit deploy again
       // we only update the bodyPod if we successfully create the pod.
       bodyPod = previousPod;
-      await window.telemetryTrack('deployToKube', { ...eventProperties, errorMessage: error.message });
+      await client.telemetry.track({
+        event: 'deployToKube',
+        eventProperties: { ...eventProperties, errorMessage: error.message },
+      });
       deployError = error;
       deployStarted = false;
       deployFinished = false;
@@ -465,7 +475,7 @@ let kubeDetails: string = $derived.by(() => {
         required>
         Update Kubernetes manifest to respect the Pod security <Link
           on:click={(): Promise<void> =>
-            window.openExternal('https://kubernetes.io/docs/concepts/security/pod-security-standards#restricted')}
+            client.system.openExternal({ link: 'https://kubernetes.io/docs/concepts/security/pod-security-standards#restricted' })}
           >restricted profile</Link
         >.</Checkbox>
     </div>

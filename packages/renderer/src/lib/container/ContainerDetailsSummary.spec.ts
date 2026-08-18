@@ -22,12 +22,13 @@ import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import ContainerDetailsSummary from './ContainerDetailsSummary.svelte';
 import { ContainerGroupInfoTypeUI, type ContainerInfoUI } from './ContainerInfoUI';
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.openExternal).mockResolvedValue(undefined);
 });
 
 const fakePodContainer: ContainerInfoUI = {
@@ -138,7 +139,7 @@ test('clicking a port opens the browser via openExternal', async () => {
 
   await userEvent.click(portLink);
 
-  expect(window.openExternal).toHaveBeenCalledWith('http://localhost:8080');
+  expect(client.system.openExternal).toHaveBeenCalledWith({ link: 'http://localhost:8080' });
 });
 
 test('port link shows tooltip with full URL and external link icon', async () => {

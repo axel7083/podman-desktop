@@ -8,6 +8,8 @@ import { AppearanceSettings } from '@podman-desktop/core-api/appearance';
 import { onDestroy, onMount, tick } from 'svelte';
 import type { TinroRouteMeta } from 'tinro';
 
+import { client } from '/@/client';
+
 import AuthActions from './lib/authentication/AuthActions.svelte';
 import { CommandRegistry } from './lib/CommandRegistry';
 import NewContentOnDashboardBadge from './lib/dashboard/NewContentOnDashboardBadge.svelte';
@@ -150,7 +152,7 @@ function toggleNavWidth(): void {
 }
 
 function persistWidth(): void {
-  window.updateConfigurationValue(NAV_BAR_WIDTH_KEY, Math.round(navWidth))?.catch(console.error);
+  client.configuration.updateValue({ key: NAV_BAR_WIDTH_KEY, value: Math.round(navWidth) })?.catch(console.error);
 }
 
 let scrollRegionCleanup: (() => void) | undefined;
@@ -158,7 +160,7 @@ let scrollRegionCleanup: (() => void) | undefined;
 onMount(async () => {
   const commandRegistry = new CommandRegistry();
   commandRegistry.init();
-  navWidth = (await window.getConfigurationValue<number>(NAV_BAR_WIDTH_KEY)) ?? maxWidth;
+  navWidth = ((await client.configuration.getValue({ key: NAV_BAR_WIDTH_KEY })) as number | undefined) ?? maxWidth;
   await tick();
   const el = scrollRegionEl;
   if (el) {

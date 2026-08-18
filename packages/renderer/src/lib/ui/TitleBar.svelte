@@ -1,6 +1,7 @@
 <script lang="ts">
 import { onMount } from 'svelte';
 
+import { client } from '/@/client';
 import CommandPalette from '/@/lib/dialogs/CommandPalette.svelte';
 import DesktopIcon from '/@/lib/images/DesktopIcon.svelte';
 import NavigationButtons from '/@/lib/ui/NavigationButtons.svelte';
@@ -10,11 +11,11 @@ import SearchButton from './SearchButton.svelte';
 
 let platform: string = $state('');
 
-const title = await window.getTitleBarText();
+const title = await client.app.getTitleBarText();
 let commandPaletteVisible = $state(false);
 
 onMount(async () => {
-  platform = await window.getOsPlatform();
+  platform = await client.system.getPlatform();
 });
 
 function openCommandPalette(): void {

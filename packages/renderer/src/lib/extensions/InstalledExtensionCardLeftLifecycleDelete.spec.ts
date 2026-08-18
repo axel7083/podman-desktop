@@ -19,16 +19,12 @@
 import '@testing-library/jest-dom/vitest';
 
 import { fireEvent, render, screen } from '@testing-library/svelte';
-import { afterEach, beforeAll, expect, test, vi } from 'vitest';
+import { afterEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import type { CombinedExtensionInfoUI } from '/@/stores/all-installed-extensions';
 
 import InstalledExtensionCardLeftLifecycleDelete from './InstalledExtensionCardLeftLifecycleDelete.svelte';
-
-beforeAll(() => {
-  Object.defineProperty(window, 'ddExtensionDelete', { value: vi.fn() });
-  Object.defineProperty(window, 'removeExtension', { value: vi.fn() });
-});
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -60,7 +56,7 @@ test('Expect to delete dd Extension', async () => {
 
   // expect the delete function to be called
   expect(vi.mocked(window.ddExtensionDelete)).toHaveBeenCalledWith('my.ExtensionId');
-  expect(vi.mocked(window.removeExtension)).not.toHaveBeenCalled();
+  expect(vi.mocked(client.extension.remove)).not.toHaveBeenCalled();
 });
 
 test('Expect to delete pd Extension', async () => {
@@ -89,7 +85,7 @@ test('Expect to delete pd Extension', async () => {
 
   // expect the delete function to be called
   expect(vi.mocked(window.ddExtensionDelete)).not.toHaveBeenCalled();
-  expect(vi.mocked(window.removeExtension)).toHaveBeenCalledWith('idExtension');
+  expect(vi.mocked(client.extension.remove)).toHaveBeenCalledWith({ extensionId: 'idExtension' });
 });
 
 test('Expect unable to delete pd Extension if not removable', async () => {

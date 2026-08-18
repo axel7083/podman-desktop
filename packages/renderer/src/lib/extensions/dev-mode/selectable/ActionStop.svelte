@@ -1,6 +1,7 @@
 <script lang="ts">
 import { faStop } from '@fortawesome/free-solid-svg-icons';
 
+import { client } from '/@/client';
 import type { SelectableExtensionDevelopmentFolderInfoUI } from '/@/lib/extensions/dev-mode/development-folder-info-ui';
 import ListItemButtonIcon from '/@/lib/ui/ListItemButtonIcon.svelte';
 
@@ -13,7 +14,7 @@ async function stopExtension(): Promise<void> {
   if (!extensionFolder.extension) {
     return;
   }
-  await window.stopExtension(extensionFolder.extension.id);
+  await client.extension.stop({ extensionId: extensionFolder.extension.id });
 }
 </script>
 

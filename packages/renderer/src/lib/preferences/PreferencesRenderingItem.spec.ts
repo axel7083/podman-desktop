@@ -23,6 +23,7 @@ import { fireEvent, render, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import PreferencesRenderingItem from '/@/lib/preferences/PreferencesRenderingItem.svelte';
 
 const EXPERIMENTAL_RECORD: IConfigurationPropertyRecordedSchema = {
@@ -40,8 +41,8 @@ const EXPERIMENTAL_RECORD: IConfigurationPropertyRecordedSchema = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  vi.mocked(window.openExternal).mockResolvedValue(undefined);
-  vi.mocked(window.getUrlProtocol).mockResolvedValue('podman-desktop');
+  vi.mocked(client.system.openExternal).mockResolvedValue(undefined);
+  vi.mocked(client.system.getUrlProtocol).mockResolvedValue('podman-desktop');
 });
 
 test('experimental record should have clickable GitHub link', async () => {
@@ -58,7 +59,9 @@ test('experimental record should have clickable GitHub link', async () => {
   await fireEvent.click(link);
 
   await vi.waitFor(() => {
-    expect(window.openExternal).toHaveBeenCalledWith(EXPERIMENTAL_RECORD.experimental?.githubDiscussionLink);
+    expect(client.system.openExternal).toHaveBeenCalledWith({
+      link: EXPERIMENTAL_RECORD.experimental?.githubDiscussionLink,
+    });
   });
 });
 

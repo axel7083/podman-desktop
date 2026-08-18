@@ -30,6 +30,7 @@ import { get } from 'svelte/store';
 import { router } from 'tinro';
 import { beforeAll, beforeEach, describe, expect, type Mock, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { eventCollect, reconnectUI } from '/@/lib/preferences/preferences-connection-rendering-task';
 import { operationConnectionsInfo } from '/@/stores/operation-connections';
 
@@ -69,12 +70,8 @@ const propertyScope = 'ContainerProviderConnectionFactory';
 beforeAll(() => {
   (window as any).getConfigurationValue = vi.fn();
   (window as any).updateConfigurationValue = vi.fn();
-  (window as any).getOsMemory = vi.fn();
-  (window as any).getOsCpu = vi.fn();
-  (window as any).getOsFreeDiskSize = vi.fn();
   (window as any).getCancellableTokenSource = vi.fn();
   (window as any).auditConnectionParameters = vi.fn();
-  (window as any).telemetryTrack = vi.fn();
   (window as any).openDialog = vi.fn();
 });
 
@@ -163,9 +160,12 @@ describe.each([
 
     await fireEvent.click(closeButton);
     expect(gotoSpy).toBeCalledWith('/preferences/resources');
-    expect(window.telemetryTrack).toBeCalledWith(`${closeTelemetryEvent}`, {
-      providerId: providerInfo.id,
-      name: providerInfo.name,
+    expect(client.telemetry.track).toBeCalledWith({
+      event: `${closeTelemetryEvent}`,
+      eventProperties: {
+        providerId: providerInfo.id,
+        name: providerInfo.name,
+      },
     });
   });
 
@@ -295,9 +295,12 @@ describe.each([
       providedKeyLogger(currentConnectionInfo.operationKey, 'finish', []);
     }
 
-    expect(window.telemetryTrack).toBeCalledWith(`${cancelTelemetryEvent}`, {
-      providerId: providerInfo.id,
-      name: providerInfo.name,
+    expect(client.telemetry.track).toBeCalledWith({
+      event: `${cancelTelemetryEvent}`,
+      eventProperties: {
+        providerId: providerInfo.id,
+        name: providerInfo.name,
+      },
     });
     // expect it is successful
     await vi.waitFor(() => expect(cancelTokenMock).toBeCalled(), { timeout: 3000 });
@@ -594,9 +597,9 @@ test(`Expect create with unchecked and checked checkboxes having multiple scopes
     },
   ];
 
-  // mock getConfigurationValue to return true if property is 'test.checked'
-  (window as any).getConfigurationValue = vi.fn().mockImplementation((property: string) => {
-    return property === 'test.checked';
+  // mock getValue to return true if property is 'test.checked'
+  vi.mocked(client.configuration.getValue).mockImplementation(async ({ key }: { key: string }) => {
+    return key === 'test.checked';
   });
 
   render(PreferencesConnectionCreationOrEditRendering, {
@@ -618,9 +621,9 @@ test(`Expect create with unchecked and checked checkboxes having multiple scopes
   await fireEvent.click(createButton);
 
   // check if getConfigurationValue was called with the correct parameters
-  expect(window.getConfigurationValue).toBeCalledWith('test.checked', 'DEFAULT');
-  expect(window.getConfigurationValue).toBeCalledWith('test.unchecked', 'DEFAULT');
-  expect(window.getConfigurationValue).toBeCalledWith('test.factoryProperty', 'DEFAULT');
+  expect(client.configuration.getValue).toBeCalledWith({ key: 'test.checked', scope: 'DEFAULT' });
+  expect(client.configuration.getValue).toBeCalledWith({ key: 'test.unchecked', scope: 'DEFAULT' });
+  expect(client.configuration.getValue).toBeCalledWith({ key: 'test.factoryProperty', scope: 'DEFAULT' });
 
   expect(callback).toBeCalledWith(
     'test',

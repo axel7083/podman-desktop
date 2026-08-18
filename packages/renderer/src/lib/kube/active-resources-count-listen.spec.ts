@@ -18,6 +18,8 @@
 
 import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { listenActiveResourcesCount } from './active-resources-count-listen';
 
 const callbacks = new Map<string, () => void>();
@@ -42,20 +44,20 @@ beforeAll(() => {
 });
 
 test('listenActiveResourcesCount is undefined in non experimental mode (setting is set to false)', async () => {
-  vi.mocked(window.getConfigurationValue<boolean>).mockResolvedValue(false);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(false);
   const result = await listenActiveResourcesCount((): void => {});
   expect(result).toBeUndefined();
 });
 
 test('listenActiveResourcesCount is undefined in non experimental mode (setting is undefined)', async () => {
-  vi.mocked(window.getConfigurationValue<boolean>).mockResolvedValue(undefined);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);
   const result = await listenActiveResourcesCount((): void => {});
   expect(result).toBeUndefined();
 });
 
 describe('experimental mode is set', () => {
   beforeEach(() => {
-    vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+    vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
   });
 
   test('get initial and updated values', async () => {

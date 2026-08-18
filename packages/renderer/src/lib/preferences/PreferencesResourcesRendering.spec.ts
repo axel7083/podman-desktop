@@ -26,6 +26,7 @@ import userEvent from '@testing-library/user-event';
 import { router } from 'tinro';
 import { assert, beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { configurationProperties } from '/@/stores/configurationProperties';
 import { onboardingList } from '/@/stores/onboarding';
 import { providerInfos } from '/@/stores/providers';
@@ -111,13 +112,8 @@ const providerInfo: ProviderInfo = {
 // mock the router
 vi.mock(import('tinro'));
 
-// getOsPlatformMock is needed when using PreferencesResourcesRenderingCopyButton
-const getOsPlatformMock = vi.fn().mockResolvedValue('linux');
-
 beforeAll(() => {
-  Object.defineProperty(window, 'telemetryTrack', { value: vi.fn().mockResolvedValue(undefined) });
-  Object.defineProperty(window, 'telemetryPage', { value: vi.fn().mockResolvedValue(undefined) });
-  Object.defineProperty(window, 'getOsPlatform', { value: getOsPlatformMock });
+  vi.mocked(client.system.getPlatform).mockResolvedValue('linux');
 });
 
 beforeEach(() => {
@@ -510,9 +506,12 @@ describe.each<{
       expect(button).toBeInTheDocument();
       await userEvent.click(button);
       // telemetry sent
-      expect(window.telemetryTrack).toBeCalledWith('createNewProviderConnectionPageRequested', {
-        providerId: customProviderInfo.id,
-        name: customProviderInfo.name,
+      expect(client.telemetry.track).toBeCalledWith({
+        event: 'createNewProviderConnectionPageRequested',
+        eventProperties: {
+          providerId: customProviderInfo.id,
+          name: customProviderInfo.name,
+        },
       });
       // redirect to create new page
       expect(router.goto).toHaveBeenCalledWith(`/preferences/resources/provider/${customProviderInfo.internalId}`);
@@ -766,7 +765,7 @@ describe('container provider connections', () => {
         when: 'selectedProviderConnectionStatus.status === "stopped"',
       },
     ];
-    vi.mocked(window.getContributedMenus).mockResolvedValue(menus);
+    vi.mocked(client.menu.getContributedMenus).mockResolvedValue(menus);
     render(PreferencesResourcesRendering, {});
 
     const kebabMenuButton = screen.getByRole('button', { name: 'kebab menu' });
@@ -898,7 +897,7 @@ describe('container connection resource metrics', () => {
     singleProvider.containerConnections = [providerInfo.containerConnections[0]];
     providerInfos.set([singleProvider]);
     configurationProperties.set(resourceConfigProperties);
-    vi.mocked(window.getConfigurationValue).mockResolvedValue(4);
+    vi.mocked(client.configuration.getValue).mockResolvedValue(4);
 
     render(PreferencesResourcesRendering, {});
 
@@ -925,7 +924,7 @@ describe('container connection resource metrics', () => {
     singleProvider.containerConnections = [providerInfo.containerConnections[0]];
     providerInfos.set([singleProvider]);
     configurationProperties.set([...resourceConfigProperties, nonResourceConfig]);
-    vi.mocked(window.getConfigurationValue).mockResolvedValue(true);
+    vi.mocked(client.configuration.getValue).mockResolvedValue(true);
 
     render(PreferencesResourcesRendering, {});
 
@@ -941,7 +940,7 @@ describe('container connection resource metrics', () => {
     singleProvider.containerConnections = [providerInfo.containerConnections[0]];
     providerInfos.set([singleProvider]);
     configurationProperties.set(resourceConfigProperties);
-    vi.mocked(window.getConfigurationValue).mockResolvedValue(4);
+    vi.mocked(client.configuration.getValue).mockResolvedValue(4);
 
     render(PreferencesResourcesRendering, {});
 

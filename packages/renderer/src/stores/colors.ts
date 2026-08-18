@@ -20,6 +20,7 @@ import type { ColorInfo } from '@podman-desktop/core-api';
 import type { Writable } from 'svelte/store';
 import { writable } from 'svelte/store';
 
+import { client } from '/@/client';
 import { AppearanceUtil } from '/@/lib/appearance/appearance-util';
 import { EventStore } from '/@/stores/event-store';
 
@@ -36,9 +37,9 @@ const appearanceUtil: AppearanceUtil = new AppearanceUtil();
 const listColors = async (): Promise<ColorInfo[]> => {
   const themeName = await appearanceUtil.getTheme();
   const [current, dark, hcDark] = await Promise.all([
-    window.listColors(themeName),
-    window.listColors('dark'),
-    window.listColors('hc-dark'),
+    client.uiRegistry.listColors({ themeId: themeName }),
+    client.uiRegistry.listColors({ themeId: 'dark' }),
+    client.uiRegistry.listColors({ themeId: 'hc-dark' }),
   ]);
   darkContextColorsInfos.set(dark);
   hcDarkContextColorsInfos.set(hcDark);

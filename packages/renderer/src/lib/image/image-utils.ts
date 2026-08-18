@@ -30,6 +30,7 @@ import { filesize } from 'filesize';
 import humanizeDuration from 'humanize-duration';
 import moment from 'moment';
 
+import { client } from '/@/client';
 import type { ContextUI } from '/@/lib/context/context';
 import { ContextKeyExpr } from '/@/lib/context/contextKey';
 import ImageIcon from '/@/lib/images/ImageIcon.svelte';
@@ -249,7 +250,7 @@ export class ImageUtils {
 
   deleteImage(image: ImageInfoUI): Promise<void> {
     const imageId = image.name === '<none>' ? image.id : `${image.name}:${image.tag}`;
-    return window.deleteImage(image.engineId, imageId);
+    return client.container.deleteImage({ engine: image.engineId, imageId });
   }
 
   getImageInfoUI(

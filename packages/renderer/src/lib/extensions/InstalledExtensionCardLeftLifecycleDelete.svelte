@@ -1,6 +1,7 @@
 <script lang="ts">
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
+import { client } from '/@/client';
 import LoadingIconButton from '/@/lib/ui/LoadingIconButton.svelte';
 import type { CombinedExtensionInfoUI } from '/@/stores/all-installed-extensions';
 
@@ -17,7 +18,7 @@ async function deleteExtension(): Promise<void> {
   if (extension.type === 'dd') {
     await window.ddExtensionDelete(extension.id);
   } else {
-    await window.removeExtension(extension.id);
+    await client.extension.remove({ extensionId: extension.id });
   }
   inProgress = false;
 }

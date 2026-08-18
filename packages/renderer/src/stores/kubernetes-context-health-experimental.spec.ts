@@ -19,6 +19,8 @@
 import { get } from 'svelte/store';
 import { assert, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { kubernetesContextsHealths, kubernetesContextsHealthsStore } from './kubernetes-context-health';
 
 const callbacks = new Map<string, (data?: unknown) => void | Promise<void>>();
@@ -33,7 +35,7 @@ beforeEach(() => {
 });
 
 test('kubernetesContextsHealths in experimental states mode', async () => {
-  vi.mocked(window.isExperimentalConfigurationEnabled).mockResolvedValue(true);
+  vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
   const initialValues = [
     {
       contextName: 'context1',

@@ -20,6 +20,8 @@ import type { NotificationCard } from '@podman-desktop/core-api';
 import { get } from 'svelte/store';
 import { assert, beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { fetchNotifications, notificationEventStore, notificationQueue } from './notifications';
 
 const callbacks = new Map<string, (data?: unknown) => void | Promise<void>>();
@@ -35,7 +37,7 @@ beforeEach(() => {
 
 test('notifications should be updated in case of an extension is stopped', async () => {
   // initial view
-  vi.mocked(window.listNotifications).mockResolvedValue([
+  vi.mocked(client.notification.list).mockResolvedValue([
     {
       id: 0,
       extensionId: 'extension',
@@ -58,7 +60,7 @@ test('notifications should be updated in case of an extension is stopped', async
   expect(notificationQueue1[0].id).toEqual(0);
 
   // ok now mock the listNotifications function to return an empty list
-  vi.mocked(window.listNotifications).mockResolvedValue([]);
+  vi.mocked(client.notification.list).mockResolvedValue([]);
 
   // call 'notifications-updated' event
   const extensionStoppedCallback = callbacks.get('notifications-updated');
