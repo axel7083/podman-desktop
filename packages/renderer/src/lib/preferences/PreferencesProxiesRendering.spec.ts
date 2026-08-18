@@ -41,7 +41,7 @@ vi.mock(import('@podman-desktop/ui-svelte'), async importOriginal => {
 beforeEach(() => {
   vi.resetAllMocks();
 
-  vi.mocked(window.getProviderInfos).mockResolvedValue([]);
+  vi.mocked(client.provider.getInfos).mockResolvedValue([]);
   vi.mocked(client.configuration.getProperties).mockResolvedValue({});
   vi.mocked(client.configuration.getValue).mockResolvedValue(undefined);
 });
@@ -584,7 +584,7 @@ describe('proxy update message', () => {
   });
 
   test('should warn about Podman machine restart for machine connections', async () => {
-    vi.mocked(window.getProviderInfos).mockResolvedValue([
+    vi.mocked(client.provider.getInfos).mockResolvedValue([
       {
         containerConnections: [{ status: 'started', vmType: { id: 'applehv', name: 'Apple HV' } }],
       } as unknown as ProviderInfo,
@@ -605,7 +605,7 @@ describe('proxy update message', () => {
   });
 
   test('should warn about restarting containers for native connections', async () => {
-    vi.mocked(window.getProviderInfos).mockResolvedValue([
+    vi.mocked(client.provider.getInfos).mockResolvedValue([
       {
         containerConnections: [{ status: 'started', vmType: undefined }],
       } as unknown as ProviderInfo,
@@ -626,7 +626,7 @@ describe('proxy update message', () => {
   });
 
   test('should include both warnings when machine and native connections are running', async () => {
-    vi.mocked(window.getProviderInfos).mockResolvedValue([
+    vi.mocked(client.provider.getInfos).mockResolvedValue([
       {
         containerConnections: [
           { status: 'started', vmType: { id: 'libkrun', name: 'LibKrun' } },
@@ -648,7 +648,7 @@ describe('proxy update message', () => {
   });
 
   test('should not warn for stopped connections', async () => {
-    vi.mocked(window.getProviderInfos).mockResolvedValue([
+    vi.mocked(client.provider.getInfos).mockResolvedValue([
       {
         containerConnections: [{ status: 'stopped', vmType: { id: 'applehv', name: 'Apple HV' } }],
       } as unknown as ProviderInfo,

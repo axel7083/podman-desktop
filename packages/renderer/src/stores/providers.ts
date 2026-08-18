@@ -20,6 +20,8 @@ import type { ProviderInfo } from '@podman-desktop/core-api';
 import { type Writable, writable } from 'svelte/store';
 import { derived } from 'svelte/store';
 
+import { client } from '/@/client';
+
 import { EventStore } from './event-store';
 
 const windowEvents = [
@@ -57,25 +59,9 @@ export const eventStore = new EventStore<ProviderInfo[]>(
 );
 eventStore.setup();
 
-const updateProviderCallbacks: string[] = [];
 export async function fetchProviders(): Promise<ProviderInfo[]> {
-  const result = await window.getProviderInfos();
+  const result = await client.provider.getInfos();
   providerInfos.set(result);
-  result.forEach(providerInfo => {
-    // register only if none for this provider id
-    if (!updateProviderCallbacks.includes(providerInfo.internalId)) {
-      window
-        .onDidUpdateProviderStatus(providerInfo.internalId, () => {
-          fetchProviders().catch((error: unknown) => {
-            console.error('Failed to fetch providers', error);
-          });
-        })
-        .catch((err: unknown) => {
-          console.error('Failed to register onDidUpdateProviderStatus callback', err);
-        });
-      updateProviderCallbacks.push(providerInfo.internalId);
-    }
-  });
   return result;
 }
 

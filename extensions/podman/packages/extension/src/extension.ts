@@ -583,6 +583,10 @@ function calcLinuxSocketPath(machineName: string): string {
 }
 
 function getLinuxSocketPath(): string {
+  if('PD_PODMAN_SOCKET_PATH' in process.env) {
+    return process.env['PD_PODMAN_SOCKET_PATH'] as string;
+  }
+
   // grab user id of the user
   const userInfo = os.userInfo();
   const uid = userInfo.uid;

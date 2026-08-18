@@ -42,7 +42,7 @@ describe('HelpActions component', () => {
   test('Productized Help Actions menu contains an item', async () => {
     vi.mocked(client.configuration.isExperimentalEnabled).mockResolvedValue(true);
     const title = 'Title 1';
-    vi.mocked(window.helpMenuGetItems).mockResolvedValue([{ enabled: true, title, icon: 'fas fa-lightbulb' }]);
+    vi.mocked(client.helpMenu.getItems).mockResolvedValue([{ enabled: true, title, icon: 'fas fa-lightbulb' }]);
     const { getByTitle } = render(HelpActions);
     await vi.waitUntil(() => !!toggleMenuCallback);
     toggleMenuCallback?.();

@@ -30,7 +30,6 @@ import { ApiSenderType } from '@podman-desktop/core-api/api-sender';
 import { type IConfigurationNode, IConfigurationRegistry } from '@podman-desktop/core-api/configuration';
 import { inject, injectable, postConstruct, preDestroy } from 'inversify';
 
-import { IPCHandle } from '/@/plugin/api.js';
 import { ExperimentalConfigurationManager } from '/@/plugin/experimental-configuration-manager.js';
 import { ProviderRegistry } from '/@/plugin/provider-registry.js';
 import { StatusBarRegistry } from '/@/plugin/statusbar/statusbar-registry.js';
@@ -53,8 +52,6 @@ export class DashboardService implements IDisposable {
     private experimentalConfigurationManager: ExperimentalConfigurationManager,
     @inject(ApiSenderType)
     private apiSender: ApiSenderType,
-    @inject(IPCHandle)
-    private readonly ipcHandle: IPCHandle,
   ) {}
 
   @preDestroy()
@@ -69,10 +66,6 @@ export class DashboardService implements IDisposable {
 
   @postConstruct()
   init(): void {
-    this.ipcHandle('dashboard:getSystemOverviewStatus', async (): Promise<SystemOverviewStatusInfo> => {
-      return this.getStatus();
-    });
-
     const dashboardConfiguration: IConfigurationNode = {
       id: 'preferences.experimental.enhancedDashboard',
       title: 'Experimental (Enhanced Dashboard)',

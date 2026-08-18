@@ -28,19 +28,23 @@ import { CliToolRouter } from '/@/plugin/routers/cli-tool.router.js';
 import { CommandsRouter } from '/@/plugin/routers/commands.router.js';
 import { ConfigurationRouter } from '/@/plugin/routers/configuration.router.js';
 import { ContainerRouter } from '/@/plugin/routers/container.router.js';
+import { DashboardRouter } from '/@/plugin/routers/dashboard.router.js';
 import { DialogRouter } from '/@/plugin/routers/dialog.router.js';
 import { DocumentationRouter } from '/@/plugin/routers/documentation.router.js';
 import { ExploreFeaturesRouter } from '/@/plugin/routers/explore-features.router.js';
 import { ExtensionRouter } from '/@/plugin/routers/extension.router.js';
 import { FeedbackRouter } from '/@/plugin/routers/feedback.router.js';
+import { HelpMenuRouter } from '/@/plugin/routers/help-menu.router.js';
 import { ImageRegistryRouter } from '/@/plugin/routers/image-registry.router.js';
 import { LearningCenterRouter } from '/@/plugin/routers/learning-center.router.js';
 import { ListOrganizerRouter } from '/@/plugin/routers/list-organizer.router.js';
 import { MenuRouter } from '/@/plugin/routers/menu.router.js';
+import { NavigationRouter } from '/@/plugin/routers/navigation.router.js';
 import { NotificationRouter } from '/@/plugin/routers/notification.router.js';
 import { OnboardingRouter } from '/@/plugin/routers/onboarding.router.js';
 import { PickerRouter } from '/@/plugin/routers/picker.router.js';
 import { PlanetRouter } from '/@/plugin/routers/planet.router.js';
+import { ProviderRouter } from '/@/plugin/routers/provider.router.js';
 import { ProxyRouter } from '/@/plugin/routers/proxy.router.js';
 import { StatusBarRouter } from '/@/plugin/routers/status-bar.router.js';
 import { SystemRouter } from '/@/plugin/routers/system.router.js';
@@ -59,6 +63,7 @@ const implementer = implement<typeof contracts>(contracts).$context<OrpcContext>
 
 @injectable()
 export class RpcHandler {
+  #composedRouter;
   #handler: RPCHandler<OrpcContext>;
 
   constructor(
@@ -76,6 +81,8 @@ export class RpcHandler {
     readonly commands: CommandsRouter,
     @inject(ContainerRouter)
     readonly container: ContainerRouter,
+    @inject(DashboardRouter)
+    readonly dashboard: DashboardRouter,
     @inject(ShellRouter)
     readonly shell: ShellRouter,
     @inject(ConfigurationRouter)
@@ -90,6 +97,8 @@ export class RpcHandler {
     readonly extension: ExtensionRouter,
     @inject(FeedbackRouter)
     readonly feedback: FeedbackRouter,
+    @inject(HelpMenuRouter)
+    readonly helpMenu: HelpMenuRouter,
     @inject(ImageRegistryRouter)
     readonly imageRegistry: ImageRegistryRouter,
     @inject(LearningCenterRouter)
@@ -98,6 +107,8 @@ export class RpcHandler {
     readonly listOrganizer: ListOrganizerRouter,
     @inject(MenuRouter)
     readonly menu: MenuRouter,
+    @inject(NavigationRouter)
+    readonly navigation: NavigationRouter,
     @inject(NotificationRouter)
     readonly notification: NotificationRouter,
     @inject(OnboardingRouter)
@@ -106,6 +117,8 @@ export class RpcHandler {
     readonly picker: PickerRouter,
     @inject(PlanetRouter)
     readonly planet: PlanetRouter,
+    @inject(ProviderRouter)
+    readonly provider: ProviderRouter,
     @inject(ProxyRouter)
     readonly proxy: ProxyRouter,
     @inject(StatusBarRouter)
@@ -127,13 +140,14 @@ export class RpcHandler {
     @inject(WelcomeRouter)
     readonly welcome: WelcomeRouter,
   ) {
-    const router = implementer.router({
+    this.#composedRouter = implementer.router({
       app: app.router,
       authentication: authentication.router,
       cancellation: cancellation.router,
       cliTool: cliTool.router,
       commands: commands.router,
       container: container.router,
+      dashboard: dashboard.router,
       shell: shell.router,
       configuration: configuration.router,
       dialog: dialog.router,
@@ -141,14 +155,17 @@ export class RpcHandler {
       exploreFeatures: exploreFeatures.router,
       extension: extension.router,
       feedback: feedback.router,
+      helpMenu: helpMenu.router,
       imageRegistry: imageRegistry.router,
       learningCenter: learningCenter.router,
       listOrganizer: listOrganizer.router,
       menu: menu.router,
+      navigation: navigation.router,
       notification: notification.router,
       onboarding: onboarding.router,
       picker: picker.router,
       planet: planet.router,
+      provider: provider.router,
       proxy: proxy.router,
       statusBar: statusBar.router,
       system: system.router,
@@ -161,7 +178,7 @@ export class RpcHandler {
       welcome: welcome.router,
     });
 
-    this.#handler = new RPCHandler(router, {
+    this.#handler = new RPCHandler(this.#composedRouter, {
       interceptors: [
         onError(error => {
           console.error(error);
@@ -169,6 +186,10 @@ export class RpcHandler {
         }),
       ],
     });
+  }
+
+  get composedRouter() {
+    return this.#composedRouter;
   }
 
   init(container: InversifyContainer): void {

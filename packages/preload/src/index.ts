@@ -55,7 +55,6 @@ import type {
   ImageLoadOptions,
   ImagesSaveOptions,
   ImageUpdateStatus,
-  ItemInfo,
   KubeContext,
   KubernetesContextResources,
   KubernetesTroubleshootingInformation,
@@ -70,7 +69,6 @@ import type {
   PullEvent,
   ResourceCount,
   ResourceName,
-  SystemOverviewStatusInfo,
   V1Route,
 } from '@podman-desktop/core-api';
 import { NavigationPage, ORPC_START_CHANNEL } from '@podman-desktop/core-api';
@@ -192,21 +190,10 @@ export function initExposure(): void {
     return ipcInvoke('extension-system:isExtensionsStarted');
   });
 
-  contextBridge.exposeInMainWorld('getDashboardSystemOverviewStatus', async (): Promise<SystemOverviewStatusInfo> => {
-    return ipcInvoke('dashboard:getSystemOverviewStatus');
-  });
-
   contextBridge.exposeInMainWorld(
     'getDevtoolsConsoleLogs',
     async (): Promise<{ logType: LogType; date: Date; message: string }[]> => {
       return memoryLogs;
-    },
-  );
-
-  contextBridge.exposeInMainWorld(
-    'sendNavigationItems',
-    async (items: { name: string; visible: boolean }[]): Promise<void> => {
-      return ipcRenderer.invoke('navigation:sendNavigationItems', items);
     },
   );
 
@@ -1023,10 +1010,6 @@ export function initExposure(): void {
     },
   );
 
-  contextBridge.exposeInMainWorld('getProviderInfos', async (): Promise<ProviderInfo[]> => {
-    return ipcInvoke('provider-registry:getProviderInfos');
-  });
-
   contextBridge.exposeInMainWorld(
     'updateCliTool',
     async (
@@ -1672,10 +1655,6 @@ export function initExposure(): void {
 
   contextBridge.exposeInMainWorld('containerfileGetInfo', async (path: string): Promise<ContainerfileInfo> => {
     return ipcInvoke('containerfile:getInfo', path);
-  });
-
-  contextBridge.exposeInMainWorld('helpMenuGetItems', async (): Promise<ItemInfo[]> => {
-    return ipcInvoke('help-menu:getItems');
   });
 
   contextBridge.exposeInMainWorld(

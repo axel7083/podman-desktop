@@ -24,19 +24,23 @@ import { commandsContract } from '/@/contracts/commands/commands.contract.js';
 import { configurationContract } from '/@/contracts/configuration/configuration.contract.js';
 import { containerContract } from '/@/contracts/container/container.contract.js';
 import { shellContract } from '/@/contracts/container/shell.contract.js';
+import { dashboardContract } from '/@/contracts/dashboard/dashboard.contract.js';
 import { dialogContract } from '/@/contracts/dialog/dialog.contract.js';
 import { documentationContract } from '/@/contracts/documentation/documentation.contract.js';
 import { exploreFeaturesContract } from '/@/contracts/explore-features/explore-features.contract.js';
 import { extensionContract } from '/@/contracts/extension/extension.contract.js';
 import { feedbackContract } from '/@/contracts/feedback/feedback.contract.js';
+import { helpMenuContract } from '/@/contracts/help-menu/help-menu.contract.js';
 import { imageRegistryContract } from '/@/contracts/image-registry/image-registry.contract.js';
 import { learningCenterContract } from '/@/contracts/learning-center/learning-center.contract.js';
 import { listOrganizerContract } from '/@/contracts/list-organizer/list-organizer.contract.js';
 import { menuContract } from '/@/contracts/menu/menu.contract.js';
+import { navigationContract } from '/@/contracts/navigation/navigation.contract.js';
 import { notificationContract } from '/@/contracts/notification/notification.contract.js';
 import { onboardingContract } from '/@/contracts/onboarding/onboarding.contract.js';
 import { pickerContract } from '/@/contracts/picker/picker.contract.js';
 import { planetContract } from '/@/contracts/planet/planet.contract.js';
+import { providerContract } from '/@/contracts/provider/provider.contract.js';
 import { proxyContract } from '/@/contracts/proxy/proxy.contract.js';
 import { statusBarContract } from '/@/contracts/status-bar/status-bar.contract.js';
 import { systemContract } from '/@/contracts/system/system.contract.js';
@@ -56,6 +60,7 @@ export const contracts = {
   cancellation: cancellationContract,
   cliTool: cliToolContract,
   container: containerContract,
+  dashboard: dashboardContract,
   shell: shellContract,
   commands: commandsContract,
   configuration: configurationContract,
@@ -64,14 +69,17 @@ export const contracts = {
   exploreFeatures: exploreFeaturesContract,
   extension: extensionContract,
   feedback: feedbackContract,
+  helpMenu: helpMenuContract,
   imageRegistry: imageRegistryContract,
   learningCenter: learningCenterContract,
   listOrganizer: listOrganizerContract,
   menu: menuContract,
+  navigation: navigationContract,
   notification: notificationContract,
   onboarding: onboardingContract,
   picker: pickerContract,
   planet: planetContract,
+  provider: providerContract,
   proxy: proxyContract,
   statusBar: statusBarContract,
   system: systemContract,

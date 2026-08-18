@@ -19,30 +19,39 @@ onMount(async () => {
   loadingSequence = setInterval(() => {
     toggle = !toggle;
   }, 100);
-  // check if the server side is ready
-  try {
-    const isReady = await window.extensionSystemIsReady();
-    systemReady = isReady;
-    if (systemReady) {
-      window.dispatchEvent(new CustomEvent('system-ready', {}));
+
+  if (typeof window.extensionSystemIsReady === 'function') {
+    // Electron mode: check if the server side is ready
+    try {
+      const isReady = await window.extensionSystemIsReady();
+      systemReady = isReady;
+      if (systemReady) {
+        window.dispatchEvent(new CustomEvent('system-ready', {}));
+      }
+    } catch (error) {
+      console.error('Unable to check if system is ready', error);
     }
-  } catch (error) {
-    console.error('Unable to check if system is ready', error);
+
+    const checkRemoteStarted = async (): Promise<void> => {
+      const extensionsStarted = await window.extensionSystemIsExtensionsStarted();
+      if (extensionsStarted) {
+        window.dispatchEvent(new CustomEvent('extensions-already-started', {}));
+        clearInterval(extensionsStarterChecker);
+      }
+    };
+
+    extensionsStarterChecker = setInterval(() => {
+      checkRemoteStarted().catch((error: unknown) => {
+        console.error('Unable to check if extensions are started', error);
+      });
+    }, 100);
+  } else {
+    // Web mode: server only accepts connections after extensions are loaded
+    systemReady = true;
+    window.dispatchEvent(new CustomEvent('system-ready', {}));
+    window.dispatchEvent(new CustomEvent('extensions-already-started', {}));
+    clearInterval(loadingSequence);
   }
-
-  const checkRemoteStarted = async (): Promise<void> => {
-    const extensionsStarted = await window.extensionSystemIsExtensionsStarted();
-    if (extensionsStarted) {
-      window.dispatchEvent(new CustomEvent('extensions-already-started', {}));
-      clearInterval(extensionsStarterChecker);
-    }
-  };
-
-  extensionsStarterChecker = setInterval(() => {
-    checkRemoteStarted().catch((error: unknown) => {
-      console.error('Unable to check if extensions are started', error);
-    });
-  }, 100);
 });
 
 onDestroy(() => {

@@ -65,7 +65,7 @@ test('Expect no container engines being displayed', async () => {
 });
 
 test('Expect images being ordered by newest first', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -136,7 +136,7 @@ test('Expect images being ordered by newest first', async () => {
 });
 
 test('Expect filter empty screen', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -181,7 +181,7 @@ test('Expect filter empty screen', async () => {
 });
 
 test('Expect two images in list given image id and engine id', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -273,7 +273,7 @@ describe('Contributions', () => {
   test.each([{ viewIdContrib: IMAGE_VIEW_ICONS }, { viewIdContrib: IMAGE_LIST_VIEW_ICONS }])(
     'Expect image status being changed with %s contribution',
     async ({ viewIdContrib }) => {
-      vi.mocked(window.getProviderInfos).mockResolvedValue([
+      vi.mocked(client.provider.getInfos).mockResolvedValue([
         {
           name: 'podman',
           status: 'started',
@@ -351,7 +351,7 @@ describe('Contributions', () => {
   test.each([{ viewIdContrib: IMAGE_VIEW_BADGES }, { viewIdContrib: IMAGE_LIST_VIEW_BADGES }])(
     'Expect bagde being added with %s contribution',
     async ({ viewIdContrib }) => {
-      vi.mocked(window.getProviderInfos).mockResolvedValue([
+      vi.mocked(client.provider.getInfos).mockResolvedValue([
         {
           name: 'podman',
           status: 'started',
@@ -444,7 +444,7 @@ test('Expect importImage button redirects to image import page', async () => {
 });
 
 test('expect redirect to saveImage page when at least one image is selected and the multiple save button is clicked', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -524,7 +524,7 @@ test('Expect load images button redirects to images load page', async () => {
 });
 
 test('Manifest images display without actions', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -601,7 +601,7 @@ test('Manifest images display without actions', async () => {
 });
 
 test('Expect user confirmation to pop up when preferences require', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -661,7 +661,7 @@ test('Expect user confirmation to pop up when preferences require', async () => 
 });
 
 test('Expect to see empty page and no table when no container engine is running', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -703,7 +703,7 @@ test('Expect to see empty page and no table when no container engine is running'
 });
 
 test('Expect environment column sorted by engineId', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -758,7 +758,7 @@ test('Expect environment column sorted by engineId', async () => {
 });
 
 test('Expect environment dropdown to appear with multiple running connections', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       id: 'podman',
       name: 'podman',
@@ -827,7 +827,7 @@ test('Expect environment dropdown to appear with multiple running connections', 
 });
 
 test('Expect environment dropdown to filter images by selected environment', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       id: 'podman',
       name: 'podman',

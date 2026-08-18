@@ -212,6 +212,8 @@ export class PluginSystem {
   private extensionLoader!: ExtensionLoader;
   private validExtList!: ExtensionInfo[];
 
+  protected _container?: Container;
+
   constructor(
     private trayMenu: TrayMenu,
     private mainWindowDeferred: PromiseWithResolvers<BrowserWindow>,
@@ -440,6 +442,7 @@ export class PluginSystem {
     // init api sender
     const apiSender = this.getApiSender(this.getWebContentsSender());
     const container = new Container();
+    this._container = container;
     container.bind<ApiSenderType>(ApiSenderType).toConstantValue(apiSender);
     container.bind<IPCHandle>(IPCHandle).toConstantValue(this.ipcHandle.bind(this));
     container.bind<IPCMainOn>(IPCMainOn).toConstantValue(this.ipcMainOn.bind(this));
@@ -534,8 +537,6 @@ export class PluginSystem {
     container.get<DashboardService>(DashboardService);
 
     container.bind<HelpMenu>(HelpMenu).toSelf().inSingletonScope();
-    const helpMenu = container.get<HelpMenu>(HelpMenu);
-    helpMenu.init();
 
     container.bind<MessageBox>(MessageBox).toSelf().inSingletonScope();
 
@@ -1233,10 +1234,6 @@ export class PluginSystem {
           });
       },
     );
-
-    this.ipcHandle('provider-registry:getProviderInfos', async (): Promise<ProviderInfo[]> => {
-      return providerRegistry.getProviderInfos();
-    });
 
     this.ipcHandle(
       'provider-registry:cleanup',

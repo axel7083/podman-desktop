@@ -17,24 +17,12 @@
  ***********************************************************************/
 
 import { ActionKind, ItemInfo } from '@podman-desktop/core-api';
-import { inject, injectable } from 'inversify';
+import { injectable } from 'inversify';
 
-import { IPCHandle } from '/@/plugin/api.js';
 import product from '/@product.json' with { type: 'json' };
 
 @injectable()
 export class HelpMenu {
-  constructor(
-    @inject(IPCHandle)
-    private readonly ipcHandle: IPCHandle,
-  ) {}
-
-  init(): void {
-    this.ipcHandle('help-menu:getItems', async (): Promise<ItemInfo[]> => {
-      return this.getItems();
-    });
-  }
-
   getItems(): ItemInfo[] {
     return product.helpMenu.items.map(item => {
       const baseItem = { icon: item.icon, title: item.title, tooltip: item.tooltip };

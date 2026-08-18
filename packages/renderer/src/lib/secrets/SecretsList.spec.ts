@@ -60,7 +60,7 @@ const providerInfoMock = {
 } as unknown as ProviderInfo;
 
 async function init(searchTerm?: string): Promise<void> {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([providerInfoMock]);
+  vi.mocked(client.provider.getInfos).mockResolvedValue([providerInfoMock]);
   vi.mocked(client.container.listSecrets).mockResolvedValue([secret1, secret2]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
@@ -84,7 +84,7 @@ async function init(searchTerm?: string): Promise<void> {
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(client.container.listSecrets).mockResolvedValue([]);
-  vi.mocked(window.getProviderInfos).mockResolvedValue([]);
+  vi.mocked(client.provider.getInfos).mockResolvedValue([]);
   vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
   providerInfos.set([]);
   secretsInfo.set([]);
@@ -123,7 +123,7 @@ test('Expect filter empty screen when there are no matches for search term', asy
 });
 
 test('Expect empty page when there are no secrets', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([providerInfoMock]);
+  vi.mocked(client.provider.getInfos).mockResolvedValue([providerInfoMock]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -194,7 +194,7 @@ test('Expect search to filter secrets by name', async () => {
 });
 
 test('Expect environment column sorted by engineName', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([providerInfoMock]);
+  vi.mocked(client.provider.getInfos).mockResolvedValue([providerInfoMock]);
 
   const secret1Modified = { ...secret1, engineId: 'engine-zzz', engineName: 'name-aaa' };
   const secret2Modified = { ...secret2, engineId: 'engine-aaa', engineName: 'name-zzz' };

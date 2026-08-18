@@ -50,9 +50,9 @@ const eventStore = new EventStore<KubeContext[]>(
 eventStore.setup();
 
 export async function grabKubernetesContexts(): Promise<KubeContext[]> {
-  // Retrieve the detailed contexts which includes cluster information, current context, etc.
+  if (typeof window.kubernetesGetDetailedContexts !== 'function') {
+    return [];
+  }
   const contexts = await window.kubernetesGetDetailedContexts();
-
-  // Add the icon to each context and return it
   return addIconToContexts(contexts);
 }

@@ -20,6 +20,8 @@ import type { ProviderContainerConnectionInfo, ProviderInfo } from '@podman-desk
 import { get } from 'svelte/store';
 import { assert, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
+
 import { containerConnectionCount, eventStore, providerInfos } from './providers';
 
 const callbacks = new Map<string, (data?: unknown) => void | Promise<void>>();
@@ -33,12 +35,12 @@ beforeEach(() => {
   });
 });
 
-test('no provider through window.getProviderInfos should make the store empty', () => {
+test('no provider through client.provider.getInfos should make the store empty', () => {
   // fast delays (10 & 10ms)
   eventStore.setupWithDebounce(10, 10);
 
   // empty list
-  vi.mocked(window.getProviderInfos).mockResolvedValue([]);
+  vi.mocked(client.provider.getInfos).mockResolvedValue([]);
 
   // mark as ready to receive updates
   window.dispatchEvent(new CustomEvent('system-ready'));
@@ -68,16 +70,16 @@ test.each([
   eventStore.setupWithDebounce(10, 10);
 
   // empty list
-  vi.mocked(window.getProviderInfos).mockResolvedValue([]);
+  vi.mocked(client.provider.getInfos).mockResolvedValue([]);
 
   // mark as ready to receive updates
   window.dispatchEvent(new CustomEvent('system-ready'));
 
   // clear mock calls
-  vi.mocked(window.getProviderInfos).mockClear();
+  vi.mocked(client.provider.getInfos).mockClear();
 
   // now, setup at least one container
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       id: 'id123',
     } as unknown as ProviderInfo,
@@ -93,7 +95,7 @@ test.each([
   }
 
   // wait listContainersMock is called
-  await vi.waitFor(() => expect(window.getProviderInfos).toHaveBeenCalled());
+  await vi.waitFor(() => expect(client.provider.getInfos).toHaveBeenCalled());
 
   // now get list
   const providerListResult = get(providerInfos);
@@ -135,14 +137,14 @@ describe('containerConnectionCount', () => {
     eventStore.setupWithDebounce(10, 10);
 
     // empty list
-    vi.mocked(window.getProviderInfos).mockResolvedValue(providers);
+    vi.mocked(client.provider.getInfos).mockResolvedValue(providers);
 
     // mark as ready to receive updates
     window.dispatchEvent(new CustomEvent('system-ready'));
     await callbacks.get('provider-change')?.();
 
     return vi.waitFor(() => {
-      expect(window.getProviderInfos).toHaveBeenCalled();
+      expect(client.provider.getInfos).toHaveBeenCalled();
       expect(get(providerInfos)).toHaveLength(providers.length);
     });
   }

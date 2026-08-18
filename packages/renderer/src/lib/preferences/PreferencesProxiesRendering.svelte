@@ -95,7 +95,7 @@ async function updateProxySettings(): Promise<void> {
   }
 
   // loop over all providers and container connections to see if there are any running engines
-  const providerInfos = await window.getProviderInfos();
+  const providerInfos = await client.provider.getInfos();
   const runningConnections = providerInfos.flatMap(p => p.containerConnections.filter(c => c.status !== 'stopped'));
   const hasMachineConnections = runningConnections.some(c => c.vmType);
   const hasNativeConnections = runningConnections.some(c => !c.vmType);

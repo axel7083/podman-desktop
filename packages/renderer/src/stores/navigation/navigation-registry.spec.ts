@@ -21,6 +21,7 @@
 import { get } from 'svelte/store';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import { client } from '/@/client';
 import { configurationProperties } from '/@/stores/configurationProperties';
 
 import { fetchNavigationRegistries, navigationRegistry } from './navigation-registry';
@@ -28,14 +29,11 @@ import { fetchNavigationRegistries, navigationRegistry } from './navigation-regi
 const kubernetesRegisterGetCurrentContextResourcesMock = vi.fn();
 const kubernetesGetCurrentContextGeneralStateMock = vi.fn();
 
-const getConfigurationValueMock = vi.fn();
 beforeEach(() => {
   vi.resetAllMocks();
   (window as any).kubernetesRegisterGetCurrentContextResources = kubernetesRegisterGetCurrentContextResourcesMock;
   (window as any).getKubernetesPortForwards = vi.fn();
   (window as any).window.kubernetesGetCurrentContextGeneralState = kubernetesGetCurrentContextGeneralStateMock;
-  (window as any).getConfigurationValue = getConfigurationValueMock;
-  (window as any).sendNavigationItems = vi.fn();
 
   vi.mocked(window.getKubernetesPortForwards).mockResolvedValue([]);
 });
@@ -57,7 +55,7 @@ test('check update properties', async () => {
   });
 
   // Say that Containers and Pods are hidden by the configuration
-  getConfigurationValueMock.mockResolvedValue(['Containers', 'Pods']);
+  vi.mocked(client.configuration.getValue).mockResolvedValue(['Containers', 'Pods']);
 
   // do an update to force the update
   configurationProperties.set([]);

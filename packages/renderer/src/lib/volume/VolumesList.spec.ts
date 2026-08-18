@@ -45,7 +45,7 @@ beforeEach(async () => {
   });
 
   vi.mocked(window.onDidUpdateProviderStatus).mockResolvedValue(undefined);
-  vi.mocked(window.getProviderInfos).mockResolvedValue([]);
+  vi.mocked(client.provider.getInfos).mockResolvedValue([]);
   vi.mocked(client.configuration.getValue).mockResolvedValue(false);
   vi.mocked(client.container.listVolumes).mockResolvedValue([]);
 });
@@ -56,7 +56,7 @@ async function waitRender(customProperties: object): Promise<void> {
 }
 
 test('Expect No Container Engine being displayed', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -75,7 +75,7 @@ test('Expect No Container Engine being displayed', async () => {
 });
 
 test('Expect volumes being displayed once extensions are started (without size data)', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -142,7 +142,7 @@ test('Expect volumes being displayed once extensions are started (without size d
 });
 
 test('Expect volumes being displayed once extensions are started (with size data)', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -253,7 +253,7 @@ describe('Create volume', () => {
 });
 
 test('Expect filter empty screen', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -315,7 +315,7 @@ test('Expect filter empty screen', async () => {
 });
 
 test('Expect user confirmation to pop up when preferences require', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -390,7 +390,7 @@ test('Expect user confirmation to pop up when preferences require', async () => 
 });
 
 test('Expect to see empty page and no table when no container engine is running', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -444,7 +444,7 @@ test('Expect to see empty page and no table when no container engine is running'
 });
 
 test('Expect environment column sorted by engineId', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -518,7 +518,7 @@ test('Expect environment column sorted by engineId', async () => {
 });
 
 test('Expect environment dropdown to appear with multiple running connections', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       id: 'podman',
       name: 'podman',
@@ -613,7 +613,7 @@ test('Expect environment dropdown to appear with multiple running connections', 
 });
 
 test('Expect environment dropdown to filter volumes by selected environment', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       id: 'podman',
       name: 'podman',

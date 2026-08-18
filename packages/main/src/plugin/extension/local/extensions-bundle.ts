@@ -18,6 +18,11 @@
 import { existsSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 import { inject, injectable, postConstruct } from 'inversify';
 
@@ -41,10 +46,12 @@ export class ExtensionsBundle {
     let folders: string[];
     // scan all extensions that we can find from the extensions folder
     if (import.meta.env.PROD) {
+      const extensions: string = 'PD_EXTENSIONS' in process.env ? process.env['PD_EXTENSIONS'] as string : join(__dirname, '../../../extensions');
+
       // in production mode, use the extensions & extensions-extra locally
       const promises = await Promise.all([
-        this.readProductionFolders(join(__dirname, '../../../extensions')),
-        this.readDevelopmentFolders(join(process.resourcesPath, 'extensions-extra')),
+        this.readProductionFolders(extensions),
+        // this.readDevelopmentFolders(join(process.resourcesPath, 'extensions-extra')),
       ]);
 
       folders = promises.flat();

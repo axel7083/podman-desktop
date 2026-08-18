@@ -1,0 +1,27 @@
+{
+  "name": "@podman-desktop/headless",
+  "version": "1.30.0-next",
+  "description": "Headless server for Podman Desktop web UI",
+  "type": "module",
+  "license": "Apache-2.0",
+  "private": true,
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@podman-desktop/main": "workspace:*",
+    "@podman-desktop/core-api": "workspace:*",
+    "@orpc/server": "beta",
+    "ws": "^8.18.0",
+    "inversify": "^8.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "@types/ws": "^8.18.0",
+    "vite": "^8.2.1"
+  }
+}

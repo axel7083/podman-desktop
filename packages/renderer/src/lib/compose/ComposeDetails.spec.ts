@@ -54,7 +54,7 @@ beforeEach(() => {
   vi.mocked(client.container.getContainerInspect).mockResolvedValue(containerInspectInfo);
   vi.mocked(client.container.listNetworks).mockResolvedValue([]);
   vi.mocked(client.menu.getContributedMenus).mockResolvedValue([]);
-  vi.mocked(window.getProviderInfos).mockResolvedValue([]);
+  vi.mocked(client.provider.getInfos).mockResolvedValue([]);
   vi.mocked(window.onDidUpdateProviderStatus).mockResolvedValue(undefined);
 });
 
@@ -198,7 +198,7 @@ test('Simple test that compose summary is clickable and loadable', async () => {
 });
 
 test('Compose details inspect is clickable and loadable', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',

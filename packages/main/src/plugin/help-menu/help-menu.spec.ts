@@ -16,17 +16,12 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { expect, test, vi } from 'vitest';
-
-import type { IPCHandle } from '/@/plugin/api.js';
+import { expect, test } from 'vitest';
 
 import { HelpMenu } from './help-menu.js';
 
-const ipcHandle: IPCHandle = vi.fn();
-
 test('should get the items', async () => {
-  const helpMenu = new HelpMenu(ipcHandle);
-  helpMenu.init();
+  const helpMenu = new HelpMenu();
 
   const items = helpMenu.getItems();
 

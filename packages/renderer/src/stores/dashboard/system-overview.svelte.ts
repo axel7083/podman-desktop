@@ -24,6 +24,7 @@ import { Spinner } from '@podman-desktop/ui-svelte';
 import type { Component } from 'svelte';
 import { type Writable, writable } from 'svelte/store';
 
+import { client } from '/@/client';
 import { EventStore } from '/@/stores/event-store';
 
 export interface Status {
@@ -83,7 +84,7 @@ export const systemOverviewInfos: Writable<SystemOverviewStoreData> = writable({
 });
 
 async function fetchSystemOverviewStatus(): Promise<SystemOverviewStoreData> {
-  const statusInfo = await window.getDashboardSystemOverviewStatus();
+  const statusInfo = await client.dashboard.getSystemOverviewStatus();
   const status = SYSTEM_OVERVIEW_STATUS[statusInfo.status] ?? SYSTEM_OVERVIEW_STATUS.stable;
   return { status, text: statusInfo.text };
 }

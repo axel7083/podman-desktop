@@ -80,7 +80,8 @@ onMount(async () => {
     <PreferencesCliToolsRendering />
   </Route>
   <Route path="/kubernetes-contexts" breadcrumb="Kubernetes Contexts">
-    <PreferencesKubernetesContextsRendering />
+    <!-- <PreferencesKubernetesContextsRendering />-->
+    <span>depracated</span>
   </Route>
   <Route path="/proxies" breadcrumb="Proxy">
     <PreferencesProxiesRendering />

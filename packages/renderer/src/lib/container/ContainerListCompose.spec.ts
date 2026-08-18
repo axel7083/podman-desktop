@@ -55,7 +55,7 @@ test('Expect no container engines being displayed', async () => {
 });
 
 test('Delete a group of compose containers successfully', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',

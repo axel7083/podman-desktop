@@ -20,6 +20,11 @@ import { mount } from 'svelte';
 
 import Loader from './Loader.svelte';
 
+if (!navigator.userAgent.includes('Electron')) {
+  const { initWebEvents } = await import('./web-events');
+  initWebEvents();
+}
+
 const target = document.getElementById('app');
 let app;
 if (target) {

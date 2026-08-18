@@ -77,7 +77,7 @@ const providerInfoMock = {
 } as unknown as ProviderInfo;
 
 async function init(searchTerm?: string): Promise<void> {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([providerInfoMock]);
+  vi.mocked(client.provider.getInfos).mockResolvedValue([providerInfoMock]);
 
   vi.mocked(client.container.listNetworks).mockResolvedValue([network1, network2]);
 
@@ -100,7 +100,7 @@ async function init(searchTerm?: string): Promise<void> {
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(client.container.listNetworks).mockResolvedValue([]);
-  vi.mocked(window.getProviderInfos).mockResolvedValue([]);
+  vi.mocked(client.provider.getInfos).mockResolvedValue([]);
   providerInfos.set([]);
   networksListInfo.set([]);
   searchPattern.set('');
@@ -137,7 +137,7 @@ test('Expect filter empty screen when there are no matches for search term', asy
 });
 
 test('Expect empty page when there are no networks', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([providerInfoMock]);
+  vi.mocked(client.provider.getInfos).mockResolvedValue([providerInfoMock]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -222,7 +222,7 @@ test('Expect user confirmation for bulk delete when required', async () => {
 });
 
 test('Expect environment column sorted by engineId', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([providerInfoMock]);
+  vi.mocked(client.provider.getInfos).mockResolvedValue([providerInfoMock]);
 
   const network1Modified = { ...network1, engineId: 'engine-zzz', engineName: 'name-aaa' };
   const network2Modified = { ...network2, engineId: 'engine-aaa', engineName: 'name-zzz' };
@@ -252,7 +252,7 @@ test('Expect environment column sorted by engineId', async () => {
 });
 
 test('Expect environment dropdown to appear with multiple running connections', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       id: 'podman',
       name: 'podman',
@@ -318,7 +318,7 @@ test('Expect environment dropdown to appear with multiple running connections', 
 });
 
 test('Expect environment dropdown to filter networks by selected environment', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       id: 'podman',
       name: 'podman',

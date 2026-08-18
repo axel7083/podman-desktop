@@ -165,6 +165,18 @@ vi.mock('/@/client', () => ({
       updateStepState: vi.fn(),
       resetOnboarding: vi.fn(),
     },
+    dashboard: {
+      getSystemOverviewStatus: vi.fn(),
+    },
+    helpMenu: {
+      getItems: vi.fn(),
+    },
+    navigation: {
+      sendItems: vi.fn(),
+    },
+    provider: {
+      getInfos: vi.fn(),
+    },
     container: {
       listContainers: vi.fn(),
       listSecrets: vi.fn(),

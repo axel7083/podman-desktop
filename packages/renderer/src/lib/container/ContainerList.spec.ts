@@ -44,7 +44,7 @@ beforeEach(() => {
   vi.mocked(client.configuration.getValue).mockResolvedValue(false);
   vi.mocked(window.onDidUpdateProviderStatus).mockResolvedValue(undefined);
   vi.mocked(client.container.listContainers).mockResolvedValue([]);
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -78,7 +78,7 @@ test('Expect no container engines being displayed', async () => {
 });
 
 test('Expect no containers being displayed', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -116,7 +116,7 @@ test('Expect no containers being displayed', async () => {
 });
 
 test('Expect is:running / is:stopped is added to the filter field', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -156,7 +156,7 @@ test('Expect is:running / is:stopped is added to the filter field', async () => 
 });
 
 test('Expect filter is preserved between tabs', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -193,7 +193,7 @@ test('Expect filter is preserved between tabs', async () => {
 });
 
 test('Try to delete a pod that has containers', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -438,7 +438,7 @@ test('Try to delete a pod without deleting container', async () => {
 });
 
 test('Expect filter empty screen', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -482,7 +482,7 @@ test('Expect filter empty screen', async () => {
 });
 
 test('Expect clear filter in empty screen to clear search term, except is:...', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -548,7 +548,7 @@ test('Expect to display running / stopped containers depending on tab', { timeou
   // wait for the store to be cleared
   await vi.waitFor(() => expect(get(containersInfos).length).toBe(0), { timeout: 5_000 });
 
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       name: 'podman',
       status: 'started',
@@ -946,7 +946,7 @@ test('Ensuring the table and empty screen are not visible at the same time', asy
     } as ContainerInfo,
   ]);
   // mock zero provider infos
-  vi.mocked(window.getProviderInfos).mockResolvedValue([]);
+  vi.mocked(client.provider.getInfos).mockResolvedValue([]);
 
   window.dispatchEvent(new CustomEvent('extensions-already-started'));
   window.dispatchEvent(new CustomEvent('provider-lifecycle-change'));
@@ -1018,7 +1018,7 @@ test('pods with same name on different engines should have separate group', asyn
 });
 
 test('Expect environment dropdown to appear with multiple running connections', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       id: 'podman',
       name: 'podman',
@@ -1101,7 +1101,7 @@ test('Expect environment dropdown to appear with multiple running connections', 
 });
 
 test('Expect environment dropdown to filter containers by selected environment', async () => {
-  vi.mocked(window.getProviderInfos).mockResolvedValue([
+  vi.mocked(client.provider.getInfos).mockResolvedValue([
     {
       id: 'podman',
       name: 'podman',

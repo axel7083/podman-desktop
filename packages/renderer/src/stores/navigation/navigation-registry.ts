@@ -29,7 +29,6 @@ import { EventStore } from '/@/stores/event-store';
 import { createNavigationContainerEntry } from './navigation-registry-container.svelte';
 import { createNavigationExtensionEntry, createNavigationExtensionGroup } from './navigation-registry-extension.svelte';
 import { createNavigationImageEntry } from './navigation-registry-image.svelte';
-import { createNavigationKubernetesGroup } from './navigation-registry-kubernetes.svelte';
 import { createNavigationNetworkEntry } from './navigation-registry-network.svelte';
 import { createNavigationPodEntry } from './navigation-registry-pod.svelte';
 import { createNavigationSecretEntry } from './navigation-registry-secret.svelte';
@@ -152,7 +151,7 @@ async function hideItems(): Promise<void> {
     collecItem(item, navItems);
   });
 
-  await window.sendNavigationItems(navItems);
+  await client.navigation.sendItems({ items: navItems });
   values = [...values];
   navigationRegistry.set(values);
 }
@@ -175,7 +174,9 @@ configurationProperties.subscribe(() => {
 });
 
 function handleKubernetesGroup(): void {
-  client.configuration
+  return;
+
+  /* client.configuration
     .getValue({ key: 'kubernetes.useInternalKubernetes' })
     ?.then(value => {
       if (value) {
@@ -191,4 +192,5 @@ function handleKubernetesGroup(): void {
     })
     ?.then(() => hideItems())
     ?.catch((err: unknown) => console.error('Error getting configuration value kubernetes.useInternalKubernetes', err));
+  */
 }
