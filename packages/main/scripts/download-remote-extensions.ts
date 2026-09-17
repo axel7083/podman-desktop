@@ -28,6 +28,7 @@ import minimist from 'minimist';
 
 import type { Certificates } from '/@/plugin/certificates.js';
 import { ImageRegistry } from '/@/plugin/image-registry.js';
+import { ImageLayerExtractor } from '/@/plugin/install/image-layer-extractor.js';
 import type { Proxy } from '/@/plugin/proxy.js';
 import type { Telemetry } from '/@/plugin/telemetry/telemetry.js';
 import product from '/@product.json' with { type: 'json' };
@@ -109,7 +110,13 @@ export function findAuthEnvironment(registry: string): RegistryAuth | undefined 
 }
 
 export async function downloadExtension(options: DownloadOptions): Promise<void> {
-  const imageRegistry = new ImageRegistry(dummyApiSenderType, dummyTelemetry, dummyCertificate, dummyProxy);
+  const imageRegistry = new ImageRegistry(
+    dummyApiSenderType,
+    dummyTelemetry,
+    dummyCertificate,
+    dummyProxy,
+    new ImageLayerExtractor(),
+  );
 
   const registry = imageRegistry.extractRegistryServerFromImage(options.extension.oci);
   if (!registry) throw new Error(`cannot determine registry for image ${options.extension.oci}`);

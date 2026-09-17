@@ -33,10 +33,10 @@ import type {
 import { ApiSenderType } from '@podman-desktop/core-api/api-sender';
 import type * as Dockerode from 'dockerode';
 import { inject, injectable } from 'inversify';
-import * as nodeTar from 'tar';
 import { Agent, ProxyAgent } from 'undici';
 import { isURL } from 'validator';
 
+import { ImageLayerExtractor } from '/@/plugin/install/image-layer-extractor.js';
 import { isMac, isWindows } from '/@/util.js';
 
 import { Certificates } from './certificates.js';
@@ -44,7 +44,6 @@ import { Emitter } from './events/emitter.js';
 import { Proxy } from './proxy.js';
 import { Telemetry } from './telemetry/telemetry.js';
 import { Disposable } from './types/disposable.js';
-import { decompressZstd } from './util/zstd.js';
 
 export interface RegistryAuthInfo {
   authUrl: string;
@@ -82,6 +81,8 @@ export class ImageRegistry {
     private certificates: Certificates,
     @inject(Proxy)
     private proxy: Proxy,
+    @inject(ImageLayerExtractor)
+    private imageLayerExtractor: ImageLayerExtractor,
   ) {
     this.proxy.onDidUpdateProxy(settings => {
       this.proxySettings = settings;
@@ -621,9 +622,6 @@ export class ImageRegistry {
     const body = response.body;
     let transferred = 0;
 
-    // in case of zstd, the downloaded file is decompressed to a separate tar file before being extracted
-    const unpackedFileName = compressionType === 'zstd' ? tmpFileName.replace('.zst', '.tar') : undefined;
-
     try {
       // pipeline handles backpressure, error propagation and stream teardown
       await pipeline(async function* () {
@@ -642,18 +640,10 @@ export class ImageRegistry {
         }
       }, createWriteStream(tmpFileName));
 
-      if (unpackedFileName) {
-        await decompressZstd(tmpFileName, unpackedFileName);
-        await nodeTar.extract({ file: unpackedFileName, cwd: destFolder });
-      } else {
-        await nodeTar.extract({ file: tmpFileName, cwd: destFolder });
-      }
+      await this.imageLayerExtractor.extractLayer(tmpFileName, destFolder, compressionType);
     } finally {
-      // remove the temporary files, even if the download, the decompression or the extraction failed
+      // remove the downloaded file, even if the download, the decompression or the extraction failed
       await fs.promises.rm(tmpFileName, { force: true });
-      if (unpackedFileName) {
-        await fs.promises.rm(unpackedFileName, { force: true });
-      }
     }
   }
 

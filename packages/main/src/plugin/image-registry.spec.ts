@@ -44,6 +44,7 @@ import imageRegistryManifestMultiArchJson from '/@tests/resources/data/plugin/im
 
 import type { Certificates } from './certificates.js';
 import { ImageRegistry } from './image-registry.js';
+import { ImageLayerExtractor } from './install/image-layer-extractor.js';
 import type { Proxy } from './proxy.js';
 import type { EventType, Telemetry } from './telemetry/telemetry.js';
 import type { Disposable } from './types/disposable.js';
@@ -77,7 +78,7 @@ const apiSender: ApiSenderType = {
 
 beforeEach(() => {
   vi.resetAllMocks();
-  imageRegistry = new ImageRegistry(apiSender, telemetry, certificates, proxy);
+  imageRegistry = new ImageRegistry(apiSender, telemetry, certificates, proxy, new ImageLayerExtractor());
 });
 
 afterEach(() => {
@@ -1276,7 +1277,7 @@ test('getToken without registry auth', async () => {
 });
 
 test('getOptions returns dispatcher for insecure mode', () => {
-  imageRegistry = new ImageRegistry(apiSender, telemetry, certificates, proxy);
+  imageRegistry = new ImageRegistry(apiSender, telemetry, certificates, proxy, new ImageLayerExtractor());
   const options = imageRegistry.getOptions({ insecure: true }) as RequestInit;
   expect(options.dispatcher).toBeDefined();
 });
@@ -1289,7 +1290,7 @@ test('getOptions selects the proxy matching the target protocol', () => {
     httpsProxy: 'http://127.0.0.1:3128',
     noProxy: undefined,
   });
-  imageRegistry = new ImageRegistry(apiSender, telemetry, certificates, proxy);
+  imageRegistry = new ImageRegistry(apiSender, telemetry, certificates, proxy, new ImageLayerExtractor());
 
   // an https target uses the https proxy
   const secure = imageRegistry.getOptions({ url: 'https://registry.local/v2/', insecure: true }) as RequestInit;
@@ -1301,7 +1302,7 @@ test('getOptions selects the proxy matching the target protocol', () => {
 });
 
 test('getOptions returns empty for non-insecure mode', () => {
-  imageRegistry = new ImageRegistry(apiSender, telemetry, certificates, proxy);
+  imageRegistry = new ImageRegistry(apiSender, telemetry, certificates, proxy, new ImageLayerExtractor());
   const options = imageRegistry.getOptions();
   expect(options).toEqual({});
 });
@@ -1314,7 +1315,7 @@ test('searchImages with proxy', async () => {
 
     noProxy: '',
   });
-  imageRegistry = new ImageRegistry(apiSender, telemetry, certificates, proxy);
+  imageRegistry = new ImageRegistry(apiSender, telemetry, certificates, proxy, new ImageLayerExtractor());
 
   const handlers = [
     http.get('https://index.docker.io/v1/search', () => {

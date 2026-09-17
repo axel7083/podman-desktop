@@ -226,6 +226,7 @@ import { ImageFilesRegistry } from './image-files-registry.js';
 import { ImageRegistry } from './image-registry.js';
 import { InputQuickPickRegistry } from './input-quickpick/input-quickpick-registry.js';
 import { ExtensionInstaller } from './install/extension-installer.js';
+import { ImageLayerExtractor } from './install/image-layer-extractor.js';
 import { KubernetesClient } from './kubernetes/kubernetes-client.js';
 import { downloadGuideList } from './learning-center/learning-center.js';
 import { LearningCenterInit } from './learning-center-init.js';
@@ -579,6 +580,7 @@ export class PluginSystem {
     container.bind<NotificationRegistry>(NotificationRegistry).toSelf().inSingletonScope();
     container.bind<MenuRegistry>(MenuRegistry).toSelf().inSingletonScope();
     container.bind<KubeGeneratorRegistry>(KubeGeneratorRegistry).toSelf().inSingletonScope();
+    container.bind<ImageLayerExtractor>(ImageLayerExtractor).toSelf().inSingletonScope();
     container.bind<ImageRegistry>(ImageRegistry).toSelf().inSingletonScope();
     container.bind<ViewRegistry>(ViewRegistry).toSelf().inSingletonScope();
     container.bind<Context>(Context).toSelf().inSingletonScope();

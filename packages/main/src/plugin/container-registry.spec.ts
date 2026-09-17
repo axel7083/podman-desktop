@@ -47,6 +47,7 @@ import type { Certificates } from '/@/plugin/certificates.js';
 import type { InternalContainerProvider } from '/@/plugin/container-registry.js';
 import { ContainerProviderRegistry } from '/@/plugin/container-registry.js';
 import { ImageRegistry } from '/@/plugin/image-registry.js';
+import { ImageLayerExtractor } from '/@/plugin/install/image-layer-extractor.js';
 import { KubePlayContext } from '/@/plugin/podman/kube.js';
 import type { Proxy } from '/@/plugin/proxy.js';
 import type { Telemetry } from '/@/plugin/telemetry/telemetry.js';
@@ -447,7 +448,13 @@ beforeEach(() => {
     isEnabled: vi.fn(),
   } as unknown as Proxy;
 
-  const imageRegistry = new ImageRegistry({} as ApiSenderType, telemetry, certificates, proxy);
+  const imageRegistry = new ImageRegistry(
+    {} as ApiSenderType,
+    telemetry,
+    certificates,
+    proxy,
+    new ImageLayerExtractor(),
+  );
   containerRegistry = new TestContainerProviderRegistry(apiSender, configurationRegistry, imageRegistry, telemetry);
 });
 
@@ -7165,6 +7172,7 @@ describe('ContainerRegistrySettings', () => {
       { track: vi.fn() } as unknown as Telemetry,
       {} as Certificates,
       proxy,
+      new ImageLayerExtractor(),
     );
 
     const apiSender: ApiSenderType = {
