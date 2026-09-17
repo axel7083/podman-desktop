@@ -31,6 +31,7 @@ import type { ExtensionsCatalog } from '/@/plugin/extension/catalog/extensions-c
 import type { AnalyzedExtension } from '/@/plugin/extension/extension-analyzer.js';
 import type { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
 import type { ImageRegistry } from '/@/plugin/image-registry.js';
+import type { ImageArchive, ImageArchiveReader } from '/@/plugin/install/image-archive-reader.js';
 import type { TaskManager } from '/@/plugin/tasks/task-manager.js';
 import type { Telemetry } from '/@/plugin/telemetry/telemetry.js';
 
@@ -89,6 +90,10 @@ const taskManager = {
   createTask: createTaskMock,
 } as unknown as TaskManager;
 
+const imageArchiveReader = {
+  open: vi.fn(),
+} as unknown as ImageArchiveReader;
+
 vi.mock(import('node:fs'));
 vi.mock(import('/@/plugin/docker-extension/docker-desktop-installer.js'));
 
@@ -114,6 +119,7 @@ beforeEach(() => {
     contributionManager,
     ipcMainOnMock,
     taskManager,
+    imageArchiveReader,
   );
 });
 
@@ -604,4 +610,134 @@ test('should install an image with extension pack with an existing dependency al
     expect.any(Function),
     'my-another-extension-link',
   );
+});
+
+describe('installFromArchive', () => {
+  const archivePath = '/home/user/my-extension.tar';
+  const PD_LABELS = {
+    'org.opencontainers.image.title': 'title',
+    'org.opencontainers.image.description': 'desc',
+    'org.opencontainers.image.vendor': 'vendor',
+    'io.podman-desktop.api.version': '1.0.0',
+  };
+
+  function mockArchive(options: { reference?: string; labels?: Record<string, unknown> }): {
+    extractLayers: ReturnType<typeof vi.fn>;
+    dispose: ReturnType<typeof vi.fn>;
+  } {
+    const dispose = vi.fn().mockResolvedValue(undefined);
+    // the archive content disappears on dispose: extracting afterwards must fail like the real reader would
+    const extractLayers = vi.fn().mockImplementation(async () => {
+      if (dispose.mock.calls.length > 0) {
+        throw new Error('archive disposed before the layers were extracted');
+      }
+    });
+    vi.mocked(imageArchiveReader.open).mockResolvedValueOnce({
+      reference: options.reference,
+      labels: options.labels,
+      extractLayers,
+      [Symbol.asyncDispose]: dispose,
+    } as unknown as ImageArchive);
+    return { extractLayers, dispose };
+  }
+
+  test('installs a Podman Desktop extension in the folder derived from the image reference', async () => {
+    const { extractLayers, dispose } = mockArchive({ reference: 'localhost/my-extension:latest', labels: PD_LABELS });
+    listExtensionsMock.mockResolvedValue([]);
+    const spyExtractExtensionFiles = vi.spyOn(extensionInstaller, 'extractExtensionFiles').mockResolvedValue();
+    analyzeExtensionMock.mockResolvedValueOnce({ id: 'my.extension', manifest: {} } as AnalyzedExtension);
+    const sendLog = vi.fn();
+    const sendError = vi.fn();
+    const sendEnd = vi.fn();
+
+    await extensionInstaller.installFromArchive(sendLog, sendError, sendEnd, archivePath);
+
+    expect(imageArchiveReader.open).toHaveBeenCalledWith(archivePath);
+    expect(extractLayers).toHaveBeenCalledWith(
+      expect.stringContaining('localhostmyextension-tmp'),
+      expect.any(Function),
+    );
+    expect(spyExtractExtensionFiles).toHaveBeenCalledWith(
+      expect.stringContaining('localhostmyextension-tmp'),
+      path.join('/fake/plugins/directory', 'localhostmyextension'),
+    );
+    expect(analyzeExtensionMock).toHaveBeenCalledWith({
+      extensionPath: path.join('/fake/plugins/directory', 'localhostmyextension'),
+      removable: true,
+    });
+    expect(loadExtensionsMock).toHaveBeenCalled();
+    expect(sendError).not.toHaveBeenCalled();
+    expect(sendEnd).toHaveBeenCalledWith('Extension Successfully installed.');
+    expect(createTaskMock).toHaveBeenCalledWith({ title: 'Installing extension my-extension.tar' });
+    expect(dispose).toHaveBeenCalled();
+  });
+
+  test('falls back on the archive file name when the image has no reference', async () => {
+    mockArchive({ reference: undefined, labels: PD_LABELS });
+    listExtensionsMock.mockResolvedValue([]);
+    const spyExtractExtensionFiles = vi.spyOn(extensionInstaller, 'extractExtensionFiles').mockResolvedValue();
+    analyzeExtensionMock.mockResolvedValueOnce({ id: 'my.extension', manifest: {} } as AnalyzedExtension);
+
+    await extensionInstaller.installFromArchive(vi.fn(), vi.fn(), vi.fn(), archivePath);
+
+    expect(spyExtractExtensionFiles).toHaveBeenCalledWith(
+      expect.anything(),
+      path.join('/fake/plugins/directory', 'myextension'),
+    );
+  });
+
+  test('rejects a Docker Desktop extension', async () => {
+    const { extractLayers, dispose } = mockArchive({
+      reference: 'localhost/dd-extension:latest',
+      labels: {
+        'org.opencontainers.image.title': 'title',
+        'org.opencontainers.image.description': 'desc',
+        'org.opencontainers.image.vendor': 'vendor',
+        'com.docker.desktop.extension.api.version': '1.0.0',
+      },
+    });
+    const sendError = vi.fn();
+
+    await extensionInstaller.installFromArchive(vi.fn(), sendError, vi.fn(), archivePath);
+
+    expect(sendError).toHaveBeenCalledWith(expect.stringContaining('Docker Desktop extension'));
+    expect(extractLayers).not.toHaveBeenCalled();
+    expect(loadExtensionsMock).not.toHaveBeenCalled();
+    expect(dispose).toHaveBeenCalled();
+  });
+
+  test('reports an already installed extension and cleans up', async () => {
+    const { extractLayers, dispose } = mockArchive({ reference: 'localhost/my-extension:latest', labels: PD_LABELS });
+    listExtensionsMock.mockResolvedValue([
+      { name: 'my-extension', path: path.join('/fake/plugins/directory', 'localhostmyextension') } as ExtensionInfo,
+    ]);
+    const sendError = vi.fn();
+
+    await extensionInstaller.installFromArchive(vi.fn(), sendError, vi.fn(), archivePath);
+
+    expect(sendError).toHaveBeenCalledWith('Extension my-extension is already installed');
+    expect(extractLayers).not.toHaveBeenCalled();
+    expect(dispose).toHaveBeenCalled();
+  });
+
+  test('marks the task as failed when the archive cannot be read', async () => {
+    vi.mocked(imageArchiveReader.open).mockRejectedValueOnce(new Error('Unable to read image archive'));
+
+    await expect(extensionInstaller.installFromArchive(vi.fn(), vi.fn(), vi.fn(), archivePath)).rejects.toThrow(
+      'Unable to read image archive',
+    );
+
+    const task = createTaskMock.mock.results[0]?.value;
+    expect(task.error).toBe('Error: Unable to read image archive');
+    expect(task.status).not.toBe('success');
+  });
+
+  test('disposes the archive even when the analysis throws', async () => {
+    const { dispose } = mockArchive({ reference: 'localhost/my-extension:latest', labels: PD_LABELS });
+    listExtensionsMock.mockRejectedValueOnce(new Error('boom'));
+
+    await expect(extensionInstaller.installFromArchive(vi.fn(), vi.fn(), vi.fn(), archivePath)).rejects.toThrow('boom');
+
+    expect(dispose).toHaveBeenCalled();
+  });
 });

@@ -37,6 +37,7 @@ import { ExtensionsCatalog } from '/@/plugin/extension/catalog/extensions-catalo
 import type { AnalyzedExtension } from '/@/plugin/extension/extension-analyzer.js';
 import { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
 import { ImageRegistry } from '/@/plugin/image-registry.js';
+import { type ImageArchive, ImageArchiveReader } from '/@/plugin/install/image-archive-reader.js';
 import { TaskManager } from '/@/plugin/tasks/task-manager.js';
 import { Telemetry } from '/@/plugin/telemetry/telemetry.js';
 
@@ -48,6 +49,11 @@ import { Telemetry } from '/@/plugin/telemetry/telemetry.js';
 export interface ExtensionImageSource {
   /** Image reference used in messages and to derive the extension folder name (e.g. quay.io/ns/ext:1.0). */
   readonly name: string;
+  /**
+   * Docker Desktop extensions run a compose project from the image, which must be available in the
+   * container engine: only sources that leave the image in the engine can install them.
+   */
+  readonly supportsDockerDesktopExtensions: boolean;
   /** OCI image config labels (`config.Labels`), undefined when the image has none. */
   labels(): Promise<{ [key: string]: unknown } | undefined>;
   /** Unpack the image rootfs (all layers, in order) into destFolder. */
@@ -57,6 +63,7 @@ export interface ExtensionImageSource {
 /** An image pulled from an OCI registry through ImageRegistry. */
 export class RegistryImageSource implements ExtensionImageSource {
   readonly name: string;
+  readonly supportsDockerDesktopExtensions = true;
 
   constructor(
     private readonly imageRegistry: ImageRegistry,
@@ -71,6 +78,28 @@ export class RegistryImageSource implements ExtensionImageSource {
 
   extract(destFolder: string, logger: (event: { message: string; progress: number }) => void): Promise<void> {
     return this.imageRegistry.downloadAndExtractImage(this.name, destFolder, logger);
+  }
+}
+
+/** An image saved to a local archive file (`podman save`), unpacked through ImageArchiveReader. */
+export class ArchiveImageSource implements ExtensionImageSource {
+  readonly name: string;
+  readonly supportsDockerDesktopExtensions = false;
+
+  constructor(
+    private readonly archive: ImageArchive,
+    archivePath: string,
+  ) {
+    // fall back on the file name when the image was saved by id
+    this.name = archive.reference ?? path.basename(archivePath, path.extname(archivePath));
+  }
+
+  async labels(): Promise<{ [key: string]: unknown } | undefined> {
+    return this.archive.labels;
+  }
+
+  extract(destFolder: string, logger: (event: { message: string; progress: number }) => void): Promise<void> {
+    return this.archive.extractLayers(destFolder, logger);
   }
 }
 
@@ -97,6 +126,8 @@ export class ExtensionInstaller {
     private readonly ipcMainOn: IPCMainOn,
     @inject(TaskManager)
     private taskManager: TaskManager,
+    @inject(ImageArchiveReader)
+    private imageArchiveReader: ImageArchiveReader,
   ) {
     this.#dockerDesktopInstaller = new DockerDesktopInstaller(contributionManager);
   }
@@ -185,6 +216,11 @@ export class ExtensionInstaller {
 
     const isDDExtension = apiDDVersion ? true : false;
     const isPDExtension = apiVersion ? true : false;
+
+    if (isDDExtension && !isPDExtension && !source.supportsDockerDesktopExtensions) {
+      sendError(`Image ${imageName} is a Docker Desktop extension, which cannot be installed from this source`);
+      return;
+    }
 
     let unpackedFolder;
     // where to unpack the extension
@@ -363,6 +399,39 @@ export class ExtensionInstaller {
       imageName,
       (reportError, onProgress) =>
         this.analyzeFromImage(sendLog, reportError, imageName, catalogExtensionId, onProgress),
+      extensionAnalyzed,
+    );
+  }
+
+  /**
+   * Install a Podman Desktop extension from a local image archive (`podman save` output).
+   * Docker Desktop extensions are rejected: their image is not loaded into any container engine.
+   */
+  async installFromArchive(
+    sendLog: (message: string) => void,
+    sendError: (message: string) => void,
+    sendEnd: (message: string) => void,
+    archivePath: string,
+    extensionAnalyzed?: (extension: AnalyzedExtension) => void,
+  ): Promise<void> {
+    return this.install(
+      sendLog,
+      sendError,
+      sendEnd,
+      path.basename(archivePath),
+      async (reportError, onProgress) => {
+        sendLog(`Reading image archive ${archivePath}...`);
+        await using archive = await this.imageArchiveReader.open(archivePath);
+        // the await is required: the archive is disposed (temp dir removed) when this block exits,
+        // which must not happen while the layers are still being extracted
+        return await this.analyzeFromSource(
+          sendLog,
+          reportError,
+          new ArchiveImageSource(archive, archivePath),
+          undefined,
+          onProgress,
+        );
+      },
       extensionAnalyzed,
     );
   }

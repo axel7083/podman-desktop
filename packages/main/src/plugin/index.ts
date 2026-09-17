@@ -226,6 +226,7 @@ import { ImageFilesRegistry } from './image-files-registry.js';
 import { ImageRegistry } from './image-registry.js';
 import { InputQuickPickRegistry } from './input-quickpick/input-quickpick-registry.js';
 import { ExtensionInstaller } from './install/extension-installer.js';
+import { ImageArchiveReader } from './install/image-archive-reader.js';
 import { ImageLayerExtractor } from './install/image-layer-extractor.js';
 import { KubernetesClient } from './kubernetes/kubernetes-client.js';
 import { downloadGuideList } from './learning-center/learning-center.js';
@@ -3471,6 +3472,7 @@ export class PluginSystem {
     const dockerExtensionAdapter = new DockerPluginAdapter(contributionManager, containerProviderRegistry);
     dockerExtensionAdapter.init();
 
+    container.bind<ImageArchiveReader>(ImageArchiveReader).toSelf().inSingletonScope();
     container.bind<ExtensionInstaller>(ExtensionInstaller).toSelf().inSingletonScope();
     const extensionInstaller = container.get(ExtensionInstaller);
     await extensionInstaller.init();
