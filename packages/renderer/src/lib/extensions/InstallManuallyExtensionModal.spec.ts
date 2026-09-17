@@ -20,7 +20,7 @@ import '@testing-library/jest-dom/vitest';
 
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import InstallManuallyExtensionModal from './InstallManuallyExtensionModal.svelte';
 
@@ -28,6 +28,8 @@ const closeCallback = vi.fn();
 
 beforeAll(() => {
   Object.defineProperty(window, 'extensionInstallFromImage', { value: vi.fn() });
+  Object.defineProperty(window, 'extensionInstallFromArchive', { value: vi.fn() });
+  Object.defineProperty(window, 'openDialog', { value: vi.fn() });
 });
 
 beforeEach(() => {
@@ -260,4 +262,146 @@ test('form should be in error even if log reached 100%', async () => {
 
   // Expect input error
   expect(input).toHaveAttribute('aria-invalid', 'true');
+});
+
+describe('install from a local file', () => {
+  const archivePath = '/home/user/my-extension.tar';
+
+  function mockExtensionInstallFromArchive(): {
+    resolve: () => void;
+    reject: (error: unknown) => void;
+    logCallback: (data: string) => void;
+    errorCallback: (data: string) => void;
+  } {
+    const { promise, resolve, reject } = Promise.withResolvers<void>();
+
+    const logCallback = vi.fn<(data: string) => void>();
+    const errorCallback = vi.fn<(data: string) => void>();
+    vi.mocked(window.extensionInstallFromArchive).mockImplementation((_path, mLogCallback, mErrorCallback) => {
+      logCallback.mockImplementation((content: string) => mLogCallback(content));
+      errorCallback.mockImplementation((content: string) => mErrorCallback(content));
+      return promise;
+    });
+    return { resolve, reject, logCallback, errorCallback };
+  }
+
+  async function selectLocalFile(): Promise<void> {
+    await userEvent.click(screen.getByRole('radio', { name: 'Local file' }));
+  }
+
+  test('OCI image is the default source and the image field is visible on open', () => {
+    render(InstallManuallyExtensionModal, { closeCallback });
+
+    expect(screen.getByRole('radiogroup', { name: 'Install from' })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: 'OCI image' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: 'Local file' })).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByRole('textbox', { name: 'Image name to install custom extension' })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('textbox', { name: 'Image archive to install custom extension' }),
+    ).not.toBeInTheDocument();
+  });
+
+  test('selecting Local file swaps the field and keeps Install disabled until a path is set', async () => {
+    render(InstallManuallyExtensionModal, { closeCallback });
+
+    await selectLocalFile();
+
+    expect(screen.getByRole('radio', { name: 'Local file' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.queryByRole('textbox', { name: 'Image name to install custom extension' })).not.toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Image archive to install custom extension' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Install' })).toBeDisabled();
+  });
+
+  test('browse opens a dialog filtered on tar archives and fills the field', async () => {
+    vi.mocked(window.openDialog).mockResolvedValue([archivePath]);
+    render(InstallManuallyExtensionModal, { closeCallback });
+    await selectLocalFile();
+
+    await userEvent.click(screen.getByRole('button', { name: 'browse' }));
+
+    expect(window.openDialog).toHaveBeenCalledWith(
+      expect.objectContaining({ selectors: ['openFile'], filters: [{ name: 'Image archive', extensions: ['tar'] }] }),
+    );
+    expect(screen.getByRole('textbox', { name: 'Image archive to install custom extension' })).toHaveValue(archivePath);
+    expect(screen.getByRole('button', { name: 'Install' })).toBeEnabled();
+  });
+
+  test('Install calls extensionInstallFromArchive with the path, then shows Done', async () => {
+    const { resolve, logCallback } = mockExtensionInstallFromArchive();
+    render(InstallManuallyExtensionModal, { closeCallback });
+    await selectLocalFile();
+    await userEvent.type(
+      screen.getByRole('textbox', { name: 'Image archive to install custom extension' }),
+      archivePath,
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Install' }));
+
+    expect(window.extensionInstallFromArchive).toHaveBeenCalledWith(archivePath, expect.anything(), expect.anything());
+    expect(window.extensionInstallFromImage).not.toHaveBeenCalled();
+
+    logCallback('Extracting layer 1/1 (layer.tar) - 50%');
+    const progressBar = screen.getByRole('progressbar', { name: 'Installation progress' });
+    await vi.waitFor(() => expect(progressBar).toHaveStyle({ width: '50%' }));
+
+    resolve();
+    await vi.waitFor(() => expect(screen.getByRole('button', { name: 'Done' })).toBeInTheDocument());
+    expect(screen.getByText('Extension successfully installed')).toBeInTheDocument();
+    expect(screen.getByText(archivePath)).toBeInTheDocument();
+  });
+
+  test('an install error is shown on the archive field and Install stays visible', async () => {
+    const { errorCallback } = mockExtensionInstallFromArchive();
+    render(InstallManuallyExtensionModal, { closeCallback });
+    await selectLocalFile();
+    const input = screen.getByRole('textbox', { name: 'Image archive to install custom extension' });
+    await userEvent.type(input, archivePath);
+    const installButton = screen.getByRole('button', { name: 'Install' });
+    await userEvent.click(installButton);
+
+    errorCallback('Unable to read image archive');
+
+    await vi.waitFor(() => expect(installButton).toBeDisabled());
+    expect(screen.getByText('Unable to read image archive')).toBeInTheDocument();
+    expect(input).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Done' })).not.toBeInTheDocument();
+  });
+
+  test('switching source clears the error and keeps the other value', async () => {
+    const { errorCallback } = mockExtensionInstallFromArchive();
+    render(InstallManuallyExtensionModal, { closeCallback });
+    await selectLocalFile();
+    await userEvent.type(
+      screen.getByRole('textbox', { name: 'Image archive to install custom extension' }),
+      archivePath,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Install' }));
+    errorCallback('Unable to read image archive');
+    await vi.waitFor(() => expect(screen.getByText('Unable to read image archive')).toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('radio', { name: 'OCI image' }));
+
+    expect(screen.queryByText('Unable to read image archive')).not.toBeInTheDocument();
+    // image field untouched: Install disabled again
+    expect(screen.getByRole('button', { name: 'Install' })).toBeDisabled();
+
+    await selectLocalFile();
+    expect(screen.getByRole('textbox', { name: 'Image archive to install custom extension' })).toHaveValue(archivePath);
+    expect(screen.getByRole('button', { name: 'Install' })).toBeEnabled();
+  });
+
+  test('the source cannot be changed while installing', async () => {
+    mockExtensionInstallFromArchive();
+    render(InstallManuallyExtensionModal, { closeCallback });
+    await selectLocalFile();
+    await userEvent.type(
+      screen.getByRole('textbox', { name: 'Image archive to install custom extension' }),
+      archivePath,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Install' }));
+
+    expect(screen.getByRole('radio', { name: 'OCI image' })).toBeDisabled();
+    expect(screen.getByRole('radio', { name: 'Local file' })).toBeDisabled();
+  });
 });

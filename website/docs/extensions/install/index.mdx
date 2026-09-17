@@ -24,12 +24,19 @@ Installing an extension is a great way to expand the capabilities of Podman Desk
    - Click the **Install custom...** button to install an extension from a container image: <!-- markdownlint-disable-line MD029 -->
      1. Go to any registry, such as Docker Hub, GitHub, or any other registry.
      1. Find your extension.
-     1. Copy the OCI image name of the extension, such as `redhatdeveloper/openshift-dd-ext:0.0.1-100`, and paste it into the **OCI Image** field.
+     1. Copy the OCI image name of the extension, such as `redhatdeveloper/openshift-dd-ext:0.0.1-100`, and paste it into the **Image name** field.
         ![Install Custom Extension Dialoge](../img/install-custom.png)
      1. Click **Install**. A successful operation notification opens.
         ![install a custom extension](../img/install-a-custom-extension.png)
      1. Click **Done**.
         ![extension installed successfully](../img/extension-installed-successfully.png)
+
+   - Click the **Install custom...** button to install an extension from a local image archive, for example one you built and did not push to a registry: <!-- markdownlint-disable-line MD029 -->
+     1. Export the extension image to a file with `podman save -o my-extension.tar localhost/my-extension`.
+     1. Select **Local file** under **Install from**, then browse to the `.tar` file.
+     1. Click **Install**, then **Done**.
+
+     Only Podman Desktop extensions can be installed from a file; Docker Desktop extensions need their image in a container engine.
 
 #### Verification
 

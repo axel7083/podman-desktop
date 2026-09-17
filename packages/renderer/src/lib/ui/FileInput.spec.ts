@@ -100,3 +100,16 @@ test('Expect onChange function called if user paste content', async () => {
 
   expect(onChangeMock).toHaveBeenCalledWith(filename);
 });
+
+test('Expect disabled to disable both the input and the browse button', () => {
+  render(FileInput, { options: { title: 'title' }, disabled: true });
+
+  expect(screen.getByRole('textbox')).toBeDisabled();
+  expect(screen.getByRole('button')).toBeDisabled();
+});
+
+test('Expect error to be displayed', () => {
+  render(FileInput, { options: { title: 'title' }, error: 'File not found' });
+
+  expect(screen.getByText('File not found')).toBeInTheDocument();
+});
