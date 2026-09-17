@@ -40,6 +40,40 @@ import { ImageRegistry } from '/@/plugin/image-registry.js';
 import { TaskManager } from '/@/plugin/tasks/task-manager.js';
 import { Telemetry } from '/@/plugin/telemetry/telemetry.js';
 
+/**
+ * Where the content of an extension image comes from.
+ * The install pipeline only needs the image labels and a way to unpack the layers into a folder;
+ * everything else (validation, folder naming, analysis, dependencies, loading) is shared.
+ */
+export interface ExtensionImageSource {
+  /** Image reference used in messages and to derive the extension folder name (e.g. quay.io/ns/ext:1.0). */
+  readonly name: string;
+  /** OCI image config labels (`config.Labels`), undefined when the image has none. */
+  labels(): Promise<{ [key: string]: unknown } | undefined>;
+  /** Unpack the image rootfs (all layers, in order) into destFolder. */
+  extract(destFolder: string, logger: (event: { message: string; progress: number }) => void): Promise<void>;
+}
+
+/** An image pulled from an OCI registry through ImageRegistry. */
+export class RegistryImageSource implements ExtensionImageSource {
+  readonly name: string;
+
+  constructor(
+    private readonly imageRegistry: ImageRegistry,
+    imageName: string,
+  ) {
+    this.name = imageName.trim();
+  }
+
+  labels(): Promise<{ [key: string]: unknown } | undefined> {
+    return this.imageRegistry.getImageConfigLabels(this.name);
+  }
+
+  extract(destFolder: string, logger: (event: { message: string; progress: number }) => void): Promise<void> {
+    return this.imageRegistry.downloadAndExtractImage(this.name, destFolder, logger);
+  }
+}
+
 @injectable()
 export class ExtensionInstaller {
   #dockerDesktopInstaller: DockerDesktopInstaller;
@@ -103,11 +137,31 @@ export class ExtensionInstaller {
     catatlogExtensionId?: string,
     onProgress?: (progress: number) => void,
   ): Promise<AnalyzedExtension | DockerDesktopContribution | undefined> {
-    imageName = imageName.trim();
+    return this.analyzeFromSource(
+      sendLog,
+      sendError,
+      new RegistryImageSource(this.imageRegistry, imageName),
+      catatlogExtensionId,
+      onProgress,
+    );
+  }
+
+  /**
+   * Fetch the extension from its source into the plugins directory and analyze it.
+   * Shared by every kind of source (registry image, local archive, ...).
+   */
+  protected async analyzeFromSource(
+    sendLog: (message: string) => void,
+    sendError: (message: string) => void,
+    source: ExtensionImageSource,
+    catatlogExtensionId?: string,
+    onProgress?: (progress: number) => void,
+  ): Promise<AnalyzedExtension | DockerDesktopContribution | undefined> {
+    const imageName = source.name;
     sendLog(`Analyzing image ${imageName}...`);
     let imageConfigLabels;
     try {
-      imageConfigLabels = await this.imageRegistry.getImageConfigLabels(imageName);
+      imageConfigLabels = await source.labels();
     } catch (error) {
       sendError('Error while analyzing image: ' + error);
       return;
@@ -177,7 +231,7 @@ export class ExtensionInstaller {
     }
 
     sendLog('Downloading and extract layers...');
-    await this.imageRegistry.downloadAndExtractImage(imageName, tmpFolderPath, event => {
+    await source.extract(tmpFolderPath, event => {
       sendLog(event.message);
       onProgress?.(event.progress);
     });
@@ -302,8 +356,38 @@ export class ExtensionInstaller {
     extensionAnalyzed?: (extension: AnalyzedExtension) => void,
     catalogExtensionId?: string,
   ): Promise<void> {
+    return this.install(
+      sendLog,
+      sendError,
+      sendEnd,
+      imageName,
+      (reportError, onProgress) =>
+        this.analyzeFromImage(sendLog, reportError, imageName, catalogExtensionId, onProgress),
+      extensionAnalyzed,
+    );
+  }
+
+  /**
+   * Run the install pipeline as a task: analyze the extension through `analyze`, resolve its
+   * transitive dependencies from the catalog, then load everything.
+   *
+   * @param name what is being installed, for the task title and messages
+   * @param analyze fetches + analyzes the main extension; errors reported through the given
+   *                callback mark the task as failed, progress is reflected on the task
+   */
+  protected async install(
+    sendLog: (message: string) => void,
+    sendError: (message: string) => void,
+    sendEnd: (message: string) => void,
+    name: string,
+    analyze: (
+      sendError: (message: string) => void,
+      onProgress: (progress: number) => void,
+    ) => Promise<AnalyzedExtension | DockerDesktopContribution | undefined>,
+    extensionAnalyzed?: (extension: AnalyzedExtension) => void,
+  ): Promise<void> {
     const task = this.taskManager.createTask({
-      title: `Installing extension ${imageName}`,
+      title: `Installing extension ${name}`,
     });
 
     const wrappedSendError = (message: string): void => {
@@ -312,17 +396,9 @@ export class ExtensionInstaller {
     };
 
     try {
-      await this.doInstallFromImage(
-        sendLog,
-        wrappedSendError,
-        sendEnd,
-        imageName,
-        extensionAnalyzed,
-        catalogExtensionId,
-        (progress: number) => {
-          task.progress = progress;
-        },
-      );
+      await this.doInstall(sendLog, wrappedSendError, sendEnd, name, analyze, extensionAnalyzed, progress => {
+        task.progress = progress;
+      });
     } catch (error: unknown) {
       task.error = String(error);
       throw error;
@@ -333,25 +409,22 @@ export class ExtensionInstaller {
     }
   }
 
-  protected async doInstallFromImage(
+  protected async doInstall(
     sendLog: (message: string) => void,
     sendError: (message: string) => void,
     sendEnd: (message: string) => void,
-    imageName: string,
-    extensionAnalyzed?: (extension: AnalyzedExtension) => void,
-    catalogExtensionId?: string,
-    onProgress?: (progress: number) => void,
+    name: string,
+    analyze: (
+      sendError: (message: string) => void,
+      onProgress: (progress: number) => void,
+    ) => Promise<AnalyzedExtension | DockerDesktopContribution | undefined>,
+    extensionAnalyzed: ((extension: AnalyzedExtension) => void) | undefined,
+    onProgress: (progress: number) => void,
   ): Promise<void> {
     // now collect all transitive dependencies
     const analyzedExtensions: AnalyzedExtension[] = [];
     const errors: string[] = [];
-    const analyzedExtension = await this.analyzeFromImage(
-      sendLog,
-      sendError,
-      imageName,
-      catalogExtensionId,
-      onProgress,
-    );
+    const analyzedExtension = await analyze(sendError, onProgress);
     if (analyzedExtension instanceof DockerDesktopContribution) {
       sendEnd('Docker Desktop Extension Successfully installed.');
       return;
@@ -376,7 +449,7 @@ export class ExtensionInstaller {
             fs.rmdirSync(extension.path, { recursive: true });
           }
         });
-      sendError(`Error while installing extension ${imageName}: ${errors.join('\n')}`);
+      sendError(`Error while installing extension ${name}: ${errors.join('\n')}`);
       return;
     }
 
