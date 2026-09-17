@@ -535,35 +535,75 @@ export class ExtensionInstaller {
     this.apiSender.send('extension-started');
   }
 
+  /**
+   * Build the reporters that relay an install to the renderer over IPC, plus the telemetry payload
+   * they accumulate. Both install channels reply on the same three channels, the renderer
+   * multiplexes them by callback id.
+   */
+  protected createIpcReporters(
+    event: IpcMainEvent,
+    logCallbackId: number,
+    source: 'image' | 'archive',
+  ): {
+    sendLog: (message: string) => void;
+    sendError: (message: string) => void;
+    sendEnd: (message: string) => void;
+    extAnalyzed: (extension: AnalyzedExtension) => void;
+    telemetryData: { source: 'image' | 'archive'; extensionId?: string; error?: string };
+  } {
+    const telemetryData: { source: 'image' | 'archive'; extensionId?: string; error?: string } = { source };
+
+    return {
+      telemetryData,
+      sendLog: (message: string): void => {
+        event.reply('extension-installer:install-from-image-log', logCallbackId, message);
+      },
+      sendError: (message: string): void => {
+        telemetryData.error = message;
+        event.reply('extension-installer:install-from-image-error', logCallbackId, message);
+      },
+      sendEnd: (message: string): void => {
+        event.reply('extension-installer:install-from-image-end', logCallbackId, message);
+      },
+      extAnalyzed: (extension: AnalyzedExtension): void => {
+        if (extension) {
+          telemetryData.extensionId = extension.id;
+        }
+      },
+    };
+  }
+
   async init(): Promise<void> {
     this.ipcMainOn(
       'extension-installer:install-from-image',
       (event: IpcMainEvent, imageName: string, logCallbackId: number, catalogExtensionId?: string): void => {
-        const telemetryData: {
-          extensionId?: string;
-          error?: string;
-        } = {};
-
-        const sendLog = (message: string): void => {
-          event.reply('extension-installer:install-from-image-log', logCallbackId, message);
-        };
-
-        const sendError = (message: string): void => {
-          telemetryData.error = message;
-          event.reply('extension-installer:install-from-image-error', logCallbackId, message);
-        };
-
-        const sendEnd = (message: string): void => {
-          event.reply('extension-installer:install-from-image-end', logCallbackId, message);
-        };
-
-        const extAnalyzed = (extension: AnalyzedExtension): void => {
-          if (extension) {
-            telemetryData.extensionId = extension.id;
-          }
-        };
+        const { sendLog, sendError, sendEnd, extAnalyzed, telemetryData } = this.createIpcReporters(
+          event,
+          logCallbackId,
+          'image',
+        );
 
         this.installFromImage(sendLog, sendError, sendEnd, imageName, extAnalyzed, catalogExtensionId)
+          .catch((error: unknown) => {
+            sendError('' + error);
+            telemetryData.error = `${error}`;
+          })
+          .finally(() => {
+            this.telemetry.track('installedExtension', telemetryData);
+          });
+      },
+    );
+
+    this.ipcMainOn(
+      'extension-installer:install-from-archive',
+      (event: IpcMainEvent, archivePath: string, logCallbackId: number): void => {
+        const { sendLog, sendError, sendEnd, extAnalyzed, telemetryData } = this.createIpcReporters(
+          event,
+          logCallbackId,
+          'archive',
+        );
+
+        this.installFromArchive(sendLog, sendError, sendEnd, archivePath, extAnalyzed)
           .catch((error: unknown) => {
             sendError('' + error);
             telemetryData.error = `${error}`;

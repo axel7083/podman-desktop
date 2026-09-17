@@ -359,9 +359,11 @@ test('should report error', async () => {
   spyInstaller.mockRejectedValueOnce(new Error('fake error'));
 
   vi.mocked(ipcMainOnMock).mockImplementation(
-    (_channel: string, listener: (event: IpcMainEvent, ...args: unknown[]) => void) => {
-      // let's call the callback
-      listener({ reply: replyMethodMock } as unknown as IpcMainEvent, imageToPull, 0);
+    (channel: string, listener: (event: IpcMainEvent, ...args: unknown[]) => void) => {
+      // let's call the callback of the image channel only
+      if (channel === 'extension-installer:install-from-image') {
+        listener({ reply: replyMethodMock } as unknown as IpcMainEvent, imageToPull, 0);
+      }
       return {} as IpcMain;
     },
   );
@@ -376,6 +378,91 @@ test('should report error', async () => {
 
   // expect to have the sendError method called
   expect(replyMethodMock).toHaveBeenCalledWith('extension-installer:install-from-image-error', 0, 'Error: fake error');
+  // telemetry is tracked once the install promise settles
+  await vi.waitFor(() =>
+    expect(telemetryMock.track).toHaveBeenCalledWith('installedExtension', {
+      source: 'image',
+      error: 'Error: fake error',
+    }),
+  );
+});
+
+describe('install-from-archive IPC channel', () => {
+  const archivePath = '/home/user/my-extension.tar';
+
+  function triggerArchiveChannel(replyMethodMock: ReturnType<typeof vi.fn>): void {
+    vi.mocked(ipcMainOnMock).mockImplementation(
+      (channel: string, listener: (event: IpcMainEvent, ...args: unknown[]) => void) => {
+        if (channel === 'extension-installer:install-from-archive') {
+          listener({ reply: replyMethodMock } as unknown as IpcMainEvent, archivePath, 7);
+        }
+        return {} as IpcMain;
+      },
+    );
+  }
+
+  test('init registers both install channels', async () => {
+    await extensionInstaller.init();
+
+    expect(ipcMainOnMock).toHaveBeenCalledWith('extension-installer:install-from-image', expect.any(Function));
+    expect(ipcMainOnMock).toHaveBeenCalledWith('extension-installer:install-from-archive', expect.any(Function));
+  });
+
+  test('relays the archive install on the shared reply channels and tracks the source', async () => {
+    const replyMethodMock = vi.fn();
+    vi.spyOn(extensionInstaller, 'installFromArchive').mockImplementation(
+      async (sendLog, _sendError, sendEnd, _path, extensionAnalyzed) => {
+        sendLog('Reading image archive...');
+        extensionAnalyzed?.({ id: 'my.extension' } as AnalyzedExtension);
+        sendEnd('Extension Successfully installed.');
+      },
+    );
+    triggerArchiveChannel(replyMethodMock);
+
+    await extensionInstaller.init();
+    await vi.waitFor(() => expect(telemetryMock.track).toHaveBeenCalled());
+
+    expect(extensionInstaller.installFromArchive).toHaveBeenCalledWith(
+      expect.any(Function),
+      expect.any(Function),
+      expect.any(Function),
+      archivePath,
+      expect.any(Function),
+    );
+    expect(replyMethodMock).toHaveBeenCalledWith(
+      'extension-installer:install-from-image-log',
+      7,
+      'Reading image archive...',
+    );
+    expect(replyMethodMock).toHaveBeenCalledWith(
+      'extension-installer:install-from-image-end',
+      7,
+      'Extension Successfully installed.',
+    );
+    expect(telemetryMock.track).toHaveBeenCalledWith('installedExtension', {
+      source: 'archive',
+      extensionId: 'my.extension',
+    });
+  });
+
+  test('reports a failed archive install as an error', async () => {
+    const replyMethodMock = vi.fn();
+    vi.spyOn(extensionInstaller, 'installFromArchive').mockRejectedValue(new Error('bad archive'));
+    triggerArchiveChannel(replyMethodMock);
+
+    await extensionInstaller.init();
+    await vi.waitFor(() => expect(telemetryMock.track).toHaveBeenCalled());
+
+    expect(replyMethodMock).toHaveBeenCalledWith(
+      'extension-installer:install-from-image-error',
+      7,
+      'Error: bad archive',
+    );
+    expect(telemetryMock.track).toHaveBeenCalledWith('installedExtension', {
+      source: 'archive',
+      error: 'Error: bad archive',
+    });
+  });
 });
 
 test('should install an image with extension pack', async () => {

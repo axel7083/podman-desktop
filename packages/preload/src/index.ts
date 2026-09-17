@@ -2549,6 +2549,32 @@ export function initExposure(): void {
     },
   );
 
+  contextBridge.exposeInMainWorld(
+    'extensionInstallFromArchive',
+    async (
+      archivePath: string,
+      logCallback: (data: string) => void,
+      errorCallback: (data: string) => void,
+    ): Promise<void> => {
+      // same callback registry as extensionInstallFromImage: main replies on the same channels
+      onDataCallbacksShellInContainerExtensionInstallId++;
+      onDataCallbacksShellInContainerExtension.set(onDataCallbacksShellInContainerExtensionInstallId, logCallback);
+      onDataCallbacksShellInContainerExtensionError.set(
+        onDataCallbacksShellInContainerExtensionInstallId,
+        errorCallback,
+      );
+      ipcRenderer.send(
+        'extension-installer:install-from-archive',
+        archivePath,
+        onDataCallbacksShellInContainerExtensionInstallId,
+      );
+
+      return new Promise(resolve => {
+        onDataCallbacksShellInContainerExtensionResolve.set(onDataCallbacksShellInContainerExtensionInstallId, resolve);
+      });
+    },
+  );
+
   ipcRenderer.on('extension-installer:install-from-image-log', (_, callbackId: number, data: string) => {
     const callback = onDataCallbacksShellInContainerExtension.get(callbackId);
     if (callback) {

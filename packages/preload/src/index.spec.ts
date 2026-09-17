@@ -154,6 +154,30 @@ describe('collect calls to exposeInMainWorld and ipcRenderer.on and calls initEx
     expect(result).toEqual(['file1', 'file2']);
   });
 
+  test('extensionInstallFromArchive sends the archive path and resolves on the shared end channel', async () => {
+    const extensionInstallFromArchive = getInMainWorld('extensionInstallFromArchive');
+    const logCallback = vi.fn();
+    const errorCallback = vi.fn();
+
+    const promise = extensionInstallFromArchive('/home/user/my-extension.tar', logCallback, errorCallback);
+
+    expect(ipcRenderer.send).toHaveBeenCalledWith(
+      'extension-installer:install-from-archive',
+      '/home/user/my-extension.tar',
+      expect.any(Number),
+    );
+    const callbackId = vi.mocked(ipcRenderer.send).mock.calls[0]?.[2];
+
+    // main replies on the same channels as install-from-image
+    getRendererOn('extension-installer:install-from-image-log')({} as IpcRendererEvent, callbackId, 'Extracting');
+    getRendererOn('extension-installer:install-from-image-error')({} as IpcRendererEvent, callbackId, 'oops');
+    getRendererOn('extension-installer:install-from-image-end')({} as IpcRendererEvent, callbackId);
+
+    await expect(promise).resolves.toBeUndefined();
+    expect(logCallback).toHaveBeenCalledWith('Extracting');
+    expect(errorCallback).toHaveBeenCalledWith('oops');
+  });
+
   test('saveDialog', async () => {
     vi.mocked(ipcRenderer.invoke).mockResolvedValue({ error: undefined, result: undefined });
 
