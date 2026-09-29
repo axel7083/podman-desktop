@@ -171,6 +171,16 @@ test('Expect to have details page', async () => {
   expect(errorTab).not.toBeInTheDocument();
 });
 
+test('Expect the catalog versions to be proposed on the details page', async () => {
+  catalogExtensionInfos.set([aFakeExtension]);
+  extensionInfos.set([]);
+
+  await waitRender({ extensionId: 'idAInstalled' });
+
+  const picker = screen.getByRole('region', { name: 'Version picker' });
+  expect(picker).toHaveTextContent('v1.0.0A');
+});
+
 test('Expect to have details page with error tab with failed state', async () => {
   const extensionId = 'idAInstalled';
 

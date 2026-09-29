@@ -270,3 +270,35 @@ test('Expect the auto-update entry for an installed extension', async () => {
   const autoUpdate = screen.getByRole('region', { name: 'Auto-update' });
   expect(autoUpdate).toHaveTextContent('Disabled');
 });
+
+test('Expect the version picker instead of the version when catalog versions are available', async () => {
+  const extensionDetails: ExtensionDetailsUI = {
+    displayName: 'my display name',
+    description: 'my description',
+    type: 'pd',
+    removable: false,
+    devMode: false,
+    bundled: false,
+    state: 'started',
+    name: 'foo',
+    icon: 'fooIcon',
+    readme: { content: '' },
+    releaseDate: '2024-01-01',
+    categories: [],
+    publisherDisplayName: 'my publisher',
+    version: 'v1.2.3',
+    id: 'myId',
+    fetchable: true,
+    fetchLink: 'myLink',
+    fetchVersion: 'v3.4.5',
+  };
+
+  render(ExtensionDetailsSummaryCard, {
+    extensionDetails,
+    versions: [{ version: '3.4.5', preview: false, ociUri: 'myLink', files: [], lastUpdated: new Date() }],
+  });
+
+  const picker = screen.getByRole('region', { name: 'Version picker' });
+  expect(picker).toHaveTextContent('v3.4.5');
+  expect(screen.queryByText('v1.2.3')).not.toBeInTheDocument();
+});
