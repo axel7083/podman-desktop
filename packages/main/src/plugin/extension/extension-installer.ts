@@ -421,9 +421,16 @@ export class ExtensionInstaller {
       return;
     }
 
+    // installing the latest version published in the catalog keeps the extension updated automatically
+    const fetchableExtensions = await this.extensionCatalog.getFetchableExtensions();
+    const isLatestCatalogVersion = (extension: AnalyzedExtension): boolean =>
+      fetchableExtensions.some(
+        fetchable => fetchable.extensionId === extension.id && fetchable.version === extension.manifest.version,
+      );
+
     if (options?.confirm !== false) {
       for (const extension of analyzedExtensions) {
-        if (extension.overrides && !(await this.confirmOverride(extension))) {
+        if (extension.overrides && !(await this.confirmOverride(extension, isLatestCatalogVersion(extension)))) {
           this.removeAnalyzedExtensions(analyzedExtensions);
           sendError(`Installation of ${extension.id} cancelled.`);
           return;
@@ -440,12 +447,24 @@ export class ExtensionInstaller {
         `Extension ${extension.id} replaces the bundled extension ${extension.overrides.id}, which will be restored if you uninstall it.`,
       );
       await this.extensionLoader.replaceBundledExtension(extension.overrides.id);
+      // the user chose this very version over the bundled one: do not update it automatically
+      if (options?.confirm !== false && !isLatestCatalogVersion(extension)) {
+        await this.extensionLoader.setExtensionPinned(extension.id, true);
+      }
     }
 
     // load all extensions
     analyzedExtensions.forEach(extension => this.extensionLoader.ensureExtensionIsEnabled(extension.id));
 
     await this.extensionLoader.loadExtensions(analyzedExtensions);
+
+    // back to the latest version: updates are applied automatically again
+    const pinnedExtensionIds = this.extensionLoader.getPinnedExtensionIds();
+    for (const extension of analyzedExtensions) {
+      if (isLatestCatalogVersion(extension) && pinnedExtensionIds.includes(extension.id)) {
+        await this.extensionLoader.setExtensionPinned(extension.id, false);
+      }
+    }
 
     sendEnd('Extension Successfully installed.');
     this.apiSender.send('extension-started');
@@ -478,7 +497,7 @@ export class ExtensionInstaller {
    * Ask the user to confirm the extension being installed replaces the bundled extension it overrides,
    * unless the bundled extension is not loaded anymore (e.g. an extension overriding it is being replaced).
    */
-  protected async confirmOverride(extension: AnalyzedExtension): Promise<boolean> {
+  protected async confirmOverride(extension: AnalyzedExtension, latestCatalogVersion: boolean): Promise<boolean> {
     const extensions = await this.extensionLoader.listExtensions();
     if (!extensions.some(installed => installed.id === extension.overrides?.id && installed.bundled)) {
       return true;
@@ -487,7 +506,9 @@ export class ExtensionInstaller {
     const result = await this.messageBox.showMessageBox({
       title: 'Replace Extension?',
       message: `This extension is replacing your existing extension named '${bundledExtension?.manifest.displayName ?? extension.overrides?.id}'.`,
-      detail: 'Uninstalling it restores your existing extension.',
+      detail: latestCatalogVersion
+        ? 'Uninstalling it restores your existing extension.'
+        : 'Auto-update will be disabled for this extension. Uninstalling it restores your existing extension.',
       buttons: ['Replace', 'Cancel'],
       type: 'question',
     });
