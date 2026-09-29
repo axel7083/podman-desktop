@@ -156,6 +156,9 @@ test('should check for updates and try to update one extension automatically', a
     expect.anything(),
     expect.anything(),
     'oci-registry.foo/foo/bar1',
+    undefined,
+    undefined,
+    { confirm: false },
   );
 
   expect(extensionLoader.removeExtension).toBeCalledWith('foo.extension1');

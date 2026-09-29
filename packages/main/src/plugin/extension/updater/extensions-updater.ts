@@ -228,7 +228,16 @@ export class ExtensionsUpdater {
       };
 
       // install the extension
-      await this.extensionInstaller.installFromImage(reportMessage, reportMessage, reportMessage, ociUri);
+      // the user already accepted to replace the extension being updated
+      await this.extensionInstaller.installFromImage(
+        reportMessage,
+        reportMessage,
+        reportMessage,
+        ociUri,
+        undefined,
+        undefined,
+        { confirm: false },
+      );
     } catch (err) {
       console.error(`Error while updating extension ${extensionId}:`, err);
       telemetryOptions.error = err;

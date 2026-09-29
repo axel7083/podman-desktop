@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { rmSync } from 'node:fs';
+import { rmdirSync, rmSync } from 'node:fs';
 import * as path from 'node:path';
 
 import type { ExtensionInfo } from '@podman-desktop/core-api';
@@ -30,7 +30,9 @@ import type { Directories } from '/@/plugin/directories.js';
 import type { ExtensionsCatalog } from '/@/plugin/extension/catalog/extensions-catalog.js';
 import type { AnalyzedExtension } from '/@/plugin/extension/extension-analyzer.js';
 import type { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
+import type { ExtensionsBundle } from '/@/plugin/extension/local/extensions-bundle.js';
 import type { ImageRegistry } from '/@/plugin/image-registry.js';
+import type { MessageBox } from '/@/plugin/message-box.js';
 import type { TaskManager } from '/@/plugin/tasks/task-manager.js';
 import type { Telemetry } from '/@/plugin/telemetry/telemetry.js';
 
@@ -51,6 +53,7 @@ const loadExtensionMock = vi.fn();
 const analyzeExtensionMock = vi.fn();
 const loadExtensionsMock = vi.fn();
 const ensureExtensionsMock = vi.fn();
+const replaceBundledExtensionMock = vi.fn();
 const extensionLoader: ExtensionLoader = {
   getPluginsDirectory: getPluginsDirectoryMock,
   listExtensions: listExtensionsMock,
@@ -58,7 +61,17 @@ const extensionLoader: ExtensionLoader = {
   loadExtensions: loadExtensionsMock,
   analyzeExtension: analyzeExtensionMock,
   ensureExtensionIsEnabled: ensureExtensionsMock,
+  replaceBundledExtension: replaceBundledExtensionMock,
 } as unknown as ExtensionLoader;
+
+const extensionsBundle = {
+  all: vi.fn(),
+  findOverridden: vi.fn(),
+} as unknown as ExtensionsBundle;
+
+const messageBox = {
+  showMessageBox: vi.fn(),
+} as unknown as MessageBox;
 
 const getImageConfigLabelsMock = vi.fn();
 const downloadAndExtractImageMock = vi.fn();
@@ -102,6 +115,7 @@ beforeEach(() => {
   });
 
   vi.mocked(rmSync).mockReturnValue(undefined);
+  vi.mocked(extensionsBundle.all).mockReturnValue([]);
   vi.mocked(directories.getPluginsDirectory).mockReturnValue('/fake/plugins/directory');
   vi.mocked(directories.getContributionStorageDir).mockReturnValue('/fake/dd/directory');
   extensionInstaller = new ExtensionInstaller(
@@ -114,6 +128,8 @@ beforeEach(() => {
     contributionManager,
     ipcMainOnMock,
     taskManager,
+    extensionsBundle,
+    messageBox,
   );
 });
 
@@ -312,6 +328,217 @@ test('should fail if extension is already installed', async () => {
 
   // extension not started
   expect(apiSenderSendMock).not.toBeCalled();
+});
+
+describe('overriding a bundled extension', () => {
+  const imageToPull = 'fake.io/new-image:tag';
+  const publisher = 'podman-desktop';
+  const name = 'podman';
+  const id = `${publisher}.${name}`;
+  const extensionPath = path.join('/fake/plugins/directory', 'fakeionewimage');
+
+  /** an analyzed extension having the same id as an already installed, bundled extension */
+  function mockBundledCollision(): AnalyzedExtension {
+    vi.mocked(imageRegistry.getImageConfigLabels).mockResolvedValueOnce({
+      'org.opencontainers.image.title': 'fake-title',
+      'org.opencontainers.image.description': 'fake-description',
+      'org.opencontainers.image.vendor': 'fake-vendor',
+      'io.podman-desktop.api.version': '1.0.0',
+    });
+
+    // the extension with the same id is bundled
+    listExtensionsMock.mockResolvedValue([
+      {
+        id,
+        name,
+        path: '/bundled/podman',
+        bundled: true,
+      },
+    ]);
+
+    vi.spyOn(extensionInstaller, 'extractExtensionFiles').mockResolvedValue();
+
+    const analyzedExtension = {
+      id,
+      path: extensionPath,
+      manifest: { name, displayName: 'Podman' },
+    } as unknown as AnalyzedExtension;
+    analyzeExtensionMock.mockResolvedValueOnce(analyzedExtension);
+    vi.mocked(extensionsBundle.findOverridden).mockReturnValue({
+      id,
+      manifest: { version: '1.0.0' },
+    } as unknown as AnalyzedExtension);
+    vi.mocked(messageBox.showMessageBox).mockResolvedValue({ response: 'Replace' });
+    return analyzedExtension;
+  }
+
+  test('a bundled extension with the same id flags the extension as overriding instead of erroring', async () => {
+    const sendError = vi.fn();
+    const analyzedExtension = mockBundledCollision();
+
+    await extensionInstaller.installFromImage(vi.fn(), sendError, vi.fn(), imageToPull);
+
+    expect(sendError).not.toBeCalled();
+    expect(analyzedExtension.overrides).toEqual({ id, version: '1.0.0' });
+  });
+
+  test('the override is reported in the installation logs', async () => {
+    const sendLog = vi.fn();
+    mockBundledCollision();
+
+    await extensionInstaller.installFromImage(sendLog, vi.fn(), vi.fn(), imageToPull);
+
+    expect(sendLog).toHaveBeenCalledWith(
+      `Extension ${id} replaces the bundled extension ${id}, which will be restored if you uninstall it.`,
+    );
+  });
+
+  test('the bundled extension is deactivated before the new one is loaded', async () => {
+    const sendEnd = vi.fn();
+    mockBundledCollision();
+
+    await extensionInstaller.installFromImage(vi.fn(), vi.fn(), sendEnd, imageToPull);
+
+    expect(replaceBundledExtensionMock).toHaveBeenCalledWith(id);
+    expect(loadExtensionsMock).toHaveBeenCalledWith([
+      expect.objectContaining({ id, overrides: { id, version: '1.0.0' } }),
+    ]);
+    // the installation is not cancelled, nothing is cleaned up
+    expect(vi.mocked(rmdirSync)).not.toBeCalled();
+    expect(sendEnd).toHaveBeenCalledWith('Extension Successfully installed.');
+  });
+
+  test('an extension declaring the overrides field replaces the bundled extension having another id', async () => {
+    vi.mocked(imageRegistry.getImageConfigLabels).mockResolvedValueOnce({
+      'org.opencontainers.image.title': 'fake-title',
+      'org.opencontainers.image.description': 'fake-description',
+      'org.opencontainers.image.vendor': 'fake-vendor',
+      'io.podman-desktop.api.version': '1.0.0',
+    });
+    listExtensionsMock.mockResolvedValue([{ id, name, path: '/bundled/podman', bundled: true }]);
+    vi.spyOn(extensionInstaller, 'extractExtensionFiles').mockResolvedValue();
+    const analyzedExtension = {
+      id: 'redhat.podman',
+      path: extensionPath,
+      manifest: { name, overrides: id },
+    } as unknown as AnalyzedExtension;
+    analyzeExtensionMock.mockResolvedValueOnce(analyzedExtension);
+    vi.mocked(extensionsBundle.findOverridden).mockReturnValue({
+      id,
+      manifest: { version: '1.0.0' },
+    } as unknown as AnalyzedExtension);
+    vi.mocked(messageBox.showMessageBox).mockResolvedValue({ response: 'Replace' });
+
+    await extensionInstaller.installFromImage(vi.fn(), vi.fn(), vi.fn(), imageToPull);
+
+    expect(extensionsBundle.findOverridden).toHaveBeenCalledWith(analyzedExtension);
+    expect(replaceBundledExtensionMock).toHaveBeenCalledWith(id);
+    expect(loadExtensionsMock).toHaveBeenCalledWith([
+      expect.objectContaining({ id: 'redhat.podman', overrides: { id, version: '1.0.0' } }),
+    ]);
+  });
+
+  test('the user is asked to confirm the override', async () => {
+    const analyzedExtension = mockBundledCollision();
+    analyzedExtension.manifest.version = '2.0.0';
+    vi.mocked(extensionsBundle.all).mockReturnValue([
+      { id, manifest: { displayName: 'Podman' } } as unknown as AnalyzedExtension,
+    ]);
+
+    await extensionInstaller.installFromImage(vi.fn(), vi.fn(), vi.fn(), imageToPull);
+
+    expect(messageBox.showMessageBox).toHaveBeenCalledWith({
+      title: 'Replace Extension?',
+      message: `This extension is replacing your existing extension named 'Podman'.`,
+      detail: 'Uninstalling it restores your existing extension.',
+      buttons: ['Replace', 'Cancel'],
+      type: 'question',
+    });
+  });
+
+  test('cancelling the override removes the extracted extension and keeps the bundled one', async () => {
+    const sendError = vi.fn();
+    const sendEnd = vi.fn();
+    mockBundledCollision();
+    vi.mocked(messageBox.showMessageBox).mockResolvedValue({ response: 'Cancel' });
+
+    await extensionInstaller.installFromImage(vi.fn(), sendError, sendEnd, imageToPull);
+
+    expect(sendError).toHaveBeenCalledWith(`Installation of ${id} cancelled.`);
+    expect(vi.mocked(rmdirSync)).toHaveBeenCalledWith(extensionPath, { recursive: true });
+    expect(replaceBundledExtensionMock).not.toBeCalled();
+    expect(loadExtensionsMock).not.toBeCalled();
+    expect(sendEnd).not.toBeCalled();
+  });
+
+  test('no confirmation is asked when disabled through the options', async () => {
+    mockBundledCollision();
+
+    await extensionInstaller.installFromImage(vi.fn(), vi.fn(), vi.fn(), imageToPull, undefined, undefined, {
+      confirm: false,
+    });
+
+    expect(messageBox.showMessageBox).not.toBeCalled();
+    expect(replaceBundledExtensionMock).toHaveBeenCalledWith(id);
+  });
+
+  test('an installed extension already overriding the bundled one blocks the installation', async () => {
+    vi.mocked(imageRegistry.getImageConfigLabels).mockResolvedValueOnce({
+      'org.opencontainers.image.title': 'fake-title',
+      'org.opencontainers.image.description': 'fake-description',
+      'org.opencontainers.image.vendor': 'fake-vendor',
+      'io.podman-desktop.api.version': '1.0.0',
+    });
+    listExtensionsMock.mockResolvedValue([{ id, name, path: '/fake/plugins/directory/other', bundled: false }]);
+    vi.spyOn(extensionInstaller, 'extractExtensionFiles').mockResolvedValue();
+    analyzeExtensionMock.mockResolvedValueOnce({ id, path: extensionPath, manifest: { name } });
+    vi.mocked(extensionsBundle.findOverridden).mockReturnValue({
+      id,
+      manifest: { version: '1.0.0' },
+    } as unknown as AnalyzedExtension);
+
+    const sendError = vi.fn();
+    await extensionInstaller.installFromImage(vi.fn(), sendError, vi.fn(), imageToPull);
+
+    expect(sendError).toHaveBeenCalledWith(`Extension ${id} is already installed.`);
+    expect(replaceBundledExtensionMock).not.toBeCalled();
+    expect(loadExtensionsMock).not.toBeCalled();
+  });
+
+  test('a normal installation does not log any override nor replace anything', async () => {
+    vi.mocked(imageRegistry.getImageConfigLabels).mockResolvedValueOnce({
+      'org.opencontainers.image.title': 'fake-title',
+      'org.opencontainers.image.description': 'fake-description',
+      'org.opencontainers.image.vendor': 'fake-vendor',
+      'io.podman-desktop.api.version': '1.0.0',
+    });
+    listExtensionsMock.mockResolvedValue([]);
+    vi.spyOn(extensionInstaller, 'extractExtensionFiles').mockResolvedValue();
+    analyzeExtensionMock.mockResolvedValueOnce({
+      id,
+      path: extensionPath,
+      manifest: { name },
+    } as unknown as AnalyzedExtension);
+
+    const sendLog = vi.fn();
+    await extensionInstaller.installFromImage(sendLog, vi.fn(), vi.fn(), imageToPull);
+
+    expect(sendLog).not.toHaveBeenCalledWith(expect.stringContaining('replaces the bundled extension'));
+    expect(replaceBundledExtensionMock).not.toBeCalled();
+    expect(loadExtensionsMock).toBeCalled();
+  });
+
+  test('only the install channel is registered, the override needs no extra IPC', async () => {
+    const channels: string[] = [];
+    vi.mocked(ipcMainOnMock).mockImplementation((channel: string) => {
+      channels.push(channel);
+      return {} as IpcMain;
+    });
+
+    await extensionInstaller.init();
+
+    expect(channels).toEqual(['extension-installer:install-from-image']);
+  });
 });
 
 test('should fail if an image have incorrect labels', async () => {
