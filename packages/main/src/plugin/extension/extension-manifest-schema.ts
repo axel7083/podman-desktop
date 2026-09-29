@@ -50,6 +50,8 @@ export const ExtensionManifestSchema = z
     homepage: z.string().optional(),
     extensionDependencies: z.array(z.string()).optional(),
     extensionPack: z.array(z.string()).optional(),
+    // id of a bundled extension this extension replaces, when it does not share its id
+    overrides: z.string().optional(),
     engines: z
       .object({
         'podman-desktop': z.string().optional(),
