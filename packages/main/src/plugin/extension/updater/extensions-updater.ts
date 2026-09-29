@@ -144,16 +144,22 @@ export class ExtensionsUpdater {
 
   // check if some extensions can be updated or not
   async doCheckForUpdates(): Promise<void> {
-    const { extensionsToUpdate } = await this.flagUpdates();
+    const { installedExtensions, extensionsToUpdate } = await this.flagUpdates();
 
     // if there are no extensions to update, skip
     if (extensionsToUpdate.length === 0) {
       return;
     }
 
-    // if auto update is enabled, update all extensions
+    // if auto update is enabled, update all extensions but the pinned ones, only flagged as "can be updated"
     if (this.isAutoUpdateEnabled()) {
-      await this.updateExtensions(extensionsToUpdate, true);
+      const pinnedExtensionIds = installedExtensions
+        .filter(extension => extension.pinned)
+        .map(extension => extension.id);
+      await this.updateExtensions(
+        extensionsToUpdate.filter(extension => !pinnedExtensionIds.includes(extension.id)),
+        true,
+      );
     } else {
       // report in telemetry that user has updates available
       const telemetryOptions = {

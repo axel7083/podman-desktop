@@ -53,6 +53,8 @@ export interface ExtensionInfo {
     version: string;
     ociUri: string;
   };
+  // true if updates are not applied automatically to this extension
+  pinned?: boolean;
   repository?: string | { type: string; url: string; directory?: string };
   homepage?: string;
 }

@@ -2466,6 +2466,13 @@ export class PluginSystem {
     );
 
     this.ipcHandle(
+      'extension-loader:setExtensionPinned',
+      async (_listener: Electron.IpcMainInvokeEvent, extensionId: string, pinned: boolean): Promise<void> => {
+        return this.extensionLoader.setExtensionPinned(extensionId, pinned);
+      },
+    );
+
+    this.ipcHandle(
       'shell:openExternal',
       async (_listener: Electron.IpcMainInvokeEvent, link: string): Promise<void> => {
         if (securityRestrictionCurrentHandler.handler) {

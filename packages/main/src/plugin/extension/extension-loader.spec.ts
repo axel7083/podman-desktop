@@ -1780,6 +1780,63 @@ describe('showDangerMessage', () => {
   });
 });
 
+describe('pinned extensions', () => {
+  const extensionId = 'company.ext-id';
+
+  beforeEach(() => {
+    configurationRegistryGetConfigurationMock.mockReturnValue({
+      get: vi
+        .fn()
+        .mockImplementation((key: string, defaultValue?: unknown) =>
+          key === 'pinned' ? ['other.pinned', extensionId] : defaultValue,
+        ),
+    });
+  });
+
+  test('listExtensions exposes whether an extension is pinned', async () => {
+    extensionLoader.setAnalyzedExtension(extensionId, {
+      id: extensionId,
+      path: 'fakePath',
+      manifest: { name: 'ext-id' },
+    } as unknown as AnalyzedExtensionWithApi);
+    extensionLoader.setAnalyzedExtension('company.not-pinned', {
+      id: 'company.not-pinned',
+      path: 'fakePath',
+      manifest: { name: 'not-pinned' },
+    } as unknown as AnalyzedExtensionWithApi);
+
+    const extensions = await extensionLoader.listExtensions();
+
+    expect(extensions.find(extension => extension.id === extensionId)?.pinned).toBeTruthy();
+    expect(extensions.find(extension => extension.id === 'company.not-pinned')?.pinned).toBeFalsy();
+  });
+
+  test('setExtensionPinned adds the extension to the pinned list and notifies the renderer', async () => {
+    await extensionLoader.setExtensionPinned('company.new', true);
+
+    expect(configurationRegistryUpdateConfigurationMock).toHaveBeenCalledWith('extensions.pinned', [
+      'other.pinned',
+      extensionId,
+      'company.new',
+    ]);
+    expect(apiSender.send).toHaveBeenCalledWith('extensions-updated');
+  });
+
+  test('setExtensionPinned removes the extension from the pinned list', async () => {
+    await extensionLoader.setExtensionPinned(extensionId, false);
+
+    expect(configurationRegistryUpdateConfigurationMock).toHaveBeenCalledWith('extensions.pinned', ['other.pinned']);
+  });
+
+  test('removeExtensionPerUserRequest unpins the extension', async () => {
+    extensionLoader.removeExtension = vi.fn();
+
+    await extensionLoader.removeExtensionPerUserRequest(extensionId);
+
+    expect(configurationRegistryUpdateConfigurationMock).toHaveBeenCalledWith('extensions.pinned', ['other.pinned']);
+  });
+});
+
 describe('Removing extension by user', async () => {
   test('enables the overridden bundled extension before restoring it', async () => {
     configurationRegistryGetConfigurationMock.mockReturnValue({
