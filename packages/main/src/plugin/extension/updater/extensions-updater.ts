@@ -182,9 +182,10 @@ export class ExtensionsUpdater {
     // now, grab list of installed extensions
     const installedExtensions = await this.extensionLoader.listExtensions();
 
-    // now, for each installed extension that is not a built-in extension, check if there is a newer version available
+    // now, for each extension installed by the user or bundled, check if there is a newer version available
+    // a newer version of a bundled extension is installed as overriding it
     const extensionsToUpdate = installedExtensions
-      .filter(extension => extension.removable === true)
+      .filter(extension => extension.removable === true || extension.bundled)
       .map(installedExtension => {
         // find the extension in the list of available extensions
         const availableExtension = availableExtensions.find(extension => extension.id === installedExtension.id);
@@ -260,8 +261,13 @@ export class ExtensionsUpdater {
     }
 
     try {
-      // uninstall the extension
-      await this.extensionLoader.removeExtension(extensionId);
+      // uninstall the extension, unless it is a bundled one: the new version overrides it
+      const installedExtension = (await this.extensionLoader.listExtensions()).find(
+        extension => extension.id === extensionId,
+      );
+      if (!installedExtension?.bundled) {
+        await this.extensionLoader.removeExtension(extensionId);
+      }
 
       const reportMessage = (message: string): void => {
         console.log(message);

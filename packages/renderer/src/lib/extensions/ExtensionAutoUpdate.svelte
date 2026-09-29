@@ -4,7 +4,7 @@ import { Button } from '@podman-desktop/ui-svelte';
 import type { CombinedExtensionInfoUI } from '/@/stores/all-installed-extensions';
 
 interface Props {
-  extension: Pick<CombinedExtensionInfoUI, 'id' | 'type' | 'removable' | 'pinned'>;
+  extension: Pick<CombinedExtensionInfoUI, 'id' | 'type' | 'removable' | 'bundled' | 'pinned'>;
 }
 
 let { extension }: Props = $props();
@@ -21,8 +21,8 @@ async function togglePinned(): Promise<void> {
 }
 </script>
 
-<!-- only extensions installed by the user are updated -->
-{#if extension.type === 'pd' && extension.removable}
+<!-- extensions installed by the user and bundled ones are updated from the catalog -->
+{#if extension.type === 'pd' && (extension.removable || extension.bundled)}
   <div class="flex flex-col lg:mb-4 items-start" role="region" aria-label="Auto-update">
     <div class="uppercase text-sm text-[var(--pd-details-card-header)]">auto-update</div>
     <div class="flex flex-row items-center gap-2 font-thin text-sm text-[var(--pd-details-card-text)]">

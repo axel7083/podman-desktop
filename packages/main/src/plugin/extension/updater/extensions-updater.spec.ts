@@ -225,3 +225,54 @@ test('should flag a pinned extension as updatable without updating it automatica
   expect(spyUpdateExtension).not.toBeCalled();
   expect(extensionInstaller.installFromImage).not.toBeCalled();
 });
+
+test('should update a bundled extension by overriding it, without removing it', async () => {
+  const bundledExtension1: ExtensionInfo = {
+    id: 'foo.extension1',
+    version: '1.0.0',
+    removable: false,
+    bundled: true,
+  } as ExtensionInfo;
+
+  extensionsCatalogGetExtensionsMock.mockResolvedValue([catalogExtension1, catalogExtension2]);
+  extensionLoaderListExtensionsMock.mockResolvedValue([bundledExtension1]);
+
+  // auto update is enabled
+  getConfigMock.mockReturnValue(true);
+
+  await extensionsUpdater.doCheckForUpdates();
+
+  expect(extensionLoaderSetExtensionsUpdatesMock).toBeCalledWith([
+    { id: 'foo.extension1', ociUri: 'oci-registry.foo/foo/bar1', version: '2.0.0' },
+  ]);
+  // a bundled extension cannot be removed, the new version overrides it without confirmation
+  expect(extensionLoader.removeExtension).not.toBeCalled();
+  expect(extensionInstaller.installFromImage).toBeCalledWith(
+    expect.anything(),
+    expect.anything(),
+    expect.anything(),
+    'oci-registry.foo/foo/bar1',
+    undefined,
+    undefined,
+    { confirm: false },
+  );
+});
+
+test('should not update an extension in development mode', async () => {
+  const devExtension1: ExtensionInfo = {
+    id: 'foo.extension1',
+    version: '1.0.0',
+    removable: false,
+    bundled: false,
+    devMode: true,
+  } as ExtensionInfo;
+
+  extensionsCatalogGetExtensionsMock.mockResolvedValue([catalogExtension1, catalogExtension2]);
+  extensionLoaderListExtensionsMock.mockResolvedValue([devExtension1]);
+  getConfigMock.mockReturnValue(true);
+
+  await extensionsUpdater.doCheckForUpdates();
+
+  expect(extensionLoaderSetExtensionsUpdatesMock).not.toBeCalled();
+  expect(extensionInstaller.installFromImage).not.toBeCalled();
+});
