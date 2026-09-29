@@ -587,6 +587,78 @@ describe('extensionLoader#start', () => {
     expect(loaded?.[0]?.overrides).toEqual({ id: 'podman-desktop.bootc', version: '1.0.0' });
   });
 
+  /** start the loader with a bundled podman extension and an installed one overriding it */
+  async function startWithOverride(installedVersion: string): Promise<AnalyzedExtension[] | undefined> {
+    extensionLoader.setPluginsScanDirectory('/fake/path/scanning');
+
+    const bundledExtension = {
+      id: 'podman-desktop.podman',
+      path: '/bundled/podman',
+      manifest: { name: 'podman', version: '1.31.0-next' },
+      removable: false,
+      devMode: false,
+      bundled: true,
+    } as unknown as AnalyzedExtension;
+    vi.mocked(extensionsBundle.all).mockReturnValue([bundledExtension]);
+    vi.mocked(extensionsBundle.findOverridden).mockReturnValue(bundledExtension);
+
+    vi.spyOn(extensionLoader, 'analyzeExtension').mockResolvedValue({
+      id: 'podman-desktop.podman',
+      path: path.join(directories.getPluginsDirectory(), 'podman'),
+      manifest: { name: 'podman', version: installedVersion },
+      removable: true,
+      devMode: false,
+      bundled: false,
+    } as unknown as AnalyzedExtensionWithApi);
+    const loadExtensionsMock = vi.spyOn(extensionLoader, 'loadExtensions');
+    loadExtensionsMock.mockResolvedValue(undefined);
+
+    vi.mocked(
+      fs.promises.readdir as (path: string, options?: { withFileTypes: true }) => Promise<fs.Dirent[]>,
+    ).mockImplementation(async p =>
+      p === directories.getPluginsDirectory()
+        ? [{ name: 'podman', isFile: (): boolean => false, isDirectory: (): boolean => true } as unknown as fs.Dirent]
+        : [],
+    );
+    vi.mocked(fs.existsSync).mockImplementation(p => p === directories.getPluginsDirectory());
+
+    await extensionLoader.start();
+
+    return vi.mocked(loadExtensionsMock).mock.calls[0]?.[0];
+  }
+
+  test('an installed extension older than the bundled one is ignored', async () => {
+    const loaded = await startWithOverride('1.30.0');
+
+    expect(loaded).toHaveLength(1);
+    expect(loaded?.[0]?.bundled).toBeTruthy();
+    expect(loaded?.[0]?.overrides).toBeUndefined();
+  });
+
+  test('an installed extension newer than the bundled one overrides it', async () => {
+    const loaded = await startWithOverride('1.32.0');
+
+    expect(loaded).toHaveLength(1);
+    expect(loaded?.[0]?.bundled).toBeFalsy();
+    expect(loaded?.[0]?.overrides).toEqual({ id: 'podman-desktop.podman', version: '1.31.0-next' });
+  });
+
+  test('a pinned installed extension older than the bundled one overrides it', async () => {
+    configurationRegistryGetConfigurationMock.mockReturnValue({
+      get: vi
+        .fn()
+        .mockImplementation((key: string, defaultValue?: unknown) =>
+          key === 'pinned' ? ['podman-desktop.podman'] : defaultValue,
+        ),
+    });
+
+    const loaded = await startWithOverride('1.30.0');
+
+    expect(loaded).toHaveLength(1);
+    expect(loaded?.[0]?.bundled).toBeFalsy();
+    expect(loaded?.[0]?.overrides).toEqual({ id: 'podman-desktop.podman', version: '1.31.0-next' });
+  });
+
   test('a bundled extension without any matching installed extension is kept as is', async () => {
     extensionLoader.setPluginsScanDirectory('/fake/path/scanning');
 
