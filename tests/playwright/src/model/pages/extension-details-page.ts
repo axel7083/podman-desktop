@@ -19,6 +19,8 @@
 import type { Locator, Page } from '@playwright/test';
 import test, { expect as playExpect } from '@playwright/test';
 
+import { handleConfirmationDialog } from '/@/utility/operations';
+
 import { BasePage } from './base-page';
 import { ExtensionsPage } from './extensions-page';
 
@@ -82,6 +84,7 @@ export class ExtensionDetailsPage extends BasePage {
 
       await playExpect(this.removeExtensionButton).toBeVisible();
       await this.removeExtensionButton.click();
+      await handleConfirmationDialog({ page: this.page, dialogTitle: 'Delete Extension?', buttonName: 'Delete' });
       await playExpect(this.removeExtensionButton).not.toBeVisible({ timeout: 30_000 });
       return new ExtensionsPage(this.page);
     });

@@ -111,6 +111,20 @@ test('expect withConfirmation to use delete variant with Delete button and dange
   });
 });
 
+test('expect withConfirmation to forward the detail', async () => {
+  vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Delete' });
+
+  withConfirmation(vi.fn(), 'delete this resource', {
+    title: 'Delete Resource?',
+    variant: 'delete',
+    detail: 'Some details.',
+  });
+
+  await vi.waitFor(() => {
+    expect(window.showMessageBox).toHaveBeenCalledWith(expect.objectContaining({ detail: 'Some details.' }));
+  });
+});
+
 test('expect withConfirmation to use default variant explicitly', async () => {
   vi.mocked(window.showMessageBox).mockResolvedValue({ response: 'Continue' });
 

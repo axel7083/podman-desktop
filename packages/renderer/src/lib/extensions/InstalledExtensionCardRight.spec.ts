@@ -84,3 +84,26 @@ test('Expect to have podman desktop extension info (removable = false)', async (
   // region contains the details
   expect(region).toHaveTextContent('Pre-installed');
 });
+
+test('Expect an overriding extension to show the bundled extension it replaces', async () => {
+  const extension: CombinedExtensionInfoUI = {
+    type: 'pd',
+    id: 'podman-desktop.kind',
+    name: 'kind',
+    description: 'my description',
+    displayName: 'Kind',
+    publisher: '',
+    removable: true,
+    devMode: false,
+    bundled: false,
+    overrides: { id: 'podman-desktop.kind', version: '1.31.0' },
+    version: '1.33.0',
+    state: 'started',
+    path: '',
+    readme: '',
+  };
+  render(InstalledExtensionCardRight, { extension });
+
+  screen.getByText('Overriding podman-desktop.kind v1.31.0');
+  screen.getByRole('button', { name: 'Restore bundled' });
+});
