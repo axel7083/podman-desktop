@@ -107,3 +107,25 @@ test('Expect an overriding extension to show the bundled extension it replaces',
   screen.getByText('Overriding podman-desktop.kind v1.31.0');
   screen.getByRole('button', { name: 'Restore bundled' });
 });
+
+test('Expect to have an update button when an update is available', async () => {
+  const extension: CombinedExtensionInfoUI = {
+    type: 'pd',
+    id: 'foo.bar',
+    name: 'foo',
+    description: 'my description',
+    displayName: '',
+    publisher: '',
+    removable: true,
+    devMode: false,
+    bundled: false,
+    version: '1.2.3',
+    update: { version: '2.0.0', ociUri: 'quay.io/foo/bar:2.0.0' },
+    state: '',
+    path: '',
+    readme: '',
+  };
+  render(InstalledExtensionCardRight, { extension });
+
+  screen.getByRole('button', { name: 'Update foo.bar to v2.0.0' });
+});
