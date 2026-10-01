@@ -58,13 +58,13 @@ async function onButtonClicked(): Promise<void> {
 }
 </script>
 
-<button on:click={onButtonClicked}>
+<button onclick={onButtonClicked}>
 ```
 
 🚫 **Instead of:**
 
 ```ts
-<button on:click={(): Promise<void> => { /* the code here */ }}>
+<button onclick={(): Promise<void> => { /* the code here */ }}>
 ```
 
 If values have to be passed from the template to the function, use the `bind` method on the function to pass the parameter.
@@ -79,7 +79,7 @@ async function onButtonClicked(object: Object): Promise<void> {
 </script>
 
 {#each objects as object (object.id)}
-  <button on:click={onButtonClicked.bind(undefined, object)}>
+  <button onclick={onButtonClicked.bind(undefined, object)}>
 {/each}
 ```
 
@@ -87,8 +87,40 @@ async function onButtonClicked(object: Object): Promise<void> {
 
 ```ts
 {#each objects as object (object.id)}
-  <button on:click={(): Promise<void> => onButtonClicked(object)}>
+  <button onclick={(): Promise<void> => onButtonClicked(object)}>
 {/each}
+```
+
+### Svelte 5 reactivity
+
+New and modified components use Svelte 5 runes. The codebase still contains legacy Svelte 4 syntax (`on:` directives, `$:` statements, `writable` stores): do not copy it into new code. Migrating a legacy component is done in its own PR, before changing its behaviour.
+
+- Compute values with `$derived` rather than with an `$effect` assigning a `$state`, an intermediate `$state`, or a manual store subscription.
+- Use event attributes (`onclick`, `oninput`) rather than `on:` directives.
+- Never mix legacy `$:` statements with `$props()` in the same component.
+- For new shared state, prefer a `.svelte.ts` module exposing `$state` over a new `writable` store.
+
+✅ **Use this pattern:**
+
+```ts
+<script lang="ts">
+let { containers }: Props = $props();
+
+const runningCount = $derived(containers.filter(container => container.state === 'running').length);
+</script>
+```
+
+🚫 **Instead of:**
+
+```ts
+<script lang="ts">
+let { containers }: Props = $props();
+
+let runningCount = $state(0);
+$effect(() => {
+  runningCount = containers.filter(container => container.state === 'running').length;
+});
+</script>
 ```
 
 ### Usage of Icon component
@@ -257,6 +289,40 @@ Example:
 
 References: [@attach](https://svelte.dev/docs/svelte/@attach), [svelte/attachments](https://svelte.dev/docs/svelte/svelte-attachments)
 
+### New files
+
+- Start every new source file with the Apache 2.0 copyright header used in the rest of the codebase, with the current year. When modifying a file, update the year range of its header.
+- Name TypeScript files in kebab-case (`container-utils.ts`, not `containerUtils.ts`).
+- Before writing a new helper, component, type or test fixture, search for an existing one. Reviewers frequently ask to reuse existing code rather than duplicating it.
+
+### Main process services
+
+Services in `packages/main` are Inversify-managed classes (see [ADR-003](docs/adr/ADR-003-inversify-dependency-injection.md)):
+
+- Declare them as `@injectable()` classes and receive their dependencies through the constructor with `@inject()`.
+- Prefer class members to loose exported functions or static methods, so the service can be mocked and injected.
+- Dispose what you register: listeners on `onDid*` events, watchers and timers must be released when the service is disposed.
+
+### Renderer and main process boundaries
+
+The renderer does not read main-process data sources (configuration files, `product.json`, engine APIs) directly. Expose a purpose-built method from the main process and call it through the preload bridge. Filtering or computation shared by several views lives in the main process, and types shared between the processes live in `packages/api`.
+
+### Extension API stability
+
+`@podman-desktop/api` is used by extensions that are released independently from Podman Desktop, so a breaking change breaks them:
+
+- Never remove or rename a field, function or event, and never tighten an existing type (for example making an optional field required).
+- Add new parameters through an options object rather than new positional parameters.
+- Submit extension API changes in a dedicated `feat(api)` PR, separate from their implementation and their consumers.
+- Keep internal types decoupled from the types exposed in the API.
+
+### Error handling
+
+- Do not silently swallow errors: when catching an error, log the reason or propagate it.
+- A function either returns a valid value or throws; avoid returning `null` to signal an error.
+- When a long-running task fails, mark the task as failed so the user sees it.
+- When a feature is disabled by configuration, log it, so the behaviour can be understood from the logs.
+
 ## Unit tests code
 
 ### Use `vi.mocked`, not a generic `myFunctionMock`
@@ -303,7 +369,7 @@ it's up to you to decide if you want to mock them or not, depending on the cover
 
 #### Mock a complete module
 
-Mock completely an imported module with `vi.mock('/path/to/module)`, and define mock implementation for each test with `vi.mocked(function).mock...()`.
+Mock completely an imported module with `vi.mock(import('/path/to/module'))`, and define mock implementation for each test with `vi.mocked(function).mock...()`.
 
 Use `vi.resetAllMocks()` in the top-level `beforeEach` to reset all mocks to a no-op function returning `undefined` before to start each test.
 
@@ -313,7 +379,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 // completely mock the fs module, to be sure to
 // run the tests in complete isolation from the filesystem
-vi.mock('node:fs');
+vi.mock(import('node:fs'));
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -745,15 +811,15 @@ When a dialog presents two equally valid options (not a cancel/action pair), sty
 - Use action verbs, not descriptive labels
 
 ```svelte
-<Button type="primary" on:click={fromExistingImage}>Use existing image</Button>
-<Button type="primary" on:click={fromDockerfile}>Use Containerfile</Button>
+<Button type="primary" onclick={fromExistingImage}>Use existing image</Button>
+<Button type="primary" onclick={fromDockerfile}>Use Containerfile</Button>
 ```
 
 Contrast with the cancel/action pattern, where `Cancel` stays `type="link"` and only one button is `type="primary"`:
 
 ```svelte
-<Button type="link" on:click={cancel}>Cancel</Button>
-<Button type="primary" on:click={save}>Save</Button>
+<Button type="link" onclick={cancel}>Cancel</Button>
+<Button type="primary" onclick={save}>Save</Button>
 ```
 
 ### Tone

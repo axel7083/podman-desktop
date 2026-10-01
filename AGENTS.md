@@ -95,6 +95,7 @@ storybook/              - UI component showcase
 7. Extension development — see `website/docs/extensions/`
 8. We use semantic commits (e.g. `feat(renderer): add feature`)
 9. Every commit must be signed; mention AI assistance
+10. Before opening a PR or requesting a review, run the `pr-readiness` skill and follow the checklist in [CONTRIBUTING.md](CONTRIBUTING.md#before-requesting-a-review)
 
 ## Pattern References
 

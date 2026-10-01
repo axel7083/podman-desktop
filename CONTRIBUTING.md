@@ -61,6 +61,14 @@ self-assign the issue with the `status/in-progress` label.
 If you can not set the label: add a quick comment in the issue asking that
 the `status/in-progress` label to be set and a maintainer will label it.
 
+### Before you start coding
+
+Most PRs that stall or get closed do so because of a disagreement on the approach, not on the code. Before writing a non-trivial change:
+
+- Check the issue: is it already assigned or `status/in-progress`? Is there an open PR for it? Is it still reproducible on `main`? Has an approach already been suggested in the thread?
+- Check that the change belongs in this repository (and not in an extension repository or the website).
+- For anything beyond a small fix (new API, new service, new page, data model or UX change), describe the intended approach in the issue and wait for a maintainer to agree on it. It is much cheaper to change direction in a comment than in a 1000-line PR.
+
 ## Contributing
 
 This section describes how to start a contribution to Podman Desktop.
@@ -304,7 +312,11 @@ Whether it is a large patch or a one-line bug fix, make sure you explain in deta
 
 Make sure you include the issue in your PR! For example, say: `Closes #XXX`.
 
-PRs will be approved by an [approver][owners] listed in [`CODEOWNERS`](CODEOWNERS).
+Fill in every section of the [pull request template](.github/PULL_REQUEST_TEMPLATE.md) (write `N/A` rather than removing a heading):
+
+- **What does this PR do?** Explain the _why_: the root cause for a fix (not only the symptom), and the alternatives you considered for a non-obvious design. If you change an API, say how existing consumers are affected. Keep it short and focused on intent.
+- **Screenshot / video of UI**: for any visual change, add before/after screenshots taken from your own build, with the same data, and refresh them if you push visual changes. Say "no visual change" when that is the case. For `packages/ui` components, add or update the Storybook story.
+- **How to test this PR?**: copy-pasteable steps that you verified yourself, including the environment they need (OS, Podman machine state, installed tools).
 
 We typically require one approval for code as well as documentation-related PR's. If it is a large code-related PR, proof of review / testing (a video / screenshot) is required.
 
@@ -317,6 +329,37 @@ Some tips for the PR process:
 - Try to break up larger PRs into smaller ones for easier reviewing
 - Any additional code changes should be in a new commit so we can see what has changed between reviews.
 - Squash your commits into logical pieces of work.
+
+### One goal per PR
+
+Mixed-scope PRs are the most frequent reason for a change request, and the review time grows quickly with the size of the PR. Keep each PR to a single goal:
+
+- Split a refactoring from the behaviour change that needs it, and send the refactoring first.
+- Split changes to the extension API or the main process from the renderer changes consuming them.
+- Do not mix a dependency update with a code change, or a new package with its publishing workflow.
+- Migrating a legacy Svelte component to Svelte 5 is its own PR, kept mechanical, before changing its behaviour.
+- Do not include drive-by changes (reformatting, reordering, renaming unrelated code). Open a separate PR for them.
+
+When a feature needs several PRs, open the dependent ones as drafts, state at the top of the description which PR they are based on and in which order they should be merged, and rebase them as soon as the base PR is merged.
+
+### Before requesting a review
+
+- [ ] All the checks are green (lint, typecheck, unit tests on Windows, macOS and Linux, `codecov/patch`, Semantic PR). Maintainers usually skip PRs with failing checks, so if a failure is unrelated to your change (a flaky E2E test for example), say so in a comment.
+- [ ] Every commit is signed off (`git commit -s`). A PR with unsigned commits cannot be merged.
+- [ ] The title follows the [commit message semantics](#use-the-correct-commit-message-semantics).
+- [ ] New code is covered by unit tests following [CODE-GUIDELINES.md](CODE-GUIDELINES.md).
+- [ ] You reviewed your own diff: no unrelated changes, dead code, debug leftovers or generated files, and file moves are pure renames.
+- [ ] You searched for existing helpers, components and types before writing new ones.
+- [ ] You manually exercised the change: for UI, the empty and error states, reset/clear actions, keyboard navigation, long texts and the light and dark themes. Say in the description on which OS you tested.
+- [ ] If the change alters labels or behaviour covered by Playwright tests, the E2E tests and page objects are updated in the same PR.
+
+### AI-assisted contributions
+
+AI-assisted contributions are welcome. Mention the AI assistance in the PR (for example with a `Co-authored-by:` trailer in the commits), and review the generated code and description as if you wrote them yourself. Automated review comments (for example from CodeRabbit) are considered by maintainers: address or answer them before asking for a human review.
+
+### Vendor neutrality
+
+Podman Desktop is a CNCF project. The application and the website must stay vendor-neutral: do not add vendor promotion or direct links to commercial offerings. Vendor-specific features belong in extensions.
 
 ### Use the correct commit message semantics
 
@@ -393,11 +436,19 @@ This ensures that CI resources are used efficiently while still providing flexib
 
 1. Submit your PR
 2. Reviewers are assigned by GitHub to two Podman Desktop developers
-3. PR's require 1 LGTM / Approval (2 if it's a large code change)
+3. Depending on the files changed, the PR is labeled with one or more `domain/<domain>/inreview` labels (for example `domain/foundations/inreview`, `domain/ui-components/inreview`). Each label switches to `domain/<domain>/reviewed` once a member of that domain approves the PR.
+4. PR's require 1 LGTM / Approval (2 if it's a large code change), and an approval for each domain it touches. A PR touching several domains takes longer to merge: this is one more reason to keep PRs focused.
+5. A PR is not merged while a review requesting changes is still active. Once you have addressed the requested changes, reply to the comments and re-request a review from that reviewer.
 
 > **_NOTE:_** Confirm that your PR works on macOS, Windows and Linux if it's a significant change (not a UI improvement)
 
 > **_NOTE:_** If your PR hasn't been merged in an appropriate amount of time, ping the two developers assigned to the issue with `@`
+
+### Keeping a PR alive
+
+- Answer review comments, even to disagree. If you are blocked or don't know how to address a comment, say so; if you can't work on the PR for a while, convert it to draft.
+- PRs without activity are marked as stale after 6 months and closed 2 weeks later. Maintainers may also close PRs not updated for a while.
+- When closing a PR, give the reason in a comment and link the replacing PR or issue if there is one.
 
 ## Continuous Integration
 
@@ -405,7 +456,7 @@ All pull requests and branch-merges automatically run:
 
 - Format and lint checking
 - Cross-platform builds (Windows, macOS, Linux)
-- Unit test (Linux)
+- Unit tests (Windows, macOS, Linux) and patch coverage (`codecov/patch`)
 - E2E tests (Linux, triggered by PR check, do not prevent merging of the PR in case of instability)
 
 You can follow these jobs in Github Actions https://github.com/podman-desktop/podman-desktop/actions
