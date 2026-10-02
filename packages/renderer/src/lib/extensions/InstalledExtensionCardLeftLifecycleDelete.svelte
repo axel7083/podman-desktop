@@ -27,7 +27,9 @@ function confirmDeleteExtension(): void {
   withConfirmation(deleteExtension, `delete extension ${extension.displayName || extension.name}`, {
     title: 'Delete Extension?',
     variant: 'delete',
-    detail: extension.overrides ? `The bundled extension ${extension.overrides.id} will be restored.` : undefined,
+    detail: extension.overrides
+      ? `The bundled extension ${extension.overrides.id} will be restored, without being updated automatically.`
+      : undefined,
   });
 }
 </script>

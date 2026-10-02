@@ -2025,6 +2025,10 @@ export class ExtensionLoader implements IAsyncDisposable {
       if (this.getPinnedExtensionIds().includes(extensionId)) {
         await this.setExtensionPinned(extensionId, false);
       }
+      // the user chose the restored bundled extension over the catalog one: do not update it automatically again
+      if (overriddenExtensionId) {
+        await this.setExtensionPinned(overriddenExtensionId, true);
+      }
     } catch (error) {
       telemetryData.error = error;
       throw error;

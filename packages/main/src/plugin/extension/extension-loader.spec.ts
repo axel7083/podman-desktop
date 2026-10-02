@@ -1828,6 +1828,25 @@ describe('pinned extensions', () => {
     expect(configurationRegistryUpdateConfigurationMock).toHaveBeenCalledWith('extensions.pinned', ['other.pinned']);
   });
 
+  test('removeExtensionPerUserRequest pins the bundled extension restored', async () => {
+    extensionLoader.setAnalyzedExtension('podman-desktop.kind', {
+      id: 'podman-desktop.kind',
+      path: '/plugins/kind',
+      manifest: { name: 'kind' },
+      removable: true,
+      overrides: { id: 'podman-desktop.kind', version: '1.0.0' },
+    } as unknown as AnalyzedExtensionWithApi);
+    extensionLoader.removeExtension = vi.fn();
+
+    await extensionLoader.removeExtensionPerUserRequest('podman-desktop.kind');
+
+    // not updated automatically again from the catalog
+    expect(configurationRegistryUpdateConfigurationMock).toHaveBeenLastCalledWith('extensions.pinned', [
+      'other.pinned',
+      extensionId,
+      'podman-desktop.kind',
+    ]);
+  });
   test('removeExtensionPerUserRequest unpins the extension', async () => {
     extensionLoader.removeExtension = vi.fn();
 

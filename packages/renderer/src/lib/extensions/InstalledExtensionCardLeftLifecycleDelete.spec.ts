@@ -156,7 +156,7 @@ test('Expect the confirmation to mention the bundled extension being restored', 
     expect(window.showMessageBox).toHaveBeenCalledWith(
       expect.objectContaining({
         message: 'Are you sure you want to delete extension Foo?',
-        detail: 'The bundled extension podman-desktop.foo will be restored.',
+        detail: 'The bundled extension podman-desktop.foo will be restored, without being updated automatically.',
       }),
     ),
   );

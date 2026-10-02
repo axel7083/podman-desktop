@@ -55,6 +55,8 @@ const loadExtensionsMock = vi.fn();
 const ensureExtensionsMock = vi.fn();
 const replaceBundledExtensionMock = vi.fn();
 const removeExtensionMock = vi.fn();
+const setExtensionPinnedMock = vi.fn();
+const getPinnedExtensionIdsMock = vi.fn();
 const extensionLoader: ExtensionLoader = {
   getPluginsDirectory: getPluginsDirectoryMock,
   listExtensions: listExtensionsMock,
@@ -64,6 +66,8 @@ const extensionLoader: ExtensionLoader = {
   ensureExtensionIsEnabled: ensureExtensionsMock,
   replaceBundledExtension: replaceBundledExtensionMock,
   removeExtension: removeExtensionMock,
+  setExtensionPinned: setExtensionPinnedMock,
+  getPinnedExtensionIds: getPinnedExtensionIdsMock,
 } as unknown as ExtensionLoader;
 
 const extensionsBundle = {
@@ -118,6 +122,8 @@ beforeEach(() => {
 
   vi.mocked(rmSync).mockReturnValue(undefined);
   vi.mocked(extensionsBundle.all).mockReturnValue([]);
+  getFetchableExtensionsMock.mockResolvedValue([]);
+  getPinnedExtensionIdsMock.mockReturnValue([]);
   vi.mocked(directories.getPluginsDirectory).mockReturnValue('/fake/plugins/directory');
   vi.mocked(directories.getContributionStorageDir).mockReturnValue('/fake/dd/directory');
   extensionInstaller = new ExtensionInstaller(
@@ -558,7 +564,7 @@ describe('overriding a bundled extension', () => {
     expect(messageBox.showMessageBox).toHaveBeenCalledWith({
       title: 'Replace Extension?',
       message: `This extension is replacing your existing extension named 'Podman'.`,
-      detail: 'Uninstalling it restores your existing extension.',
+      detail: 'Auto-update will be disabled for this extension. Uninstalling it restores your existing extension.',
       buttons: ['Replace', 'Cancel'],
       type: 'question',
     });
@@ -579,6 +585,48 @@ describe('overriding a bundled extension', () => {
     expect(sendEnd).not.toBeCalled();
   });
 
+  test('the overriding extension is pinned', async () => {
+    mockBundledCollision();
+
+    await extensionInstaller.installFromImage(vi.fn(), vi.fn(), vi.fn(), imageToPull);
+
+    expect(setExtensionPinnedMock).toHaveBeenCalledWith(id, true);
+  });
+  test('the overriding extension is not pinned again by an update', async () => {
+    mockBundledCollision();
+
+    await extensionInstaller.installFromImage(vi.fn(), vi.fn(), vi.fn(), imageToPull, undefined, undefined, {
+      confirm: false,
+    });
+
+    expect(setExtensionPinnedMock).not.toBeCalled();
+  });
+  test('overriding with the latest catalog version keeps the extension updated automatically', async () => {
+    const analyzedExtension = mockBundledCollision();
+    analyzedExtension.manifest.version = '2.0.0';
+    getFetchableExtensionsMock.mockResolvedValue([{ extensionId: id, link: imageToPull, version: '2.0.0' }]);
+
+    await extensionInstaller.installFromImage(vi.fn(), vi.fn(), vi.fn(), imageToPull);
+
+    expect(messageBox.showMessageBox).toHaveBeenCalledWith(
+      expect.objectContaining({ detail: 'Uninstalling it restores your existing extension.' }),
+    );
+    expect(replaceBundledExtensionMock).toHaveBeenCalledWith(id);
+    expect(setExtensionPinnedMock).not.toBeCalled();
+  });
+  test('installing the latest catalog version of a pinned extension enables its auto-update again', async () => {
+    const analyzedExtension = mockBundledCollision();
+    analyzedExtension.manifest.version = '2.0.0';
+    getFetchableExtensionsMock.mockResolvedValue([{ extensionId: id, link: imageToPull, version: '2.0.0' }]);
+    getPinnedExtensionIdsMock.mockReturnValue([id]);
+
+    // e.g. the update button, installing without confirmation
+    await extensionInstaller.installFromImage(vi.fn(), vi.fn(), vi.fn(), imageToPull, undefined, undefined, {
+      confirm: false,
+    });
+
+    expect(setExtensionPinnedMock).toHaveBeenCalledWith(id, false);
+  });
   test('no confirmation is asked when disabled through the options', async () => {
     mockBundledCollision();
 
@@ -644,7 +692,7 @@ describe('overriding a bundled extension', () => {
     expect(loadExtensionsMock).not.toBeCalled();
   });
 
-  test('a normal installation does not log any override nor replace anything', async () => {
+  test('a normal installation does not log any override nor replace or pin anything', async () => {
     vi.mocked(imageRegistry.getImageConfigLabels).mockResolvedValueOnce({
       'org.opencontainers.image.title': 'fake-title',
       'org.opencontainers.image.description': 'fake-description',
@@ -664,6 +712,7 @@ describe('overriding a bundled extension', () => {
 
     expect(sendLog).not.toHaveBeenCalledWith(expect.stringContaining('replaces the bundled extension'));
     expect(replaceBundledExtensionMock).not.toBeCalled();
+    expect(setExtensionPinnedMock).not.toBeCalled();
     expect(loadExtensionsMock).toBeCalled();
   });
 
