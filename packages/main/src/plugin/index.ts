@@ -79,6 +79,8 @@ import type {
   ImageSearchResult,
   ImagesSaveOptions,
   ImageTagsListOptions,
+  ImageUpdateInfo,
+  ImageUpdateResult,
   ImageUpdateStatus,
   KubeContext,
   KubernetesContextResources,
@@ -1387,6 +1389,17 @@ export class PluginSystem {
     );
 
     this.ipcHandle(
+      'container-provider-registry:updateImages',
+      async (_listener, images: ImageUpdateInfo[], cancellableTokenId?: number): Promise<ImageUpdateResult[]> => {
+        const abortController = this.createAbortControllerOnCancellationToken(
+          cancellationTokenRegistry,
+          cancellableTokenId,
+        );
+        return containerProviderRegistry.updateImages(images, abortController?.signal);
+      },
+    );
+
+    this.ipcHandle(
       'container-provider-registry:pushImage',
       async (_listener, engine: string, imageId: string, callbackId: number): Promise<void> => {
         const msgName = 'container-provider-registry:pushImage-onData';
@@ -2397,6 +2410,13 @@ export class PluginSystem {
       return extensionsCatalog.refreshCatalog();
     });
 
+    this.ipcHandle(
+      'catalog:fetchReadme',
+      async (_listener: Electron.IpcMainInvokeEvent, extensionId: string): Promise<string> => {
+        return extensionsCatalog.fetchReadme(extensionId);
+      },
+    );
+
     this.ipcHandle('documentation:getItems', async (): Promise<DocumentationInfo[]> => {
       return documentationService.getDocumentationItems();
     });
@@ -2606,7 +2626,7 @@ export class PluginSystem {
         }
 
         const task = taskManager.createTask({
-          title: `Creating ${providerConnectionInfo.name} provider`,
+          title: `Updating ${providerConnectionInfo.name} provider`,
           action: {
             name: 'Open task',
             execute: () => {
@@ -2622,7 +2642,7 @@ export class PluginSystem {
             return result;
           })
           .catch((err: unknown) => {
-            task.error = `Something went wrong while creating container provider: ${err}`;
+            task.error = `Something went wrong while updating container provider: ${err}`;
             logger.error(err);
             throw err;
           })

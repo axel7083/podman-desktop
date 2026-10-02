@@ -32,10 +32,12 @@ overrides:
   tmp-promise>tmp: ^0.2.7
   tar: ^7.5.3
   cheerio>undici: ^7.18.2
+  undici@^6: ^6.29.0
+  undici@^8: ^8.11.2
   minimatch>@isaacs/brace-expansion: ^5.0.1
-  brace-expansion@^1: ^1.1.17
-  brace-expansion@^2: ^2.1.4
-  brace-expansion@^5: ^5.0.9
+  brace-expansion@^1: ^1.1.21
+  brace-expansion@^2: ^2.1.7
+  brace-expansion@^5: ^5.0.12
   lodash-es: ^4.18.1
   lodash: ^4.18.1
   '@docusaurus/types>webpack': ^5.105.0
@@ -48,20 +50,20 @@ overrides:
   serialize-javascript: ^7.0.5
   ajv@^6: ^6.14.0
   ajv@^8: ^8.18.0
-  svelte>devalue: ^5.6.4
+  svelte>devalue: ^5.9.3
   protobufjs: ^7.6.5
   follow-redirects: ^1.16.0
   uuid: ^14.0.0
-  ip-address: '>=10.3.1'
-  fast-uri: '>=4.1.3'
+  ip-address@^10: ^10.5.1
+  fast-uri: '>=4.1.5'
   '@babel/plugin-transform-modules-systemjs': '>=7.29.4'
   mermaid: '>=11.16.1'
   ws@^8: '>=8.20.1'
   concurrently>shell-quote: '>=1.8.5'
-  dockerode>@grpc/grpc-js: '>=1.14.4'
+  dockerode>@grpc/grpc-js: ^1.14.5
   form-data: '>=4.0.6'
   '@docusaurus/utils@3>gray-matter': npm:@11ty/gray-matter@^2.1.0
-  '@docusaurus/types>joi': ^17.13.4
+  '@docusaurus/types>joi': ^17.13.6
   markdown-it: '>=14.2.0'
   launch-editor: '>=2.14.1'
   webpack-dev-server: '>=5.2.6'
