@@ -269,6 +269,7 @@ export class ExtensionLoader implements IAsyncDisposable {
   }
 
   async listExtensions(): Promise<ExtensionInfo[]> {
+    const pinnedExtensionIds = this.getPinnedExtensionIds();
     return Array.from(this.analyzedExtensions.values()).map(extension => ({
       name: extension.manifest.name,
       displayName: extension.manifest.displayName,
@@ -284,6 +285,7 @@ export class ExtensionLoader implements IAsyncDisposable {
       bundled: extension.bundled,
       overrides: extension.overrides,
       update: extension.update,
+      pinned: pinnedExtensionIds.includes(extension.id),
       readme: extension.readme,
       icon: extension.manifest.icon ? this.updateImage(extension.manifest.icon, extension.path) : undefined,
       repository: extension.manifest.repository,
@@ -387,6 +389,19 @@ export class ExtensionLoader implements IAsyncDisposable {
       },
     };
 
+    const pinnedExtensionConfiguration: IConfigurationNode = {
+      id: 'preferences.extensions',
+      title: 'Extensions',
+      type: 'object',
+      properties: {
+        [`${ExtensionLoaderSettings.SectionName}.${ExtensionLoaderSettings.Pinned}`]: {
+          description: 'Extensions not updated automatically',
+          type: 'array',
+          hidden: true,
+        },
+      },
+    };
+
     const developmentModeExtensionConfiguration: IConfigurationNode = {
       id: 'preferences.extensions',
       title: 'Extensions',
@@ -420,6 +435,7 @@ export class ExtensionLoader implements IAsyncDisposable {
       disabledExtensionConfiguration,
       developmentModeExtensionConfiguration,
       allowCustomExtensions,
+      pinnedExtensionConfiguration,
     ]);
   }
 
@@ -448,6 +464,27 @@ export class ExtensionLoader implements IAsyncDisposable {
 
       this.setDisabledExtensionIds(disabledExtensionIds);
     }
+  }
+
+  getPinnedExtensionIds(): string[] {
+    return this.configurationRegistry
+      .getConfiguration(ExtensionLoaderSettings.SectionName)
+      .get<string[]>(ExtensionLoaderSettings.Pinned, []);
+  }
+
+  /**
+   * A pinned extension is not updated automatically, the user can still update it manually.
+   */
+  async setExtensionPinned(extensionId: string, pinned: boolean): Promise<void> {
+    const pinnedExtensionIds = this.getPinnedExtensionIds().filter(id => id !== extensionId);
+    if (pinned) {
+      pinnedExtensionIds.push(extensionId);
+    }
+    await this.configurationRegistry.updateConfigurationValue(
+      `${ExtensionLoaderSettings.SectionName}.${ExtensionLoaderSettings.Pinned}`,
+      pinnedExtensionIds,
+    );
+    this.apiSender.send('extensions-updated');
   }
 
   protected async setupScanningDirectory(): Promise<void> {
@@ -1985,6 +2022,9 @@ export class ExtensionLoader implements IAsyncDisposable {
       await this.removeExtension(extensionId);
 
       this.ensureExtensionIsEnabled(extensionId);
+      if (this.getPinnedExtensionIds().includes(extensionId)) {
+        await this.setExtensionPinned(extensionId, false);
+      }
     } catch (error) {
       telemetryData.error = error;
       throw error;

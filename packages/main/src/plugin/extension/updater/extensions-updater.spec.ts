@@ -200,3 +200,28 @@ test('should flag updates again, without applying them, when the installed exten
     vi.useRealTimers();
   }
 });
+
+test('should flag a pinned extension as updatable without updating it automatically', async () => {
+  const installedExtension1: ExtensionInfo = {
+    id: 'foo.extension1',
+    version: '1.0.0',
+    removable: true,
+    pinned: true,
+  } as ExtensionInfo;
+
+  extensionsCatalogGetExtensionsMock.mockResolvedValue([catalogExtension1, catalogExtension2]);
+  extensionLoaderListExtensionsMock.mockResolvedValue([installedExtension1]);
+
+  // auto update is enabled
+  getConfigMock.mockReturnValue(true);
+
+  const spyUpdateExtension = vi.spyOn(extensionsUpdater, 'updateExtension');
+
+  await extensionsUpdater.doCheckForUpdates();
+
+  expect(extensionLoaderSetExtensionsUpdatesMock).toBeCalledWith([
+    { id: 'foo.extension1', ociUri: 'oci-registry.foo/foo/bar1', version: '2.0.0' },
+  ]);
+  expect(spyUpdateExtension).not.toBeCalled();
+  expect(extensionInstaller.installFromImage).not.toBeCalled();
+});
