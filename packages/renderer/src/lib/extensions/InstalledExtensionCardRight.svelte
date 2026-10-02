@@ -3,6 +3,7 @@ import type { CombinedExtensionInfoUI } from '/@/stores/all-installed-extensions
 
 import ExtensionDetailsLink from './ExtensionDetailsLink.svelte';
 import ExtensionRestoreBundledButton from './ExtensionRestoreBundledButton.svelte';
+import ExtensionUpdateButton from './ExtensionUpdateButton.svelte';
 
 interface Props {
   extension: CombinedExtensionInfoUI;
@@ -37,6 +38,7 @@ let overridden = $derived(extension.overrides ? `${extension.overrides.id} v${ex
         {/if}
       </div>
     </div>
+    <ExtensionUpdateButton {extension} />
     <ExtensionRestoreBundledButton {extension} />
   </div>
 </div>
