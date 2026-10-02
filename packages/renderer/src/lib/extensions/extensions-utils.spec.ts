@@ -202,6 +202,22 @@ beforeEach(() => {
 });
 
 describe('extractCatalogExtensions', () => {
+  test('Expect a catalog extension matching a bundled extension to be flagged as bundled', async () => {
+    const bundledExtensions = [
+      { id: 'idYInstalled', version: '0.1.0', removable: false, bundled: true },
+    ] as unknown[] as CombinedExtensionInfoUI[];
+
+    const catalogExtensionsUI = extensionsUtils.extractCatalogExtensions(
+      catalogExtensions,
+      featuredExtensions,
+      bundledExtensions,
+    );
+
+    const yExtensionUI = catalogExtensionsUI.find(extension => extension.id === 'idYInstalled');
+    expect(yExtensionUI?.isInstalled).toBe(true);
+    expect(yExtensionUI?.isBundled).toBe(true);
+  });
+
   test('Expect first one should be featured even having a name starting with Y letter then Z extension, then A extension and then B extension', async () => {
     // get UI objects
     const catalogExtensionsUI = extensionsUtils.extractCatalogExtensions(
@@ -228,6 +244,7 @@ describe('extractCatalogExtensions', () => {
     expect(yExtensionUI.iconHref).toBe('iconY');
     expect(yExtensionUI.publisherDisplayName).toBe('Foo Publisher');
     expect(yExtensionUI.isInstalled).toBe(true);
+    expect(yExtensionUI.isBundled).toBe(false);
     expect(yExtensionUI.installedVersion).toBe('2.0.0Y');
     expect(yExtensionUI.shortDescription).toBe('this is short Y');
 
