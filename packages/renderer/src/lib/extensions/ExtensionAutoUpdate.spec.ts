@@ -29,7 +29,9 @@ beforeEach(() => {
 });
 
 test('Expect a pinned extension to offer enabling auto-update', async () => {
-  render(ExtensionAutoUpdate, { extension: { id: 'foo.bar', type: 'pd', removable: true, pinned: true } });
+  render(ExtensionAutoUpdate, {
+    extension: { id: 'foo.bar', type: 'pd', removable: true, bundled: false, pinned: true },
+  });
 
   screen.getByText('Disabled');
   await fireEvent.click(screen.getByRole('button', { name: 'Enable' }));
@@ -38,7 +40,9 @@ test('Expect a pinned extension to offer enabling auto-update', async () => {
 });
 
 test('Expect a non pinned extension to offer disabling auto-update', async () => {
-  render(ExtensionAutoUpdate, { extension: { id: 'foo.bar', type: 'pd', removable: true, pinned: false } });
+  render(ExtensionAutoUpdate, {
+    extension: { id: 'foo.bar', type: 'pd', removable: true, bundled: false, pinned: false },
+  });
 
   screen.getByText('Enabled');
   await fireEvent.click(screen.getByRole('button', { name: 'Disable' }));
@@ -46,8 +50,16 @@ test('Expect a non pinned extension to offer disabling auto-update', async () =>
   expect(window.setExtensionPinned).toHaveBeenCalledWith('foo.bar', true);
 });
 
+test('Expect a bundled extension to offer disabling auto-update', async () => {
+  render(ExtensionAutoUpdate, { extension: { id: 'foo.bar', type: 'pd', removable: false, bundled: true } });
+
+  await fireEvent.click(screen.getByRole('button', { name: 'Disable' }));
+
+  expect(window.setExtensionPinned).toHaveBeenCalledWith('foo.bar', true);
+});
+
 test('Expect nothing for extensions which are never updated', () => {
-  render(ExtensionAutoUpdate, { extension: { id: 'foo.bar', type: 'pd', removable: false } });
+  render(ExtensionAutoUpdate, { extension: { id: 'foo.bar', type: 'pd', removable: false, bundled: false } });
 
   expect(screen.queryByRole('region', { name: 'Auto-update' })).not.toBeInTheDocument();
 });
