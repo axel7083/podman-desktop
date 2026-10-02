@@ -113,6 +113,7 @@ export class ExtensionInstaller {
     imageName: string,
     catatlogExtensionId?: string,
     onProgress?: (progress: number) => void,
+    options?: InstallFromImageOptions,
   ): Promise<AnalyzedExtension | DockerDesktopContribution | undefined> {
     imageName = imageName.trim();
     sendLog(`Analyzing image ${imageName}...`);
@@ -182,8 +183,16 @@ export class ExtensionInstaller {
       const alreadyInstalledExtension = extensions.find(extension => extension.path === finalFolderPath);
 
       if (alreadyInstalledExtension) {
-        sendError(`Extension ${alreadyInstalledExtension.name} is already installed`);
-        return;
+        // the extension is extracted in the very same folder, the installed one has to be removed first
+        if (options?.confirm === false) {
+          sendError(`Extension ${alreadyInstalledExtension.name} is already installed`);
+          return;
+        }
+        if (!(await this.confirmReplace(alreadyInstalledExtension, `the extension from image ${imageName}`))) {
+          sendError(`Installation of ${imageName} cancelled.`);
+          return;
+        }
+        await this.extensionLoader.removeExtension(alreadyInstalledExtension.id, { restoreBundled: false });
       }
     }
 
@@ -223,10 +232,22 @@ export class ExtensionInstaller {
         return;
       }
       if (analyzedExtension) {
-        // a bundled extension can be replaced by the one being installed, any other one blocks the installation
-        if (extensions.some(extension => extension.id === analyzedExtension.id && !extension.bundled)) {
-          sendError(`Extension ${analyzedExtension.id} is already installed.`);
-          return;
+        // a bundled extension is replaced by the one being installed, any other one after confirmation
+        const installedExtension = extensions.find(
+          extension => extension.id === analyzedExtension.id && !extension.bundled,
+        );
+        if (installedExtension) {
+          if (options?.confirm === false) {
+            sendError(`Extension ${analyzedExtension.id} is already installed.`);
+            return;
+          }
+          const replacement = `${analyzedExtension.id} v${analyzedExtension.manifest.version}`;
+          if (!(await this.confirmReplace(installedExtension, replacement))) {
+            await fs.promises.rm(finalFolderPath, { recursive: true, force: true });
+            sendError(`Installation of ${analyzedExtension.id} cancelled.`);
+            return;
+          }
+          await this.extensionLoader.removeExtension(installedExtension.id, { restoreBundled: false });
         }
         const overriddenExtension = this.extensionsBundle.findOverridden(analyzedExtension);
         if (overriddenExtension) {
@@ -372,6 +393,7 @@ export class ExtensionInstaller {
       imageName,
       catalogExtensionId,
       onProgress,
+      options,
     );
     if (analyzedExtension instanceof DockerDesktopContribution) {
       sendEnd('Docker Desktop Extension Successfully installed.');
@@ -437,6 +459,19 @@ export class ExtensionInstaller {
           fs.rmdirSync(extension.path, { recursive: true });
         }
       });
+  }
+
+  /**
+   * Ask the user to confirm an installed extension is removed in favor of the given replacement.
+   */
+  protected async confirmReplace(installedExtension: ExtensionInfo, replacement: string): Promise<boolean> {
+    const result = await this.messageBox.showMessageBox({
+      title: 'Replace Extension?',
+      message: `Are you sure you want to replace extension ${installedExtension.name} v${installedExtension.version} with ${replacement}?`,
+      buttons: ['Replace', 'Cancel'],
+      type: 'question',
+    });
+    return result.response === 'Replace';
   }
 
   /**
