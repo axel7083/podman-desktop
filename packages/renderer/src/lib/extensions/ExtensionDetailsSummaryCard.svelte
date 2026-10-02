@@ -1,17 +1,21 @@
 <script lang="ts">
 import { faCodeBranch, faExternalLink } from '@fortawesome/free-solid-svg-icons';
+import type { CatalogExtension } from '@podman-desktop/core-api/extension-catalog';
 import { Tooltip } from '@podman-desktop/ui-svelte';
 import { Icon } from '@podman-desktop/ui-svelte/icons';
 
 import type { ExtensionDetailsUI } from './extension-details-ui';
 import ExtensionAutoUpdate from './ExtensionAutoUpdate.svelte';
+import ExtensionVersionPicker from './ExtensionVersionPicker.svelte';
 import ExtensionDetailsSummaryCardEntry from './InstalledExtensionDetailsSummaryCardEntry.svelte';
 
 interface Props {
   extensionDetails: ExtensionDetailsUI;
+  // catalog versions of the extension, allowing to install a specific one
+  versions?: CatalogExtension['versions'];
 }
 
-let { extensionDetails }: Props = $props();
+let { extensionDetails, versions = [] }: Props = $props();
 
 function normalizeExternalUrl(url: string): string {
   // npm package.json repository URLs can be prefixed with "git+".
@@ -29,10 +33,20 @@ const repositoryUrl = $derived(
 const hasResources = $derived(Boolean(repositoryUrl) || Boolean(extensionDetails.homepage));
 </script>
 
-<div class="order-first lg:order-last w-full lg:w-48 flex flex-row grow justify-end pb-4 lg:pb-0">
+<div class="order-first lg:order-last w-full lg:w-56 flex flex-row grow justify-end pb-4 lg:pb-0">
   <div
-    class="bg-[var(--pd-details-card-bg)] lg:w-40 h-fit lg:ml-4 p-4 rounded-md flex flex-row lg:flex-col w-full space-x-4 lg:space-x-0">
-    <ExtensionDetailsSummaryCardEntry label="version" value={extensionDetails.version} />
+    class="bg-[var(--pd-details-card-bg)] lg:w-48 h-fit lg:ml-4 p-4 rounded-md flex flex-row lg:flex-col w-full space-x-4 lg:space-x-0">
+    {#if extensionDetails.type === 'pd' && versions.length > 0}
+      <div class="flex flex-col lg:mb-4 items-start">
+        <div class="uppercase text-sm text-[var(--pd-details-card-header)]">version</div>
+        <ExtensionVersionPicker
+          extensionId={extensionDetails.id}
+          versions={versions}
+          installedExtension={extensionDetails.installedExtension} />
+      </div>
+    {:else}
+      <ExtensionDetailsSummaryCardEntry label="version" value={extensionDetails.version} />
+    {/if}
 
     {#if extensionDetails.installedExtension}
       <ExtensionAutoUpdate extension={extensionDetails.installedExtension} />
