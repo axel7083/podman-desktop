@@ -32,9 +32,14 @@ let overridden = $derived(extension.overrides ? `${extension.overrides.id} v${ex
           Overriding {overridden}
         {/if}
       </div>
-      <div aria-label="Version">
-        {#if extension.version}
-          v{extension.version}
+      <div class="flex flex-row gap-2">
+        <div aria-label="Version">
+          {#if extension.version}
+            v{extension.version}
+          {/if}
+        </div>
+        {#if extension.pinned}
+          <div>· Auto-update disabled</div>
         {/if}
       </div>
     </div>

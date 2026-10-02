@@ -129,3 +129,25 @@ test('Expect to have an update button when an update is available', async () => 
 
   screen.getByRole('button', { name: 'Update foo.bar to v2.0.0' });
 });
+
+test('Expect to mention a pinned extension is not updated automatically', async () => {
+  const extension: CombinedExtensionInfoUI = {
+    type: 'pd',
+    id: 'foo.bar',
+    name: 'foo',
+    description: 'my description',
+    displayName: '',
+    publisher: '',
+    removable: true,
+    devMode: false,
+    bundled: false,
+    version: '1.2.3',
+    pinned: true,
+    state: '',
+    path: '',
+    readme: '',
+  };
+  render(InstalledExtensionCardRight, { extension });
+
+  screen.getByText('· Auto-update disabled');
+});
