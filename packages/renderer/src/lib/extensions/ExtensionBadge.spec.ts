@@ -18,12 +18,19 @@
 
 import '@testing-library/jest-dom/vitest';
 
+import type { OverriddenExtension } from '@podman-desktop/core-api';
 import { fireEvent, render, screen } from '@testing-library/svelte';
 import { beforeEach, expect, test } from 'vitest';
 
 import ExtensionBadge from './ExtensionBadge.svelte';
 
-type ExtensionType = { type: 'dd' | 'pd'; removable: boolean; devMode: boolean; bundled: boolean };
+type ExtensionType = {
+  type: 'dd' | 'pd';
+  removable: boolean;
+  devMode: boolean;
+  bundled: boolean;
+  overrides?: OverriddenExtension;
+};
 
 beforeEach(() => {});
 
@@ -67,6 +74,24 @@ test('Expect to have badge for pd bundled extension', async () => {
   expect(labels).toHaveLength(2);
   expect(labels[0]).toBeInTheDocument();
   expect(labels[1]).toBeInTheDocument();
+});
+
+test('Expect to have badge for pd extension overriding a bundled one', async () => {
+  const extension: ExtensionType = {
+    type: 'pd',
+    removable: true,
+    devMode: false,
+    bundled: false,
+    overrides: { id: 'podman-desktop.kind', version: '1.0.0' },
+  };
+  render(ExtensionBadge, { extension });
+
+  screen.getByText('Overrides');
+
+  const tooltipTrigger = screen.getByTestId('tooltip-trigger');
+  await fireEvent.mouseEnter(tooltipTrigger);
+
+  await screen.findByText('Overrides podman-desktop.kind');
 });
 
 test('Expect to have badge for devMode Extension', async () => {

@@ -18,6 +18,8 @@
 import type { Locator, Page } from '@playwright/test';
 import test, { expect as playExpect } from '@playwright/test';
 
+import { handleConfirmationDialog } from '/@/utility/operations';
+
 import { BasePage } from './base-page';
 import { ExtensionDetailsPage } from './extension-details-page';
 import { ExtensionsPage } from './extensions-page';
@@ -108,6 +110,7 @@ export class ExtensionCardPage extends BasePage {
     return test.step(`Remove extension: ${this.extensionName}`, async () => {
       await this.disableExtension();
       await this.removeButton.click();
+      await handleConfirmationDialog({ page: this.page, dialogTitle: 'Delete Extension?', buttonName: 'Delete' });
       return new ExtensionsPage(this.page);
     });
   }

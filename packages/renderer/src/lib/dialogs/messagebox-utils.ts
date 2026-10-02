@@ -21,6 +21,8 @@ export interface ConfirmationOptions {
   variant?: ConfirmationVariant;
   title: string;
   buttonLabel?: string;
+  // additional information displayed below the question
+  detail?: string;
 }
 
 /**
@@ -40,6 +42,7 @@ export function withConfirmation(func: (err?: unknown) => unknown, action: strin
     .showMessageBox({
       title,
       message: 'Are you sure you want to ' + action + '?',
+      detail: options.detail,
       buttons: [activationButton, 'Cancel'],
       type: isDelete ? 'danger' : 'question',
     })

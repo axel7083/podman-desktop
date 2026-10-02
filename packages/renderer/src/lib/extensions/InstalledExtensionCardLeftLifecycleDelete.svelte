@@ -1,6 +1,7 @@
 <script lang="ts">
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 
+import { withConfirmation } from '/@/lib/dialogs/messagebox-utils';
 import LoadingIconButton from '/@/lib/ui/LoadingIconButton.svelte';
 import type { CombinedExtensionInfoUI } from '/@/stores/all-installed-extensions';
 
@@ -21,10 +22,18 @@ async function deleteExtension(): Promise<void> {
   }
   inProgress = false;
 }
+
+function confirmDeleteExtension(): void {
+  withConfirmation(deleteExtension, `delete extension ${extension.displayName || extension.name}`, {
+    title: 'Delete Extension?',
+    variant: 'delete',
+    detail: extension.overrides ? `The bundled extension ${extension.overrides.id} will be restored.` : undefined,
+  });
+}
 </script>
 
   <LoadingIconButton
-    clickAction={deleteExtension}
+    clickAction={confirmDeleteExtension}
     action="delete"
     icon={faTrash}
     state={{ status: extension.type === 'dd' ? 'stopped' : extension.removable ? extension.state : '', inProgress }} />
