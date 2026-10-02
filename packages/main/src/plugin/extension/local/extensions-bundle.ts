@@ -36,6 +36,15 @@ export class ExtensionsBundle {
     return this.#extensions;
   }
 
+  /**
+   * Find the bundled extension replaced by the given extension: the one declared through the `overrides`
+   * field of its manifest, or else the one sharing its id.
+   */
+  findOverridden(extension: Pick<AnalyzedExtension, 'id' | 'manifest'>): AnalyzedExtension | undefined {
+    const overriddenId = extension.manifest.overrides ?? extension.id;
+    return this.#extensions.find(bundledExtension => bundledExtension.id === overriddenId);
+  }
+
   @postConstruct()
   async init(): Promise<void> {
     let folders: string[];

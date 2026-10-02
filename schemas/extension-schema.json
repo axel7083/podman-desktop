@@ -86,6 +86,9 @@
             "type": "string"
           }
         },
+        "overrides": {
+          "type": "string"
+        },
         "engines": {
           "type": "object",
           "properties": {
