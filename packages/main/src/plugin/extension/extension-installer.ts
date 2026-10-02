@@ -36,9 +36,16 @@ import {
 import { ExtensionsCatalog } from '/@/plugin/extension/catalog/extensions-catalog.js';
 import type { AnalyzedExtension } from '/@/plugin/extension/extension-analyzer.js';
 import { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
+import { ExtensionsBundle } from '/@/plugin/extension/local/extensions-bundle.js';
 import { ImageRegistry } from '/@/plugin/image-registry.js';
+import { MessageBox } from '/@/plugin/message-box.js';
 import { TaskManager } from '/@/plugin/tasks/task-manager.js';
 import { Telemetry } from '/@/plugin/telemetry/telemetry.js';
+
+export interface InstallFromImageOptions {
+  // ask the user before replacing an extension, disabled for internal operations like updates
+  confirm?: boolean;
+}
 
 @injectable()
 export class ExtensionInstaller {
@@ -63,6 +70,10 @@ export class ExtensionInstaller {
     private readonly ipcMainOn: IPCMainOn,
     @inject(TaskManager)
     private taskManager: TaskManager,
+    @inject(ExtensionsBundle)
+    private extensionsBundle: ExtensionsBundle,
+    @inject(MessageBox)
+    private messageBox: MessageBox,
   ) {
     this.#dockerDesktopInstaller = new DockerDesktopInstaller(contributionManager);
   }
@@ -211,9 +222,16 @@ export class ExtensionInstaller {
         sendError('Could not load extension: ' + analyzedExtension?.error);
         return;
       }
-      if (extensions.find(extension => extension.id === analyzedExtension?.id)) {
-        sendError(`Extension ${analyzedExtension?.id} is already installed.`);
-        return;
+      if (analyzedExtension) {
+        // a bundled extension can be replaced by the one being installed, any other one blocks the installation
+        if (extensions.some(extension => extension.id === analyzedExtension.id && !extension.bundled)) {
+          sendError(`Extension ${analyzedExtension.id} is already installed.`);
+          return;
+        }
+        const overriddenExtension = this.extensionsBundle.findOverridden(analyzedExtension);
+        if (overriddenExtension) {
+          analyzedExtension.overrides = { id: overriddenExtension.id, version: overriddenExtension.manifest.version };
+        }
       }
       return analyzedExtension;
     } else if (isDDExtension) {
@@ -301,6 +319,7 @@ export class ExtensionInstaller {
     imageName: string,
     extensionAnalyzed?: (extension: AnalyzedExtension) => void,
     catalogExtensionId?: string,
+    options?: InstallFromImageOptions,
   ): Promise<void> {
     const task = this.taskManager.createTask({
       title: `Installing extension ${imageName}`,
@@ -322,6 +341,7 @@ export class ExtensionInstaller {
         (progress: number) => {
           task.progress = progress;
         },
+        options,
       );
     } catch (error: unknown) {
       task.error = String(error);
@@ -341,6 +361,7 @@ export class ExtensionInstaller {
     extensionAnalyzed?: (extension: AnalyzedExtension) => void,
     catalogExtensionId?: string,
     onProgress?: (progress: number) => void,
+    options?: InstallFromImageOptions,
   ): Promise<void> {
     // now collect all transitive dependencies
     const analyzedExtensions: AnalyzedExtension[] = [];
@@ -369,19 +390,34 @@ export class ExtensionInstaller {
 
     // if we have some undefined objects, it is an error, cleanup extensions
     if (errors.length > 0) {
-      analyzedExtensions
-        .filter(extension => extension !== undefined)
-        .forEach(extension => {
-          if (extension?.path) {
-            fs.rmdirSync(extension.path, { recursive: true });
-          }
-        });
+      this.removeAnalyzedExtensions(analyzedExtensions);
       sendError(`Error while installing extension ${imageName}: ${errors.join('\n')}`);
       return;
     }
 
     if (!analyzeSuccessful) {
       return;
+    }
+
+    if (options?.confirm !== false) {
+      for (const extension of analyzedExtensions) {
+        if (extension.overrides && !(await this.confirmOverride(extension))) {
+          this.removeAnalyzedExtensions(analyzedExtensions);
+          sendError(`Installation of ${extension.id} cancelled.`);
+          return;
+        }
+      }
+    }
+
+    // some extensions replace a bundled one: report it and stop the bundled one before loading the new one
+    for (const extension of analyzedExtensions) {
+      if (!extension.overrides) {
+        continue;
+      }
+      sendLog(
+        `Extension ${extension.id} replaces the bundled extension ${extension.overrides.id}, which will be restored if you uninstall it.`,
+      );
+      await this.extensionLoader.replaceBundledExtension(extension.overrides.id);
     }
 
     // load all extensions
@@ -391,6 +427,36 @@ export class ExtensionInstaller {
 
     sendEnd('Extension Successfully installed.');
     this.apiSender.send('extension-started');
+  }
+
+  protected removeAnalyzedExtensions(analyzedExtensions: AnalyzedExtension[]): void {
+    analyzedExtensions
+      .filter(extension => extension !== undefined)
+      .forEach(extension => {
+        if (extension?.path) {
+          fs.rmdirSync(extension.path, { recursive: true });
+        }
+      });
+  }
+
+  /**
+   * Ask the user to confirm the extension being installed replaces the bundled extension it overrides,
+   * unless the bundled extension is not loaded anymore (e.g. an extension overriding it is being replaced).
+   */
+  protected async confirmOverride(extension: AnalyzedExtension): Promise<boolean> {
+    const extensions = await this.extensionLoader.listExtensions();
+    if (!extensions.some(installed => installed.id === extension.overrides?.id && installed.bundled)) {
+      return true;
+    }
+    const bundledExtension = this.extensionsBundle.all().find(bundled => bundled.id === extension.overrides?.id);
+    const result = await this.messageBox.showMessageBox({
+      title: 'Replace Extension?',
+      message: `This extension is replacing your existing extension named '${bundledExtension?.manifest.displayName ?? extension.overrides?.id}'.`,
+      detail: 'Uninstalling it restores your existing extension.',
+      buttons: ['Replace', 'Cancel'],
+      type: 'question',
+    });
+    return result.response === 'Replace';
   }
 
   async init(): Promise<void> {

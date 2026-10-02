@@ -83,48 +83,31 @@ test('expect able to download an extension', async () => {
 function mockExtensionInstallFromImage(): {
   resolve: () => void;
   reject: (error: unknown) => void;
-  logCallback: (data: string) => void;
   errorCallback: (data: string) => void;
 } {
   const { promise, resolve, reject } = Promise.withResolvers<void>();
 
-  const logCallback = vi.fn<(data: string) => void>();
   const errorCallback = vi.fn<(data: string) => void>();
-  vi.mocked(window.extensionInstallFromImage).mockImplementation((_image, mLogCallback, mErrorCallback) => {
-    logCallback.mockImplementation((content: string) => mLogCallback(content));
+  vi.mocked(window.extensionInstallFromImage).mockImplementation((_image, _logCallback, mErrorCallback) => {
     errorCallback.mockImplementation((content: string) => mErrorCallback(content));
     return promise;
   });
-  return { resolve, reject, logCallback, errorCallback };
+  return { resolve, reject, errorCallback };
 }
 
-test('install button should always be disable when extensionInstallFromImage is pending', async () => {
-  const { logCallback } = mockExtensionInstallFromImage();
+test('the dialog should be hidden while extensionInstallFromImage is pending', async () => {
+  mockExtensionInstallFromImage();
 
   render(InstallManuallyExtensionModal, { closeCallback });
 
-  // enter the name quay.io/foobar
   const input = screen.getByRole('textbox', { name: 'Image name to install custom extension' });
-  expect(input).toBeInTheDocument();
-  // now enter the text 'my-custom-image.io/foo'
   await userEvent.type(input, 'my-custom-image.io/foo');
+  await userEvent.click(screen.getByRole('button', { name: 'Install' }));
 
-  // click on the button
-  const installButton = screen.getByRole('button', { name: 'Install' });
-  expect(installButton).toBeInTheDocument();
-  expect(installButton).toBeEnabled();
-
-  await userEvent.click(installButton);
-
-  logCallback('Downloading sha256:random-sha256.tar - 100% - (521578/521578)');
-
-  const progressBar = screen.getByRole('progressbar', { name: 'Installation progress' });
+  // the installer may display a message box, which must not be covered by the dialog
   await vi.waitFor(() => {
-    expect(progressBar).toHaveStyle({ width: '100%' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
-
-  // expect button done to be disabled
-  expect(installButton).toBeDisabled();
 });
 
 test('rejected installation should make the button visible', async () => {
@@ -132,132 +115,76 @@ test('rejected installation should make the button visible', async () => {
 
   render(InstallManuallyExtensionModal, { closeCallback });
 
-  // enter the name quay.io/foobar
   const input = screen.getByRole('textbox', { name: 'Image name to install custom extension' });
-  expect(input).toBeInTheDocument();
-  // now enter the text 'my-custom-image.io/foo'
   await userEvent.type(input, 'my-custom-image.io/foo');
-
-  // click on the button
-  const installButton = screen.getByRole('button', { name: 'Install' });
-  await userEvent.click(installButton);
+  await userEvent.click(screen.getByRole('button', { name: 'Install' }));
 
   await vi.waitFor(() => {
-    expect(installButton).toBeDisabled();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   reject(new Error('random error'));
 
-  await vi.waitFor(() => {
-    expect(installButton).toBeEnabled();
-  });
+  const installButton = await screen.findByRole('button', { name: 'Install' });
+  expect(installButton).toBeEnabled();
 });
 
-test('progressbar should match latest log', async () => {
-  const { logCallback } = mockExtensionInstallFromImage();
+test('the dialog should be back with the done button once extensionInstallFromImage is resolved', async () => {
+  const { resolve } = mockExtensionInstallFromImage();
 
   render(InstallManuallyExtensionModal, { closeCallback });
 
-  // enter the name quay.io/foobar
   const input = screen.getByRole('textbox', { name: 'Image name to install custom extension' });
-  expect(input).toBeInTheDocument();
-  // now enter the text 'my-custom-image.io/foo'
   await userEvent.type(input, 'my-custom-image.io/foo');
+  await userEvent.click(screen.getByRole('button', { name: 'Install' }));
 
-  // click on the button
-  const installButton = screen.getByRole('button', { name: 'Install' });
-  expect(installButton).toBeInTheDocument();
-  expect(installButton).toBeEnabled();
-
-  await userEvent.click(installButton);
-
-  const progressBar = screen.getByRole('progressbar', { name: 'Installation progress' });
-  for (let i = 0; i < 64; i += 8) {
-    logCallback(`Downloading sha256:random-sha256.tar - ${i}% - (${i}/64)`);
-
-    await vi.waitFor(() => {
-      expect(progressBar).toHaveStyle({
-        width: `${i}%`,
-      });
-    });
-  }
-});
-
-test('install button should be enable while extensionInstallFromImage is resolved', async () => {
-  const { resolve, logCallback } = mockExtensionInstallFromImage();
-
-  render(InstallManuallyExtensionModal, { closeCallback });
-
-  // enter the name quay.io/foobar
-  const input = screen.getByRole('textbox', { name: 'Image name to install custom extension' });
-  expect(input).toBeInTheDocument();
-  // now enter the text 'my-custom-image.io/foo'
-  await userEvent.type(input, 'my-custom-image.io/foo');
-
-  // click on the button
-  const installButton = screen.getByRole('button', { name: 'Install' });
-  expect(installButton).toBeInTheDocument();
-  expect(installButton).toBeEnabled();
-
-  await userEvent.click(installButton);
-
-  // log 100%
-  logCallback('Downloading sha256:random-sha256.tar - 100% - (521578/521578)');
-  const progressBar = screen.getByRole('progressbar', { name: 'Installation progress' });
-  await vi.waitFor(() => {
-    expect(progressBar).toHaveStyle({
-      width: `100%`,
-    });
-  });
-
-  // resolve extensionInstallFromImage
   resolve();
 
   // done button should be visible after resolution
-  await vi.waitFor(() => {
-    const doneButton = screen.getByRole('button', { name: 'Done' });
-    expect(doneButton).toBeInTheDocument();
-  });
+  await screen.findByRole('button', { name: 'Done' });
+  screen.getByText('my-custom-image.io/foo successfully installed.');
 
   // install button should not be visible after resolution
   expect(screen.queryByRole('button', { name: 'Install' })).toBeNull();
 });
 
-test('form should be in error even if log reached 100%', async () => {
-  const { logCallback, errorCallback } = mockExtensionInstallFromImage();
+test('the dialog should be back in error when the installation is cancelled', async () => {
+  const { errorCallback } = mockExtensionInstallFromImage();
 
-  const { getByRole, queryByRole, getByText } = render(InstallManuallyExtensionModal, { closeCallback });
+  render(InstallManuallyExtensionModal, { closeCallback });
 
-  const input = getByRole('textbox', { name: 'Image name to install custom extension' });
+  const input = screen.getByRole('textbox', { name: 'Image name to install custom extension' });
   await userEvent.type(input, 'my-custom-image.io/foo');
+  await userEvent.click(screen.getByRole('button', { name: 'Install' }));
 
-  const installButton = getByRole('button', { name: 'Install' });
-  await userEvent.click(installButton);
+  errorCallback('Installation of my.extension cancelled.');
 
-  // Simulate 100% log
-  logCallback('Downloading sha256:random-sha256.tar - 100% - (521578/521578)');
-  const progressBar = getByRole('progressbar', { name: 'Installation progress' });
-  await vi.waitFor(() => {
-    expect(progressBar).toHaveStyle({ width: '100%' });
-  });
+  // install button visible but disabled due to the error
+  const installButton = await screen.findByRole('button', { name: 'Install' });
+  expect(installButton).toBeDisabled();
+  screen.getByText('Installation of my.extension cancelled.');
 
-  // Now simulate error callback
-  errorCallback('Extension is already installed');
-
-  // Expect install button to be visible but disabled due to error
-  await vi.waitFor(() => {
-    expect(installButton).toBeVisible();
-    expect(installButton).toBeDisabled();
-  });
-
-  // Expect progress bar to be gone
-  expect(queryByRole('progressbar')).not.toBeInTheDocument();
-
-  getByText('Extension is already installed');
+  // the image name is kept
+  expect(screen.getByRole('textbox', { name: 'Image name to install custom extension' })).toHaveValue(
+    'my-custom-image.io/foo',
+  );
 
   // Expect Done button not to be there
-  expect(queryByRole('button', { name: 'Done' })).toBeNull();
+  expect(screen.queryByRole('button', { name: 'Done' })).toBeNull();
+});
 
-  // Expect input error
-  expect(input).toHaveAttribute('aria-invalid', 'true');
+test('pressing Enter while installing should not start another installation', async () => {
+  mockExtensionInstallFromImage();
+
+  render(InstallManuallyExtensionModal, { closeCallback });
+
+  const input = screen.getByRole('textbox', { name: 'Image name to install custom extension' });
+  await userEvent.type(input, 'my-custom-image.io/foo');
+  await userEvent.click(screen.getByRole('button', { name: 'Install' }));
+
+  // e.g. to validate a message box displayed during the installation
+  await userEvent.keyboard('{Enter}');
+
+  expect(window.extensionInstallFromImage).toHaveBeenCalledOnce();
+  expect(closeCallback).not.toHaveBeenCalled();
 });
