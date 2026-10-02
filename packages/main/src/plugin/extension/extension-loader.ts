@@ -33,6 +33,7 @@ import { type IConfigurationNode, IConfigurationRegistry } from '@podman-desktop
 import AdmZip from 'adm-zip';
 import { app, clipboard as electronClipboard } from 'electron';
 import { inject, injectable, preDestroy } from 'inversify';
+import { lt, valid } from 'semver';
 
 import { AuthenticationImpl } from '/@/plugin/authentication.js';
 import { CancellationTokenSource } from '/@/plugin/cancellation-token.js';
@@ -584,15 +585,29 @@ export class ExtensionLoader implements IAsyncDisposable {
    *
    * Only removable, non devMode extensions are candidates: extensions coming from development folders
    * or from `--extension-folder` are not allowed to override a bundled extension.
+   *
+   * An installed extension older than the bundled one, e.g. after an update of Podman Desktop, is not loaded
+   * unless it is pinned: the user explicitly chose this version.
    */
   protected markOverridingExtensions(analyzedExtensions: AnalyzedExtension[]): AnalyzedExtension[] {
+    const pinnedExtensionIds = this.getPinnedExtensionIds();
     const overriddenExtensionIds = new Set<string>();
+    const outdatedExtensions = new Set<AnalyzedExtension>();
     for (const extension of analyzedExtensions) {
       if (extension.bundled || extension.devMode || !extension.removable) {
         continue;
       }
       const overriddenExtension = this.extensionsBundle.findOverridden(extension);
-      if (overriddenExtension) {
+      if (
+        overriddenExtension &&
+        !pinnedExtensionIds.includes(extension.id) &&
+        this.isOlderVersion(extension.manifest.version, overriddenExtension.manifest.version)
+      ) {
+        outdatedExtensions.add(extension);
+        console.log(
+          `Extension ${extension.id} from ${extension.path} is ignored as older than the bundled extension ${overriddenExtension.id}`,
+        );
+      } else if (overriddenExtension) {
         extension.overrides = { id: overriddenExtension.id, version: overriddenExtension.manifest.version };
         overriddenExtensionIds.add(overriddenExtension.id);
         console.log(
@@ -601,7 +616,16 @@ export class ExtensionLoader implements IAsyncDisposable {
       }
     }
 
-    return analyzedExtensions.filter(extension => !(extension.bundled && overriddenExtensionIds.has(extension.id)));
+    return analyzedExtensions.filter(
+      extension =>
+        !outdatedExtensions.has(extension) && !(extension.bundled && overriddenExtensionIds.has(extension.id)),
+    );
+  }
+
+  protected isOlderVersion(version: string | undefined, reference: string | undefined): boolean {
+    const validVersion = valid(version);
+    const validReference = valid(reference);
+    return !!validVersion && !!validReference && lt(validVersion, validReference);
   }
 
   /**
