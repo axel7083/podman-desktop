@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { ExtensionUpdateInfo } from '@podman-desktop/core-api';
+import type { ExtensionInfo, ExtensionUpdateInfo } from '@podman-desktop/core-api';
 import type { IConfigurationNode } from '@podman-desktop/core-api/configuration';
 import { IConfigurationRegistry } from '@podman-desktop/core-api/configuration';
 import { inject, injectable } from 'inversify';
@@ -32,8 +32,11 @@ import product from '/@product.json' with { type: 'json' };
 @injectable()
 export class ExtensionsUpdater {
   static readonly CHECK_FOR_UPDATES_INTERVAL = 1000 * 60 * 60 * 12; // 12 hours
+  // delay grouping the changes of the installed extensions, e.g. stopping and starting an extension
+  static readonly FLAG_UPDATES_DELAY = 1000;
 
   private intervalChecker: NodeJS.Timeout | undefined;
+  private flagUpdatesTimeout: NodeJS.Timeout | undefined;
 
   constructor(
     @inject(ExtensionsCatalog)
@@ -92,6 +95,9 @@ export class ExtensionsUpdater {
       });
     }, ExtensionsUpdater.CHECK_FOR_UPDATES_INTERVAL);
 
+    // an extension being installed, removed or restarted loses its update information: flag the updates again
+    this.extensionLoader.onDidChange(() => this.onExtensionsChanged());
+
     // check on startup
     await this.checkForUpdates();
   }
@@ -100,6 +106,20 @@ export class ExtensionsUpdater {
     if (this.intervalChecker) {
       clearInterval(this.intervalChecker);
     }
+    clearTimeout(this.flagUpdatesTimeout);
+  }
+
+  protected onExtensionsChanged(): void {
+    clearTimeout(this.flagUpdatesTimeout);
+    this.flagUpdatesTimeout = setTimeout(() => {
+      if (!this.isAutoCheckUpdatesEnabled() && !this.isAutoUpdateEnabled()) {
+        return;
+      }
+      // updates are only flagged, they are applied by the periodic check
+      this.flagUpdates().catch((err: unknown) => {
+        console.error('Error while flagging extension updates', err);
+      });
+    }, ExtensionsUpdater.FLAG_UPDATES_DELAY);
   }
 
   isAutoCheckUpdatesEnabled(): boolean {
@@ -124,6 +144,32 @@ export class ExtensionsUpdater {
 
   // check if some extensions can be updated or not
   async doCheckForUpdates(): Promise<void> {
+    const { extensionsToUpdate } = await this.flagUpdates();
+
+    // if there are no extensions to update, skip
+    if (extensionsToUpdate.length === 0) {
+      return;
+    }
+
+    // if auto update is enabled, update all extensions
+    if (this.isAutoUpdateEnabled()) {
+      await this.updateExtensions(extensionsToUpdate, true);
+    } else {
+      // report in telemetry that user has updates available
+      const telemetryOptions = {
+        extensionsToUpdate,
+      };
+      this.telemetry.track('extensions-updates-available', telemetryOptions);
+    }
+  }
+
+  /**
+   * Flag the installed extensions having a newer version in the catalog as "can be updated".
+   */
+  protected async flagUpdates(): Promise<{
+    installedExtensions: ExtensionInfo[];
+    extensionsToUpdate: ExtensionUpdateInfo[];
+  }> {
     // grab list of compatible extensions
     const availableExtensions = await this.extensionCatalog.getExtensions();
 
@@ -176,24 +222,12 @@ export class ExtensionsUpdater {
       extension => extension !== undefined,
     ) as ExtensionUpdateInfo[];
 
-    // if there are no extensions to update, skip
-    if (extensionsToUpdateFiltered.length === 0) {
-      return;
+    // flag the extensions as "can be updated"
+    if (extensionsToUpdateFiltered.length > 0) {
+      this.extensionLoader.setExtensionsUpdates(extensionsToUpdateFiltered);
     }
 
-    // if auto update is not enabled, flag the extensions as "can be updated"
-    this.extensionLoader.setExtensionsUpdates(extensionsToUpdateFiltered);
-
-    // if auto update is enabled, update all extensions
-    if (this.isAutoUpdateEnabled()) {
-      await this.updateExtensions(extensionsToUpdateFiltered, true);
-    } else {
-      // report in telemetry that user has updates available
-      const telemetryOptions = {
-        extensionsToUpdate: extensionsToUpdateFiltered,
-      };
-      this.telemetry.track('extensions-updates-available', telemetryOptions);
-    }
+    return { installedExtensions, extensionsToUpdate: extensionsToUpdateFiltered };
   }
 
   async updateExtensions(extensionsToUpdate: ExtensionUpdateInfo[], internal?: boolean): Promise<void> {

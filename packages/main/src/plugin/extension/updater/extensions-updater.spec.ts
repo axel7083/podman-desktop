@@ -83,6 +83,7 @@ const extensionLoader = {
   listExtensions: extensionLoaderListExtensionsMock,
   setExtensionsUpdates: extensionLoaderSetExtensionsUpdatesMock,
   removeExtension: vi.fn(),
+  onDidChange: vi.fn(),
 } as unknown as ExtensionLoader;
 
 const getConfigMock = vi.fn();
@@ -165,4 +166,37 @@ test('should check for updates and try to update one extension automatically', a
 
   // telemetry is called
   expect(telemetry.track).toBeCalled();
+});
+
+test('should flag updates again, without applying them, when the installed extensions change', async () => {
+  vi.useFakeTimers();
+  try {
+    extensionsCatalogGetExtensionsMock.mockResolvedValue([catalogExtension1, catalogExtension2]);
+    // no update at startup
+    extensionLoaderListExtensionsMock.mockResolvedValue([]);
+    getConfigMock.mockReturnValue(true);
+
+    await extensionsUpdater.init();
+    const onDidChangeListener = vi.mocked(extensionLoader.onDidChange).mock.calls[0]?.[0];
+    expect(onDidChangeListener).toBeDefined();
+
+    // e.g. the extension is restarted, analyzed again without update information
+    extensionLoaderListExtensionsMock.mockResolvedValue([
+      { id: 'foo.extension1', version: '1.0.0', removable: true } as ExtensionInfo,
+    ]);
+    onDidChangeListener?.();
+    // changes are grouped
+    onDidChangeListener?.();
+    await vi.advanceTimersByTimeAsync(ExtensionsUpdater.FLAG_UPDATES_DELAY);
+
+    expect(extensionLoaderSetExtensionsUpdatesMock).toHaveBeenCalledOnce();
+    expect(extensionLoaderSetExtensionsUpdatesMock).toBeCalledWith([
+      { id: 'foo.extension1', ociUri: 'oci-registry.foo/foo/bar1', version: '2.0.0' },
+    ]);
+    // auto update is enabled, but updates are applied by the periodic check only
+    expect(extensionInstaller.installFromImage).not.toBeCalled();
+  } finally {
+    await extensionsUpdater.stop();
+    vi.useRealTimers();
+  }
 });
