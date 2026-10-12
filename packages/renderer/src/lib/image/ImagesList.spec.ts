@@ -620,8 +620,8 @@ describe('bulk update', () => {
     );
     await waitFor(() =>
       expect(window.updateImages).toHaveBeenCalledExactlyOnceWith([
-        { engineId: 'podman', image: 'fedora:latest', tag: 'latest' },
-        { engineId: 'podman', image: 'alpine:latest', tag: 'latest' },
+        { engineId: 'podman', id: 'sha256:1234567890123' },
+        { engineId: 'podman', id: 'sha256:789789789789789' },
       ]),
     );
   });

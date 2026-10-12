@@ -1383,21 +1383,7 @@ export class ContainerProviderRegistry {
         abortSignal: abortController?.signal,
       });
 
-      const { resolve, reject, promise } = Promise.withResolvers<void>();
-
-      const onFinished = (err: Error | null): void => {
-        if (err) {
-          return reject(err);
-        }
-        resolve();
-      };
-
-      const onProgress = (event: PullEvent): void => {
-        callback(event);
-      };
-      matchingEngine.modem.followProgress(pullStream, onFinished, onProgress);
-
-      return promise;
+      return this.followPullProgress(matchingEngine, pullStream, callback);
     } catch (error) {
       // Provides a better error message for 401, 403 and 500 errors
       if (error instanceof Error) {
@@ -1420,45 +1406,24 @@ export class ContainerProviderRegistry {
     return crypto.createHash('sha512').update(imageName).digest('hex');
   }
 
+  protected followPullProgress(
+    engine: Dockerode,
+    pullStream: NodeJS.ReadableStream,
+    onProgress: (event: PullEvent) => void = (): void => {},
+  ): Promise<void> {
+    const { resolve, reject, promise } = Promise.withResolvers<void>();
+    engine.modem.followProgress(pullStream, (err: Error | null) => (err ? reject(err) : resolve()), onProgress);
+    return promise;
+  }
+
   async updateImages(images: ImageUpdateInfo[], abortSignal?: AbortSignal): Promise<ImageUpdateResult[]> {
-    const results = await Promise.all(
-      images.map(async (info): Promise<ImageUpdateResult> => {
-        try {
-          const matchingEngine = this.getMatchingEngine(info.engineId);
-          const imageInspect = await matchingEngine.getImage(info.image).inspect();
-          const localDigests = imageInspect.RepoDigests ?? [];
-          const status = await this.imageRegistry.checkImageUpdateStatus(info.image, info.tag, localDigests);
-
-          if (status.status === 'error') {
-            return { imageRef: info.image, updated: false, status: status.status, message: status.message };
-          }
-
-          if (status.status === 'skipped' || !status.updateAvailable) {
-            return { imageRef: info.image, updated: false, status: status.status, message: status.message };
-          }
-
-          const authconfig = this.imageRegistry.getAuthconfigForImage(info.image);
-          const pullStream = await matchingEngine.pull(info.image, {
-            authconfig,
-            abortSignal,
-          });
-
-          const { resolve, reject, promise } = Promise.withResolvers<void>();
-          matchingEngine.modem.followProgress(
-            pullStream,
-            (err: Error | null) => (err ? reject(err) : resolve()),
-            () => {},
-          );
-          await promise;
-
-          return { imageRef: info.image, updated: true, status: 'updated', message: 'Image updated successfully' };
-        } catch (error: unknown) {
-          console.error(`Error updating image ${info.image}`, error);
-          const message = error instanceof Error ? error.message : String(error);
-          return { imageRef: info.image, updated: false, status: 'error', message };
-        }
-      }),
-    );
+    // the same image can be selected several times, once per tag: update it only once
+    const uniqueImages = new Map(images.map(image => [`${image.engineId}:${image.id}`, image]));
+    const results = (
+      await Promise.all(
+        Array.from(uniqueImages.values()).map(({ engineId, id }) => this.updateImage(engineId, id, abortSignal)),
+      )
+    ).flat();
     this.telemetryService.track('updateImages', {
       count: images.length,
       updated: results.filter(result => result.updated).length,
@@ -1467,6 +1432,61 @@ export class ContainerProviderRegistry {
       failed: results.filter(result => result.status === 'error').length,
     });
     return results;
+  }
+
+  /**
+   * Update every tag of the image: an image id can be referenced by several tags (e.g. nginx:latest and nginx:1.29)
+   */
+  protected async updateImage(engineId: string, id: string, abortSignal?: AbortSignal): Promise<ImageUpdateResult[]> {
+    try {
+      const engine = this.getMatchingEngine(engineId);
+      const { RepoTags = [], RepoDigests = [] } = await engine.getImage(id).inspect();
+      if (RepoTags.length === 0) {
+        return [
+          {
+            imageRef: id,
+            updated: false,
+            status: 'skipped',
+            message: 'Image is dangling and cannot be checked for updates',
+          },
+        ];
+      }
+      return Promise.all(RepoTags.map(imageRef => this.updateImageTag(engine, imageRef, RepoDigests, abortSignal)));
+    } catch (error: unknown) {
+      return [this.toUpdateError(id, error)];
+    }
+  }
+
+  protected async updateImageTag(
+    engine: Dockerode,
+    imageRef: string,
+    localDigests: string[],
+    abortSignal?: AbortSignal,
+  ): Promise<ImageUpdateResult> {
+    try {
+      const { tag } = this.imageRegistry.extractImageDataFromImageName(imageRef);
+      const { status, updateAvailable, message } = await this.imageRegistry.checkImageUpdateStatus(
+        imageRef,
+        tag,
+        localDigests,
+      );
+      if (!updateAvailable) {
+        return { imageRef, updated: false, status, message };
+      }
+
+      const authconfig = this.imageRegistry.getAuthconfigForImage(imageRef);
+      const pullStream = await engine.pull(imageRef, { authconfig, abortSignal });
+      await this.followPullProgress(engine, pullStream);
+      return { imageRef, updated: true, status: 'updated', message: 'Image updated successfully' };
+    } catch (error: unknown) {
+      return this.toUpdateError(imageRef, error);
+    }
+  }
+
+  protected toUpdateError(imageRef: string, error: unknown): ImageUpdateResult {
+    console.error(`Error updating image ${imageRef}`, error);
+    const message = error instanceof Error ? error.message : String(error);
+    return { imageRef, updated: false, status: 'error', message };
   }
 
   async pingContainerEngine(providerContainerConnectionInfo: ProviderContainerConnectionInfo): Promise<unknown> {

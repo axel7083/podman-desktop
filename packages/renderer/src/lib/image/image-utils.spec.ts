@@ -312,25 +312,6 @@ describe('updateImages', () => {
     expect(window.updateImages).not.toHaveBeenCalled();
   });
 
-  test.each([
-    { overrides: { engineId: '' }, imageRef: 'nginx:latest' },
-    { overrides: { name: '' }, imageRef: ':latest' },
-    { overrides: { tag: '' }, imageRef: 'nginx:' },
-    { overrides: { name: '<none>', tag: '' }, imageRef: 'sha256:abc' },
-  ])('skips an image with missing request data: $overrides', async ({ overrides, imageRef }) => {
-    const results = await imageUtils.updateImages([{ ...image, ...overrides }]);
-
-    expect(results).toEqual([
-      {
-        imageRef,
-        updated: false,
-        status: 'skipped',
-        message: 'Image engine, name, or tag is unavailable for this image.',
-      },
-    ]);
-    expect(window.updateImages).not.toHaveBeenCalled();
-  });
-
   test('propagates backend errors to the caller', async () => {
     const error = new Error('Registry unavailable');
     vi.mocked(window.updateImages).mockRejectedValue(error);
@@ -338,85 +319,21 @@ describe('updateImages', () => {
     await expect(imageUtils.updateImages([image])).rejects.toThrow(error);
   });
 
-  test('sends batch payload in a single IPC call', async () => {
-    vi.mocked(window.updateImages).mockResolvedValue([
+  test('sends the engine and image ids in a single IPC call and returns the backend results', async () => {
+    const backendResults = [
       { imageRef: 'nginx:latest', updated: true, status: 'updated', message: 'Updated' },
       { imageRef: 'redis:7', updated: false, status: 'normal', message: 'Up to date' },
-    ]);
+    ] as const;
+    vi.mocked(window.updateImages).mockResolvedValue([...backendResults]);
 
-    const results = await imageUtils.updateImages([image, { ...image, name: 'redis', tag: '7', engineId: 'docker' }]);
+    const results = await imageUtils.updateImages([image, { ...image, id: 'sha256:def', engineId: 'docker' }]);
 
     expect(window.updateImages).toHaveBeenCalledExactlyOnceWith([
-      { engineId: 'podman', image: 'nginx:latest', tag: 'latest' },
-      { engineId: 'docker', image: 'redis:7', tag: '7' },
+      { engineId: 'podman', id: 'sha256:abc' },
+      { engineId: 'docker', id: 'sha256:def' },
     ]);
-    expect(results).toEqual([
-      { imageRef: 'nginx:latest', updated: true, status: 'updated', message: 'Updated' },
-      { imageRef: 'redis:7', updated: false, status: 'normal', message: 'Up to date' },
-    ]);
+    expect(results).toEqual(backendResults);
   });
-
-  test('preserves original result positions when some images lack request data', async () => {
-    vi.mocked(window.updateImages).mockResolvedValue([
-      { imageRef: 'nginx:latest', updated: true, status: 'updated', message: 'Updated' },
-      { imageRef: 'redis:7', updated: false, status: 'normal', message: 'Up to date' },
-    ]);
-
-    const results = await imageUtils.updateImages([
-      { ...image, name: 'missing', engineId: '' },
-      image,
-      { ...image, name: '<none>', tag: '' },
-      { ...image, name: 'redis', tag: '7', engineId: 'docker' },
-      { ...image, name: 'also-missing', tag: '' },
-    ]);
-
-    expect(window.updateImages).toHaveBeenCalledExactlyOnceWith([
-      { engineId: 'podman', image: 'nginx:latest', tag: 'latest' },
-      { engineId: 'docker', image: 'redis:7', tag: '7' },
-    ]);
-    expect(results).toEqual([
-      {
-        imageRef: 'missing:latest',
-        updated: false,
-        status: 'skipped',
-        message: 'Image engine, name, or tag is unavailable for this image.',
-      },
-      { imageRef: 'nginx:latest', updated: true, status: 'updated', message: 'Updated' },
-      {
-        imageRef: 'sha256:abc',
-        updated: false,
-        status: 'skipped',
-        message: 'Image engine, name, or tag is unavailable for this image.',
-      },
-      { imageRef: 'redis:7', updated: false, status: 'normal', message: 'Up to date' },
-      {
-        imageRef: 'also-missing:',
-        updated: false,
-        status: 'skipped',
-        message: 'Image engine, name, or tag is unavailable for this image.',
-      },
-    ]);
-  });
-
-  test.each([{ name: '<none>' }, { tag: '<none>' }, { name: 'nginx@sha256', tag: 'abc' }, { name: 'localhost/nginx' }])(
-    'leaves update eligibility and messages to the backend: %j',
-    async overrides => {
-      const candidate = { ...image, ...overrides };
-      const imageRef = `${candidate.name}:${candidate.tag}`;
-      const backendResult = {
-        imageRef,
-        updated: false,
-        status: 'skipped' as const,
-        message: 'Backend eligibility result',
-      };
-      vi.mocked(window.updateImages).mockResolvedValue([backendResult]);
-
-      await expect(imageUtils.updateImages([candidate])).resolves.toEqual([backendResult]);
-      expect(window.updateImages).toHaveBeenCalledExactlyOnceWith([
-        { engineId: 'podman', image: imageRef, tag: candidate.tag },
-      ]);
-    },
-  );
 });
 
 test('should not expect inUse when the container carries no imageId', async () => {

@@ -257,31 +257,10 @@ export class ImageUtils {
   }
 
   async updateImages(images: ImageInfoUI[]): Promise<ImageUpdateResult[]> {
-    const hasRequestData = (image: ImageInfoUI): boolean => Boolean(image.engineId && image.name && image.tag);
-    const validImages = images.filter(hasRequestData);
-    const backendResults = validImages.length
-      ? await window.updateImages(
-          validImages.map(image => ({
-            engineId: image.engineId,
-            image: `${image.name}:${image.tag}`,
-            tag: image.tag,
-          })),
-        )
-      : [];
-
-    let resultIndex = 0;
-    return images.map(image => {
-      if (!hasRequestData(image)) {
-        return {
-          imageRef: image.name === '<none>' ? image.id : `${image.name}:${image.tag}`,
-          updated: false,
-          status: 'skipped',
-          message: 'Image engine, name, or tag is unavailable for this image.',
-        };
-      }
-
-      return backendResults[resultIndex++];
-    });
+    if (images.length === 0) {
+      return [];
+    }
+    return window.updateImages(images.map(({ engineId, id }) => ({ engineId, id })));
   }
 
   getImageInfoUI(
