@@ -2293,7 +2293,7 @@ test.each([
   }
 });
 
-test('provider is registered without edit capabilities on Linux', async () => {
+test('provider is registered with edit capabilities on Linux', async () => {
   vi.mocked(extensionApi.env).isLinux = true;
   extension.initExtensionContext({ subscriptions: [] } as unknown as extensionApi.ExtensionContext);
   const spyExecPromise = vi.spyOn(extensionApi.process, 'exec');
@@ -2319,10 +2319,11 @@ test('provider is registered without edit capabilities on Linux', async () => {
   await extension.registerProviderFor(provider, podmanConfiguration, machineInfo, 'socket');
   expect(registeredConnection).toBeDefined();
   expect(registeredConnection?.lifecycle).toBeDefined();
-  expect(registeredConnection?.lifecycle?.edit).toBeUndefined();
-  expect(extensionApi.context.setValue).toBeCalledWith(PODMAN_MACHINE_EDIT_CPU, false);
-  expect(extensionApi.context.setValue).toBeCalledWith(PODMAN_MACHINE_EDIT_MEMORY, false);
-  expect(extensionApi.context.setValue).toBeCalledWith(PODMAN_MACHINE_EDIT_DISK_SIZE, false);
+  expect(registeredConnection?.lifecycle?.edit).toBeDefined();
+  expect(extensionApi.context.setValue).toBeCalledWith(PODMAN_MACHINE_EDIT_CPU, true);
+  expect(extensionApi.context.setValue).toBeCalledWith(PODMAN_MACHINE_EDIT_MEMORY, true);
+  expect(extensionApi.context.setValue).toBeCalledWith(PODMAN_MACHINE_EDIT_DISK_SIZE, true);
+  expect(extensionApi.context.setValue).toBeCalledWith(PODMAN_MACHINE_EDIT_ROOTFUL, true);
 });
 
 describe('connection error property on lifecycle methods', () => {

@@ -828,10 +828,10 @@ export async function registerProviderFor(
 ): Promise<void> {
   const isHyperVMachine = extensionApi.env.isWindows && machineInfo.vmType === VMTYPE.HYPERV;
 
-  const isEditMemorySupported = extensionApi.env.isMac || isHyperVMachine;
-  const isEditCPUSupported = extensionApi.env.isMac || isHyperVMachine;
-  const isEditDiskSizeSupported = extensionApi.env.isMac;
-  const isEditRootfulSupported = extensionApi.env.isMac || extensionApi.env.isWindows;
+  const isEditMemorySupported = extensionApi.env.isMac || extensionApi.env.isLinux || isHyperVMachine;
+  const isEditCPUSupported = extensionApi.env.isMac || extensionApi.env.isLinux || isHyperVMachine;
+  const isEditDiskSizeSupported = extensionApi.env.isMac || extensionApi.env.isLinux;
+  const isEditRootfulSupported = extensionApi.env.isMac || extensionApi.env.isWindows || extensionApi.env.isLinux;
 
   const podmanInstallation = await podmanBinary.getBinaryInfo();
   const podmanVersion = podmanInstallation?.version;
@@ -881,7 +881,7 @@ export async function registerProviderFor(
       }
     },
   };
-  // support edit only on MacOS and Windows with limited editing capabilities for HyperV and WSL machines
+  // support edit on MacOS, Linux and Windows with limited editing capabilities for HyperV and WSL machines
   if (isEditSupported) {
     lifecycle.edit = async (context, params, logger, _token): Promise<void> => {
       let effective = false;
