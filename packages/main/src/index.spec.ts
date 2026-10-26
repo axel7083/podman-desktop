@@ -114,6 +114,6 @@ test('app-ready event starts the plugin system with the main window config', asy
   }
   await vi.waitFor(() => expect(PluginSystem.prototype.initExtensions).toHaveBeenCalledOnce());
 
-  expect(PluginSystem).toHaveBeenCalledWith(expect.anything(), mainWindowDeferred, expect.any(Object));
+  expect(PluginSystem).toHaveBeenCalledWith(mainWindowDeferred, expect.any(Object));
   expect(vi.mocked(PluginSystem.prototype.initExtensions).mock.calls[0]?.[0]).toBeInstanceOf(Emitter);
 });

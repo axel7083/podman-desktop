@@ -176,6 +176,7 @@ import { Updater } from '/@/plugin/updater.js';
 import { Welcome } from '/@/plugin/welcome.js';
 import { securityRestrictionCurrentHandler } from '/@/security-restrictions-handler.js';
 import { StartupInstall } from '/@/system/startup-install.js';
+import { SystemTray } from '/@/system-tray.js';
 import { TrayMenu } from '/@/tray-menu.js';
 import { createHash, isMac } from '/@/util.js';
 import product from '/@product.json' with { type: 'json' };
@@ -311,7 +312,6 @@ export class PluginSystem {
   private validExtList!: ExtensionInfo[];
 
   constructor(
-    private trayMenu: TrayMenu,
     private mainWindowDeferred: PromiseWithResolvers<BrowserWindow>,
     private windowConfig: WindowConfig = {},
   ) {
@@ -500,7 +500,14 @@ export class PluginSystem {
     container.bind<WindowConfig>(MainWindowConfig).toConstantValue(this.windowConfig);
     container.bind<IPCHandle>(IPCHandle).toConstantValue(this.ipcHandle);
     container.bind<IPCMainOn>(IPCMainOn).toConstantValue(this.ipcMainOn);
-    container.bind<TrayMenu>(TrayMenu).toConstantValue(this.trayMenu);
+    container.bind<SystemTray>(SystemTray).toSelf().inSingletonScope();
+    container
+      .bind<TrayMenu>(TrayMenu)
+      .toDynamicValue(context => {
+        const systemTray = context.get<SystemTray>(SystemTray);
+        return new TrayMenu(systemTray.tray, systemTray.animatedTray);
+      })
+      .inSingletonScope();
     container.bind<IconRegistry>(IconRegistry).toSelf().inSingletonScope();
     const directoryStrategy = new DirectoryStrategy();
     if (directoryStrategy.shouldUseXDGDirectories()) {
@@ -527,6 +534,8 @@ export class PluginSystem {
     // the main window reads its preferences from the configuration registry, it loads the UI in the background
     container.bind<MainWindow>(MainWindow).toSelf().inSingletonScope();
     container.get<MainWindow>(MainWindow).init();
+
+    container.get<SystemTray>(SystemTray).init();
 
     // start on login (macOS and Windows), runs in the background
     container.bind<StartupInstall>(StartupInstall).toSelf().inSingletonScope();

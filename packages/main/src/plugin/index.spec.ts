@@ -39,7 +39,7 @@ import { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
 import { Updater } from '/@/plugin/updater.js';
 import { securityRestrictionCurrentHandler } from '/@/security-restrictions-handler.js';
 import { StartupInstall } from '/@/system/startup-install.js';
-import type { TrayMenu } from '/@/tray-menu.js';
+import { SystemTray } from '/@/system-tray.js';
 
 import { CancellationTokenRegistry } from './cancellation-token-registry.js';
 import { ConfigurationRegistry } from './configuration-registry.js';
@@ -88,6 +88,7 @@ vi.mock(import('electron-util/main'), () => ({ aboutMenuItem: vi.fn() }));
 vi.mock(import('electron-context-menu'), () => ({ default: vi.fn() }));
 vi.mock(import('/@/mainWindow.js'), importOriginal => mockOriginalClass(importOriginal, 'MainWindow'));
 vi.mock(import('/@/system/startup-install.js'), importOriginal => mockOriginalClass(importOriginal, 'StartupInstall'));
+vi.mock(import('/@/system-tray.js'), importOriginal => mockOriginalClass(importOriginal, 'SystemTray'));
 vi.mock(import('/@/plugin/updater.js'), importOriginal => mockOriginalClass(importOriginal, 'Updater'));
 vi.mock(import('/@/plugin/extension/extension-loader.js'), importOriginal =>
   mockOriginalClass(importOriginal, 'ExtensionLoader'),
@@ -154,7 +155,7 @@ beforeEach(async () => {
   webContents.send = vi.fn();
 
   mainWindowDeferred = Promise.withResolvers<BrowserWindow>();
-  pluginSystem = new TestPluginSystem({} as unknown as TrayMenu, mainWindowDeferred);
+  pluginSystem = new TestPluginSystem(mainWindowDeferred);
 
   vi.mocked(ipcMain.handle).mockImplementation((channel: string, listener: unknown) => {
     handlers.set(channel, listener);
@@ -193,6 +194,10 @@ afterEach(async () => {
 
 test('initExtensions configures the start on login', () => {
   expect(StartupInstall.prototype.configure).toHaveBeenCalledOnce();
+});
+
+test('initExtensions creates the system tray', () => {
+  expect(SystemTray.prototype.init).toHaveBeenCalledOnce();
 });
 
 test('Check SecurityRestrictions on Links and user accept', async () => {

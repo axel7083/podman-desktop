@@ -15,8 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { Event } from '@desktop-framework/api';
-import { app, Tray } from 'electron';
+import { app } from 'electron';
 
 import { restoreWindow } from '/@/mainWindow.js';
 import type { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
@@ -25,14 +24,9 @@ import { type AdditionalData, Main } from './main.js';
 import type { ConfigurationRegistry } from './plugin/configuration-registry.js';
 import { Emitter } from './plugin/events/emitter.js';
 import { PluginSystem } from './plugin/index.js';
-import { readShowTrayIconSetting } from './plugin/util/read-tray-setting.js';
-import { AnimatedDevTray } from './tray-animate-dev-icon.js';
-import { AnimatedTray } from './tray-animate-icon.js';
-import { TrayMenu } from './tray-menu.js';
-import { isMac, isWindows, stoppedExtensions } from './util.js';
+import { isWindows, stoppedExtensions } from './util.js';
 
 let extensionLoader: ExtensionLoader | undefined;
-let animatedTray: AnimatedTray | undefined;
 
 // Main startup
 const podmanDesktopMain = new Main(app);
@@ -53,11 +47,6 @@ app.on('second-instance', (_event, _args, _workingDirectory, additionalData: unk
   });
 });
 
-app.on('will-quit', () => {
-  // Clean up tray resources
-  animatedTray?.dispose();
-  tray?.destroy();
-});
 app.once('before-quit', event => {
   if (!extensionLoader) {
     stoppedExtensions.val = true;
@@ -78,8 +67,6 @@ app.once('before-quit', event => {
     });
 });
 
-let tray: Tray | undefined;
-
 // Handle the open-url event (macOS/Linux). For Windows, it needs to be handle in the second-instance event
 app.on('will-finish-launching', () => {
   app.on('open-url', (event, url) => {
@@ -91,35 +78,10 @@ app.on('will-finish-launching', () => {
 
 app.whenReady().then(
   async () => {
-    // Setup the default tray icon + menu items (skip if user disabled tray)
-    const showTrayIcon = readShowTrayIconSetting();
-    if (showTrayIcon) {
-      animatedTray = import.meta.env.DEV ? new AnimatedDevTray() : new AnimatedTray();
-      tray = new Tray(animatedTray.getDefaultImage());
-      animatedTray.setTray(tray);
-    }
-    const trayMenu = new TrayMenu(tray, animatedTray);
-
     const _onDidCreatedConfigurationRegistry = new Emitter<ConfigurationRegistry>();
-    const onDidCreatedConfigurationRegistry: Event<ConfigurationRegistry> = _onDidCreatedConfigurationRegistry.event;
 
     // Start extensions
-    const pluginSystem = new PluginSystem(
-      trayMenu,
-      podmanDesktopMain.mainWindowDeferred,
-      podmanDesktopMain.windowConfig,
-    );
-
-    onDidCreatedConfigurationRegistry((configurationRegistry: ConfigurationRegistry) => {
-      // If we've manually set the tray icon color, update the tray icon. This can only be done
-      // after configurationRegistry is loaded. Windows or Linux support only for icon color change.
-      if (!isMac()) {
-        const color = configurationRegistry.getConfiguration('preferences').get('TrayIconColor');
-        if (typeof color === 'string') {
-          animatedTray?.setColor(color);
-        }
-      }
-    });
+    const pluginSystem = new PluginSystem(podmanDesktopMain.mainWindowDeferred, podmanDesktopMain.windowConfig);
 
     extensionLoader = await pluginSystem.initExtensions(_onDidCreatedConfigurationRegistry);
   },
