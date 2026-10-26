@@ -156,7 +156,8 @@ import { app, BrowserWindow, clipboard, ipcMain, shell } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron/main';
 import { Container } from 'inversify';
 
-import { IPCHandle, IPCMainOn, MainWindowDeferred } from '/@/plugin/api.js';
+import { MainWindow, type WindowConfig } from '/@/mainWindow.js';
+import { IPCHandle, IPCMainOn, MainWindowConfig, MainWindowDeferred } from '/@/plugin/api.js';
 import { ApiSender } from '/@/plugin/api-sender.js';
 import { ContainerfileParser } from '/@/plugin/containerfile-parser.js';
 import { ExtensionApiVersion } from '/@/plugin/extension/extension-api-version.js';
@@ -311,6 +312,7 @@ export class PluginSystem {
   constructor(
     private trayMenu: TrayMenu,
     private mainWindowDeferred: PromiseWithResolvers<BrowserWindow>,
+    private windowConfig: WindowConfig = {},
   ) {
     app.on('before-quit', () => {
       this.isQuitting = true;
@@ -330,20 +332,6 @@ export class PluginSystem {
    */
   getWebContentsSender(): MainWindowWebContentsSender {
     return this.findMainWindow()?.webContents ?? PluginSystem.DESTROYED_WEB_CONTENTS_SENDER;
-  }
-
-  /**
-   * Sender for the callers resolving it once and keeping the reference, like the api sender.
-   * Falling back to a sender doing nothing here would leave such a caller unable to ever reach the
-   * UI, so the missing window is reported instead.
-   * @throws when there is no window to send to
-   */
-  getRequiredWebContentsSender(): MainWindowWebContentsSender {
-    const window = this.findMainWindow();
-    if (!window) {
-      throw new Error('Unable to find the main window');
-    }
-    return window.webContents;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -506,8 +494,9 @@ export class PluginSystem {
     container.bind<ApiSender>(ApiSender).toSelf().inSingletonScope();
     container.bind<ApiSenderType>(ApiSenderType).toService(ApiSender);
     const apiSender = container.get<ApiSender>(ApiSender);
-    apiSender.attach(this.getRequiredWebContentsSender());
     this.apiSender = apiSender;
+    container.bind<PromiseWithResolvers<BrowserWindow>>(MainWindowDeferred).toConstantValue(this.mainWindowDeferred);
+    container.bind<WindowConfig>(MainWindowConfig).toConstantValue(this.windowConfig);
     container.bind<IPCHandle>(IPCHandle).toConstantValue(this.ipcHandle);
     container.bind<IPCMainOn>(IPCMainOn).toConstantValue(this.ipcMainOn);
     container.bind<TrayMenu>(TrayMenu).toConstantValue(this.trayMenu);
@@ -533,6 +522,10 @@ export class PluginSystem {
       notifications,
       configurationRegistryEmitter,
     );
+
+    // the main window reads its preferences from the configuration registry, it loads the UI in the background
+    container.bind<MainWindow>(MainWindow).toSelf().inSingletonScope();
+    container.get<MainWindow>(MainWindow).init();
 
     container.bind<ColorRegistry>(ColorRegistry).to(InjectableColorRegistry).inSingletonScope();
     const colorRegistry = container.get<ColorRegistry>(ColorRegistry);
@@ -765,7 +758,6 @@ export class PluginSystem {
     const webviewRegistry = container.get<WebviewRegistry>(WebviewRegistry);
     await webviewRegistry.start();
 
-    container.bind<PromiseWithResolvers<BrowserWindow>>(MainWindowDeferred).toConstantValue(this.mainWindowDeferred);
     container.bind<DialogRegistry>(DialogRegistry).toSelf().inSingletonScope();
 
     const dialogRegistry = container.get<DialogRegistry>(DialogRegistry);

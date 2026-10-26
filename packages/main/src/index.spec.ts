@@ -17,7 +17,6 @@
  ***********************************************************************/
 
 import type { IConfigurationChangeEvent, IConfigurationRegistry } from '@desktop-framework/api/configuration';
-import type { App } from 'electron';
 import { app, BrowserWindow, Menu } from 'electron';
 import { aboutMenuItem } from 'electron-util/main';
 import { afterEach, assert, beforeEach, expect, test, vi } from 'vitest';
@@ -27,7 +26,6 @@ import type { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
 import { mainWindowDeferred } from './index.js';
 import { Emitter } from './plugin/events/emitter.js';
 import { PluginSystem } from './plugin/index.js';
-import * as util from './util.js';
 
 const consoleLogMock = vi.fn();
 const originalConsoleLog = console.log;
@@ -119,48 +117,14 @@ afterEach(() => {
   console.log = originalConsoleLog;
 });
 
-test('app-ready event with activate event', async () => {
-  vi.mocked(util.isMac).mockReset();
-  vi.mocked(util.isMac).mockReturnValue(true);
-
-  // grab all windows
-  const windows = BrowserWindow.getAllWindows();
-  expect(windows).toHaveLength(1);
-
-  const window = windows[0];
-  if (!window) {
-    assert.fail('window is undefined');
-  }
-  const spyShow = vi.spyOn(window, 'show');
-  const spyFocus = vi.spyOn(window, 'focus');
-
-  let activateCallback: ((event: unknown) => void) | undefined = undefined;
-
-  // capture activate event
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  vi.mocked(app.on).mockImplementation((event: string, callback: Function): App => {
-    if (event === 'activate') {
-      activateCallback = callback as (event: unknown) => void;
-    }
-    return app;
-  });
-
+test('app-ready event sets the application menu once the configuration registry is ready', async () => {
   if (constants.resolveFn) {
     const appReady: (value: void | Promise<void>) => void = constants.resolveFn;
-    if (constants.resolveFn) {
-      appReady();
-    }
+    appReady();
   } else {
     assert.fail('constants.resolveFn is undefined');
   }
-  // wait activateCallback being set
-  await vi.waitUntil(() => activateCallback !== undefined);
-  // now, check that we called
-  activateCallback!({});
-
-  // expect show and focus have been called
-  expect(spyShow).toHaveBeenCalled();
-  expect(spyFocus).toHaveBeenCalled();
+  await vi.waitFor(() => expect(PluginSystem.prototype.initExtensions).toHaveBeenCalled());
 
   // capture the pluginSystem.initExtensions call
   const initExtensionsCalls = vi.mocked(PluginSystem.prototype.initExtensions).mock.calls;

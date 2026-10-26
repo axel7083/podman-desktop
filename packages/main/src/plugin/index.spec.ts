@@ -83,6 +83,8 @@ function getHandler<T>(name: string): T {
   return handler as T;
 }
 
+vi.mock(import('electron-context-menu'), () => ({ default: vi.fn() }));
+vi.mock(import('/@/mainWindow.js'), importOriginal => mockOriginalClass(importOriginal, 'MainWindow'));
 vi.mock(import('/@/plugin/updater.js'), importOriginal => mockOriginalClass(importOriginal, 'Updater'));
 vi.mock(import('/@/plugin/extension/extension-loader.js'), importOriginal =>
   mockOriginalClass(importOriginal, 'ExtensionLoader'),
@@ -987,36 +989,6 @@ describe('getWebContentsSender', () => {
     expect(sender.isDestroyed()).toBe(true);
     expect(() => sender.send('api-sender', 'foo')).not.toThrow();
     expect(() => sender.on('dom-ready', vi.fn())).not.toThrow();
-  });
-});
-
-describe('getRequiredWebContentsSender', () => {
-  test('should return the webContents of the first window that is not destroyed', () => {
-    const destroyedWebContents = { send: vi.fn() } as unknown as WebContents;
-    vi.mocked(BrowserWindow.getAllWindows).mockReturnValue([
-      { isDestroyed: () => true, webContents: destroyedWebContents } as unknown as BrowserWindow,
-      { isDestroyed: () => false, webContents } as unknown as BrowserWindow,
-    ]);
-
-    expect(pluginSystem.getRequiredWebContentsSender()).toBe(webContents);
-  });
-
-  test.each([
-    { scenario: 'there is no window anymore', getWindows: (): BrowserWindow[] => [] },
-    {
-      scenario: 'every window is destroyed',
-      getWindows: (): BrowserWindow[] => [{ isDestroyed: () => true, webContents } as unknown as BrowserWindow],
-    },
-    {
-      scenario: 'the web contents of the window are destroyed',
-      getWindows: (): BrowserWindow[] => [
-        { isDestroyed: () => false, webContents: { isDestroyed: () => true } } as unknown as BrowserWindow,
-      ],
-    },
-  ])('should throw when $scenario', ({ getWindows }) => {
-    vi.mocked(BrowserWindow.getAllWindows).mockReturnValue(getWindows());
-
-    expect(() => pluginSystem.getRequiredWebContentsSender()).toThrow('Unable to find the main window');
   });
 });
 

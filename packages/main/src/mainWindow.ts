@@ -22,12 +22,15 @@ import { URL } from 'node:url';
 import type { BrowserWindowConstructorOptions, Rectangle } from 'electron';
 import { app, autoUpdater, BrowserWindow, ipcMain, nativeTheme, screen } from 'electron';
 import contextMenu from 'electron-context-menu';
+import { inject, injectable } from 'inversify';
 
 import { buildDevelopmentMenu } from './development-menu-builder.js';
 import { DevelopmentModeTracker } from './development-mode-tracker.js';
 import { NavigationItemsMenuBuilder } from './navigation-items-menu-builder.js';
 import { OpenDevTools } from './open-dev-tools.js';
-import type { ConfigurationRegistry } from './plugin/configuration-registry.js';
+import { MainWindowConfig, MainWindowDeferred } from './plugin/api.js';
+import { ApiSender } from './plugin/api-sender.js';
+import { ConfigurationRegistry } from './plugin/configuration-registry.js';
 import { LoginMinimizeHandler } from './system/window/login-minimize-handler.js';
 import type { WindowHandler } from './system/window/window-handler.js';
 import { isLinux, isMac, stoppedExtensions } from './util.js';
@@ -43,7 +46,11 @@ export interface WindowConfig {
 
 let isExtensionsDevelopmentModeEnabled = false;
 
-async function createWindow(config?: WindowConfig): Promise<BrowserWindow> {
+async function createWindow(
+  configurationRegistry: ConfigurationRegistry,
+  apiSender: ApiSender,
+  config?: WindowConfig,
+): Promise<BrowserWindow> {
   const INITIAL_APP_WIDTH = 1050;
   const INITIAL_APP_MIN_WIDTH = 640;
   const INITIAL_APP_HEIGHT = 700;
@@ -88,6 +95,8 @@ async function createWindow(config?: WindowConfig): Promise<BrowserWindow> {
   }
 
   const browserWindow = new BrowserWindow(browserWindowConstructorOptions);
+  // the page has not started loading yet, so the api sender does not miss its dom-ready event
+  apiSender.attach(browserWindow.webContents);
 
   const { getCursorScreenPoint, getDisplayNearestPoint } = screen;
   const workArea = getDisplayNearestPoint(getCursorScreenPoint()).workArea;
@@ -109,12 +118,6 @@ async function createWindow(config?: WindowConfig): Promise<BrowserWindow> {
    *
    * @see https://github.com/electron/electron/issues/25012
    */
-  // Track whether the window show is deferred (macOS login item launch).
-  // On macOS, app.setLoginItemSettings() does not support passing CLI args,
-  // so we defer showing the window until the configuration registry is available
-  // to check the preferences.login.minimize setting.
-  let deferredShow = false;
-
   // Shared show logic used by both ready-to-show and the Wayland did-finish-load fallback.
   const handleWindowShow = (): void => {
     // If started with --minimize flag (Windows login item or manual CLI), hide the window
@@ -123,13 +126,9 @@ async function createWindow(config?: WindowConfig): Promise<BrowserWindow> {
         app.dock?.hide();
       }
     } else if (isMac() && app.getLoginItemSettings().wasOpenedAtLogin) {
-      // On macOS login item launch, apply the minimize preference now if the configuration
-      // registry has already arrived, otherwise defer until it does
-      if (configurationRegistry) {
-        loginMinimizeHandler.apply(browserWindow, configurationRegistry);
-      } else {
-        deferredShow = true;
-      }
+      // On macOS, app.setLoginItemSettings() does not support passing CLI args,
+      // so the preferences.login.minimize setting decides whether to show the window
+      loginMinimizeHandler.apply(browserWindow, configurationRegistry);
     } else {
       browserWindow.show();
     }
@@ -144,29 +143,17 @@ async function createWindow(config?: WindowConfig): Promise<BrowserWindow> {
     browserWindow.on('ready-to-show', handleWindowShow);
   }
 
-  let configurationRegistry: ConfigurationRegistry;
-  ipcMain.on('configuration-registry', (_, data) => {
-    configurationRegistry = data;
-
-    // If the window show was deferred (macOS login item launch),
-    // check the minimize preference and show or hide accordingly
-    if (deferredShow) {
-      deferredShow = false;
-      loginMinimizeHandler.apply(browserWindow, configurationRegistry);
-    }
-
-    // refresh the value of the development mode config property
-    const developmentModeTracker = new DevelopmentModeTracker(configurationRegistry);
-    developmentModeTracker.onDidChangeDevelopmentMode(enabled => {
-      isExtensionsDevelopmentModeEnabled = enabled;
-    });
-    developmentModeTracker.init();
-
-    navigationItemsMenuBuilder = new NavigationItemsMenuBuilder(configurationRegistry);
-
-    // open dev tools (if required)
-    openDevTools.open(browserWindow, configurationRegistry);
+  // refresh the value of the development mode config property
+  const developmentModeTracker = new DevelopmentModeTracker(configurationRegistry);
+  developmentModeTracker.onDidChangeDevelopmentMode(enabled => {
+    isExtensionsDevelopmentModeEnabled = enabled;
   });
+  developmentModeTracker.init();
+
+  navigationItemsMenuBuilder = new NavigationItemsMenuBuilder(configurationRegistry);
+
+  // open dev tools (if required)
+  openDevTools.open(browserWindow, configurationRegistry);
 
   let windowHandler: WindowHandler | undefined;
   ipcMain.on('window-handler', (_, windowHandlerParam) => {
@@ -201,14 +188,10 @@ async function createWindow(config?: WindowConfig): Promise<BrowserWindow> {
       return;
     }
 
-    const closeBehaviorConfiguration = configurationRegistry?.getConfiguration('preferences');
-    let exitonclose = isLinux(); // default value, which we will use unless the user preference is available.
-    if (closeBehaviorConfiguration) {
-      exitonclose = closeBehaviorConfiguration.get<boolean>('ExitOnClose') === true;
-      if (closeBehaviorConfiguration.get<boolean>('ShowTrayIcon') === false) {
-        exitonclose = true;
-      }
-    }
+    const closeBehaviorConfiguration = configurationRegistry.getConfiguration('preferences');
+    const exitonclose =
+      closeBehaviorConfiguration.get<boolean>('ExitOnClose') === true ||
+      closeBehaviorConfiguration.get<boolean>('ShowTrayIcon') === false;
 
     e.preventDefault();
     if (!exitonclose) {
@@ -272,11 +255,60 @@ async function createWindow(config?: WindowConfig): Promise<BrowserWindow> {
 }
 
 // Create a new window if there is no existing window
-export async function createNewWindow(config?: WindowConfig): Promise<BrowserWindow> {
+async function createNewWindow(
+  configurationRegistry: ConfigurationRegistry,
+  apiSender: ApiSender,
+  config?: WindowConfig,
+): Promise<BrowserWindow> {
   let window = BrowserWindow.getAllWindows().find(w => !w.isDestroyed());
 
-  window ??= await createWindow(config);
+  window ??= await createWindow(configurationRegistry, apiSender, config);
   return window;
+}
+
+/**
+ * Creates the main window once the configuration registry is available, and resolves {@link MainWindowDeferred}
+ * when its page is loaded.
+ */
+@injectable()
+export class MainWindow {
+  constructor(
+    @inject(ConfigurationRegistry)
+    private readonly configurationRegistry: ConfigurationRegistry,
+    @inject(ApiSender)
+    private readonly apiSender: ApiSender,
+    @inject(MainWindowDeferred)
+    private readonly mainWindowDeferred: PromiseWithResolvers<BrowserWindow>,
+    @inject(MainWindowConfig)
+    private readonly config: WindowConfig,
+  ) {}
+
+  init(): void {
+    this.createWindow();
+
+    // Platforms: macOS
+    // Required for macOS to start the app correctly (this is will be shown in the dock)
+    // https://www.electronjs.org/docs/latest/tutorial/quick-start#open-a-window-if-none-are-open-macos
+    app.on('activate', (_event, hasVisibleWindows) => {
+      this.createWindow();
+
+      // try to restore the window if it's not visible
+      // for example user click on the dock icon
+      if (isMac() && !hasVisibleWindows) {
+        restoreWindow().catch((error: unknown) => {
+          console.error('Error restoring window', error);
+        });
+      }
+    });
+  }
+
+  protected createWindow(): void {
+    createNewWindow(this.configurationRegistry, this.apiSender, this.config)
+      .then(this.mainWindowDeferred.resolve)
+      .catch((error: unknown) => {
+        console.error('Error creating window', error);
+      });
+  }
 }
 
 // Restore the window if it is minimized / not shown / there is already another instance running

@@ -18,11 +18,11 @@
 import type { IDisposable } from '@desktop-framework/api';
 import type { App as ElectronApp, BrowserWindow } from 'electron';
 
+import type { WindowConfig } from '/@/mainWindow.js';
 import { AppIdentityDevPlugin } from '/@/plugin/app-ready/app-identity-plugin.js';
 import type { AppPlugin } from '/@/plugin/app-ready/app-plugin.js';
 import { DefaultProtocolClient } from '/@/plugin/app-ready/default-protocol-client.js';
 import { DevIconBuilder } from '/@/plugin/app-ready/dev-icon-builder.js';
-import { WindowPlugin } from '/@/plugin/app-ready/window-plugin.js';
 import { SecurityRestrictions } from '/@/security-restrictions.js';
 import { isLinux, isMac, isWindows } from '/@/util.js';
 import product from '/@product.json' with { type: 'json' };
@@ -43,6 +43,8 @@ export class Main implements IDisposable {
   public mainWindowDeferred: PromiseWithResolvers<BrowserWindow>;
   // TODO: should be renamed to #protocolLauncher
   public protocolLauncher: ProtocolLauncher;
+  // options of the main window, which is created by the plugin system
+  public readonly windowConfig: WindowConfig;
 
   /**
    * Represents a collection of application plugins.
@@ -63,11 +65,8 @@ export class Main implements IDisposable {
     const identity = import.meta.env.DEV
       ? new AppIdentityDevPlugin(this.app, new DevIconBuilder(this.app.getAppPath()))
       : undefined;
-    this.#plugins = [
-      ...(identity ? [identity] : []),
-      new DefaultProtocolClient(this.app),
-      new WindowPlugin(this.app, this.mainWindowDeferred.resolve, { icon: identity?.getWindowIcon() }),
-    ];
+    this.windowConfig = { icon: identity?.getWindowIcon() };
+    this.#plugins = [...(identity ? [identity] : []), new DefaultProtocolClient(this.app)];
   }
 
   main(args: string[]): void {

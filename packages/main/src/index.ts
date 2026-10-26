@@ -108,7 +108,11 @@ app.whenReady().then(
     const onDidCreatedConfigurationRegistry: Event<ConfigurationRegistry> = _onDidCreatedConfigurationRegistry.event;
 
     // Start extensions
-    const pluginSystem = new PluginSystem(trayMenu, podmanDesktopMain.mainWindowDeferred);
+    const pluginSystem = new PluginSystem(
+      trayMenu,
+      podmanDesktopMain.mainWindowDeferred,
+      podmanDesktopMain.windowConfig,
+    );
 
     onDidCreatedConfigurationRegistry(async (configurationRegistry: ConfigurationRegistry) => {
       // If we've manually set the tray icon color, update the tray icon. This can only be done
@@ -119,9 +123,6 @@ app.whenReady().then(
           animatedTray?.setColor(color);
         }
       }
-
-      // Share configuration registry with renderer process
-      ipcMain.emit('configuration-registry', '', configurationRegistry);
 
       // Register the window configuration
       // This is used to save/restore the window size and position

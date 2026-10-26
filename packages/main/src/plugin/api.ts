@@ -33,3 +33,5 @@ export type IPCMainOn = (
 ) => void;
 
 export const MainWindowDeferred = Symbol.for('MainWindowDeferred');
+
+export const MainWindowConfig = Symbol.for('MainWindowConfig');
