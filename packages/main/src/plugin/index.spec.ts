@@ -46,7 +46,6 @@ import { ConfigurationRegistry } from './configuration-registry.js';
 import { ContainerProviderRegistry } from './container-registry.js';
 import { DefaultConfiguration } from './default-configuration.js';
 import { Directories } from './directories.js';
-import { Emitter } from './events/emitter.js';
 import { ImageRegistry } from './image-registry.js';
 import type { LoggerWithEnd } from './index.js';
 import { PluginSystem } from './index.js';
@@ -114,7 +113,6 @@ class TestPluginSystem extends PluginSystem {
   override async initConfigurationRegistry(
     container: InversifyContainer,
     notifications: NotificationCardOptions[],
-    configurationRegistryEmitter: Emitter<ConfigurationRegistry>,
   ): Promise<ConfigurationRegistry> {
     if (!container.isBound(ConfigurationRegistry)) {
       container.bind<ConfigurationRegistry>(ConfigurationRegistry).toSelf().inSingletonScope();
@@ -131,7 +129,7 @@ class TestPluginSystem extends PluginSystem {
       } as unknown as LockedConfiguration;
       container.bind<LockedConfiguration>(LockedConfiguration).toConstantValue(lockedConfigurationMock);
     }
-    return super.initConfigurationRegistry(container, notifications, configurationRegistryEmitter);
+    return super.initConfigurationRegistry(container, notifications);
   }
 
   setQuitting(value: boolean): void {
@@ -182,7 +180,7 @@ beforeEach(async () => {
   vi.mocked(NavigationManager.prototype.navigateToImageBuild).mockResolvedValue(undefined);
   vi.mocked(StartupInstall.prototype.configure).mockResolvedValue(undefined);
 
-  await pluginSystem.initExtensions(new Emitter<ConfigurationRegistry>());
+  await pluginSystem.initExtensions();
   vi.mocked(webContents.send).mockClear();
 
   inversifyContainer = new InversifyContainer();
@@ -341,15 +339,7 @@ test('Should return AbortController that should be aborted if token is cancelled
   expect(abortMock).toBeCalled();
 });
 
-test('configurationRegistry propagated', async () => {
-  const configurationRegistryEmitter = new Emitter<ConfigurationRegistry>();
-  const onDidCallConfigurationRegistry = configurationRegistryEmitter.event;
-
-  const spyFire = vi.spyOn(configurationRegistryEmitter, 'fire');
-
-  let receivedConfig: ConfigurationRegistry | undefined;
-  onDidCallConfigurationRegistry(config => (receivedConfig = config));
-
+test('initConfigurationRegistry returns the initialized configuration registry', async () => {
   const apiSenderMock = {} as unknown as ApiSenderType;
   const directoriesMock = {
     getConfigurationDirectory: vi.fn().mockReturnValue(tmpdir()),
@@ -367,16 +357,10 @@ test('configurationRegistry propagated', async () => {
   inversifyContainer.bind<DefaultConfiguration>(DefaultConfiguration).toConstantValue(defaultConfigurationMock);
   inversifyContainer.bind<LockedConfiguration>(LockedConfiguration).toConstantValue(lockedConfigurationMock);
 
-  const configurationRegistry = await pluginSystem.initConfigurationRegistry(
-    inversifyContainer,
-    notifications,
-    configurationRegistryEmitter,
-  );
+  const configurationRegistry = await pluginSystem.initConfigurationRegistry(inversifyContainer, notifications);
 
-  expect(spyFire).toHaveBeenCalled();
-  expect(receivedConfig).toBeDefined();
-  expect(receivedConfig).toBe(configurationRegistry);
-  expect(notifications.length).toBe(0);
+  expect(configurationRegistry).toBe(inversifyContainer.get(ConfigurationRegistry));
+  expect(notifications).toHaveLength(0);
 });
 
 const pushImageHandlerId = 'container-provider-registry:pushImage';
@@ -628,7 +612,7 @@ describe.each<{
       onEnd: onEndMock,
       error: errorMock,
     } as unknown as LoggerWithEnd);
-    await pluginSystem.initExtensions(new Emitter<ConfigurationRegistry>());
+    await pluginSystem.initExtensions();
     const handle =
       getHandler<
         (
@@ -664,7 +648,7 @@ describe.each<{
       onEnd: onEndMock,
       error: errorMock,
     } as unknown as LoggerWithEnd);
-    await pluginSystem.initExtensions(new Emitter<ConfigurationRegistry>());
+    await pluginSystem.initExtensions();
     const handle =
       getHandler<
         (

@@ -21,8 +21,6 @@ import { restoreWindow } from '/@/mainWindow.js';
 import type { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
 
 import { type AdditionalData, Main } from './main.js';
-import type { ConfigurationRegistry } from './plugin/configuration-registry.js';
-import { Emitter } from './plugin/events/emitter.js';
 import { PluginSystem } from './plugin/index.js';
 import { isWindows, stoppedExtensions } from './util.js';
 
@@ -78,12 +76,10 @@ app.on('will-finish-launching', () => {
 
 app.whenReady().then(
   async () => {
-    const _onDidCreatedConfigurationRegistry = new Emitter<ConfigurationRegistry>();
-
     // Start extensions
     const pluginSystem = new PluginSystem(podmanDesktopMain.mainWindowDeferred, podmanDesktopMain.windowConfig);
 
-    extensionLoader = await pluginSystem.initExtensions(_onDidCreatedConfigurationRegistry);
+    extensionLoader = await pluginSystem.initExtensions();
   },
   (e: unknown) => console.error('Failed to start app:', e),
 );

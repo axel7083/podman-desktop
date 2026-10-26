@@ -22,7 +22,6 @@ import { afterEach, assert, beforeEach, expect, test, vi } from 'vitest';
 import type { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
 
 import { mainWindowDeferred } from './index.js';
-import { Emitter } from './plugin/events/emitter.js';
 import { PluginSystem } from './plugin/index.js';
 
 const consoleLogMock = vi.fn();
@@ -115,5 +114,4 @@ test('app-ready event starts the plugin system with the main window config', asy
   await vi.waitFor(() => expect(PluginSystem.prototype.initExtensions).toHaveBeenCalledOnce());
 
   expect(PluginSystem).toHaveBeenCalledWith(mainWindowDeferred, expect.any(Object));
-  expect(vi.mocked(PluginSystem.prototype.initExtensions).mock.calls[0]?.[0]).toBeInstanceOf(Emitter);
 });
