@@ -17,7 +17,10 @@
  ***********************************************************************/
 
 import type { Configuration } from '@desktop-framework/extension-api';
-import { beforeEach, describe, expect, test, vi } from 'vitest';
+import type { IpcMainInvokeEvent } from 'electron';
+import { assert, beforeEach, describe, expect, test, vi } from 'vitest';
+
+import type { IPCHandle } from '/@/plugin/api.js';
 
 import type { ConfigurationRegistry } from './configuration-registry.js';
 import { ExperimentalConfigurationManager } from './experimental-configuration-manager.js';
@@ -32,11 +35,54 @@ const mockedTelemetry = {
   track: vi.fn(),
 } as unknown as Telemetry;
 
+const ipcHandle: IPCHandle = vi.fn();
+
 let experimentalConfigurationManager: ExperimentalConfigurationManager;
 
 beforeEach(() => {
   vi.resetAllMocks();
-  experimentalConfigurationManager = new ExperimentalConfigurationManager(mockedConfigurationRegistry, mockedTelemetry);
+  experimentalConfigurationManager = new ExperimentalConfigurationManager(
+    mockedConfigurationRegistry,
+    mockedTelemetry,
+    ipcHandle,
+  );
+});
+
+describe('IPC handlers', () => {
+  function getIpcHandler(channel: string): Parameters<IPCHandle>[1] {
+    const handler = vi.mocked(ipcHandle).mock.calls.find(([name]) => name === channel)?.[1];
+    assert(handler, `handler '${channel}' should be registered`);
+    return handler;
+  }
+
+  beforeEach(() => {
+    experimentalConfigurationManager.init();
+  });
+
+  test.each([
+    ['experimental-configuration-manager:enableExperimentalConfiguration', 'enableExperimentalConfiguration'],
+    ['experimental-configuration-manager:disableExperimentalConfiguration', 'disableExperimentalConfiguration'],
+    ['experimental-configuration-manager:isExperimentalConfigurationEnabled', 'isExperimentalConfigurationEnabled'],
+  ] as const)('%s delegates to %s', async (channel, method) => {
+    const spy = vi.spyOn(experimentalConfigurationManager, method).mockResolvedValue(undefined as never);
+
+    await getIpcHandler(channel)({} as IpcMainInvokeEvent, 'kubernetes.statesExperimental', 'DEFAULT');
+
+    expect(spy).toHaveBeenCalledWith('kubernetes.statesExperimental', 'DEFAULT');
+  });
+
+  test('updateExperimentalConfigurationValue delegates with the value', async () => {
+    const spy = vi.spyOn(experimentalConfigurationManager, 'updateExperimentalConfigurationValue').mockResolvedValue();
+
+    await getIpcHandler('experimental-configuration-manager:updateExperimentalConfigurationValue')(
+      {} as IpcMainInvokeEvent,
+      'kubernetes.statesExperimental',
+      {},
+      'DEFAULT',
+    );
+
+    expect(spy).toHaveBeenCalledWith('kubernetes.statesExperimental', {}, 'DEFAULT');
+  });
 });
 
 describe('ExperimentalConfigurationManager', () => {

@@ -17,17 +17,50 @@
  ***********************************************************************/
 
 import type * as containerDesktopAPI from '@desktop-framework/extension-api';
-import { inject, injectable } from 'inversify';
+import { inject, injectable, postConstruct } from 'inversify';
+
+import { IPCHandle } from '/@/plugin/api.js';
 
 import { ConfigurationRegistry } from './configuration-registry.js';
 import { Telemetry } from './telemetry/telemetry.js';
+
+type ConfigurationScopes = containerDesktopAPI.ConfigurationScope | containerDesktopAPI.ConfigurationScope[];
 
 @injectable()
 export class ExperimentalConfigurationManager {
   constructor(
     @inject(ConfigurationRegistry) private configurationRegistry: ConfigurationRegistry,
     @inject(Telemetry) private telemetry: Telemetry,
+    @inject(IPCHandle) private readonly ipcHandle: IPCHandle,
   ) {}
+
+  @postConstruct()
+  init(): void {
+    this.ipcHandle(
+      'experimental-configuration-manager:updateExperimentalConfigurationValue',
+      async (_listener, key: string, value: unknown, scope?: ConfigurationScopes): Promise<void> => {
+        return this.updateExperimentalConfigurationValue(key, value, scope);
+      },
+    );
+    this.ipcHandle(
+      'experimental-configuration-manager:isExperimentalConfigurationEnabled',
+      async (_listener, key: string, scope?: ConfigurationScopes): Promise<boolean> => {
+        return this.isExperimentalConfigurationEnabled(key, scope);
+      },
+    );
+    this.ipcHandle(
+      'experimental-configuration-manager:enableExperimentalConfiguration',
+      async (_listener, key: string, scope?: ConfigurationScopes): Promise<void> => {
+        return this.enableExperimentalConfiguration(key, scope);
+      },
+    );
+    this.ipcHandle(
+      'experimental-configuration-manager:disableExperimentalConfiguration',
+      async (_listener, key: string, scope?: ConfigurationScopes): Promise<void> => {
+        return this.disableExperimentalConfiguration(key, scope);
+      },
+    );
+  }
 
   /**
    * Parse a configuration key into section and property

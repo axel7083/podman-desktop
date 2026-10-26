@@ -560,9 +560,8 @@ export class PluginSystem {
     await telemetry.init();
 
     container.bind<ExperimentalConfigurationManager>(ExperimentalConfigurationManager).toSelf().inSingletonScope();
-    const experimentalConfigurationManager = container.get<ExperimentalConfigurationManager>(
-      ExperimentalConfigurationManager,
-    );
+    // registers its IPC handlers
+    container.get<ExperimentalConfigurationManager>(ExperimentalConfigurationManager);
 
     container.bind<CommandRegistry>(CommandRegistry).toSelf().inSingletonScope();
     const commandRegistry = container.get<CommandRegistry>(CommandRegistry);
@@ -2350,51 +2349,6 @@ export class PluginSystem {
         scope?: containerDesktopAPI.ConfigurationScope | containerDesktopAPI.ConfigurationScope[],
       ): Promise<void> => {
         return configurationRegistry.updateConfigurationValue(key, value, scope);
-      },
-    );
-
-    this.ipcHandle(
-      'experimental-configuration-manager:updateExperimentalConfigurationValue',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        value: unknown,
-        scope?: containerDesktopAPI.ConfigurationScope | containerDesktopAPI.ConfigurationScope[],
-      ): Promise<void> => {
-        return experimentalConfigurationManager.updateExperimentalConfigurationValue(key, value, scope);
-      },
-    );
-
-    this.ipcHandle(
-      'experimental-configuration-manager:isExperimentalConfigurationEnabled',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        scope?: containerDesktopAPI.ConfigurationScope | containerDesktopAPI.ConfigurationScope[],
-      ): Promise<boolean> => {
-        return experimentalConfigurationManager.isExperimentalConfigurationEnabled(key, scope);
-      },
-    );
-
-    this.ipcHandle(
-      'experimental-configuration-manager:enableExperimentalConfiguration',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        scope?: containerDesktopAPI.ConfigurationScope | containerDesktopAPI.ConfigurationScope[],
-      ): Promise<void> => {
-        return experimentalConfigurationManager.enableExperimentalConfiguration(key, scope);
-      },
-    );
-
-    this.ipcHandle(
-      'experimental-configuration-manager:disableExperimentalConfiguration',
-      async (
-        _listener: Electron.IpcMainInvokeEvent,
-        key: string,
-        scope?: containerDesktopAPI.ConfigurationScope | containerDesktopAPI.ConfigurationScope[],
-      ): Promise<void> => {
-        return experimentalConfigurationManager.disableExperimentalConfiguration(key, scope);
       },
     );
 
