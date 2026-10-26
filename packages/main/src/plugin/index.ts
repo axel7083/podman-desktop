@@ -175,6 +175,7 @@ import { Uri } from '/@/plugin/types/uri.js';
 import { Updater } from '/@/plugin/updater.js';
 import { Welcome } from '/@/plugin/welcome.js';
 import { securityRestrictionCurrentHandler } from '/@/security-restrictions-handler.js';
+import { StartupInstall } from '/@/system/startup-install.js';
 import { TrayMenu } from '/@/tray-menu.js';
 import { createHash, isMac } from '/@/util.js';
 import product from '/@product.json' with { type: 'json' };
@@ -526,6 +527,15 @@ export class PluginSystem {
     // the main window reads its preferences from the configuration registry, it loads the UI in the background
     container.bind<MainWindow>(MainWindow).toSelf().inSingletonScope();
     container.get<MainWindow>(MainWindow).init();
+
+    // start on login (macOS and Windows), runs in the background
+    container.bind<StartupInstall>(StartupInstall).toSelf().inSingletonScope();
+    container
+      .get<StartupInstall>(StartupInstall)
+      .configure()
+      .catch((error: unknown) => {
+        console.error('Error configuring the start on login', error);
+      });
 
     container.bind<ColorRegistry>(ColorRegistry).to(InjectableColorRegistry).inSingletonScope();
     const colorRegistry = container.get<ColorRegistry>(ColorRegistry);

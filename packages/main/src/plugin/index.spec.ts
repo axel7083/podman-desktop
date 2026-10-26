@@ -38,6 +38,7 @@ import { afterEach, assert, beforeEach, describe, expect, test, vi } from 'vites
 import { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
 import { Updater } from '/@/plugin/updater.js';
 import { securityRestrictionCurrentHandler } from '/@/security-restrictions-handler.js';
+import { StartupInstall } from '/@/system/startup-install.js';
 import type { TrayMenu } from '/@/tray-menu.js';
 
 import { CancellationTokenRegistry } from './cancellation-token-registry.js';
@@ -86,6 +87,7 @@ function getHandler<T>(name: string): T {
 vi.mock(import('electron-util/main'), () => ({ aboutMenuItem: vi.fn() }));
 vi.mock(import('electron-context-menu'), () => ({ default: vi.fn() }));
 vi.mock(import('/@/mainWindow.js'), importOriginal => mockOriginalClass(importOriginal, 'MainWindow'));
+vi.mock(import('/@/system/startup-install.js'), importOriginal => mockOriginalClass(importOriginal, 'StartupInstall'));
 vi.mock(import('/@/plugin/updater.js'), importOriginal => mockOriginalClass(importOriginal, 'Updater'));
 vi.mock(import('/@/plugin/extension/extension-loader.js'), importOriginal =>
   mockOriginalClass(importOriginal, 'ExtensionLoader'),
@@ -177,6 +179,7 @@ beforeEach(async () => {
   vi.mocked(NavigationManager.prototype.navigateToProviderTask).mockResolvedValue(undefined);
   vi.mocked(NavigationManager.prototype.navigateToProviderConnection).mockReturnValue(undefined);
   vi.mocked(NavigationManager.prototype.navigateToImageBuild).mockResolvedValue(undefined);
+  vi.mocked(StartupInstall.prototype.configure).mockResolvedValue(undefined);
 
   await pluginSystem.initExtensions(new Emitter<ConfigurationRegistry>());
   vi.mocked(webContents.send).mockClear();
@@ -186,6 +189,10 @@ beforeEach(async () => {
 
 afterEach(async () => {
   await inversifyContainer.unbindAllAsync();
+});
+
+test('initExtensions configures the start on login', () => {
+  expect(StartupInstall.prototype.configure).toHaveBeenCalledOnce();
 });
 
 test('Check SecurityRestrictions on Links and user accept', async () => {

@@ -26,7 +26,6 @@ import type { ConfigurationRegistry } from './plugin/configuration-registry.js';
 import { Emitter } from './plugin/events/emitter.js';
 import { PluginSystem } from './plugin/index.js';
 import { readShowTrayIconSetting } from './plugin/util/read-tray-setting.js';
-import { StartupInstall } from './system/startup-install.js';
 import { AnimatedDevTray } from './tray-animate-dev-icon.js';
 import { AnimatedTray } from './tray-animate-icon.js';
 import { TrayMenu } from './tray-menu.js';
@@ -111,7 +110,7 @@ app.whenReady().then(
       podmanDesktopMain.windowConfig,
     );
 
-    onDidCreatedConfigurationRegistry(async (configurationRegistry: ConfigurationRegistry) => {
+    onDidCreatedConfigurationRegistry((configurationRegistry: ConfigurationRegistry) => {
       // If we've manually set the tray icon color, update the tray icon. This can only be done
       // after configurationRegistry is loaded. Windows or Linux support only for icon color change.
       if (!isMac()) {
@@ -120,10 +119,6 @@ app.whenReady().then(
           animatedTray?.setColor(color);
         }
       }
-
-      // Configure automatic startup
-      const automaticStartup = new StartupInstall(configurationRegistry);
-      await automaticStartup.configure();
     });
 
     extensionLoader = await pluginSystem.initExtensions(_onDidCreatedConfigurationRegistry);
