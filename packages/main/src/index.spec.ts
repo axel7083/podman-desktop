@@ -16,9 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { IConfigurationChangeEvent, IConfigurationRegistry } from '@desktop-framework/api/configuration';
-import { app, BrowserWindow, Menu } from 'electron';
-import { aboutMenuItem } from 'electron-util/main';
+import { app, BrowserWindow } from 'electron';
 import { afterEach, assert, beforeEach, expect, test, vi } from 'vitest';
 
 import type { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
@@ -55,16 +53,6 @@ vi.mock(import('electron-util/main'), async () => {
     aboutMenuItem: vi.fn().mockReturnValue({ label: 'foo' }),
   };
 });
-
-const _onDidChangeConfiguration = new Emitter<IConfigurationChangeEvent>();
-const configurationRegistryMock = {
-  onDidChangeConfiguration: _onDidChangeConfiguration.event,
-  registerConfigurations: vi.fn(),
-  getConfigurationProperties: vi.fn().mockReturnValue({}),
-  getConfiguration: vi.fn().mockReturnValue({
-    get: vi.fn(),
-  }),
-} as unknown as IConfigurationRegistry;
 
 const fakeWindow = {
   isDestroyed: vi.fn(),
@@ -117,51 +105,15 @@ afterEach(() => {
   console.log = originalConsoleLog;
 });
 
-test('app-ready event sets the application menu once the configuration registry is ready', async () => {
+test('app-ready event starts the plugin system with the main window config', async () => {
   if (constants.resolveFn) {
     const appReady: (value: void | Promise<void>) => void = constants.resolveFn;
     appReady();
   } else {
     assert.fail('constants.resolveFn is undefined');
   }
-  await vi.waitFor(() => expect(PluginSystem.prototype.initExtensions).toHaveBeenCalled());
+  await vi.waitFor(() => expect(PluginSystem.prototype.initExtensions).toHaveBeenCalledOnce());
 
-  // capture the pluginSystem.initExtensions call
-  const initExtensionsCalls = vi.mocked(PluginSystem.prototype.initExtensions).mock.calls;
-  expect(initExtensionsCalls).toHaveLength(1);
-
-  // grab onDidConfigurationRegistry parameter
-  const _onDidConfigurationRegistry = initExtensionsCalls?.[0]?.[0];
-  // call the onDidConfigurationRegistry
-  expect(_onDidConfigurationRegistry).toBeDefined();
-
-  // cast as Emitter
-  const onDidConfigurationRegistry = _onDidConfigurationRegistry as unknown as Emitter<IConfigurationRegistry>;
-
-  // create a Menu
-  vi.mocked(Menu.getApplicationMenu).mockReturnValue({
-    items: [
-      {
-        role: 'help',
-        submenu: {
-          items: [],
-        },
-      },
-    ],
-  } as unknown as Menu);
-  vi.mocked(aboutMenuItem).mockReturnValue({
-    label: 'About',
-  });
-  vi.mocked(Menu.buildFromTemplate).mockReturnValue({} as unknown as Menu);
-
-  onDidConfigurationRegistry.fire(configurationRegistryMock);
-
-  // check we've called Menu.getApplicationMenu
-  await vi.waitFor(() => expect(vi.mocked(Menu.getApplicationMenu)).toHaveBeenCalled());
-
-  // and Menu.buildFromTemplate
-  expect(vi.mocked(Menu.buildFromTemplate)).toHaveBeenCalled();
-
-  // and Menu.setApplicationMenu
-  expect(vi.mocked(Menu.setApplicationMenu)).toHaveBeenCalled();
+  expect(PluginSystem).toHaveBeenCalledWith(expect.anything(), mainWindowDeferred, expect.any(Object));
+  expect(vi.mocked(PluginSystem.prototype.initExtensions).mock.calls[0]?.[0]).toBeInstanceOf(Emitter);
 });

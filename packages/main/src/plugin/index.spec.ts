@@ -83,6 +83,7 @@ function getHandler<T>(name: string): T {
   return handler as T;
 }
 
+vi.mock(import('electron-util/main'), () => ({ aboutMenuItem: vi.fn() }));
 vi.mock(import('electron-context-menu'), () => ({ default: vi.fn() }));
 vi.mock(import('/@/mainWindow.js'), importOriginal => mockOriginalClass(importOriginal, 'MainWindow'));
 vi.mock(import('/@/plugin/updater.js'), importOriginal => mockOriginalClass(importOriginal, 'Updater'));

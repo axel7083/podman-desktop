@@ -18,24 +18,31 @@
 
 import type { Configuration } from '@desktop-framework/extension-api';
 import type Electron from 'electron';
-import { app, BrowserWindow, screen } from 'electron';
+import { app, BrowserWindow, Menu, screen } from 'electron';
 import { afterEach, assert, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { ApplicationMenuBuilder } from './application-menu-builder.js';
 import { DevelopmentModeTracker } from './development-mode-tracker.js';
 import { MainWindow } from './mainWindow.js';
 import { OpenDevTools } from './open-dev-tools.js';
 import { ApiSender } from './plugin/api-sender.js';
 import type { ConfigurationRegistry } from './plugin/configuration-registry.js';
+import { ZoomLevelHandler } from './plugin/zoom-level-handler.js';
+import { WindowHandler } from './system/window/window-handler.js';
 import * as util from './util.js';
 
 vi.mock(import('electron-context-menu'), async () => ({
   default: vi.fn(),
 }));
+vi.mock(import('electron-util/main'), () => ({ aboutMenuItem: vi.fn() }));
+vi.mock(import('./application-menu-builder.js'));
 vi.mock(import('./development-menu-builder.js'));
 vi.mock(import('./development-mode-tracker.js'));
 vi.mock(import('./navigation-items-menu-builder.js'));
 vi.mock(import('./open-dev-tools.js'));
 vi.mock(import('./plugin/app-ready/app-identity-plugin.js'));
+vi.mock(import('./plugin/zoom-level-handler.js'));
+vi.mock(import('./system/window/window-handler.js'));
 
 vi.mock(import('./util.js'), async () => ({
   isLinux: vi.fn().mockReturnValue(false),
@@ -129,6 +136,32 @@ describe('MainWindow', () => {
     apiSender.send('foo', 'hello-world');
 
     expect(bwInstance.webContents.send).toHaveBeenCalledWith('api-sender', 'foo', 'hello-world');
+  });
+
+  test('should restore its bounds, set its zoom level and the application menu once the page is loaded', async () => {
+    const menu = {} as Menu;
+    vi.mocked(ApplicationMenuBuilder.prototype.build).mockReturnValue(menu);
+
+    await createMainWindow();
+    const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
+    assert(bwInstance);
+
+    expect(WindowHandler).toHaveBeenCalledWith(configurationRegistry, bwInstance);
+    expect(WindowHandler.prototype.restore).toHaveBeenCalledWith(expect.objectContaining({ width: 1050, height: 700 }));
+    expect(ZoomLevelHandler).toHaveBeenCalledWith(bwInstance, configurationRegistry);
+    expect(ZoomLevelHandler.prototype.init).toHaveBeenCalled();
+    expect(Menu.setApplicationMenu).toHaveBeenCalledWith(menu);
+  });
+
+  test('should save its bounds when it is moved or resized', async () => {
+    await createMainWindow();
+    const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
+    assert(bwInstance);
+
+    getHandler(bwInstance.on, 'move')();
+    getHandler(bwInstance.on, 'resize')();
+
+    expect(WindowHandler.prototype.savePositionAndSize).toHaveBeenCalledTimes(2);
   });
 
   test('should create a window on macOS activate when there is none', async () => {

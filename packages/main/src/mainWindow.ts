@@ -20,10 +20,11 @@ import { join } from 'node:path';
 import { URL } from 'node:url';
 
 import type { BrowserWindowConstructorOptions, Rectangle } from 'electron';
-import { app, autoUpdater, BrowserWindow, ipcMain, nativeTheme, screen } from 'electron';
+import { app, autoUpdater, BrowserWindow, ipcMain, Menu, nativeTheme, screen } from 'electron';
 import contextMenu from 'electron-context-menu';
 import { inject, injectable } from 'inversify';
 
+import { ApplicationMenuBuilder } from './application-menu-builder.js';
 import { buildDevelopmentMenu } from './development-menu-builder.js';
 import { DevelopmentModeTracker } from './development-mode-tracker.js';
 import { NavigationItemsMenuBuilder } from './navigation-items-menu-builder.js';
@@ -31,8 +32,9 @@ import { OpenDevTools } from './open-dev-tools.js';
 import { MainWindowConfig, MainWindowDeferred } from './plugin/api.js';
 import { ApiSender } from './plugin/api-sender.js';
 import { ConfigurationRegistry } from './plugin/configuration-registry.js';
+import { ZoomLevelHandler } from './plugin/zoom-level-handler.js';
 import { LoginMinimizeHandler } from './system/window/login-minimize-handler.js';
-import type { WindowHandler } from './system/window/window-handler.js';
+import { WindowHandler } from './system/window/window-handler.js';
 import { isLinux, isMac, stoppedExtensions } from './util.js';
 
 const openDevTools = new OpenDevTools();
@@ -155,21 +157,6 @@ async function createWindow(
   // open dev tools (if required)
   openDevTools.open(browserWindow, configurationRegistry);
 
-  let windowHandler: WindowHandler | undefined;
-  ipcMain.on('window-handler', (_, windowHandlerParam) => {
-    // try to restore the window position and size
-    windowHandler = windowHandlerParam;
-    windowHandler?.restore(initialBounds);
-  });
-
-  browserWindow.on('resize', () => {
-    windowHandler?.savePositionAndSize();
-  });
-
-  browserWindow.on('move', () => {
-    windowHandler?.savePositionAndSize();
-  });
-
   // receive the navigation items
   ipcMain.handle('navigation:sendNavigationItems', (_, data) => {
     navigationItemsMenuBuilder?.receiveNavigationItems(data);
@@ -250,6 +237,21 @@ async function createWindow(
       : new URL('../renderer/dist/index.html', 'file://' + __dirname).toString();
 
   await browserWindow.loadURL(pageUrl);
+
+  // save and restore the window position and size
+  const windowHandler = new WindowHandler(configurationRegistry, browserWindow);
+  windowHandler.init();
+  windowHandler.restore(initialBounds);
+  browserWindow.on('resize', () => windowHandler.savePositionAndSize());
+  browserWindow.on('move', () => windowHandler.savePositionAndSize());
+
+  const zoomLevelHandler = new ZoomLevelHandler(browserWindow, configurationRegistry);
+  zoomLevelHandler.init();
+
+  const menu = new ApplicationMenuBuilder(zoomLevelHandler).build();
+  if (menu) {
+    Menu.setApplicationMenu(menu);
+  }
 
   return browserWindow;
 }

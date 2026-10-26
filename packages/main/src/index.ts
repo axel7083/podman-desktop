@@ -16,20 +16,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 import type { Event } from '@desktop-framework/api';
-import { app, ipcMain, Menu, Tray } from 'electron';
+import { app, Tray } from 'electron';
 
 import { restoreWindow } from '/@/mainWindow.js';
 import type { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
 
-import { ApplicationMenuBuilder } from './application-menu-builder.js';
 import { type AdditionalData, Main } from './main.js';
 import type { ConfigurationRegistry } from './plugin/configuration-registry.js';
 import { Emitter } from './plugin/events/emitter.js';
 import { PluginSystem } from './plugin/index.js';
 import { readShowTrayIconSetting } from './plugin/util/read-tray-setting.js';
-import { ZoomLevelHandler } from './plugin/zoom-level-handler.js';
 import { StartupInstall } from './system/startup-install.js';
-import { WindowHandler } from './system/window/window-handler.js';
 import { AnimatedDevTray } from './tray-animate-dev-icon.js';
 import { AnimatedTray } from './tray-animate-icon.js';
 import { TrayMenu } from './tray-menu.js';
@@ -123,33 +120,6 @@ app.whenReady().then(
           animatedTray?.setColor(color);
         }
       }
-
-      // Register the window configuration
-      // This is used to save/restore the window size and position
-      podmanDesktopMain.mainWindowDeferred.promise
-        .then(browserWindow => {
-          const windowHandler = new WindowHandler(configurationRegistry, browserWindow);
-          windowHandler.init();
-
-          // Configure the zoom level handler
-          // handle zoom level
-          const zoomLevelHandler = new ZoomLevelHandler(browserWindow, configurationRegistry);
-          zoomLevelHandler.init();
-
-          // sets the menu
-          const applicationMenuBuilder = new ApplicationMenuBuilder(zoomLevelHandler);
-          const menu = applicationMenuBuilder.build();
-
-          if (menu) {
-            Menu.setApplicationMenu(menu);
-          }
-
-          // send window Handler
-          ipcMain.emit('window-handler', '', windowHandler);
-        })
-        .catch((error: unknown) => {
-          console.error('Error initializing window handler', error);
-        });
 
       // Configure automatic startup
       const automaticStartup = new StartupInstall(configurationRegistry);
