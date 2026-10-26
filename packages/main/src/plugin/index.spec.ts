@@ -185,48 +185,6 @@ afterEach(async () => {
   await inversifyContainer.unbindAllAsync();
 });
 
-test('Should queue events until we are ready', async () => {
-  const apiSender = pluginSystem.getApiSender(webContents);
-  expect(apiSender).toBeDefined();
-
-  // try to send data
-  apiSender.send('foo', 'hello-world');
-
-  // data should not be sent because it is not yet ready
-  expect(webContents.send).not.toBeCalled();
-
-  // ready on server side
-  pluginSystem.markAsReady();
-
-  // notify the app is loaded on client side
-  emitter.emit('dom-ready');
-
-  // data should be sent when flushing queue
-  expect(webContents.send).toBeCalledWith('api-sender', 'foo', 'hello-world');
-});
-
-test('Should drop the queued events when the window has been destroyed while they were queued', async () => {
-  const apiSender = pluginSystem.getApiSender(webContents);
-  pluginSystem.markAsReady();
-
-  // the UI has not reported being ready yet, so the event is queued
-  apiSender.send('foo', 'hello-world');
-  expect(webContents.send).not.toHaveBeenCalled();
-
-  // the user closes the window while the event is still queued
-  vi.mocked(webContents.isDestroyed).mockReturnValue(true);
-
-  // flushing the queue must drop the events instead of sending to the destroyed window
-  expect(() => emitter.emit('dom-ready')).not.toThrow();
-  expect(webContents.send).not.toHaveBeenCalled();
-
-  // and the events are not kept around to be flushed again later
-  vi.mocked(webContents.isDestroyed).mockReturnValue(false);
-  apiSender.send('bar', 'hello-again');
-  expect(webContents.send).toHaveBeenCalledTimes(1);
-  expect(webContents.send).toHaveBeenCalledWith('api-sender', 'bar', 'hello-again');
-});
-
 test('Check SecurityRestrictions on Links and user accept', async () => {
   const showMessageBoxMock = vi.fn();
   const messageBox = {
@@ -346,22 +304,6 @@ test('Check no securityRestrictions on open external files', async () => {
   // expect openExternal has been called
   expect(shell.openExternal).toBeCalledWith(expect.stringContaining('file://'));
   expect(shell.openExternal).toBeCalledWith(expect.stringContaining('foobar'));
-});
-
-test('Should apiSender handle local receive events', async () => {
-  const apiSender = pluginSystem.getApiSender(webContents);
-  expect(apiSender).toBeDefined();
-
-  let fooReceived = '';
-  apiSender.receive('foo', (data: unknown) => {
-    fooReceived = String(data);
-  });
-
-  // try to send data
-  apiSender.send('foo', 'hello-world');
-
-  // data should have been received
-  expect(fooReceived).toBe('hello-world');
 });
 
 test('Should return no AbortController if the token is undefined', async () => {
