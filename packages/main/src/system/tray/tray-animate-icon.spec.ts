@@ -21,8 +21,9 @@ import * as path from 'node:path';
 import { app, nativeImage, nativeTheme } from 'electron';
 import { beforeEach, expect, test, vi } from 'vitest';
 
+import * as util from '/@/util.js';
+
 import { AnimatedTray } from './tray-animate-icon.js';
-import * as util from './util.js';
 
 // to call protected methods
 class TestAnimatedTray extends AnimatedTray {
@@ -45,7 +46,7 @@ vi.mock(import('node:fs'), () => ({
   readFileSync: vi.fn().mockReturnValue(Buffer.from('')),
 }));
 
-vi.mock(import('./util.js'), () => ({
+vi.mock(import('/@/util.js'), () => ({
   isMac: vi.fn(),
   isWindows: vi.fn(),
 }));

@@ -18,17 +18,19 @@
 
 import * as os from 'node:os';
 
-import type { IConfigurationNode, IConfigurationRegistry } from '@desktop-framework/api/configuration';
+import { type IConfigurationNode, IConfigurationRegistry } from '@desktop-framework/api/configuration';
+import { inject, injectable, postConstruct } from 'inversify';
 
 import product from '/@product.json' with { type: 'json' };
 
 import { MacosStartup } from './macos-startup.js';
 import { WindowsStartup } from './windows-startup.js';
 
+@injectable()
 export class StartupInstall {
   private osStartup: MacosStartup | WindowsStartup | undefined;
 
-  constructor(private configurationRegistry: IConfigurationRegistry) {
+  constructor(@inject(IConfigurationRegistry) private configurationRegistry: IConfigurationRegistry) {
     // macos ?
     if (os.platform() === 'darwin') {
       this.osStartup = new MacosStartup();
@@ -47,6 +49,14 @@ export class StartupInstall {
 
   async disableStartupOnLogin(): Promise<void> {
     await this.osStartup?.disable();
+  }
+
+  // configures the start on login in the background
+  @postConstruct()
+  init(): void {
+    this.configure().catch((error: unknown) => {
+      console.error('Error configuring the start on login', error);
+    });
   }
 
   async configure(): Promise<void> {

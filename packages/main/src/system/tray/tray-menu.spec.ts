@@ -21,10 +21,11 @@ import type { MenuItemConstructorOptions, Tray } from 'electron';
 import { ipcMain, Menu, nativeImage } from 'electron';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
-import statusStopped from './assets/status-stopped.png';
+import statusStopped from '/@/assets/status-stopped.png';
+import * as util from '/@/util.js';
+
 import type { AnimatedTray } from './tray-animate-icon.js';
 import { TrayMenu } from './tray-menu.js';
-import * as util from './util.js';
 
 let trayMenu: TrayMenu;
 let tray: Tray;

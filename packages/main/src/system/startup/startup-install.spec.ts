@@ -176,3 +176,14 @@ test('Enabling startup from preferences enables the macOS startup item', async (
   expect(windowsStartupMock.syncStartupPreference).not.toHaveBeenCalled();
   expect(windowsStartupMock.enable).not.toHaveBeenCalled();
 });
+
+test('init should log an error when the start on login cannot be configured', async () => {
+  const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+  const startupInstall = new StartupInstall(configurationRegistry);
+  const error = new Error('configure failed');
+  vi.spyOn(startupInstall, 'configure').mockRejectedValue(error);
+
+  startupInstall.init();
+
+  await vi.waitFor(() => expect(consoleErrorSpy).toHaveBeenCalledWith('Error configuring the start on login', error));
+});

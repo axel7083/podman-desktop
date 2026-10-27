@@ -22,9 +22,8 @@ import * as path from 'node:path';
 import type { Tray } from 'electron';
 import { app, nativeImage, nativeTheme } from 'electron';
 
+import { isMac, isWindows } from '/@/util.js';
 import product from '/@product.json' with { type: 'json' };
-
-import { isMac, isWindows } from './util.js';
 
 export type TrayIconStatus = 'initialized' | 'updating' | 'error' | 'ready';
 

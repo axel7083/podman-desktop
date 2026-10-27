@@ -20,7 +20,7 @@ import type { ProviderInfo } from '@desktop-framework/api';
 import { ipcMain } from 'electron';
 import { beforeAll, beforeEach, expect, test, vi } from 'vitest';
 
-import type { TrayMenu } from '/@/tray-menu.js';
+import type { TrayMenu } from '/@/system/tray/tray-menu.js';
 
 import type { CommandRegistry } from './command-registry.js';
 import type { ProviderRegistry } from './provider-registry.js';

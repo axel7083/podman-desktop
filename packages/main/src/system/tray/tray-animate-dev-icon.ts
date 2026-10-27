@@ -18,8 +18,9 @@
 
 import { type NativeImage, nativeImage } from 'electron';
 
+import { isMac } from '/@/util.js';
+
 import { AnimatedTray } from './tray-animate-icon.js';
-import { isMac } from './util.js';
 
 /**
  * Dev-mode tray that stamps a "DEV" pixel-text badge onto macOS template icons.

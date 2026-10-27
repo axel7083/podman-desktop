@@ -15,9 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { Event } from '@desktop-framework/api';
 import type { App as ElectronApp } from 'electron';
-import { Tray } from 'electron';
 import { Container } from 'inversify';
 
 import { module as appModule } from '/@/app/$module.js';
@@ -28,14 +26,7 @@ import { restoreWindow } from '/@/system/window/main-window.js';
 import { isLinux, isMac, isWindows, stoppedExtensions } from '/@/util.js';
 import product from '/@product.json' with { type: 'json' };
 
-import type { ConfigurationRegistry } from './plugin/configuration-registry.js';
-import { Emitter } from './plugin/events/emitter.js';
 import { PluginSystem } from './plugin/index.js';
-import { readShowTrayIconSetting } from './plugin/util/read-tray-setting.js';
-import { StartupInstall } from './system/startup-install.js';
-import { AnimatedDevTray } from './tray-animate-dev-icon.js';
-import { AnimatedTray } from './tray-animate-icon.js';
-import { TrayMenu } from './tray-menu.js';
 
 export type AdditionalData = {
   argv: string[];
@@ -54,8 +45,6 @@ export class Main {
   readonly #container = new Container();
 
   #extensionLoader: ExtensionLoader | undefined;
-  #animatedTray: AnimatedTray | undefined;
-  #tray: Tray | undefined;
 
   constructor(app: ElectronApp) {
     this.app = app;
@@ -121,7 +110,6 @@ export class Main {
     this.app.on('second-instance', this.onSecondInstance.bind(this));
     this.app.on('will-finish-launching', this.onWillFinishLaunching.bind(this));
     this.app.on('window-all-closed', this.onWindowAllClosed.bind(this));
-    this.app.on('will-quit', this.onWillQuit.bind(this));
     this.app.once('before-quit', this.onBeforeQuitStopExtensions.bind(this));
 
     this.app
@@ -133,46 +121,10 @@ export class Main {
    * Starts the plugin system, once {@link ElectronApp#whenReady} resolved
    */
   protected async startPluginSystem(): Promise<void> {
-    // Setup the default tray icon + menu items (skip if user disabled tray)
-    const showTrayIcon = readShowTrayIconSetting();
-    if (showTrayIcon) {
-      this.#animatedTray = import.meta.env.DEV ? new AnimatedDevTray() : new AnimatedTray();
-      this.#tray = new Tray(this.#animatedTray.getDefaultImage());
-      this.#animatedTray.setTray(this.#tray);
-    }
-    const trayMenu = new TrayMenu(this.#tray, this.#animatedTray);
-
-    const _onDidCreatedConfigurationRegistry = new Emitter<ConfigurationRegistry>();
-    const onDidCreatedConfigurationRegistry: Event<ConfigurationRegistry> = _onDidCreatedConfigurationRegistry.event;
-
     // Start extensions
-    const pluginSystem = new PluginSystem(trayMenu, this.#container);
+    const pluginSystem = new PluginSystem(this.#container);
 
-    onDidCreatedConfigurationRegistry(async (configurationRegistry: ConfigurationRegistry) => {
-      // If we've manually set the tray icon color, update the tray icon. This can only be done
-      // after configurationRegistry is loaded. Windows or Linux support only for icon color change.
-      if (!isMac()) {
-        const color = configurationRegistry.getConfiguration('preferences').get('TrayIconColor');
-        if (typeof color === 'string') {
-          this.#animatedTray?.setColor(color);
-        }
-      }
-
-      // Configure automatic startup
-      const automaticStartup = new StartupInstall(configurationRegistry);
-      await automaticStartup.configure();
-    });
-
-    this.#extensionLoader = await pluginSystem.initExtensions(_onDidCreatedConfigurationRegistry);
-  }
-
-  /**
-   * Listener for {@link ElectronApp.on('will-quit')} event
-   * Clean up tray resources
-   */
-  protected onWillQuit(): void {
-    this.#animatedTray?.dispose();
-    this.#tray?.destroy();
+    this.#extensionLoader = await pluginSystem.initExtensions();
   }
 
   /**

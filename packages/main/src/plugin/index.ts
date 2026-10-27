@@ -174,8 +174,9 @@ import { Uri } from '/@/plugin/types/uri.js';
 import { Updater } from '/@/plugin/updater.js';
 import { Welcome } from '/@/plugin/welcome.js';
 import { securityRestrictionCurrentHandler } from '/@/security-restrictions-handler.js';
+import { module as startupModule } from '/@/system/startup/$module.js';
+import { module as trayModule } from '/@/system/tray/$module.js';
 import { module as windowModule } from '/@/system/window/$module.js';
-import { TrayMenu } from '/@/tray-menu.js';
 import { createHash, isMac } from '/@/util.js';
 import product from '/@product.json' with { type: 'json' };
 
@@ -209,7 +210,6 @@ import { DockerDesktopInstallation } from './docker-extension/docker-desktop-ins
 import { DockerPluginAdapter } from './docker-extension/docker-plugin-adapter.js';
 import { DocumentationService } from './documentation/documentation-service.js';
 import { EditorInit } from './editor-init.js';
-import type { Emitter } from './events/emitter.js';
 import { ExperimentalConfigurationManager } from './experimental-configuration-manager.js';
 import { ExperimentalFeatureFeedbackHandler } from './experimental-feature-feedback-handler.js';
 import { ExploreFeatures } from './explore-features/explore-features.js';
@@ -309,10 +309,7 @@ export class PluginSystem {
   private extensionLoader!: ExtensionLoader;
   private validExtList!: ExtensionInfo[];
 
-  constructor(
-    private trayMenu: TrayMenu,
-    private parentContainer: Container,
-  ) {
+  constructor(private parentContainer: Container) {
     app.on('before-quit', () => {
       this.isQuitting = true;
     });
@@ -464,16 +461,14 @@ export class PluginSystem {
   protected async initConfigurationRegistry(
     container: Container,
     notifications: NotificationCardOptions[],
-    configurationRegistryEmitter: Emitter<ConfigurationRegistry>,
   ): Promise<ConfigurationRegistry> {
     const configurationRegistry = container.get<ConfigurationRegistry>(ConfigurationRegistry);
     notifications.push(...(await configurationRegistry.init()));
-    configurationRegistryEmitter.fire(configurationRegistry);
     return configurationRegistry;
   }
 
   // initialize extension loader mechanism
-  async initExtensions(configurationRegistryEmitter: Emitter<ConfigurationRegistry>): Promise<ExtensionLoader> {
+  async initExtensions(): Promise<ExtensionLoader> {
     const notifications: NotificationCardOptions[] = [];
 
     this.isReady = false;
@@ -492,11 +487,12 @@ export class PluginSystem {
     // child of the application container: it can resolve the application services, not the other way around
     const container = new Container({ parent: this.parentContainer });
     container.load(windowModule);
+    container.load(startupModule);
+    container.load(trayModule);
     const apiSender = container.get<ApiSender>(ApiSender);
     this.apiSender = apiSender;
     container.bind<IPCHandle>(IPCHandle).toConstantValue(this.ipcHandle);
     container.bind<IPCMainOn>(IPCMainOn).toConstantValue(this.ipcMainOn);
-    container.bind<TrayMenu>(TrayMenu).toConstantValue(this.trayMenu);
     container.bind<IconRegistry>(IconRegistry).toSelf().inSingletonScope();
     const directoryStrategy = new DirectoryStrategy();
     if (directoryStrategy.shouldUseXDGDirectories()) {
@@ -514,11 +510,7 @@ export class PluginSystem {
     container.bind<ConfigurationRegistry>(ConfigurationRegistry).toSelf().inSingletonScope();
     container.bind<LockedConfiguration>(LockedConfiguration).toSelf().inSingletonScope();
     container.bind<IConfigurationRegistry>(IConfigurationRegistry).toService(ConfigurationRegistry);
-    const configurationRegistry = await this.initConfigurationRegistry(
-      container,
-      notifications,
-      configurationRegistryEmitter,
-    );
+    const configurationRegistry = await this.initConfigurationRegistry(container, notifications);
 
     // instantiate the startup services of this container (e.g. the main window), they need the configuration
     container.getAll(StartupSymbol);

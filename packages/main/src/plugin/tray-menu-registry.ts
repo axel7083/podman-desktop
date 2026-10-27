@@ -20,7 +20,7 @@ import type { MenuItem, ProviderContainerConnectionInfo, ProviderInfo } from '@d
 import { dialog, ipcMain } from 'electron';
 import { inject, injectable } from 'inversify';
 
-import { TrayMenu } from '/@/tray-menu.js';
+import { TrayMenu } from '/@/system/tray/tray-menu.js';
 
 import { CommandRegistry } from './command-registry.js';
 import { ProviderRegistry } from './provider-registry.js';

@@ -47,9 +47,6 @@ vi.mock(import('/@/app/protocol-launcher.js'), async importOriginal => {
 });
 vi.mock(import('./plugin/index.js'));
 vi.mock(import('electron-util/main'), () => ({ aboutMenuItem: vi.fn() }));
-vi.mock(import('./system/startup-install.js'));
-vi.mock(import('./plugin/util/read-tray-setting.js'));
-vi.mock(import('./tray-menu.js'));
 vi.mock(import('/@/app/security-restrictions.js'), async importOriginal => {
   const mod = await importOriginal();
   mod.SecurityRestrictions.prototype.init = vi.fn();
@@ -237,7 +234,7 @@ describe('plugin system', () => {
     new Main(ELECTRON_APP_MOCK).main([]);
     whenReady.resolve();
 
-    await vi.waitFor(() => expect(PluginSystem).toHaveBeenCalledWith(expect.anything(), expect.any(Container)));
+    await vi.waitFor(() => expect(PluginSystem).toHaveBeenCalledWith(expect.any(Container)));
   });
 
   test('should stop the extensions before quitting', async () => {
