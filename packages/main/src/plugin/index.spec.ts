@@ -35,6 +35,7 @@ import { Container as InversifyContainer } from 'inversify';
 import type { MockInstance } from 'vitest';
 import { afterEach, assert, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { module as appModule } from '/@/app/$module.js';
 import { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
 import { Updater } from '/@/plugin/updater.js';
 import { securityRestrictionCurrentHandler } from '/@/security-restrictions-handler.js';
@@ -105,11 +106,15 @@ vi.mock(import('./image-registry.js'), importOriginal => mockOriginalClass(impor
 let pluginSystem: TestPluginSystem;
 
 class TestPluginSystem extends PluginSystem {
+  // container given to initConfigurationRegistry by initExtensions
+  container: InversifyContainer | undefined;
+
   override async initConfigurationRegistry(
     container: InversifyContainer,
     notifications: NotificationCardOptions[],
     configurationRegistryEmitter: Emitter<ConfigurationRegistry>,
   ): Promise<ConfigurationRegistry> {
+    this.container = container;
     if (!container.isBound(ConfigurationRegistry)) {
       container.bind<ConfigurationRegistry>(ConfigurationRegistry).toSelf().inSingletonScope();
     }
@@ -134,7 +139,6 @@ class TestPluginSystem extends PluginSystem {
 }
 
 let inversifyContainer: InversifyContainer;
-let mainWindowDeferred: PromiseWithResolvers<BrowserWindow>;
 let handlers: Map<string, unknown>;
 let emitter: EventEmitter;
 let webContents: WebContents;
@@ -148,8 +152,9 @@ beforeEach(async () => {
   webContents.isDestroyed = vi.fn();
   webContents.send = vi.fn();
 
-  mainWindowDeferred = Promise.withResolvers<BrowserWindow>();
-  pluginSystem = new TestPluginSystem({} as unknown as TrayMenu, mainWindowDeferred);
+  const applicationContainer = new InversifyContainer();
+  applicationContainer.load(appModule);
+  pluginSystem = new TestPluginSystem({} as unknown as TrayMenu, applicationContainer);
 
   vi.mocked(ipcMain.handle).mockImplementation((channel: string, listener: unknown) => {
     handlers.set(channel, listener);
@@ -185,46 +190,18 @@ afterEach(async () => {
   await inversifyContainer.unbindAllAsync();
 });
 
-test('Should queue events until we are ready', async () => {
-  const apiSender = pluginSystem.getApiSender(webContents);
-  expect(apiSender).toBeDefined();
+test('initExtensions resolves the services of the parent container', async () => {
+  const parent = new InversifyContainer();
+  parent.load(appModule);
+  const token = Symbol('parent-service');
+  parent.bind(token).toConstantValue('from-parent');
+  const childPluginSystem = new TestPluginSystem({} as unknown as TrayMenu, parent);
 
-  // try to send data
-  apiSender.send('foo', 'hello-world');
+  await childPluginSystem.initExtensions(new Emitter<ConfigurationRegistry>());
 
-  // data should not be sent because it is not yet ready
-  expect(webContents.send).not.toBeCalled();
-
-  // ready on server side
-  pluginSystem.markAsReady();
-
-  // notify the app is loaded on client side
-  emitter.emit('dom-ready');
-
-  // data should be sent when flushing queue
-  expect(webContents.send).toBeCalledWith('api-sender', 'foo', 'hello-world');
-});
-
-test('Should drop the queued events when the window has been destroyed while they were queued', async () => {
-  const apiSender = pluginSystem.getApiSender(webContents);
-  pluginSystem.markAsReady();
-
-  // the UI has not reported being ready yet, so the event is queued
-  apiSender.send('foo', 'hello-world');
-  expect(webContents.send).not.toHaveBeenCalled();
-
-  // the user closes the window while the event is still queued
-  vi.mocked(webContents.isDestroyed).mockReturnValue(true);
-
-  // flushing the queue must drop the events instead of sending to the destroyed window
-  expect(() => emitter.emit('dom-ready')).not.toThrow();
-  expect(webContents.send).not.toHaveBeenCalled();
-
-  // and the events are not kept around to be flushed again later
-  vi.mocked(webContents.isDestroyed).mockReturnValue(false);
-  apiSender.send('bar', 'hello-again');
-  expect(webContents.send).toHaveBeenCalledTimes(1);
-  expect(webContents.send).toHaveBeenCalledWith('api-sender', 'bar', 'hello-again');
+  assert(childPluginSystem.container);
+  expect(childPluginSystem.container.get(token)).toBe('from-parent');
+  expect(parent.isBound(ConfigurationRegistry)).toBe(false);
 });
 
 test('Check SecurityRestrictions on Links and user accept', async () => {
@@ -346,22 +323,6 @@ test('Check no securityRestrictions on open external files', async () => {
   // expect openExternal has been called
   expect(shell.openExternal).toBeCalledWith(expect.stringContaining('file://'));
   expect(shell.openExternal).toBeCalledWith(expect.stringContaining('foobar'));
-});
-
-test('Should apiSender handle local receive events', async () => {
-  const apiSender = pluginSystem.getApiSender(webContents);
-  expect(apiSender).toBeDefined();
-
-  let fooReceived = '';
-  apiSender.receive('foo', (data: unknown) => {
-    fooReceived = String(data);
-  });
-
-  // try to send data
-  apiSender.send('foo', 'hello-world');
-
-  // data should have been received
-  expect(fooReceived).toBe('hello-world');
 });
 
 test('Should return no AbortController if the token is undefined', async () => {

@@ -15,7 +15,8 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { BrowserWindow } from 'electron';
+import { NavigationPage } from '@desktop-framework/api';
+import type { ApiSenderType } from '@desktop-framework/api/api-sender';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { isWindows } from '/@/util.js';
@@ -26,20 +27,13 @@ import { ProtocolLauncher } from './protocol-launcher.js';
 // mock modules
 vi.mock(import('/@/util.js'));
 
-const BROWSER_WINDOW_MOCK: BrowserWindow = {
-  isDestroyed: vi.fn(),
-  webContents: {
-    send: vi.fn(),
-  },
-} as unknown as BrowserWindow;
+const apiSender: ApiSenderType = {
+  send: vi.fn(),
+  receive: vi.fn(),
+};
 
 function getProtocolLauncher(): ProtocolLauncher {
-  // create deferred promise
-  const deferred = Promise.withResolvers<BrowserWindow>();
-  deferred.resolve(BROWSER_WINDOW_MOCK);
-
-  // create protocol launcher
-  return new ProtocolLauncher(deferred);
+  return new ProtocolLauncher(apiSender);
 }
 
 beforeEach(() => {
@@ -48,54 +42,47 @@ beforeEach(() => {
 
 const PROTOCOL = product.urlProtocol;
 
-test('should send the URL to open when mainWindow is created', async () => {
+test('should ask the UI to install the extension', () => {
   const protocol = getProtocolLauncher();
   protocol.handleOpenUrl(`${PROTOCOL}:extension/my.extension`);
 
-  // wait sendMock being called
-  await vi.waitFor(() => expect(BROWSER_WINDOW_MOCK.webContents.send).toHaveBeenCalled());
-
-  expect(BROWSER_WINDOW_MOCK.webContents.send).toHaveBeenCalledWith(
-    'podman-desktop-protocol:install-extension',
-    'my.extension',
-  );
+  expect(apiSender.send).toHaveBeenCalledWith('install-extension:from-id', 'my.extension');
 });
 
-test('should send the URL to open when mainWindow is created with :// format', async () => {
+test('should ask the UI to install the extension with :// format', () => {
   const protocol = getProtocolLauncher();
   protocol.handleOpenUrl(`${PROTOCOL}://extension/my.extension`);
 
-  // wait sendMock being called
-  await vi.waitFor(() =>
-    expect(BROWSER_WINDOW_MOCK.webContents.send).toHaveBeenCalledWith(
-      'podman-desktop-protocol:install-extension',
-      'my.extension',
-    ),
-  );
+  expect(apiSender.send).toHaveBeenCalledWith('install-extension:from-id', 'my.extension');
+});
+
+test('should ask the UI to open the experimental features', () => {
+  const protocol = getProtocolLauncher();
+  protocol.handleOpenUrl(`${PROTOCOL}:experimental`);
+
+  expect(apiSender.send).toHaveBeenCalledWith('navigate', { page: NavigationPage.EXPERIMENTAL_FEATURES });
 });
 
 test('should not send the URL for invalid URLs', async () => {
   const protocol = getProtocolLauncher();
   protocol.handleOpenUrl(`${PROTOCOL}:foobar`);
 
-  // expect an error
-  expect(vi.mocked(BROWSER_WINDOW_MOCK.webContents.send)).not.toHaveBeenCalled();
+  expect(apiSender.send).not.toHaveBeenCalled();
 });
 
 test.each([
   {
     url: `${PROTOCOL}:extension/my.extension`,
-    webContentsSend: ['podman-desktop-protocol:install-extension', 'my.extension'],
+    apiSenderSend: ['install-extension:from-id', 'my.extension'],
   },
-  { url: `${PROTOCOL}:experimental`, webContentsSend: ['podman-desktop-protocol:open-experimental-features'] },
-])('should handle valid URL on Windows', async ({ url, webContentsSend }) => {
+  { url: `${PROTOCOL}:experimental`, apiSenderSend: ['navigate', { page: NavigationPage.EXPERIMENTAL_FEATURES }] },
+])('should handle valid URL on Windows', ({ url, apiSenderSend }) => {
   vi.mocked(isWindows).mockReturnValue(true);
 
   const protocol = getProtocolLauncher();
   protocol.handleAdditionalProtocolLauncherArgs([url]);
 
-  // expect handleOpenUrl not be called
-  await vi.waitFor(() => expect(BROWSER_WINDOW_MOCK.webContents.send).toHaveBeenCalledWith(...webContentsSend));
+  expect(apiSender.send).toHaveBeenCalledWith(...apiSenderSend);
 });
 
 test.each([`${PROTOCOL}:extension/my.extension`, `${PROTOCOL}:experimental`])(
@@ -108,7 +95,7 @@ test.each([`${PROTOCOL}:extension/my.extension`, `${PROTOCOL}:experimental`])(
     protocol.handleAdditionalProtocolLauncherArgs([url]);
 
     // no called on it
-    expect(BROWSER_WINDOW_MOCK.webContents.send).not.toHaveBeenCalled();
+    expect(apiSender.send).not.toHaveBeenCalled();
   },
 );
 

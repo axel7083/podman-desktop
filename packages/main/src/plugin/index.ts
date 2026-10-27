@@ -19,7 +19,6 @@
 /**
  * @module preload
  */
-import { EventEmitter } from 'node:events';
 import * as os from 'node:os';
 import * as path from 'node:path';
 
@@ -49,7 +48,6 @@ import type {
   GitHubIssue,
   HistoryInfo,
   IconInfo,
-  IDisposable,
   ImageCheckerInfo,
   ImageFilesInfo,
   ImageFilesystemLayersUI,
@@ -111,8 +109,6 @@ import type {
   WebviewInfo,
   WelcomeMessages,
 } from '@desktop-framework/api';
-import type { ApiSenderChannelMap } from '@desktop-framework/api/api-sender';
-import { ApiSenderType } from '@desktop-framework/api/api-sender';
 import type { AuthenticationProviderInfo } from '@desktop-framework/api/authentication';
 import {
   type IConfigurationPropertyRecordedSchema,
@@ -159,7 +155,8 @@ import { app, BrowserWindow, clipboard, ipcMain, shell } from 'electron';
 import type { IpcMainInvokeEvent } from 'electron/main';
 import { Container } from 'inversify';
 
-import { IPCHandle, IPCMainOn, MainWindowDeferred } from '/@/plugin/api.js';
+import { ApiSender } from '/@/app/api-sender.js';
+import { IPCHandle, IPCMainOn } from '/@/plugin/api.js';
 import { ContainerfileParser } from '/@/plugin/containerfile-parser.js';
 import { ExtensionApiVersion } from '/@/plugin/extension/extension-api-version.js';
 import { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
@@ -300,11 +297,11 @@ export class PluginSystem {
   // ready when all extensions have been started
   private isExtensionsStarted = false;
 
-  // notified when UI is dom-ready
-  private uiReady = false;
-
   // true if the application is quitting
   protected isQuitting = false;
+
+  // delivers the main process events to the UI, created with the container
+  private apiSender: ApiSender | undefined;
 
   // The yet to be init ExtensionLoader
   private extensionLoader!: ExtensionLoader;
@@ -312,7 +309,7 @@ export class PluginSystem {
 
   constructor(
     private trayMenu: TrayMenu,
-    private mainWindowDeferred: PromiseWithResolvers<BrowserWindow>,
+    private parentContainer: Container,
   ) {
     app.on('before-quit', () => {
       this.isQuitting = true;
@@ -438,63 +435,6 @@ export class PluginSystem {
     logTypes.forEach(logType => this.redirectConsole(logType));
   }
 
-  getApiSender(webContents: MainWindowWebContentsSender): ApiSenderType {
-    const queuedEvents: { channel: string; data: unknown[] }[] = [];
-
-    const flushQueuedEvents = (): void => {
-      // flush queued events ?
-      if (this.uiReady && this.isReady && queuedEvents.length > 0) {
-        // the window may have been destroyed while the events were queued, drop them instead of failing
-        if (webContents.isDestroyed()) {
-          queuedEvents.length = 0;
-          return;
-        }
-        console.log(`Delayed startup, flushing ${queuedEvents.length} events`);
-        queuedEvents.forEach(({ channel, data }) => {
-          webContents.send('api-sender', channel, ...data);
-        });
-        queuedEvents.length = 0;
-      }
-    };
-
-    webContents.on('dom-ready', () => {
-      console.log('PluginSystem: received dom-ready event from the UI');
-      this.uiReady = true;
-      flushQueuedEvents();
-    });
-
-    const eventEmitter = new EventEmitter();
-    return {
-      send: <K extends keyof ApiSenderChannelMap>(
-        channel: K,
-        ...data: ApiSenderChannelMap[K] extends never ? [] : [data: ApiSenderChannelMap[K]]
-      ): void => {
-        // send only when the UI is ready
-        if (this.uiReady && this.isReady) {
-          flushQueuedEvents();
-          if (!webContents.isDestroyed()) {
-            webContents.send('api-sender', channel, ...data);
-          }
-        } else {
-          // add to the queue
-          queuedEvents.push({ channel, data });
-        }
-        eventEmitter.emit(channel, ...data);
-      },
-      receive: <K extends keyof ApiSenderChannelMap>(
-        channel: K,
-        func: ApiSenderChannelMap[K] extends never ? () => void : (data: ApiSenderChannelMap[K]) => void,
-      ): IDisposable => {
-        eventEmitter.on(channel, func);
-        return {
-          dispose: (): void => {
-            eventEmitter.removeListener(channel, func);
-          },
-        };
-      },
-    };
-  }
-
   async setupSecurityRestrictionsOnLinks(messageBox: MessageBox): Promise<void> {
     // external URLs should be validated by the user
     securityRestrictionCurrentHandler.handler = async (url: string): Promise<boolean> => {
@@ -549,7 +489,6 @@ export class PluginSystem {
     const notifications: NotificationCardOptions[] = [];
 
     this.isReady = false;
-    this.uiReady = false;
     this.ipcHandle('extension-system:isReady', async (): Promise<boolean> => {
       return this.isReady;
     });
@@ -562,9 +501,11 @@ export class PluginSystem {
     this.redirectLogging();
 
     // init api sender
-    const apiSender = this.getApiSender(this.getRequiredWebContentsSender());
-    const container = new Container();
-    container.bind<ApiSenderType>(ApiSenderType).toConstantValue(apiSender);
+    // child of the application container: it can resolve the application services, not the other way around
+    const container = new Container({ parent: this.parentContainer });
+    const apiSender = container.get<ApiSender>(ApiSender);
+    apiSender.attach(this.getRequiredWebContentsSender());
+    this.apiSender = apiSender;
     container.bind<IPCHandle>(IPCHandle).toConstantValue(this.ipcHandle);
     container.bind<IPCMainOn>(IPCMainOn).toConstantValue(this.ipcMainOn);
     container.bind<TrayMenu>(TrayMenu).toConstantValue(this.trayMenu);
@@ -822,7 +763,6 @@ export class PluginSystem {
     const webviewRegistry = container.get<WebviewRegistry>(WebviewRegistry);
     await webviewRegistry.start();
 
-    container.bind<PromiseWithResolvers<BrowserWindow>>(MainWindowDeferred).toConstantValue(this.mainWindowDeferred);
     container.bind<DialogRegistry>(DialogRegistry).toSelf().inSingletonScope();
 
     const dialogRegistry = container.get<DialogRegistry>(DialogRegistry);
@@ -3600,6 +3540,7 @@ export class PluginSystem {
 
   markAsReady(): void {
     this.isReady = true;
+    this.apiSender?.markReady();
   }
 
   getLogHandler(channel: string, loggerId: string): LoggerWithEnd {

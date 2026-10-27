@@ -23,7 +23,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { isMac } from '/@/util.js';
 
-import { AppIdentityDevPlugin } from './app-identity-plugin.js';
+import { AppIdentity } from './app-identity.js';
 import type { DevIconBuilder } from './dev-icon-builder.js';
 
 vi.mock(import('/@/util.js'));
@@ -38,6 +38,7 @@ function createMockApp(overrides?: Partial<ElectronApp>): ElectronApp {
     getPath: vi.fn().mockImplementation((name: string) => `/mock/${name}`),
     getAppPath: vi.fn().mockReturnValue(APP_ROOT_PATH),
     setPath: vi.fn(),
+    whenReady: vi.fn().mockResolvedValue(undefined),
     dock: {
       setIcon: vi.fn(),
     },
@@ -49,19 +50,26 @@ beforeEach(() => {
   vi.resetAllMocks();
 });
 
-describe('onBeforeReady', () => {
+// init() sets the dock icon once app.whenReady() resolves
+async function initAndWaitReady(identity: AppIdentity, app: ElectronApp): Promise<void> {
+  identity.init();
+  await app.whenReady();
+  await Promise.resolve();
+}
+
+describe('init before ready', () => {
   test('should redirect userData to the app launch folder', () => {
     import.meta.env['VITE_GIT_BRANCH'] = '';
     const app = createMockApp();
-    const plugin = new AppIdentityDevPlugin(app, mockIconBuilder);
+    const identity = new AppIdentity(app, mockIconBuilder);
 
-    plugin.onBeforeReady();
+    identity.init();
 
     expect(app.setPath).toHaveBeenCalledWith('userData', join(APP_ROOT_PATH, '.electron-user-data'));
   });
 });
 
-describe('onReady', () => {
+describe('init once ready', () => {
   test('should build dynamic dock icon on macOS using last branch segment', async () => {
     import.meta.env['VITE_GIT_BRANCH'] = 'user/my-feature';
     vi.mocked(isMac).mockReturnValue(true);
@@ -70,10 +78,9 @@ describe('onReady', () => {
     vi.mocked(nativeImage.createFromPath).mockReturnValue(mockBaseIcon as never);
     mockBuildIcon.mockReturnValue(mockBuiltIcon);
     const app = createMockApp();
-    const plugin = new AppIdentityDevPlugin(app, mockIconBuilder);
+    const identity = new AppIdentity(app, mockIconBuilder);
 
-    plugin.onBeforeReady();
-    await plugin.onReady();
+    await initAndWaitReady(identity, app);
 
     expect(nativeImage.createFromPath).toHaveBeenCalledWith(resolve(APP_ROOT_PATH, 'buildResources/icon.png'));
     expect(mockBuildIcon).toHaveBeenCalledWith(mockBaseIcon, 'my-featu');
@@ -87,10 +94,9 @@ describe('onReady', () => {
     vi.mocked(nativeImage.createFromPath).mockReturnValue(mockBaseIcon as never);
     mockBuildIcon.mockReturnValue(mockBaseIcon);
     const app = createMockApp();
-    const plugin = new AppIdentityDevPlugin(app, mockIconBuilder);
+    const identity = new AppIdentity(app, mockIconBuilder);
 
-    plugin.onBeforeReady();
-    await plugin.onReady();
+    await initAndWaitReady(identity, app);
 
     expect(mockBuildIcon).toHaveBeenCalledWith(mockBaseIcon, 'DEV');
   });
@@ -99,9 +105,9 @@ describe('onReady', () => {
     import.meta.env['VITE_GIT_BRANCH'] = '';
     vi.mocked(isMac).mockReturnValue(false);
     const app = createMockApp();
-    const plugin = new AppIdentityDevPlugin(app, mockIconBuilder);
+    const identity = new AppIdentity(app, mockIconBuilder);
 
-    await plugin.onReady();
+    await initAndWaitReady(identity, app);
 
     expect(nativeImage.createFromPath).not.toHaveBeenCalled();
     expect(mockBuildIcon).not.toHaveBeenCalled();
@@ -114,9 +120,9 @@ describe('getWindowIcon', () => {
     const mockBaseIcon = { mock: 'base' };
     vi.mocked(nativeImage.createFromPath).mockReturnValue(mockBaseIcon as never);
     mockBuildIcon.mockReturnValue(mockBaseIcon);
-    const plugin = new AppIdentityDevPlugin(createMockApp(), mockIconBuilder);
-    plugin.onBeforeReady();
-    plugin.getWindowIcon();
+    const identity = new AppIdentity(createMockApp(), mockIconBuilder);
+    identity.init();
+    identity.getWindowIcon();
     return mockBuildIcon.mock.calls[0]![1] as string;
   }
 
@@ -127,10 +133,10 @@ describe('getWindowIcon', () => {
     vi.mocked(nativeImage.createFromPath).mockReturnValue(mockBaseIcon as never);
     mockBuildIcon.mockReturnValue(mockBuiltIcon);
     const app = createMockApp();
-    const plugin = new AppIdentityDevPlugin(app, mockIconBuilder);
-    plugin.onBeforeReady();
+    const identity = new AppIdentity(app, mockIconBuilder);
+    identity.init();
 
-    const result = plugin.getWindowIcon();
+    const result = identity.getWindowIcon();
 
     expect(nativeImage.createFromPath).toHaveBeenCalledWith(resolve(APP_ROOT_PATH, 'buildResources/icon.png'));
     expect(mockBuildIcon).toHaveBeenCalledWith(mockBaseIcon, 'my-branc');

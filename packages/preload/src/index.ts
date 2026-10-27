@@ -78,7 +78,6 @@ import type {
   Menu,
   MessageBoxOptions,
   MessageBoxReturnValue,
-  NavigationRequest,
   NavigationSearchEntryInfo,
   NetworkCreateOptions,
   NetworkCreateResult,
@@ -116,7 +115,6 @@ import type {
   WebviewInfo,
   WelcomeMessages,
 } from '@desktop-framework/api';
-import { NavigationPage } from '@desktop-framework/api';
 import type { ApiSenderType } from '@desktop-framework/api/api-sender';
 import type { AuthenticationProviderInfo } from '@desktop-framework/api/authentication';
 import type { IConfigurationPropertyRecordedSchema } from '@desktop-framework/api/configuration';
@@ -234,17 +232,6 @@ export function initExposure(): void {
     } else if (target === 'error') {
       console.error(prefix, ...args);
     }
-  });
-
-  // Handle protocol to install extensions by delegating to the renderer process
-  ipcRenderer.on('podman-desktop-protocol:install-extension', (_, extensionId: string) => {
-    apiSender.send('install-extension:from-id', extensionId);
-  });
-
-  ipcRenderer.on('podman-desktop-protocol:open-experimental-features', () => {
-    apiSender.send('navigate', {
-      page: NavigationPage.EXPERIMENTAL_FEATURES,
-    } as NavigationRequest<NavigationPage.EXPERIMENTAL_FEATURES>);
   });
 
   contextBridge.exposeInMainWorld('clearTasks', async (): Promise<void> => {

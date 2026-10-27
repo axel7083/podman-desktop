@@ -17,9 +17,9 @@
  ********************************************************************/
 import type { App as ElectronApp, BrowserWindow } from 'electron';
 
+import type { AppPlugin } from '/@/app/app-plugin.js';
 import type { WindowConfig } from '/@/mainWindow.js';
 import { createNewWindow, restoreWindow } from '/@/mainWindow.js';
-import type { AppPlugin } from '/@/plugin/app-ready/app-plugin.js';
 import { isMac } from '/@/util.js';
 
 export class WindowPlugin implements AppPlugin {

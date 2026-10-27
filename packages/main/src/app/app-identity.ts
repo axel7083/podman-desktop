@@ -20,9 +20,10 @@ import { join, resolve } from 'node:path';
 
 import type { App as ElectronApp, NativeImage } from 'electron';
 import { nativeImage } from 'electron';
+import { inject, injectable, postConstruct } from 'inversify';
 
-import type { AppPlugin } from '/@/plugin/app-ready/app-plugin.js';
-import type { DevIconBuilder } from '/@/plugin/app-ready/dev-icon-builder.js';
+import { DevIconBuilder } from '/@/app/dev-icon-builder.js';
+import { ElectronApp as ElectronAppSymbol } from '/@/inject/symbol.js';
 import { isMac } from '/@/util.js';
 
 const BASE_ICON_RELATIVE_PATH = 'buildResources/icon.png';
@@ -31,21 +32,33 @@ const BASE_ICON_RELATIVE_PATH = 'buildResources/icon.png';
  * Dev-mode identity plugin that gives each dev instance a unique identity
  * so it can run alongside the packaged application without conflicts.
  */
-export class AppIdentityDevPlugin implements AppPlugin {
+@injectable()
+export class AppIdentity {
   readonly #branch: string;
 
   constructor(
-    private readonly app: ElectronApp,
-    private readonly iconBuilder: DevIconBuilder,
+    @inject(ElectronAppSymbol) private readonly app: ElectronApp,
+    @inject(DevIconBuilder) private readonly iconBuilder: DevIconBuilder,
   ) {
     this.#branch = import.meta.env['VITE_GIT_BRANCH'] ?? '';
   }
 
-  onBeforeReady(): void {
+  /**
+   * Must run before the app is ready (and before the single instance lock): it moves the user data folder,
+   * then sets the dock icon once the app is ready.
+   */
+  @postConstruct()
+  init(): void {
     this.app.setPath('userData', join(this.app.getAppPath(), '.electron-user-data'));
+    this.app
+      .whenReady()
+      .then(() => this.setDockIcon())
+      .catch((error: unknown) => {
+        console.error('Error setting the dock icon', error);
+      });
   }
 
-  async onReady(): Promise<void> {
+  protected setDockIcon(): void {
     if (!isMac()) return;
 
     const label = this.#toBannerLabel(this.#branch);
@@ -58,8 +71,6 @@ export class AppIdentityDevPlugin implements AppPlugin {
     const base = nativeImage.createFromPath(resolve(this.app.getAppPath(), BASE_ICON_RELATIVE_PATH));
     return this.iconBuilder.buildIcon(base, this.#toBannerLabel(this.#branch));
   }
-
-  dispose(): void {}
 
   #toBannerLabel(branch: string): string {
     if (!branch) return 'DEV';

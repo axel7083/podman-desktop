@@ -17,18 +17,30 @@
  ***********************************************************************/
 
 import type { App as ElectronApp } from 'electron';
+import { inject, injectable, postConstruct } from 'inversify';
 
-import type { AppPlugin } from '/@/plugin/app-ready/app-plugin.js';
+import { ElectronApp as ElectronAppSymbol } from '/@/inject/symbol.js';
 import { isWindows } from '/@/util.js';
 import product from '/@product.json' with { type: 'json' };
 
 /**
  * Configures the application as the default protocol client for handling {@link product.urlProtocol} (e.g. 'podman-desktop') protocol links.
  */
-export class DefaultProtocolClient implements AppPlugin {
-  constructor(private readonly app: ElectronApp) {}
+@injectable()
+export class DefaultProtocolClient {
+  constructor(@inject(ElectronAppSymbol) private readonly app: ElectronApp) {}
 
-  async onReady(): Promise<void> {
+  @postConstruct()
+  init(): void {
+    this.app
+      .whenReady()
+      .then(() => this.register())
+      .catch((error: unknown) => {
+        console.error('Error registering the default protocol client', error);
+      });
+  }
+
+  protected register(): void {
     if (!import.meta.env.PROD) return;
 
     if (isWindows()) {
@@ -37,6 +49,4 @@ export class DefaultProtocolClient implements AppPlugin {
       this.app.setAsDefaultProtocolClient(product.urlProtocol);
     }
   }
-
-  dispose(): void {}
 }

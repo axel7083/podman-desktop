@@ -20,8 +20,10 @@ import { URL } from 'node:url';
 
 import type { App as ElectronApp, Event as ElectronEvent, Session, WebContents } from 'electron';
 import { shell } from 'electron';
+import { inject, injectable, postConstruct } from 'inversify';
 
-import { securityRestrictionCurrentHandler } from './security-restrictions-handler.js';
+import { ElectronApp as ElectronAppSymbol } from '/@/inject/symbol.js';
+import { securityRestrictionCurrentHandler } from '/@/security-restrictions-handler.js';
 
 type PermissionRequestPermission = Parameters<NonNullable<Parameters<Session['setPermissionRequestHandler']>[0]>>[1];
 
@@ -48,12 +50,14 @@ const ALLOWED_ORIGINS_AND_PERMISSIONS = new Map<string, Set<PermissionRequestPer
  */
 const ALLOWED_EXTERNAL_ORIGINS = new Set<`https://${string}`>(['https://github.com']);
 
+@injectable()
 export class SecurityRestrictions {
   #app: ElectronApp;
-  constructor(app: ElectronApp) {
+  constructor(@inject(ElectronAppSymbol) app: ElectronApp) {
     this.#app = app;
   }
 
+  @postConstruct()
   init(): void {
     this.#app.on('web-contents-created', this.onWebContentsCreated.bind(this));
   }

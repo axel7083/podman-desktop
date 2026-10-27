@@ -18,14 +18,15 @@
 import type { IConfigurationRegistry } from '@desktop-framework/api/configuration';
 import type { App as ElectronApp, BrowserWindow, Menu as ElectronMenu } from 'electron';
 import { Menu } from 'electron';
+import { Container } from 'inversify';
 import { afterEach, assert, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import type { AppPlugin } from '/@/app/app-plugin.js';
+import { ProtocolLauncher } from '/@/app/protocol-launcher.js';
+import { SecurityRestrictions } from '/@/app/security-restrictions.js';
+import { WindowPlugin } from '/@/app/window-plugin.js';
 import { restoreWindow } from '/@/mainWindow.js';
-import type { AppPlugin } from '/@/plugin/app-ready/app-plugin.js';
-import { DefaultProtocolClient } from '/@/plugin/app-ready/default-protocol-client.js';
-import { WindowPlugin } from '/@/plugin/app-ready/window-plugin.js';
 import type { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
-import { SecurityRestrictions } from '/@/security-restrictions.js';
 import { isLinux, isMac, isWindows, stoppedExtensions } from '/@/util.js';
 import product from '/@product.json' with { type: 'json' };
 
@@ -33,13 +34,23 @@ import { ApplicationMenuBuilder } from './application-menu-builder.js';
 import { Main } from './main.js';
 import type { Emitter } from './plugin/events/emitter.js';
 import { PluginSystem } from './plugin/index.js';
-import { ProtocolLauncher } from './protocol-launcher.js';
 
-vi.mock(import('/@/plugin/app-ready/app-identity-plugin.js'));
-vi.mock(import('/@/plugin/app-ready/dev-icon-builder.js'));
+vi.mock(import('/@/app/app-identity.js'), async importOriginal => {
+  const mod = await importOriginal();
+  mod.AppIdentity.prototype.init = vi.fn();
+  mod.AppIdentity.prototype.getWindowIcon = vi.fn();
+  return mod;
+});
+vi.mock(import('/@/app/dev-icon-builder.js'));
 vi.mock(import('/@/util.js'));
 vi.mock(import('/@/mainWindow.js'));
-vi.mock(import('./protocol-launcher.js'));
+// keep the class (and its inversify metadata) so the container can build it, only its methods are mocked
+vi.mock(import('/@/app/protocol-launcher.js'), async importOriginal => {
+  const mod = await importOriginal();
+  mod.ProtocolLauncher.prototype.handleOpenUrl = vi.fn();
+  mod.ProtocolLauncher.prototype.handleAdditionalProtocolLauncherArgs = vi.fn();
+  return mod;
+});
 vi.mock(import('./plugin/index.js'));
 vi.mock(import('electron-util/main'), () => ({ aboutMenuItem: vi.fn() }));
 vi.mock(import('./application-menu-builder.js'));
@@ -48,14 +59,22 @@ vi.mock(import('./system/window/window-handler.js'));
 vi.mock(import('./system/startup-install.js'));
 vi.mock(import('./plugin/util/read-tray-setting.js'));
 vi.mock(import('./tray-menu.js'));
-vi.mock(import('/@/security-restrictions.js'));
+vi.mock(import('/@/app/security-restrictions.js'), async importOriginal => {
+  const mod = await importOriginal();
+  mod.SecurityRestrictions.prototype.init = vi.fn();
+  return mod;
+});
 vi.mock(import('electron-context-menu'), () => ({
   default: vi.fn(),
 }));
 
 // App Plugin
-vi.mock(import('/@/plugin/app-ready/default-protocol-client.js'));
-vi.mock(import('/@/plugin/app-ready/window-plugin.js'));
+vi.mock(import('/@/app/default-protocol-client.js'), async importOriginal => {
+  const mod = await importOriginal();
+  mod.DefaultProtocolClient.prototype.init = vi.fn();
+  return mod;
+});
+vi.mock(import('/@/app/window-plugin.js'));
 vi.mock(import('/@product.json'));
 
 const ELECTRON_APP_MOCK: ElectronApp = {
@@ -244,6 +263,13 @@ describe('plugin system', () => {
     await vi.waitFor(() => expect(Menu.setApplicationMenu).toHaveBeenCalledWith(menu));
   });
 
+  test('should give the plugin system the application container', async () => {
+    new Main(ELECTRON_APP_MOCK).main([]);
+    whenReady.resolve();
+
+    await vi.waitFor(() => expect(PluginSystem).toHaveBeenCalledWith(expect.anything(), expect.any(Container)));
+  });
+
   test('should stop the extensions before quitting', async () => {
     const extensionLoader = { asyncDispose: vi.fn().mockResolvedValue(undefined) } as unknown as ExtensionLoader;
     vi.mocked(PluginSystem.prototype.initExtensions).mockResolvedValue(extensionLoader);
@@ -306,7 +332,7 @@ describe('ElectronApp#on window-all-closed', () => {
 });
 
 describe('AppPlugin', () => {
-  const plugins: Array<AppPlugin> = [DefaultProtocolClient.prototype, WindowPlugin.prototype];
+  const plugins: Array<AppPlugin> = [WindowPlugin.prototype];
 
   let promiseWithResolvers: PromiseWithResolvers<void>;
 

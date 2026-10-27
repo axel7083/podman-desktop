@@ -19,7 +19,6 @@
 import type { App as ElectronApp } from 'electron';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
-import type { AppPlugin } from '/@/plugin/app-ready/app-plugin.js';
 import { isWindows } from '/@/util.js';
 import product from '/@product.json' with { type: 'json' };
 
@@ -30,12 +29,15 @@ vi.mock(import('/@product.json'));
 
 const ELECTRON_APP_MOCK: ElectronApp = {
   setAsDefaultProtocolClient: vi.fn(),
+  whenReady: vi.fn(),
 } as unknown as ElectronApp;
+
+let whenReady: PromiseWithResolvers<void>;
 
 let originalExecPath: string;
 let originalProcessArgv: string[];
 
-let plugin: AppPlugin;
+let client: DefaultProtocolClient;
 beforeEach(() => {
   vi.resetAllMocks();
   vi.mocked(product).urlProtocol = 'test-protocol';
@@ -48,12 +50,14 @@ beforeEach(() => {
   // mock import.meta.env.PROD env
   vi.stubEnv('PROD', true);
 
-  plugin = new DefaultProtocolClient(ELECTRON_APP_MOCK);
+  whenReady = Promise.withResolvers<void>();
+  vi.mocked(ELECTRON_APP_MOCK.whenReady).mockReturnValue(whenReady.promise);
+
+  client = new DefaultProtocolClient(ELECTRON_APP_MOCK);
+  client.init();
 });
 
 afterEach(() => {
-  plugin?.dispose();
-
   process.execPath = originalExecPath;
   process.argv = originalProcessArgv;
 });
@@ -63,7 +67,8 @@ test('ElectronApp#setAsDefaultProtocolClient should not have been called before 
 });
 
 test('ElectronApp#setAsDefaultProtocolClient should be called when application is ready', async () => {
-  await plugin.onReady();
+  whenReady.resolve();
+  await vi.waitFor(() => expect(ELECTRON_APP_MOCK.setAsDefaultProtocolClient).toHaveBeenCalled());
 
   expect(ELECTRON_APP_MOCK.setAsDefaultProtocolClient).toHaveBeenCalledOnce();
   expect(ELECTRON_APP_MOCK.setAsDefaultProtocolClient).toHaveBeenCalledWith('test-protocol');
@@ -72,7 +77,8 @@ test('ElectronApp#setAsDefaultProtocolClient should be called when application i
 test('on windows ElectronApp#setAsDefaultProtocolClient should be called with process args', async () => {
   vi.mocked(isWindows).mockReturnValue(true);
 
-  await plugin.onReady();
+  whenReady.resolve();
+  await vi.waitFor(() => expect(ELECTRON_APP_MOCK.setAsDefaultProtocolClient).toHaveBeenCalled());
 
   expect(ELECTRON_APP_MOCK.setAsDefaultProtocolClient).toHaveBeenCalledOnce();
   expect(ELECTRON_APP_MOCK.setAsDefaultProtocolClient).toHaveBeenCalledWith('test-protocol', '/foo/bar', [

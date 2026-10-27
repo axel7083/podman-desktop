@@ -19,8 +19,8 @@
 import type { App as ElectronApp, BrowserWindow, Event as ElectronEvent } from 'electron';
 import { assert, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import { WindowPlugin } from '/@/app/window-plugin.js';
 import { createNewWindow, restoreWindow } from '/@/mainWindow.js';
-import { WindowPlugin } from '/@/plugin/app-ready/window-plugin.js';
 import { isMac } from '/@/util.js';
 
 // mock createNewWindow & restoreWindow

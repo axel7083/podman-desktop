@@ -15,15 +15,19 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { BrowserWindow } from 'electron';
+import { NavigationPage, type NavigationRequest } from '@desktop-framework/api';
+import { ApiSenderType } from '@desktop-framework/api/api-sender';
+import { inject, injectable } from 'inversify';
 
 import { isWindows } from '/@/util.js';
 import product from '/@product.json' with { type: 'json' };
 
+@injectable()
 export class ProtocolLauncher {
   private readonly protocol = product.urlProtocol;
 
-  constructor(private browserWindow: PromiseWithResolvers<BrowserWindow>) {}
+  // the api sender queues the events until the UI and the extension system are ready
+  constructor(@inject(ApiSenderType) private apiSender: ApiSenderType) {}
 
   /**
    * if arg starts with '<protocol>://extension', replace it with '<protocol>:extension'
@@ -71,21 +75,12 @@ export class ProtocolLauncher {
     if (normalizedUrl.startsWith(extensionPrefix)) {
       const extensionId = normalizedUrl.substring(extensionPrefix.length);
 
-      this.browserWindow.promise
-        .then(w => {
-          w.webContents.send('podman-desktop-protocol:install-extension', extensionId);
-        })
-        .catch((error: unknown) => {
-          console.error('Error sending open-url event to webcontents', error);
-        });
+      this.apiSender.send('install-extension:from-id', extensionId);
     } else if (normalizedUrl.startsWith(experimentalPrefix)) {
-      this.browserWindow.promise
-        .then(w => {
-          w.webContents.send('podman-desktop-protocol:open-experimental-features');
-        })
-        .catch((error: unknown) => {
-          console.error('Error sending open-url event to webcontents', error);
-        });
+      const navigationRequest: NavigationRequest<NavigationPage.EXPERIMENTAL_FEATURES> = {
+        page: NavigationPage.EXPERIMENTAL_FEATURES,
+      };
+      this.apiSender.send('navigate', navigationRequest);
     } else {
       console.log(`url ${normalizedUrl} does not start with ${extensionPrefix} or ${experimentalPrefix}, skipping.`);
       return;

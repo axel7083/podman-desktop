@@ -66,7 +66,7 @@ beforeEach(async () => {
   (import.meta.env.DEV as unknown) = true;
   (import.meta.env.VITE_DEV_SERVER_URL as unknown) = VITE_DEV_SERVER_URL_MOCK;
 
-  const { SecurityRestrictions } = await import('/@/security-restrictions.js');
+  const { SecurityRestrictions } = await import('/@/app/security-restrictions.js');
   const security = new SecurityRestrictions(ELECTRON_APP_MOCK);
   security.init();
 });
