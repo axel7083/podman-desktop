@@ -15,31 +15,24 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { Event, IDisposable } from '@desktop-framework/api';
-import type { App as ElectronApp, BrowserWindow } from 'electron';
-import { ipcMain, Menu, Tray } from 'electron';
+import type { Event } from '@desktop-framework/api';
+import type { App as ElectronApp } from 'electron';
+import { Tray } from 'electron';
 import { Container } from 'inversify';
 
 import { module as appModule } from '/@/app/$module.js';
-import { AppIdentity } from '/@/app/app-identity.js';
-import type { AppPlugin } from '/@/app/app-plugin.js';
 import { ProtocolLauncher } from '/@/app/protocol-launcher.js';
-import { WindowPlugin } from '/@/app/window-plugin.js';
 import { ElectronApp as ElectronAppSymbol, StartupSymbol } from '/@/inject/symbol.js';
-import { restoreWindow } from '/@/mainWindow.js';
-import { MainWindowDeferred } from '/@/plugin/api.js';
 import type { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
+import { restoreWindow } from '/@/system/window/main-window.js';
 import { isLinux, isMac, isWindows, stoppedExtensions } from '/@/util.js';
 import product from '/@product.json' with { type: 'json' };
 
-import { ApplicationMenuBuilder } from './application-menu-builder.js';
 import type { ConfigurationRegistry } from './plugin/configuration-registry.js';
 import { Emitter } from './plugin/events/emitter.js';
 import { PluginSystem } from './plugin/index.js';
 import { readShowTrayIconSetting } from './plugin/util/read-tray-setting.js';
-import { ZoomLevelHandler } from './plugin/zoom-level-handler.js';
 import { StartupInstall } from './system/startup-install.js';
-import { WindowHandler } from './system/window/window-handler.js';
 import { AnimatedDevTray } from './tray-animate-dev-icon.js';
 import { AnimatedTray } from './tray-animate-icon.js';
 import { TrayMenu } from './tray-menu.js';
@@ -51,24 +44,11 @@ export type AdditionalData = {
 /**
  * The main Podman Desktop entry point
  */
-export class Main implements IDisposable {
+export class Main {
   // TODO: should be renamed to #app
   public app: ElectronApp;
-  // TODO: should be renamed to #mainWindowDeferred
-  public mainWindowDeferred: PromiseWithResolvers<BrowserWindow>;
   // TODO: should be renamed to #protocolLauncher
   public protocolLauncher: ProtocolLauncher;
-
-  /**
-   * Represents a collection of application plugins.
-   *
-   * Each plugin exposes a {@link AppPlugin#onReady} method called when {@link ElectronApp#whenReady} resolved.
-   *
-   * Plugins are {@link IDisposable} and are disposed when {@link ElectronApp#on('before-quit')} is emitted
-   *
-   * @type {Array<AppPlugin>}
-   */
-  readonly #plugins: Array<AppPlugin>;
 
   // application scope container, the plugin system works in a child container
   readonly #container = new Container();
@@ -82,11 +62,7 @@ export class Main implements IDisposable {
     this.app.name = product.name;
     this.#container.bind<ElectronApp>(ElectronAppSymbol).toConstantValue(app);
     this.#container.load(appModule);
-    this.mainWindowDeferred = this.#container.get<PromiseWithResolvers<BrowserWindow>>(MainWindowDeferred);
     this.protocolLauncher = this.#container.get<ProtocolLauncher>(ProtocolLauncher);
-    // bound in development builds only
-    const identity = this.#container.get<AppIdentity>(AppIdentity, { optional: true });
-    this.#plugins = [new WindowPlugin(this.app, this.mainWindowDeferred.resolve, { icon: identity?.getWindowIcon() })];
   }
 
   main(args: string[]): void {
@@ -104,12 +80,8 @@ export class Main implements IDisposable {
   }
 
   protected init(additionalData: AdditionalData): void {
-    // instantiate the startup services (e.g. the security restrictions)
+    // instantiate the startup services (e.g. the security restrictions), before the single instance lock
     this.#container.getAll(StartupSymbol);
-
-    this.#plugins.forEach(plugin => {
-      plugin.onBeforeReady?.();
-    });
 
     /**
      * Prevent multiple instances
@@ -149,21 +121,16 @@ export class Main implements IDisposable {
     this.app.on('second-instance', this.onSecondInstance.bind(this));
     this.app.on('will-finish-launching', this.onWillFinishLaunching.bind(this));
     this.app.on('window-all-closed', this.onWindowAllClosed.bind(this));
-    this.app.on('before-quit', this.onBeforeQuit.bind(this));
     this.app.on('will-quit', this.onWillQuit.bind(this));
     this.app.once('before-quit', this.onBeforeQuitStopExtensions.bind(this));
 
-    /**
-     * Register {@link Main#whenReady} for ready event
-     */
-    this.app.whenReady().then(this.whenReady.bind(this)).catch(console.error);
     this.app
       .whenReady()
       .then(this.startPluginSystem.bind(this), (e: unknown) => console.error('Failed to start app:', e));
   }
 
   /**
-   * Starts the plugin system, once {@link ElectronApp#whenReady} resolved and the plugins started
+   * Starts the plugin system, once {@link ElectronApp#whenReady} resolved
    */
   protected async startPluginSystem(): Promise<void> {
     // Setup the default tray icon + menu items (skip if user disabled tray)
@@ -190,36 +157,6 @@ export class Main implements IDisposable {
           this.#animatedTray?.setColor(color);
         }
       }
-
-      // Share configuration registry with renderer process
-      ipcMain.emit('configuration-registry', '', configurationRegistry);
-
-      // Register the window configuration
-      // This is used to save/restore the window size and position
-      this.mainWindowDeferred.promise
-        .then(browserWindow => {
-          const windowHandler = new WindowHandler(configurationRegistry, browserWindow);
-          windowHandler.init();
-
-          // Configure the zoom level handler
-          // handle zoom level
-          const zoomLevelHandler = new ZoomLevelHandler(browserWindow, configurationRegistry);
-          zoomLevelHandler.init();
-
-          // sets the menu
-          const applicationMenuBuilder = new ApplicationMenuBuilder(zoomLevelHandler);
-          const menu = applicationMenuBuilder.build();
-
-          if (menu) {
-            Menu.setApplicationMenu(menu);
-          }
-
-          // send window Handler
-          ipcMain.emit('window-handler', '', windowHandler);
-        })
-        .catch((error: unknown) => {
-          console.error('Error initializing window handler', error);
-        });
 
       // Configure automatic startup
       const automaticStartup = new StartupInstall(configurationRegistry);
@@ -263,17 +200,6 @@ export class Main implements IDisposable {
   }
 
   /**
-   * Waits for all plugins to complete their initialization and become ready.
-   *
-   * This method calls for each plugin their corresponding {@link AppPlugin#onReady} method.
-   *
-   * @return {Promise<Array<void>>}
-   */
-  protected async whenReady(): Promise<Array<void>> {
-    return Promise.all(this.#plugins.map(plugin => plugin.onReady()));
-  }
-
-  /**
    * Listener for {@link ElectronApp.on('second-instance')} event
    * do not use _args as it may contain additional arguments
    */
@@ -313,16 +239,5 @@ export class Main implements IDisposable {
     if (!isMac()) {
       this.app.quit();
     }
-  }
-
-  /**
-   * Listener for {@link ElectronApp.on('before-quit')} event
-   */
-  protected onBeforeQuit(): void {
-    this.dispose();
-  }
-
-  dispose(): void {
-    this.#plugins.forEach(plugin => plugin.dispose());
   }
 }

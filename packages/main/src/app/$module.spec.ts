@@ -25,22 +25,11 @@ import { AppIdentity } from '/@/app/app-identity.js';
 import { DefaultProtocolClient } from '/@/app/default-protocol-client.js';
 import { SecurityRestrictions } from '/@/app/security-restrictions.js';
 import { ElectronApp, StartupSymbol } from '/@/inject/symbol.js';
-import { MainWindowDeferred } from '/@/plugin/api.js';
 
 import { module } from './$module.js';
 
 afterEach(() => {
   vi.unstubAllEnvs();
-});
-
-test('should bind a single main window deferred', () => {
-  const container = new Container();
-  container.load(module);
-
-  const deferred = container.get<PromiseWithResolvers<unknown>>(MainWindowDeferred);
-
-  expect(deferred.promise).toBeInstanceOf(Promise);
-  expect(container.get(MainWindowDeferred)).toBe(deferred);
 });
 
 test('should bind the api sender as the ApiSenderType singleton', () => {

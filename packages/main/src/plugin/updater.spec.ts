@@ -57,6 +57,10 @@ vi.mock(
     }) as unknown as typeof Electron,
 );
 
+// reachable through '/@/plugin/index.js' and the main window, it would load the real electron module
+vi.mock(import('electron-util/main'), () => ({ aboutMenuItem: vi.fn() }));
+vi.mock(import('electron-context-menu'), () => ({ default: vi.fn() }));
+
 vi.mock(import('electron-updater'), () => ({
   autoUpdater: {
     downloadUpdate: vi.fn(),

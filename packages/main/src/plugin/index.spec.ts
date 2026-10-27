@@ -36,9 +36,11 @@ import type { MockInstance } from 'vitest';
 import { afterEach, assert, beforeEach, describe, expect, test, vi } from 'vitest';
 
 import { module as appModule } from '/@/app/$module.js';
+import { ElectronApp } from '/@/inject/symbol.js';
 import { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
 import { Updater } from '/@/plugin/updater.js';
 import { securityRestrictionCurrentHandler } from '/@/security-restrictions-handler.js';
+import { MainWindow } from '/@/system/window/main-window.js';
 import type { TrayMenu } from '/@/tray-menu.js';
 
 import { CancellationTokenRegistry } from './cancellation-token-registry.js';
@@ -84,6 +86,11 @@ function getHandler<T>(name: string): T {
   return handler as T;
 }
 
+vi.mock(import('electron-util/main'), () => ({ aboutMenuItem: vi.fn() }));
+vi.mock(import('electron-context-menu'), () => ({ default: vi.fn() }));
+vi.mock(import('/@/system/window/main-window.js'), importOriginal => mockOriginalClass(importOriginal, 'MainWindow'));
+vi.mock(import('/@/app/app-identity.js'), importOriginal => mockOriginalClass(importOriginal, 'AppIdentity'));
+vi.mock(import('/@/app/dev-icon-builder.js'));
 vi.mock(import('/@/plugin/updater.js'), importOriginal => mockOriginalClass(importOriginal, 'Updater'));
 vi.mock(import('/@/plugin/extension/extension-loader.js'), importOriginal =>
   mockOriginalClass(importOriginal, 'ExtensionLoader'),
@@ -153,6 +160,7 @@ beforeEach(async () => {
   webContents.send = vi.fn();
 
   const applicationContainer = new InversifyContainer();
+  applicationContainer.bind(ElectronApp).toConstantValue(app);
   applicationContainer.load(appModule);
   pluginSystem = new TestPluginSystem({} as unknown as TrayMenu, applicationContainer);
 
@@ -192,6 +200,7 @@ afterEach(async () => {
 
 test('initExtensions resolves the services of the parent container', async () => {
   const parent = new InversifyContainer();
+  parent.bind(ElectronApp).toConstantValue(app);
   parent.load(appModule);
   const token = Symbol('parent-service');
   parent.bind(token).toConstantValue('from-parent');
@@ -202,6 +211,10 @@ test('initExtensions resolves the services of the parent container', async () =>
   assert(childPluginSystem.container);
   expect(childPluginSystem.container.get(token)).toBe('from-parent');
   expect(parent.isBound(ConfigurationRegistry)).toBe(false);
+});
+
+test('initExtensions creates the main window once the configuration registry is initialized', () => {
+  expect(MainWindow.prototype.init).toHaveBeenCalledOnce();
 });
 
 test('Check SecurityRestrictions on Links and user accept', async () => {
@@ -1006,36 +1019,6 @@ describe('getWebContentsSender', () => {
     expect(sender.isDestroyed()).toBe(true);
     expect(() => sender.send('api-sender', 'foo')).not.toThrow();
     expect(() => sender.on('dom-ready', vi.fn())).not.toThrow();
-  });
-});
-
-describe('getRequiredWebContentsSender', () => {
-  test('should return the webContents of the first window that is not destroyed', () => {
-    const destroyedWebContents = { send: vi.fn() } as unknown as WebContents;
-    vi.mocked(BrowserWindow.getAllWindows).mockReturnValue([
-      { isDestroyed: () => true, webContents: destroyedWebContents } as unknown as BrowserWindow,
-      { isDestroyed: () => false, webContents } as unknown as BrowserWindow,
-    ]);
-
-    expect(pluginSystem.getRequiredWebContentsSender()).toBe(webContents);
-  });
-
-  test.each([
-    { scenario: 'there is no window anymore', getWindows: (): BrowserWindow[] => [] },
-    {
-      scenario: 'every window is destroyed',
-      getWindows: (): BrowserWindow[] => [{ isDestroyed: () => true, webContents } as unknown as BrowserWindow],
-    },
-    {
-      scenario: 'the web contents of the window are destroyed',
-      getWindows: (): BrowserWindow[] => [
-        { isDestroyed: () => false, webContents: { isDestroyed: () => true } } as unknown as BrowserWindow,
-      ],
-    },
-  ])('should throw when $scenario', ({ getWindows }) => {
-    vi.mocked(BrowserWindow.getAllWindows).mockReturnValue(getWindows());
-
-    expect(() => pluginSystem.getRequiredWebContentsSender()).toThrow('Unable to find the main window');
   });
 });
 

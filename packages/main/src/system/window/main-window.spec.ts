@@ -18,24 +18,34 @@
 
 import type { Configuration } from '@desktop-framework/extension-api';
 import type Electron from 'electron';
-import { app, BrowserWindow, ipcMain, screen } from 'electron';
+import { app, BrowserWindow, Menu, screen } from 'electron';
 import { afterEach, assert, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import { DevelopmentModeTracker } from './development-mode-tracker.js';
-import { OpenDevTools } from './open-dev-tools.js';
-import type { ConfigurationRegistry } from './plugin/configuration-registry.js';
-import * as util from './util.js';
+import { ApiSender } from '/@/app/api-sender.js';
+import { ApplicationMenuBuilder } from '/@/application-menu-builder.js';
+import { DevelopmentModeTracker } from '/@/development-mode-tracker.js';
+import { OpenDevTools } from '/@/open-dev-tools.js';
+import type { ConfigurationRegistry } from '/@/plugin/configuration-registry.js';
+import { ZoomLevelHandler } from '/@/plugin/zoom-level-handler.js';
+import * as util from '/@/util.js';
+
+import { MainWindow } from './main-window.js';
+import { WindowHandler } from './window-handler.js';
 
 vi.mock(import('electron-context-menu'), async () => ({
   default: vi.fn(),
 }));
-vi.mock(import('./development-menu-builder.js'));
-vi.mock(import('./development-mode-tracker.js'));
-vi.mock(import('./navigation-items-menu-builder.js'));
-vi.mock(import('./open-dev-tools.js'));
-vi.mock(import('./app/app-identity.js'));
+vi.mock(import('electron-util/main'), () => ({ aboutMenuItem: vi.fn() }));
+vi.mock(import('/@/application-menu-builder.js'));
+vi.mock(import('/@/plugin/zoom-level-handler.js'));
+vi.mock(import('./window-handler.js'));
+vi.mock(import('/@/development-menu-builder.js'));
+vi.mock(import('/@/development-mode-tracker.js'));
+vi.mock(import('/@/navigation-items-menu-builder.js'));
+vi.mock(import('/@/open-dev-tools.js'));
+vi.mock(import('/@/app/app-identity.js'));
 
-vi.mock(import('./util.js'), async () => ({
+vi.mock(import('/@/util.js'), async () => ({
   isLinux: vi.fn().mockReturnValue(false),
   isMac: vi.fn().mockReturnValue(false),
   isWindows: vi.fn().mockReturnValue(false),
@@ -43,6 +53,8 @@ vi.mock(import('./util.js'), async () => ({
 }));
 
 let originalArgv: string[] = [];
+let preferences: Record<string, unknown>;
+let configurationRegistry: ConfigurationRegistry;
 
 beforeEach(() => {
   originalArgv = process.argv;
@@ -83,6 +95,13 @@ beforeEach(() => {
   DevelopmentModeTracker.prototype.onDidChangeDevelopmentMode = vi.fn();
   DevelopmentModeTracker.prototype.init = vi.fn();
   OpenDevTools.prototype.open = vi.fn();
+
+  preferences = {};
+  configurationRegistry = {
+    getConfiguration: vi.fn().mockReturnValue({
+      get: vi.fn((key: string) => preferences[key]),
+    } as unknown as Configuration),
+  } as unknown as ConfigurationRegistry;
 });
 
 afterEach(() => {
@@ -98,9 +117,9 @@ function getHandler(mockOnFn: ReturnType<typeof vi.fn>, eventName: string): (...
 
 describe('createNewWindow', () => {
   test('should show window on normal launch', async () => {
-    const { createNewWindow } = await import('./mainWindow.js');
+    const { createNewWindow } = await import('./main-window.js');
 
-    await createNewWindow();
+    await createNewWindow(configurationRegistry, new ApiSender());
 
     const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
     assert(bwInstance);
@@ -116,9 +135,9 @@ describe('createNewWindow', () => {
     vi.mocked(util.isMac).mockReturnValue(true);
     process.argv = ['electron', '--minimize'];
 
-    const { createNewWindow } = await import('./mainWindow.js');
+    const { createNewWindow } = await import('./main-window.js');
 
-    await createNewWindow();
+    await createNewWindow(configurationRegistry, new ApiSender());
 
     const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
     assert(bwInstance);
@@ -130,148 +149,31 @@ describe('createNewWindow', () => {
     expect(app.dock?.hide).toHaveBeenCalled();
   });
 
-  test('should show window on macOS login item launch when config registry arrives before ready-to-show and minimize is false', async () => {
+  test.each([
+    { minimize: false, shown: true },
+    { minimize: true, shown: false },
+  ])('macOS login item launch with login.minimize=$minimize', async ({ minimize, shown }) => {
     vi.mocked(util.isMac).mockReturnValue(true);
     vi.mocked(app.getLoginItemSettings).mockReturnValue({
       wasOpenedAtLogin: true,
     } as Electron.LoginItemSettings);
+    preferences['login.minimize'] = minimize;
 
-    const { createNewWindow } = await import('./mainWindow.js');
+    const { createNewWindow } = await import('./main-window.js');
 
-    await createNewWindow();
-
-    const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
-    assert(bwInstance);
-
-    // Fire configuration-registry BEFORE ready-to-show (matches real startup order)
-    const configHandler = getHandler(vi.mocked(ipcMain.on), 'configuration-registry');
-
-    const mockConfigRegistry = {
-      getConfiguration: vi.fn().mockReturnValue({
-        get: vi.fn().mockReturnValue(false),
-      } as unknown as Configuration),
-    } as unknown as ConfigurationRegistry;
-
-    configHandler({}, mockConfigRegistry);
-
-    // Nothing should happen yet: acting here would show the window before the first paint,
-    // which is exactly what the `show: false` window option exists to avoid
-    expect(bwInstance.show).not.toHaveBeenCalled();
-    expect(app.dock?.hide).not.toHaveBeenCalled();
-
-    // Now fire ready-to-show — config registry is already available
-    const readyToShow = getHandler(bwInstance.on, 'ready-to-show');
-    readyToShow();
-
-    expect(bwInstance.show).toHaveBeenCalledTimes(1);
-    expect(app.dock?.hide).not.toHaveBeenCalled();
-  });
-
-  test('should hide dock on macOS login item launch when config registry arrives before ready-to-show and minimize is true', async () => {
-    vi.mocked(util.isMac).mockReturnValue(true);
-    vi.mocked(app.getLoginItemSettings).mockReturnValue({
-      wasOpenedAtLogin: true,
-    } as Electron.LoginItemSettings);
-
-    const { createNewWindow } = await import('./mainWindow.js');
-
-    await createNewWindow();
+    await createNewWindow(configurationRegistry, new ApiSender());
 
     const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
     assert(bwInstance);
 
-    // Fire configuration-registry BEFORE ready-to-show (matches real startup order)
-    const configHandler = getHandler(vi.mocked(ipcMain.on), 'configuration-registry');
-
-    const mockConfigRegistry = {
-      getConfiguration: vi.fn().mockReturnValue({
-        get: vi.fn().mockReturnValue(true),
-      } as unknown as Configuration),
-    } as unknown as ConfigurationRegistry;
-
-    configHandler({}, mockConfigRegistry);
-
-    // Nothing should happen yet: acting here would show the window before the first paint,
-    // which is exactly what the `show: false` window option exists to avoid
+    // Nothing should happen before the first paint, which is what the `show: false` window option is for
     expect(bwInstance.show).not.toHaveBeenCalled();
-    expect(app.dock?.hide).not.toHaveBeenCalled();
-
-    // Now fire ready-to-show — config registry is already available
-    const readyToShow = getHandler(bwInstance.on, 'ready-to-show');
-    readyToShow();
-
-    expect(bwInstance.show).not.toHaveBeenCalled();
-    expect(app.dock?.hide).toHaveBeenCalledTimes(1);
-  });
-
-  test('should defer window show on macOS login item launch and show when minimize is false', async () => {
-    vi.mocked(util.isMac).mockReturnValue(true);
-    vi.mocked(app.getLoginItemSettings).mockReturnValue({
-      wasOpenedAtLogin: true,
-    } as Electron.LoginItemSettings);
-
-    const { createNewWindow } = await import('./mainWindow.js');
-
-    await createNewWindow();
-
-    const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
-    assert(bwInstance);
 
     const readyToShow = getHandler(bwInstance.on, 'ready-to-show');
     readyToShow();
 
-    // Window should NOT have been shown yet (deferred)
-    expect(bwInstance.show).not.toHaveBeenCalled();
-
-    // Simulate configuration-registry IPC with minimize=false
-    const configHandler = getHandler(vi.mocked(ipcMain.on), 'configuration-registry');
-
-    const mockConfigRegistry = {
-      getConfiguration: vi.fn().mockReturnValue({
-        get: vi.fn().mockReturnValue(false),
-      } as unknown as Configuration),
-    } as unknown as ConfigurationRegistry;
-
-    configHandler({}, mockConfigRegistry);
-
-    // Now window should be shown
-    expect(bwInstance.show).toHaveBeenCalledTimes(1);
-    expect(app.dock?.hide).not.toHaveBeenCalled();
-  });
-
-  test('should defer window show on macOS login item launch and hide dock when minimize is true', async () => {
-    vi.mocked(util.isMac).mockReturnValue(true);
-    vi.mocked(app.getLoginItemSettings).mockReturnValue({
-      wasOpenedAtLogin: true,
-    } as Electron.LoginItemSettings);
-
-    const { createNewWindow } = await import('./mainWindow.js');
-
-    await createNewWindow();
-
-    const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
-    assert(bwInstance);
-
-    const readyToShow = getHandler(bwInstance.on, 'ready-to-show');
-    readyToShow();
-
-    // Window should NOT have been shown yet (deferred)
-    expect(bwInstance.show).not.toHaveBeenCalled();
-
-    // Simulate configuration-registry IPC with minimize=true
-    const configHandler = getHandler(vi.mocked(ipcMain.on), 'configuration-registry');
-
-    const mockConfigRegistry = {
-      getConfiguration: vi.fn().mockReturnValue({
-        get: vi.fn().mockReturnValue(true),
-      } as unknown as Configuration),
-    } as unknown as ConfigurationRegistry;
-
-    configHandler({}, mockConfigRegistry);
-
-    // Window should remain hidden, dock should be hidden
-    expect(bwInstance.show).not.toHaveBeenCalled();
-    expect(app.dock?.hide).toHaveBeenCalledTimes(1);
+    expect(bwInstance.show).toHaveBeenCalledTimes(shown ? 1 : 0);
+    expect(app.dock?.hide).toHaveBeenCalledTimes(shown ? 0 : 1);
   });
 
   test('should not defer on non-macOS even if wasOpenedAtLogin is true', async () => {
@@ -280,9 +182,9 @@ describe('createNewWindow', () => {
       wasOpenedAtLogin: true,
     } as Electron.LoginItemSettings);
 
-    const { createNewWindow } = await import('./mainWindow.js');
+    const { createNewWindow } = await import('./main-window.js');
 
-    await createNewWindow();
+    await createNewWindow(configurationRegistry, new ApiSender());
 
     const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
     assert(bwInstance);
@@ -294,30 +196,38 @@ describe('createNewWindow', () => {
     expect(bwInstance.show).toHaveBeenCalled();
   });
 
+  test.each([
+    { exitOnClose: true, showTrayIcon: true, quits: true },
+    { exitOnClose: false, showTrayIcon: true, quits: false },
+    { exitOnClose: undefined, showTrayIcon: undefined, quits: false },
+  ])(
+    'close with ExitOnClose=$exitOnClose and ShowTrayIcon=$showTrayIcon should quit: $quits',
+    async ({ exitOnClose, showTrayIcon, quits }) => {
+      preferences['ExitOnClose'] = exitOnClose;
+      preferences['ShowTrayIcon'] = showTrayIcon;
+      const { createNewWindow } = await import('./main-window.js');
+      await createNewWindow(configurationRegistry, new ApiSender());
+      const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
+      assert(bwInstance);
+
+      getHandler(bwInstance.on, 'close')({ preventDefault: vi.fn() });
+
+      expect(bwInstance.destroy).toHaveBeenCalledTimes(quits ? 1 : 0);
+      expect(bwInstance.hide).toHaveBeenCalledTimes(quits ? 0 : 1);
+    },
+  );
+
   test('should force quit on close when tray is disabled', async () => {
     vi.mocked(util.isLinux).mockReturnValue(true);
+    preferences['ExitOnClose'] = false;
+    preferences['ShowTrayIcon'] = false;
 
-    const { createNewWindow } = await import('./mainWindow.js');
+    const { createNewWindow } = await import('./main-window.js');
 
-    await createNewWindow();
+    await createNewWindow(configurationRegistry, new ApiSender());
 
     const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
     assert(bwInstance);
-
-    // Simulate configuration-registry IPC with ExitOnClose=false but ShowTrayIcon=false
-    const configHandler = getHandler(vi.mocked(ipcMain.on), 'configuration-registry');
-
-    const mockConfigRegistry = {
-      getConfiguration: vi.fn().mockReturnValue({
-        get: vi.fn((key: string) => {
-          if (key === 'ExitOnClose') return false;
-          if (key === 'ShowTrayIcon') return false;
-          return undefined;
-        }),
-      } as unknown as Configuration),
-    } as unknown as ConfigurationRegistry;
-
-    configHandler({}, mockConfigRegistry);
 
     // Now trigger the close event
     const closeHandler = getHandler(bwInstance.on, 'close');
@@ -340,9 +250,9 @@ describe('createNewWindow', () => {
     });
 
     test('should show window via did-finish-load on Linux X11', async () => {
-      const { createNewWindow } = await import('./mainWindow.js');
+      const { createNewWindow } = await import('./main-window.js');
 
-      await createNewWindow();
+      await createNewWindow(configurationRegistry, new ApiSender());
 
       const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
       assert(bwInstance);
@@ -356,9 +266,9 @@ describe('createNewWindow', () => {
     test('should show window via did-finish-load on Linux Wayland', async () => {
       process.env['WAYLAND_DISPLAY'] = 'wayland-0';
 
-      const { createNewWindow } = await import('./mainWindow.js');
+      const { createNewWindow } = await import('./main-window.js');
 
-      await createNewWindow();
+      await createNewWindow(configurationRegistry, new ApiSender());
 
       const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
       assert(bwInstance);
@@ -370,9 +280,9 @@ describe('createNewWindow', () => {
     });
 
     test('should not register ready-to-show on Linux (avoids Wayland show() feedback loop)', async () => {
-      const { createNewWindow } = await import('./mainWindow.js');
+      const { createNewWindow } = await import('./main-window.js');
 
-      await createNewWindow();
+      await createNewWindow(configurationRegistry, new ApiSender());
 
       const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
       assert(bwInstance);
@@ -384,9 +294,9 @@ describe('createNewWindow', () => {
     test('should not register did-finish-load handler when not on Linux', async () => {
       vi.mocked(util.isLinux).mockReturnValue(false);
 
-      const { createNewWindow } = await import('./mainWindow.js');
+      const { createNewWindow } = await import('./main-window.js');
 
-      await createNewWindow();
+      await createNewWindow(configurationRegistry, new ApiSender());
 
       const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
       assert(bwInstance);
@@ -397,9 +307,9 @@ describe('createNewWindow', () => {
     test('should not show window via did-finish-load when --minimize flag is set', async () => {
       process.argv = ['electron', '--minimize'];
 
-      const { createNewWindow } = await import('./mainWindow.js');
+      const { createNewWindow } = await import('./main-window.js');
 
-      await createNewWindow();
+      await createNewWindow(configurationRegistry, new ApiSender());
 
       const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
       assert(bwInstance);
@@ -409,5 +319,64 @@ describe('createNewWindow', () => {
 
       expect(bwInstance.show).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe('window set-up', () => {
+  test('should restore its bounds, set its zoom level and the application menu once the page is loaded', async () => {
+    const menu = {} as Menu;
+    vi.mocked(ApplicationMenuBuilder.prototype.build).mockReturnValue(menu);
+    const { createNewWindow } = await import('./main-window.js');
+
+    const bwInstance = await createNewWindow(configurationRegistry, new ApiSender());
+
+    expect(WindowHandler).toHaveBeenCalledWith(configurationRegistry, bwInstance);
+    expect(WindowHandler.prototype.restore).toHaveBeenCalledWith(expect.objectContaining({ width: 1050, height: 700 }));
+    expect(ZoomLevelHandler).toHaveBeenCalledWith(bwInstance, configurationRegistry);
+    expect(ZoomLevelHandler.prototype.init).toHaveBeenCalled();
+    expect(Menu.setApplicationMenu).toHaveBeenCalledWith(menu);
+  });
+
+  test('should save its bounds when it is moved or resized', async () => {
+    const { createNewWindow } = await import('./main-window.js');
+    await createNewWindow(configurationRegistry, new ApiSender());
+    const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
+    assert(bwInstance);
+
+    getHandler(bwInstance.on, 'move')();
+    getHandler(bwInstance.on, 'resize')();
+
+    expect(WindowHandler.prototype.savePositionAndSize).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('MainWindow', () => {
+  test('should create the window, expose it once loaded and deliver the api sender events to its page', async () => {
+    const apiSender = new ApiSender();
+    const mainWindow = new MainWindow(configurationRegistry, apiSender, undefined);
+    mainWindow.init();
+
+    await vi.waitFor(() => expect(mainWindow.browserWindow).toBeDefined());
+    const bwInstance = vi.mocked(BrowserWindow).mock.results[0]?.value;
+    assert(bwInstance);
+    expect(mainWindow.browserWindow).toBe(bwInstance);
+
+    bwInstance.webContents.isDestroyed = vi.fn().mockReturnValue(false);
+    apiSender.markReady();
+    getHandler(bwInstance.webContents.on, 'dom-ready')();
+    apiSender.send('foo', 'hello-world');
+
+    expect(bwInstance.webContents.send).toHaveBeenCalledWith('api-sender', 'foo', 'hello-world');
+  });
+
+  test('should create a window on macOS activate when there is none', async () => {
+    const mainWindow = new MainWindow(configurationRegistry, new ApiSender(), undefined);
+    mainWindow.init();
+    await vi.waitFor(() => expect(mainWindow.browserWindow).toBeDefined());
+    vi.mocked(BrowserWindow).mockClear();
+
+    getHandler(vi.mocked(app.on), 'activate')({}, true);
+
+    await vi.waitFor(() => expect(BrowserWindow).toHaveBeenCalledOnce());
   });
 });

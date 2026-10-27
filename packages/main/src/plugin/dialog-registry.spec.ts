@@ -22,18 +22,22 @@ import path from 'node:path';
 import { type BrowserWindow, dialog } from 'electron';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 
+import type { MainWindow } from '/@/system/window/main-window.js';
 import { isMac } from '/@/util.js';
 
 import { DialogRegistry } from './dialog-registry.js';
 import { Uri } from './types/uri.js';
-
-let mainWindowDeferred: PromiseWithResolvers<BrowserWindow>;
 
 const fakeBrowserWindow: BrowserWindow = {
   webContents: {
     send: vi.fn(),
   },
 } as unknown as BrowserWindow;
+
+// only its browserWindow getter is used
+function mainWindowWith(browserWindow: BrowserWindow | undefined): MainWindow {
+  return { browserWindow } as unknown as MainWindow;
+}
 
 vi.mock(import('/@/util.js'), () => {
   return {
@@ -51,26 +55,11 @@ const mockedConsoleError = vi.fn();
 beforeEach(() => {
   vi.resetAllMocks();
   console.error = mockedConsoleError;
-  mainWindowDeferred = Promise.withResolvers<BrowserWindow>();
-  mainWindowDeferred.resolve(fakeBrowserWindow);
-  dialogRegistry = new TestDialogRegistry(mainWindowDeferred);
-  dialogRegistry.init();
+  dialogRegistry = new TestDialogRegistry(mainWindowWith(fakeBrowserWindow));
 });
 
 afterEach(() => {
   console.error = originalConsoleError;
-});
-
-// check a failure on init
-test('check failure on init method', async () => {
-  mainWindowDeferred = Promise.withResolvers<BrowserWindow>();
-  dialogRegistry = new TestDialogRegistry(mainWindowDeferred);
-  mainWindowDeferred.reject(new Error('test error'));
-
-  dialogRegistry.init();
-  await vi.waitFor(() => {
-    expect(mockedConsoleError).toHaveBeenCalledWith('Error getting main window', 'Error: test error');
-  });
 });
 
 const tmpMyPath = path.resolve(tmpdir(), 'my/path');
@@ -85,10 +74,9 @@ describe('showOpenDialog', () => {
   });
 
   // check opendialog is failing without browserwindow
-  test('check failure on init method', async () => {
-    mainWindowDeferred = Promise.withResolvers<BrowserWindow>();
-    dialogRegistry = new TestDialogRegistry(mainWindowDeferred);
-    // we don't resolve the promise
+  test('should fail when the main window is not created yet', async () => {
+    // the main window is not created yet
+    dialogRegistry = new TestDialogRegistry(mainWindowWith(undefined));
 
     await expect(dialogRegistry.openDialog()).rejects.toThrow('Browser window is not available');
   });
@@ -169,10 +157,9 @@ describe('showSaveDialog', () => {
   });
 
   // check showSaveDialog is failing without browserwindow
-  test('check failure on init method', async () => {
-    mainWindowDeferred = Promise.withResolvers<BrowserWindow>();
-    dialogRegistry = new TestDialogRegistry(mainWindowDeferred);
-    // we don't resolve the promise
+  test('should fail when the main window is not created yet', async () => {
+    // the main window is not created yet
+    dialogRegistry = new TestDialogRegistry(mainWindowWith(undefined));
 
     await expect(dialogRegistry.saveDialog()).rejects.toThrow('Browser window is not available');
   });

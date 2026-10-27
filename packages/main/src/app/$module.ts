@@ -17,7 +17,7 @@
  ***********************************************************************/
 
 import { ApiSenderType } from '@desktop-framework/api/api-sender';
-import type { App as ElectronApp, BrowserWindow } from 'electron';
+import type { App as ElectronApp } from 'electron';
 import { ContainerModule } from 'inversify';
 
 import { ApiSender } from '/@/app/api-sender.js';
@@ -27,7 +27,6 @@ import { DevIconBuilder } from '/@/app/dev-icon-builder.js';
 import { ProtocolLauncher } from '/@/app/protocol-launcher.js';
 import { SecurityRestrictions } from '/@/app/security-restrictions.js';
 import { ElectronApp as ElectronAppSymbol, StartupSymbol } from '/@/inject/symbol.js';
-import { MainWindowDeferred } from '/@/plugin/api.js';
 
 const module = new ContainerModule(options => {
   options.bind<ApiSender>(ApiSender).toSelf().inSingletonScope();
@@ -49,9 +48,6 @@ const module = new ContainerModule(options => {
     options.bind<AppIdentity>(AppIdentity).toSelf().inSingletonScope();
     options.bind(StartupSymbol).toService(AppIdentity);
   }
-  options
-    .bind<PromiseWithResolvers<BrowserWindow>>(MainWindowDeferred)
-    .toConstantValue(Promise.withResolvers<BrowserWindow>());
 });
 
 export { module };

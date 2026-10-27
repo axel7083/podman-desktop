@@ -156,6 +156,7 @@ import type { IpcMainInvokeEvent } from 'electron/main';
 import { Container } from 'inversify';
 
 import { ApiSender } from '/@/app/api-sender.js';
+import { StartupSymbol } from '/@/inject/symbol.js';
 import { IPCHandle, IPCMainOn } from '/@/plugin/api.js';
 import { ContainerfileParser } from '/@/plugin/containerfile-parser.js';
 import { ExtensionApiVersion } from '/@/plugin/extension/extension-api-version.js';
@@ -173,6 +174,7 @@ import { Uri } from '/@/plugin/types/uri.js';
 import { Updater } from '/@/plugin/updater.js';
 import { Welcome } from '/@/plugin/welcome.js';
 import { securityRestrictionCurrentHandler } from '/@/security-restrictions-handler.js';
+import { module as windowModule } from '/@/system/window/$module.js';
 import { TrayMenu } from '/@/tray-menu.js';
 import { createHash, isMac } from '/@/util.js';
 import product from '/@product.json' with { type: 'json' };
@@ -329,20 +331,6 @@ export class PluginSystem {
    */
   getWebContentsSender(): MainWindowWebContentsSender {
     return this.findMainWindow()?.webContents ?? PluginSystem.DESTROYED_WEB_CONTENTS_SENDER;
-  }
-
-  /**
-   * Sender for the callers resolving it once and keeping the reference, like the api sender.
-   * Falling back to a sender doing nothing here would leave such a caller unable to ever reach the
-   * UI, so the missing window is reported instead.
-   * @throws when there is no window to send to
-   */
-  getRequiredWebContentsSender(): MainWindowWebContentsSender {
-    const window = this.findMainWindow();
-    if (!window) {
-      throw new Error('Unable to find the main window');
-    }
-    return window.webContents;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -503,8 +491,8 @@ export class PluginSystem {
     // init api sender
     // child of the application container: it can resolve the application services, not the other way around
     const container = new Container({ parent: this.parentContainer });
+    container.load(windowModule);
     const apiSender = container.get<ApiSender>(ApiSender);
-    apiSender.attach(this.getRequiredWebContentsSender());
     this.apiSender = apiSender;
     container.bind<IPCHandle>(IPCHandle).toConstantValue(this.ipcHandle);
     container.bind<IPCMainOn>(IPCMainOn).toConstantValue(this.ipcMainOn);
@@ -531,6 +519,9 @@ export class PluginSystem {
       notifications,
       configurationRegistryEmitter,
     );
+
+    // instantiate the startup services of this container (e.g. the main window), they need the configuration
+    container.getAll(StartupSymbol);
 
     container.bind<ColorRegistry>(ColorRegistry).to(InjectableColorRegistry).inSingletonScope();
     const colorRegistry = container.get<ColorRegistry>(ColorRegistry);
@@ -766,7 +757,6 @@ export class PluginSystem {
     container.bind<DialogRegistry>(DialogRegistry).toSelf().inSingletonScope();
 
     const dialogRegistry = container.get<DialogRegistry>(DialogRegistry);
-    dialogRegistry.init();
 
     container.bind<NavigationManager>(NavigationManager).toSelf().inSingletonScope();
     container.bind<CommandsInit>(CommandsInit).toSelf().inSingletonScope();

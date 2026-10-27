@@ -19,5 +19,8 @@
 /** The Electron application, bound by Main. */
 export const ElectronApp = Symbol.for('ElectronApp');
 
+/** The main window, bound by the window module of the plugin system container. */
+export const MainWindowSymbol = Symbol.for('MainWindow');
+
 /** Services instantiated by Main when it starts, they do their work in their @postConstruct method. */
 export const StartupSymbol = Symbol.for('Startup');

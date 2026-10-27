@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2025 Red Hat, Inc.
+ * Copyright (C) 2026 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { IDisposable } from '@desktop-framework/api';
+import { ContainerModule } from 'inversify';
 
-export interface AppPlugin extends IDisposable {
-  /**
-   * Called during {@link import('electron').App} initialisation, before
-   * {@link import('electron').App.requestSingleInstanceLock}.
-   * Use for work that must happen before the app is ready.
-   */
-  onBeforeReady?(): void;
+import { MainWindowSymbol, StartupSymbol } from '/@/inject/symbol.js';
+import { MainWindow } from '/@/system/window/main-window.js';
 
-  onReady(): Promise<void>;
-}
+const module = new ContainerModule(options => {
+  options.bind<MainWindow>(MainWindow).toSelf().inSingletonScope();
+  options.bind<MainWindow>(MainWindowSymbol).toService(MainWindow);
+
+  // mark it as a startup service: it is created once the configuration registry is available
+  options.bind(StartupSymbol).toService(MainWindow);
+});
+
+export { module };

@@ -21,9 +21,10 @@ import type { BrowserWindow } from 'electron';
 import { dialog } from 'electron';
 import { inject, injectable } from 'inversify';
 
+import { MainWindowSymbol } from '/@/inject/symbol.js';
+import type { MainWindow } from '/@/system/window/main-window.js';
 import { isMac } from '/@/util.js';
 
-import { MainWindowDeferred } from './api.js';
 import { Uri } from './types/uri.js';
 
 /**
@@ -31,23 +32,11 @@ import { Uri } from './types/uri.js';
  */
 @injectable()
 export class DialogRegistry {
-  #browserWindow: BrowserWindow | undefined;
+  constructor(@inject(MainWindowSymbol) private readonly mainWindow: MainWindow) {}
 
-  #mainWindowDeferred: PromiseWithResolvers<BrowserWindow>;
-
-  constructor(@inject(MainWindowDeferred) readonly mainWindowDeferred: PromiseWithResolvers<BrowserWindow>) {
-    this.#mainWindowDeferred = mainWindowDeferred;
-  }
-
-  init(): void {
-    // browser window will be initialized when promise is resolved
-    this.#mainWindowDeferred.promise
-      .then(browserWindow => {
-        this.#browserWindow = browserWindow;
-      })
-      .catch((error: unknown) => {
-        console.error('Error getting main window', String(error));
-      });
+  // the dialogs are attached to the main window, once it is created
+  get #browserWindow(): BrowserWindow | undefined {
+    return this.mainWindow.browserWindow;
   }
 
   async openDialog(options?: OpenDialogOptions, dialogId?: string): Promise<string[] | undefined> {

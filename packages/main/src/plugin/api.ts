@@ -31,5 +31,3 @@ export type IPCMainOn = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   listener: (event: IpcMainEvent, ...args: any[]) => void,
 ) => void;
-
-export const MainWindowDeferred = Symbol.for('MainWindowDeferred');

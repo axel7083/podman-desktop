@@ -15,24 +15,18 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { IConfigurationRegistry } from '@desktop-framework/api/configuration';
-import type { App as ElectronApp, BrowserWindow, Menu as ElectronMenu } from 'electron';
-import { Menu } from 'electron';
+import type { App as ElectronApp } from 'electron';
 import { Container } from 'inversify';
 import { afterEach, assert, beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { AppPlugin } from '/@/app/app-plugin.js';
 import { ProtocolLauncher } from '/@/app/protocol-launcher.js';
 import { SecurityRestrictions } from '/@/app/security-restrictions.js';
-import { WindowPlugin } from '/@/app/window-plugin.js';
-import { restoreWindow } from '/@/mainWindow.js';
 import type { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
+import { restoreWindow } from '/@/system/window/main-window.js';
 import { isLinux, isMac, isWindows, stoppedExtensions } from '/@/util.js';
 import product from '/@product.json' with { type: 'json' };
 
-import { ApplicationMenuBuilder } from './application-menu-builder.js';
 import { Main } from './main.js';
-import type { Emitter } from './plugin/events/emitter.js';
 import { PluginSystem } from './plugin/index.js';
 
 vi.mock(import('/@/app/app-identity.js'), async importOriginal => {
@@ -43,7 +37,7 @@ vi.mock(import('/@/app/app-identity.js'), async importOriginal => {
 });
 vi.mock(import('/@/app/dev-icon-builder.js'));
 vi.mock(import('/@/util.js'));
-vi.mock(import('/@/mainWindow.js'));
+vi.mock(import('/@/system/window/main-window.js'));
 // keep the class (and its inversify metadata) so the container can build it, only its methods are mocked
 vi.mock(import('/@/app/protocol-launcher.js'), async importOriginal => {
   const mod = await importOriginal();
@@ -53,9 +47,6 @@ vi.mock(import('/@/app/protocol-launcher.js'), async importOriginal => {
 });
 vi.mock(import('./plugin/index.js'));
 vi.mock(import('electron-util/main'), () => ({ aboutMenuItem: vi.fn() }));
-vi.mock(import('./application-menu-builder.js'));
-vi.mock(import('./plugin/zoom-level-handler.js'));
-vi.mock(import('./system/window/window-handler.js'));
 vi.mock(import('./system/startup-install.js'));
 vi.mock(import('./plugin/util/read-tray-setting.js'));
 vi.mock(import('./tray-menu.js'));
@@ -74,7 +65,6 @@ vi.mock(import('/@/app/default-protocol-client.js'), async importOriginal => {
   mod.DefaultProtocolClient.prototype.init = vi.fn();
   return mod;
 });
-vi.mock(import('/@/app/window-plugin.js'));
 vi.mock(import('/@product.json'));
 
 const ELECTRON_APP_MOCK: ElectronApp = {
@@ -243,26 +233,6 @@ describe('plugin system', () => {
     vi.mocked(PluginSystem.prototype.initExtensions).mockResolvedValue({} as ExtensionLoader);
   });
 
-  test('should set the application menu once the configuration registry and the window are ready', async () => {
-    const main = new Main(ELECTRON_APP_MOCK);
-    main.main([]);
-    whenReady.resolve();
-    await vi.waitFor(() => expect(PluginSystem.prototype.initExtensions).toHaveBeenCalledOnce());
-
-    const menu = {} as ElectronMenu;
-    vi.mocked(ApplicationMenuBuilder.prototype.build).mockReturnValue(menu);
-    const onDidCreateConfigurationRegistry = vi.mocked(PluginSystem.prototype.initExtensions).mock.calls[0]?.[0] as
-      | Emitter<IConfigurationRegistry>
-      | undefined;
-    assert(onDidCreateConfigurationRegistry);
-    onDidCreateConfigurationRegistry.fire({
-      getConfiguration: vi.fn().mockReturnValue({ get: vi.fn() }),
-    } as unknown as IConfigurationRegistry);
-    main.mainWindowDeferred.resolve({} as BrowserWindow);
-
-    await vi.waitFor(() => expect(Menu.setApplicationMenu).toHaveBeenCalledWith(menu));
-  });
-
   test('should give the plugin system the application container', async () => {
     new Main(ELECTRON_APP_MOCK).main([]);
     whenReady.resolve();
@@ -328,59 +298,5 @@ describe('ElectronApp#on window-all-closed', () => {
     listener();
 
     expect(ELECTRON_APP_MOCK.quit).toHaveBeenCalledOnce();
-  });
-});
-
-describe('AppPlugin', () => {
-  const plugins: Array<AppPlugin> = [WindowPlugin.prototype];
-
-  let promiseWithResolvers: PromiseWithResolvers<void>;
-
-  beforeEach(() => {
-    promiseWithResolvers = Promise.withResolvers<void>();
-
-    // mock application as ready
-    vi.mocked(ELECTRON_APP_MOCK.isReady).mockReturnValue(true);
-
-    // mock the whenReady promise
-    vi.mocked(ELECTRON_APP_MOCK.whenReady).mockReturnValue(promiseWithResolvers.promise);
-
-    // start main
-    const code = new Main(ELECTRON_APP_MOCK);
-    code.main([]);
-  });
-
-  test('expect AppPlugin#onReady to be called when ElectronApp#whenReady resolved', async () => {
-    // expect each plugin to have been instantiated
-    plugins.forEach(plugin => {
-      expect(plugin.onReady).not.toHaveBeenCalled();
-    });
-
-    // simulate on ready
-    promiseWithResolvers.resolve();
-
-    await vi.waitFor(() => {
-      // expect each plugin to have been instantiated
-      plugins.forEach(plugin => {
-        expect(plugin.onReady).toHaveBeenCalled();
-      });
-    });
-  });
-
-  test('expect AppPlugin#dispose to be called when ElectronApp#on("before-quit") is emitted ', async () => {
-    // expect each plugin to have been instantiated
-    plugins.forEach(plugin => {
-      expect(plugin.dispose).not.toHaveBeenCalled();
-    });
-
-    const listener = getElectronAppListener('before-quit');
-    listener();
-
-    await vi.waitFor(() => {
-      // expect each plugin to be disposed
-      plugins.forEach(plugin => {
-        expect(plugin.dispose).toHaveBeenCalled();
-      });
-    });
   });
 });
