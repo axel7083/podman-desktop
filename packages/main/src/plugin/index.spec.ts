@@ -228,6 +228,12 @@ test('initExtensions configures the start on login once the configuration regist
   expect(StartupInstall.prototype.init).toHaveBeenCalledOnce();
 });
 
+test('asyncDispose stops the extensions by unbinding the plugin system container', async () => {
+  await pluginSystem.asyncDispose();
+
+  expect(ExtensionLoader.prototype.asyncDispose).toHaveBeenCalledOnce();
+});
+
 test('Check SecurityRestrictions on Links and user accept', async () => {
   const showMessageBoxMock = vi.fn();
   const messageBox = {

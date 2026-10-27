@@ -237,9 +237,8 @@ describe('plugin system', () => {
     await vi.waitFor(() => expect(PluginSystem).toHaveBeenCalledWith(expect.any(Container)));
   });
 
-  test('should stop the extensions before quitting', async () => {
-    const extensionLoader = { asyncDispose: vi.fn().mockResolvedValue(undefined) } as unknown as ExtensionLoader;
-    vi.mocked(PluginSystem.prototype.initExtensions).mockResolvedValue(extensionLoader);
+  test('should dispose the plugin system, stopping the extensions, before quitting', async () => {
+    vi.mocked(PluginSystem.prototype.asyncDispose).mockResolvedValue(undefined);
     new Main(ELECTRON_APP_MOCK).main([]);
     whenReady.resolve();
     await vi.waitFor(() => expect(PluginSystem.prototype.initExtensions).toHaveBeenCalledOnce());
@@ -255,7 +254,7 @@ describe('plugin system', () => {
 
     expect(event.preventDefault).toHaveBeenCalled();
     await vi.waitFor(() => expect(ELECTRON_APP_MOCK.quit).toHaveBeenCalled());
-    expect(extensionLoader.asyncDispose).toHaveBeenCalled();
+    expect(PluginSystem.prototype.asyncDispose).toHaveBeenCalled();
     expect(stoppedExtensions.val).toBe(true);
   });
 });

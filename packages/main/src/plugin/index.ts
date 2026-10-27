@@ -309,6 +309,9 @@ export class PluginSystem {
   private extensionLoader!: ExtensionLoader;
   private validExtList!: ExtensionInfo[];
 
+  // the plugin system container, child of the application container
+  #container: Container | undefined;
+
   constructor(private parentContainer: Container) {
     app.on('before-quit', () => {
       this.isQuitting = true;
@@ -486,6 +489,7 @@ export class PluginSystem {
     // init api sender
     // child of the application container: it can resolve the application services, not the other way around
     const container = new Container({ parent: this.parentContainer });
+    this.#container = container;
     container.load(windowModule);
     container.load(startupModule);
     container.load(trayModule);
@@ -3518,6 +3522,14 @@ export class PluginSystem {
 
   markAsExtensionsStarted(): void {
     this.isExtensionsStarted = true;
+  }
+
+  /**
+   * Unbinds the plugin system container: its services are disposed through their @preDestroy method
+   * (e.g. the ExtensionLoader stops the extensions).
+   */
+  async asyncDispose(): Promise<void> {
+    await this.#container?.unbindAllAsync();
   }
 
   markAsReady(): void {

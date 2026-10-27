@@ -21,7 +21,6 @@ import { Container } from 'inversify';
 import { module as appModule } from '/@/app/$module.js';
 import { ProtocolLauncher } from '/@/app/protocol-launcher.js';
 import { ElectronApp as ElectronAppSymbol, StartupSymbol } from '/@/inject/symbol.js';
-import type { ExtensionLoader } from '/@/plugin/extension/extension-loader.js';
 import { restoreWindow } from '/@/system/window/main-window.js';
 import { isLinux, isMac, isWindows, stoppedExtensions } from '/@/util.js';
 import product from '/@product.json' with { type: 'json' };
@@ -44,7 +43,8 @@ export class Main {
   // application scope container, the plugin system works in a child container
   readonly #container = new Container();
 
-  #extensionLoader: ExtensionLoader | undefined;
+  // set once the plugin system is started
+  #pluginSystem: PluginSystem | undefined;
 
   constructor(app: ElectronApp) {
     this.app = app;
@@ -124,7 +124,8 @@ export class Main {
     // Start extensions
     const pluginSystem = new PluginSystem(this.#container);
 
-    this.#extensionLoader = await pluginSystem.initExtensions();
+    await pluginSystem.initExtensions();
+    this.#pluginSystem = pluginSystem;
   }
 
   /**
@@ -132,12 +133,12 @@ export class Main {
    * Stops the extensions before quitting again
    */
   protected onBeforeQuitStopExtensions(event: { preventDefault: () => void }): void {
-    if (!this.#extensionLoader) {
+    if (!this.#pluginSystem) {
       stoppedExtensions.val = true;
       return;
     }
     event.preventDefault();
-    this.#extensionLoader
+    this.#pluginSystem
       .asyncDispose()
       .then(() => {
         console.log('Stopped all extensions');
