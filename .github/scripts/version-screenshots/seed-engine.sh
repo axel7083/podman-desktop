@@ -2,6 +2,8 @@
 # Starts a rootless Podman API service on the fixed path the Podman extension reads, then adds sample data.
 set -euo pipefail
 sudo sysctl -q kernel.apparmor_restrict_unprivileged_userns=0 || true
+# The runner ships Docker with its own images; stop it so the lists only show the sample data
+sudo systemctl stop docker.socket docker.service || true
 sudo loginctl enable-linger "$(id -un)"
 RUNTIME_DIR="/run/user/$(id -u)"
 for _ in $(seq 1 20); do [ -d "$RUNTIME_DIR" ] && break; sleep 1; done

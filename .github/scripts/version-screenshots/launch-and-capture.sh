@@ -8,6 +8,12 @@ ELECTRON=$(node -p "require('electron')" | tail -1)
 VERSION=$(node -p "require('./package.json').version")
 mkdir -p "$OUT"
 
+# Older production builds load tray icons from the packaged-app resources folder, which only exists after packaging.
+# Without them the main process stops during startup. Link the assets of this tag there.
+RESOURCES="$(dirname "$ELECTRON")/resources/packages/main/src"
+mkdir -p "$RESOURCES"
+ln -sfn "$PWD/packages/main/src/assets" "$RESOURCES/assets"
+
 attempt() {
   local n=$1 port=$((9220 + $1)) home="$RUNNER_TEMP/app-home-$1"
   rm -rf "$home"
