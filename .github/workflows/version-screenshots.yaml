@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       tags:
-        description: 'Space-separated tags; empty means the highest patch of every version line'
+        description: 'Space-separated tags; empty means the highest published patch of every version line'
         type: string
         default: ''
 
@@ -24,13 +24,15 @@ jobs:
       - id: list
         env:
           REQUESTED: ${{ inputs.tags }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           if [ -n "${REQUESTED:-}" ]; then
             TAGS=$(echo "$REQUESTED" | tr ' ' '\n' | grep .)
           else
-            # Newest first, keeping the highest patch of each major.minor line
-            TAGS=$(git ls-remote --tags --refs https://github.com/podman-desktop/podman-desktop.git \
-              | sed 's#.*refs/tags/##' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -rV | awk -F. '!seen[$1"."$2]++')
+            # Published releases only: the repository also holds test tags. Newest first, highest patch of each line.
+            TAGS=$(gh api --paginate 'repos/podman-desktop/podman-desktop/releases?per_page=100' \
+              --jq '.[] | select(.draft == false and .prerelease == false) | .tag_name' \
+              | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -rV | awk -F. '!seen[$1"."$2]++')
           fi
           echo "$TAGS"
           echo "tags=$(echo "$TAGS" | jq -R . | jq -cs .)" >> "$GITHUB_OUTPUT"
