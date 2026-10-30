@@ -415,6 +415,21 @@ describe('renderer v2', () => {
     expect(getRendererUrl(true)).toBe('http://localhost:5174/');
   });
 
+  test.each([
+    { useRendererV2: false, position: { x: 20, y: 13 } },
+    { useRendererV2: true, position: { x: 12, y: 11 } },
+  ])(
+    'should place the traffic lights of macOS at $position.x,$position.y when useRendererV2=$useRendererV2',
+    async ({ useRendererV2, position }) => {
+      vi.mocked(util.isMac).mockReturnValue(true);
+      const { createNewWindow } = await import('./main-window.js');
+
+      await createNewWindow(configurationRegistry, new ApiSender(), { useRendererV2 });
+
+      expect(BrowserWindow).toHaveBeenCalledWith(expect.objectContaining({ trafficLightPosition: position }));
+    },
+  );
+
   test('should load renderer v2 in the main window when the experimental flag is enabled', async () => {
     vi.stubEnv('DEV', false);
     preferences['enabled'] = {};

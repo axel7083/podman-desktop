@@ -97,7 +97,8 @@ async function createWindow(
 
   if (isMac()) {
     // change position of traffic light buttons
-    browserWindowConstructorOptions.trafficLightPosition = { x: 20, y: 13 };
+    // renderer-v2 has a 36px title bar: center the 14px high buttons in it, clear of its logo
+    browserWindowConstructorOptions.trafficLightPosition = config?.useRendererV2 ? { x: 12, y: 11 } : { x: 20, y: 13 };
   }
 
   const browserWindow = new BrowserWindow(browserWindowConstructorOptions);
