@@ -42,8 +42,8 @@ const has = list => t => list.some(n => t.includes(n));
 const checks = {
   containers: async () => { const t = await text(); return !noEngine.test(t) && has(expected.containers)(t); },
   images: async () => { const t = await text(); return !noEngine.test(t) && has(expected.images)(t); },
-  // A standalone state line, as rendered in the provider card; banner sentences mentioning "running" cannot match.
-  dashboard: async () => { const t = await text(); return /podman/i.test(t) && /^\s*(RUNNING|Running)\s*$/m.test(t); },
+  // A standalone state line as in the provider card, or the headline of older dashboards; banner sentences cannot match.
+  dashboard: async () => { const t = await text(); return /Podman is running/i.test(t) || (/podman/i.test(t) && /^\s*(RUNNING|Running)\s*$/m.test(t)); },
 };
 const pages = [['Containers', 'containers'], ['Images', 'images'], ['Dashboard', 'dashboard']];
 let all = true;
@@ -61,6 +61,8 @@ for (const [label, name] of pages) {
   r.imagesPending = pending;
   await ev(`document.activeElement && document.activeElement.blur()`);
   await sleep(300);
+  await send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: 700, y: 12 }); // keep the pointer off the rows
+  await sleep(200);
   await shot(name);
   if (!r.data) { r.text = last.slice(0, 300); all = false; }
 }
@@ -68,8 +70,9 @@ let v = await ev(`(async()=>{try{return await window.getPodmanDesktopVersion?.()
 if (!v) v = ((await text()).match(/v(\d+\.\d+\.\d+\S*)/) || [])[1];
 res.version = v || null;
 const want = tag.replace(/^v/, '');
-res.versionMatch = res.version === want;
-res.ok = all && res.versionMatch;
+// Versions up to 0.12 expose no version in the UI; only a version that differs from the tag is a failure
+res.versionMatch = res.version === null ? null : res.version === want;
+res.ok = all && res.versionMatch !== false;
 if (!res.ok) res.reason = !all ? 'data-check-failed' : 'version-mismatch';
 console.log(JSON.stringify(res));
 process.exit(res.ok ? 0 : 5);

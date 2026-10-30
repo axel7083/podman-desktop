@@ -14,6 +14,11 @@ on:
 
 permissions:
   contents: read
+  actions: read
+
+env:
+  # Versions that succeeded in this run are not captured again; their screenshots are reused
+  PREVIOUS_RUN: '41074624937'
 
 jobs:
   list-tags:
@@ -34,6 +39,9 @@ jobs:
               --jq '.[] | select(.draft == false and .prerelease == false) | .tag_name' \
               | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -rV | awk -F. '!seen[$1"."$2]++')
           fi
+          DONE=$(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs/$PREVIOUS_RUN/jobs?per_page=100" \
+            --jq '.jobs[] | select(.conclusion == "success") | .name | select(startswith("capture ")) | ltrimstr("capture ")')
+          TAGS=$(echo "$TAGS" | grep -vxF -f <(echo "$DONE"))
           echo "$TAGS"
           echo "tags=$(echo "$TAGS" | jq -R . | jq -cs .)" >> "$GITHUB_OUTPUT"
 
@@ -159,6 +167,16 @@ jobs:
         with:
           pattern: screenshots-*
           path: results
+
+      - name: Add the versions captured by the previous run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for name in $(gh api --paginate "repos/$GITHUB_REPOSITORY/actions/runs/$PREVIOUS_RUN/artifacts?per_page=100" --jq '.artifacts[].name' | grep '^screenshots-'); do
+            if [ ! -d "results/$name" ]; then
+              gh run download "$PREVIOUS_RUN" -R "$GITHUB_REPOSITORY" -n "$name" -D "results/$name"
+            fi
+          done
 
       - name: Keep versions with three screenshots of the same size
         run: |
