@@ -1,0 +1,188 @@
+# Builds each Podman Desktop version line from its release tag and captures Dashboard, Containers and Images.
+name: version-screenshots
+
+on:
+  push:
+    branches:
+      - ci/version-screenshots
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: 'Space-separated tags; empty means the highest patch of every version line'
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  list-tags:
+    runs-on: ubuntu-24.04
+    outputs:
+      tags: ${{ steps.list.outputs.tags }}
+    steps:
+      - id: list
+        env:
+          REQUESTED: ${{ inputs.tags }}
+        run: |
+          if [ -n "${REQUESTED:-}" ]; then
+            TAGS=$(echo "$REQUESTED" | tr ' ' '\n' | grep .)
+          else
+            # Newest first, keeping the highest patch of each major.minor line
+            TAGS=$(git ls-remote --tags --refs https://github.com/podman-desktop/podman-desktop.git \
+              | sed 's#.*refs/tags/##' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -rV | awk -F. '!seen[$1"."$2]++')
+          fi
+          echo "$TAGS"
+          echo "tags=$(echo "$TAGS" | jq -R . | jq -cs .)" >> "$GITHUB_OUTPUT"
+
+  capture:
+    needs: list-tags
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: 15
+      matrix:
+        tag: ${{ fromJSON(needs.list-tags.outputs.tags) }}
+    name: capture ${{ matrix.tag }}
+    env:
+      TAG: ${{ matrix.tag }}
+      OUT: ${{ github.workspace }}/out/${{ matrix.tag }}
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+      PUPPETEER_SKIP_DOWNLOAD: '1'
+      HUSKY: '0'
+      npm_config_update_notifier: 'false'
+      npm_config_manage_package_manager_versions: 'false'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: tools
+          persist-credentials: false
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: podman-desktop/podman-desktop
+          ref: ${{ matrix.tag }}
+          path: app
+          persist-credentials: false
+
+      - name: Read the toolchain of this tag
+        id: toolchain
+        working-directory: app
+        run: |
+          MAJOR=$(jq -r '.engines.node // ""' package.json | grep -oE '[0-9]+' | head -1 || true)
+          MAJOR=${MAJOR:-16}
+          PM=$(jq -r '.packageManager // ""' package.json | sed 's/+.*//')
+          echo "node=$MAJOR" >> "$GITHUB_OUTPUT"
+          echo "pm=${PM:-yarn@1.22.22}" >> "$GITHUB_OUTPUT"
+          echo "Node $MAJOR, ${PM:-yarn@1.22.22}"
+
+      # The capture script needs a recent Node whatever the tag is built with
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+      - run: echo "CAPTURE_NODE=$(command -v node)" >> "$GITHUB_ENV"
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ steps.toolchain.outputs.node }}
+
+      # Old native modules still need distutils
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.11'
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgbm1 libnss3 libasound2t64 libgtk-3-0t64 libxss1 libsecret-1-0
+
+      - name: Install the package manager
+        env:
+          PM: ${{ steps.toolchain.outputs.pm }}
+        run: npm install -g "$PM"
+
+      - name: Install dependencies
+        timeout-minutes: 15
+        working-directory: app
+        env:
+          PM: ${{ steps.toolchain.outputs.pm }}
+        run: |
+          # The root postinstall of some tags downloads end-to-end test browsers; skip only that
+          jq 'if (.scripts.postinstall // "") | test("^playwright install") then del(.scripts.postinstall) else . end' package.json > "$RUNNER_TEMP/package.json"
+          cp "$RUNNER_TEMP/package.json" package.json
+          case "$PM" in
+            pnpm*) pnpm install --frozen-lockfile ;;
+            *) yarn install --frozen-lockfile --ignore-engines --network-timeout 300000 ;;
+          esac
+          git checkout -q package.json
+
+      - name: Build
+        timeout-minutes: 15
+        working-directory: app
+        env:
+          PM: ${{ steps.toolchain.outputs.pm }}
+        run: |
+          case "$PM" in
+            pnpm*) pnpm run build ;;
+            *) yarn run build ;;
+          esac
+
+      - name: Start a Podman engine with sample data
+        run: tools/.github/scripts/version-screenshots/seed-engine.sh
+
+      - name: Capture screenshots
+        timeout-minutes: 12
+        working-directory: app
+        env:
+          CAPTURE_SCRIPT: ${{ github.workspace }}/tools/.github/scripts/version-screenshots/capture.mjs
+          LAUNCH_SCRIPT: ${{ github.workspace }}/tools/.github/scripts/version-screenshots/launch-and-capture.sh
+        run: EXPECTED_FILE="$RUNNER_TEMP/expected.json" "$LAUNCH_SCRIPT" "$TAG" "$OUT"
+
+      - name: Upload the result of this version
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: screenshots-${{ matrix.tag }}
+          path: out/${{ matrix.tag }}
+          if-no-files-found: warn
+          retention-days: 14
+
+  collect:
+    needs: capture
+    if: always()
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: screenshots-*
+          path: results
+
+      - name: Keep versions with three screenshots of the same size
+        run: |
+          mkdir -p podman-desktop-screenshots
+          {
+            echo '| Version | Result |'
+            echo '| --- | --- |'
+            for dir in $(ls -d results/screenshots-* | sort -rV); do
+              tag=${dir##*screenshots-}
+              good=yes
+              for page in dashboard containers images; do
+                file "$dir/$page.png" 2> /dev/null | grep -q '1400 x 900' || good=no
+              done
+              if [ "$good" = yes ]; then
+                mkdir -p "podman-desktop-screenshots/$tag"
+                cp "$dir"/{dashboard,containers,images}.png "podman-desktop-screenshots/$tag/"
+                echo "| $tag | ok |"
+              else
+                echo "| $tag | missing or rejected, see the capture job |"
+              fi
+            done
+          } | tee summary.md >> "$GITHUB_STEP_SUMMARY"
+          cp summary.md podman-desktop-screenshots/
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: podman-desktop-screenshots
+          path: podman-desktop-screenshots
+          retention-days: 30
