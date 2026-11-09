@@ -29,6 +29,17 @@ import type { NavigationRegistryEntry } from '/@/stores/navigation/navigation-re
 
 import NavRegistryEntry from './NavRegistryEntry.svelte';
 
+// The rows are sortable, which needs a DragDropProvider above them. These tests render a single
+// row on its own, so stub the hook: the drag behaviour is covered by the AppNavigation tests.
+vi.mock(import('@dnd-kit/svelte/sortable'), async importOriginal => {
+  const actual = await importOriginal();
+  const attach = (): (() => void) => (): void => {};
+  return {
+    ...actual,
+    createSortable: (() => ({ attach })) as unknown as typeof actual.createSortable,
+  };
+});
+
 beforeAll(() => {
   // Mock the animate function
   HTMLElement.prototype.animate = vi.fn().mockReturnValue({

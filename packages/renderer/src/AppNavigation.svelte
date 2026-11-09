@@ -5,8 +5,11 @@
 <script lang="ts">
 import { NavigationPage } from '@desktop-framework/api';
 import { AppearanceSettings } from '@desktop-framework/api/appearance';
+import { DragDropProvider } from '@dnd-kit/svelte';
 import { onDestroy, onMount, tick } from 'svelte';
 import type { TinroRouteMeta } from 'tinro';
+
+import { NavReorder } from '/@/lib/navigation/reorder.svelte';
 
 import AuthActions from './lib/authentication/AuthActions.svelte';
 import { CommandRegistry } from './lib/CommandRegistry';
@@ -19,18 +22,19 @@ import NavItem from './lib/ui/NavItem.svelte';
 import NavRegistryEntry from './lib/ui/NavRegistryEntry.svelte';
 import { handleNavigation } from './navigation';
 import { onDidChangeConfiguration } from './stores/configurationProperties';
-import { navigationRegistry } from './stores/navigation/navigation-registry';
+import { navigationRegistry, setNavigationItemOrder } from './stores/navigation/navigation-registry';
+import { NavigationUtils } from './stores/navigation/navigation-utils';
 
 interface Props {
   exitSettingsCallback: () => void;
   meta: TinroRouteMeta;
 }
 let { exitSettingsCallback, meta = $bindable() }: Props = $props();
+const navigationUtils = new NavigationUtils();
 
 let authActions = $state<AuthActions>();
 let outsideWindow = $state<HTMLDivElement>();
 let scrollRegionEl = $state<HTMLDivElement>();
-
 const iconSize = '24';
 const NAV_BAR_WIDTH_KEY = `${AppearanceSettings.SectionName}.${AppearanceSettings.NavigationBarWidth}`;
 
@@ -41,6 +45,21 @@ const expandedThreshold = 70;
 let navWidth = $state(160);
 let expanded = $derived(navWidth > expandedThreshold);
 let isDragging = $state(false);
+
+// Single main-nav list sorted by index.
+let allVisibleEntries = $derived(navigationUtils.getVisibleOrderedEntries($navigationRegistry));
+
+const reorder = new NavReorder(() => allVisibleEntries.map(entry => entry.name), setNavigationItemOrder);
+let orderedEntries = $derived(
+  allVisibleEntries.toSorted((a, b) => reorder.order.indexOf(a.name) - reorder.order.indexOf(b.name)),
+);
+let itemTitle = $derived(reorder.isDragging ? undefined : 'Hold to reorder');
+
+// The browser starts a native drag for <img> icons (e.g. extension items),
+// which would steal the pointer from the long-press reorder.
+function onNavItemDragStart(e: DragEvent): void {
+  e.preventDefault();
+}
 
 $effect(() => {
   document.documentElement.style.setProperty('--spacing-leftnavbar', `${navWidth}px`);
@@ -179,6 +198,7 @@ onDestroy(() => {
   window.removeEventListener('pointerup', onResizeUp);
   isDragging = false;
   scrollRegionCleanup?.();
+  document.body.style.cursor = '';
 });
 
 function handleClick(): void {
@@ -202,11 +222,10 @@ function onDidChangeConfigurationCallback(e: Event): void {
 }
 </script>
 
-<svelte:window />
 <nav
   class="group w-leftnavbar relative h-full flex-shrink-0 flex flex-col bg-[var(--pd-global-nav-bg)] border-[var(--pd-global-nav-bg-border)] border-r-[1px]"
   aria-label="AppNavigation"
-  class:select-none={isDragging}
+  class:select-none={isDragging || reorder.isDragging}
   style:width="{navWidth}px">
   <NavItem href="/" tooltip="Dashboard" bind:meta={meta} {expanded}>
     <div class="flex items-center w-full">
@@ -231,16 +250,33 @@ function onDidChangeConfigurationCallback(e: Event): void {
       aria-label="Scrollable navigation list"
       onscroll={onScrollRegionScroll}
       onpointerdown={onScrollRegionPointerDown}>
-      {#each $navigationRegistry as navigationRegistryItem, index (index)}
-        {#if navigationRegistryItem.items && navigationRegistryItem.type === 'group'}
-          <!-- This is a group, list all items from the entry -->
-          {#each navigationRegistryItem.items as item, index (index)}
-            <NavRegistryEntry entry={item} bind:meta={meta} {expanded} />
+      <DragDropProvider
+        sensors={reorder.sensors}
+        onDragStart={reorder.onDragStart}
+        onDragOver={reorder.onDragOver}
+        onDragEnd={reorder.onDragEnd}>
+        <div class="flex flex-col relative" role="list">
+          {#each orderedEntries as entry, i (entry.link)}
+            <!-- dnd-kit shows the dragged link in a popover; keep it visible when the keyed list moves it and closes the popover. -->
+            <div
+              data-nav-drag-item={entry.link}
+              data-dragging={reorder.draggedItem === entry.name}
+              role="listitem"
+              class="touch-none select-none cursor-grab [&_[data-dnd-dragging][popover]]:block"
+              class:opacity-50={reorder.draggedItem === entry.name}
+              class:[&_.tooltip-content]:hidden={reorder.isDragging}
+              ondragstart={onNavItemDragStart}>
+              <NavRegistryEntry
+                {entry}
+                index={i}
+                bind:meta={meta}
+                {expanded}
+                reorderable
+                title={itemTitle} />
+            </div>
           {/each}
-        {:else if navigationRegistryItem.type === 'entry' || navigationRegistryItem.type === 'submenu'}
-          <NavRegistryEntry entry={navigationRegistryItem} bind:meta={meta} {expanded} />
-        {/if}
-      {/each}
+        </div>
+      </DragDropProvider>
     </div>
     {#if scrollThumbVisible}
       <div
@@ -305,4 +341,8 @@ function onDidChangeConfigurationCallback(e: Event): void {
     {@attach longPress(toggleNavWidth)}
     onpointerdown={onResizeHandlePointerDown}
     ondblclick={onResizeHandleDblClick}></div>
+
+  <div class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="nav-live-region">
+    {reorder.announcement}
+  </div>
 </nav>
