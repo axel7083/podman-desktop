@@ -87,6 +87,26 @@ describe('ExtensionManifestSchema', () => {
     expect(result.data.extensionPack).toEqual(['publisher.pack1']);
   });
 
+  test('accepts overrides as a string', () => {
+    const result = ExtensionManifestSchema.safeParse({
+      ...minimalValidManifest,
+      overrides: 'podman-desktop.bootc',
+    });
+    expect(result.success).toBe(true);
+    assert(result.data);
+    expect(result.data.overrides).toBe('podman-desktop.bootc');
+  });
+
+  test('rejects manifest with invalid overrides type', () => {
+    const result = ExtensionManifestSchema.safeParse({
+      ...minimalValidManifest,
+      overrides: ['podman-desktop.bootc'],
+    });
+    expect(result.success).toBe(false);
+    assert(result.error);
+    expect(z.prettifyError(result.error)).toBe('✖ Invalid input: expected string, received array\n  → at overrides');
+  });
+
   test('accepts repository as a string', () => {
     const result = ExtensionManifestSchema.safeParse({
       ...minimalValidManifest,

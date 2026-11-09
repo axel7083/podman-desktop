@@ -22,7 +22,8 @@ import path, { join } from 'node:path';
 
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 
-import type { ExtensionAnalyzer } from '/@/plugin/extension/extension-analyzer.js';
+import type { AnalyzedExtension, ExtensionAnalyzer } from '/@/plugin/extension/extension-analyzer.js';
+import type { ExtensionManifest } from '/@/plugin/extension/extension-manifest-schema.js';
 import { ExtensionsBundle } from '/@/plugin/extension/local/extensions-bundle.js';
 
 vi.mock(import('node:fs'));
@@ -92,6 +93,51 @@ test('should call ExtensionAnalyzer#analyzeExtension with bundled true', async (
     devMode: false,
     extensionPath: 'foo-bar',
     removable: false,
+  });
+});
+
+describe('findOverridden', () => {
+  const BUNDLED_BOOTC = { id: 'podman-desktop.bootc', bundled: true } as unknown as AnalyzedExtension;
+
+  beforeEach(async () => {
+    vi.stubEnv('PROD', true);
+    vi.spyOn(extensionBundle, 'readProductionFolders').mockResolvedValue(['bootc']);
+    vi.spyOn(extensionBundle, 'readDevelopmentFolders').mockResolvedValue([]);
+    vi.mocked(EXTENSION_ANALYZER.analyzeExtension).mockResolvedValue(BUNDLED_BOOTC);
+
+    await extensionBundle.init();
+  });
+
+  test('should return the bundled extension having the same id', () => {
+    const overridden = extensionBundle.findOverridden({
+      id: 'podman-desktop.bootc',
+      manifest: {} as ExtensionManifest,
+    });
+    expect(overridden).toBe(BUNDLED_BOOTC);
+  });
+
+  test('should return the bundled extension declared in the overrides manifest field', () => {
+    const overridden = extensionBundle.findOverridden({
+      id: 'redhat.bootc',
+      manifest: { overrides: 'podman-desktop.bootc' } as ExtensionManifest,
+    });
+    expect(overridden).toBe(BUNDLED_BOOTC);
+  });
+
+  test('should return undefined when the overrides manifest field targets an unknown extension', () => {
+    const overridden = extensionBundle.findOverridden({
+      id: 'podman-desktop.bootc',
+      manifest: { overrides: 'podman-desktop.unknown' } as ExtensionManifest,
+    });
+    expect(overridden).toBeUndefined();
+  });
+
+  test('should return undefined when no bundled extension matches', () => {
+    const overridden = extensionBundle.findOverridden({
+      id: 'redhat.bootc',
+      manifest: {} as ExtensionManifest,
+    });
+    expect(overridden).toBeUndefined();
   });
 });
 
