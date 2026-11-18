@@ -20,6 +20,7 @@
 
 import '@testing-library/jest-dom/vitest';
 
+import { createSortable } from '@dnd-kit/svelte/sortable';
 import { faPuzzlePiece } from '@fortawesome/free-solid-svg-icons';
 import { render, screen } from '@testing-library/svelte';
 import type { TinroRouteMeta } from 'tinro';
@@ -29,16 +30,11 @@ import type { NavigationRegistryEntry } from '/@/stores/navigation/navigation-re
 
 import NavRegistryEntry from './NavRegistryEntry.svelte';
 
-// The rows are sortable, which needs a DragDropProvider above them. These tests render a single
-// row on its own, so stub the hook: the drag behaviour is covered by the AppNavigation tests.
-vi.mock(import('@dnd-kit/svelte/sortable'), async importOriginal => {
-  const actual = await importOriginal();
-  const attach = (): (() => void) => (): void => {};
-  return {
-    ...actual,
-    createSortable: (() => ({ attach })) as unknown as typeof actual.createSortable,
-  };
-});
+// A sortable needs a DragDropProvider above it; the drag and drop itself is covered by the AppNavigation tests.
+vi.mock(import('@dnd-kit/svelte/sortable'), async importOriginal => ({
+  ...(await importOriginal()),
+  createSortable: vi.fn().mockReturnValue({ attach: vi.fn() }),
+}));
 
 beforeAll(() => {
   // Mock the animate function
@@ -62,7 +58,7 @@ test('Expect entry is rendered', async () => {
     type: 'entry',
   };
   const meta = { url: '/test' } as TinroRouteMeta;
-  render(NavRegistryEntry, { entry, meta, expanded: false });
+  render(NavRegistryEntry, { entry, meta, expanded: false, index: 0 });
 
   const content = screen.queryByLabelText('Item1');
   expect(content).toBeInTheDocument();
@@ -82,7 +78,7 @@ test('Expect hidden entry is not rendered', async () => {
     type: 'entry',
   };
   const meta = { url: '/test' } as TinroRouteMeta;
-  render(NavRegistryEntry, { entry, meta, expanded: false });
+  render(NavRegistryEntry, { entry, meta, expanded: false, index: 0 });
 
   const content = screen.queryByLabelText('Item1');
   expect(content).not.toBeInTheDocument();
@@ -102,7 +98,7 @@ test('Expect entry to have title if expanded is true', async () => {
     type: 'entry',
   };
   const meta = { url: '/test' } as TinroRouteMeta;
-  render(NavRegistryEntry, { entry, meta, expanded: true });
+  render(NavRegistryEntry, { entry, meta, expanded: true, index: 0 });
 
   const content = screen.queryByLabelText('Item1 title');
   expect(content).toBeInTheDocument();
@@ -123,7 +119,7 @@ test('Expect entry to not have title when collapsed', async () => {
     type: 'entry',
   };
   const meta = { url: '/test' } as TinroRouteMeta;
-  render(NavRegistryEntry, { entry, meta, expanded: false });
+  render(NavRegistryEntry, { entry, meta, expanded: false, index: 0 });
 
   const content = screen.queryByLabelText('Item1 title');
   expect(content).not.toBeInTheDocument();
@@ -144,6 +140,7 @@ test('forwards aria-keyshortcuts to the navigation link', () => {
     entry,
     meta: { url: '/test' } as TinroRouteMeta,
     expanded: false,
+    index: 0,
     'aria-keyshortcuts': 'Control+ArrowUp Control+ArrowDown',
   });
 
@@ -162,7 +159,7 @@ test('does not add aria-keyshortcuts when it is not provided', () => {
     destinations: [],
     type: 'entry',
   };
-  render(NavRegistryEntry, { entry, meta: { url: '/test' } as TinroRouteMeta, expanded: false });
+  render(NavRegistryEntry, { entry, meta: { url: '/test' } as TinroRouteMeta, expanded: false, index: 0 });
 
   expect(screen.getByRole('link', { name: 'Item1' })).not.toHaveAttribute('aria-keyshortcuts');
 });
@@ -182,6 +179,7 @@ test('forwards class to the navigation link', () => {
     entry,
     meta: { url: '/test' } as TinroRouteMeta,
     expanded: false,
+    index: 0,
     class: 'custom-nav-item',
   });
 
@@ -205,8 +203,27 @@ test('forwards title to the navigation link when expanded', () => {
     entry,
     meta: { url: '/test' } as TinroRouteMeta,
     expanded: true,
+    index: 0,
     title: 'Hold to reorder',
   });
 
   expect(screen.getByRole('link', { name: 'Item1' })).toHaveAttribute('title', 'Hold to reorder');
+});
+
+test('registers the entry as a sortable identified by its name', () => {
+  const entry: NavigationRegistryEntry = {
+    name: 'Item1',
+    icon: { faIcon: { definition: faPuzzlePiece, size: 'lg' } },
+    tooltip: 'Item tooltip',
+    link: '/mylink',
+    counter: 0,
+    destinations: [],
+    type: 'entry',
+  };
+  render(NavRegistryEntry, { entry, meta: { url: '/test' } as TinroRouteMeta, expanded: false, index: 3 });
+
+  const input = vi.mocked(createSortable).mock.calls[0][0];
+  expect(input.id).toBe('Item1');
+  expect(input.index).toBe(3);
+  expect(screen.getByRole('link', { name: 'Item1' })).toBeInTheDocument();
 });

@@ -14,7 +14,6 @@ interface Props extends Omit<HTMLAnchorAttributes, 'onclick'> {
   onClick?: MouseEventHandler<HTMLAnchorElement>;
   counter?: number;
   expanded?: boolean;
-  reorderable?: boolean;
   children?: Snippet;
 }
 
@@ -27,7 +26,6 @@ let {
   onClick,
   counter,
   expanded = false,
-  reorderable = false,
   children,
   class: className,
   ...props
@@ -39,7 +37,6 @@ let uri = $derived(encodeURI(href));
 let selected = $derived(meta.url === uri || (uri !== '/' && meta.url.startsWith(uri)));
 
 let tooltipText = $derived(counter ? `${tooltip} (${counter})` : tooltip);
-let rowCursorClass = $derived(reorderable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer');
 
 function handleClick(e: MouseEvent & { currentTarget: EventTarget & HTMLAnchorElement }): void {
   if (onClick) {
@@ -64,7 +61,7 @@ onDestroy(() => {
   title={expanded ? title : undefined}
   onclick={handleClick}>
   <div
-    class="flex py-2 px-2.5 items-center {rowCursorClass} min-h-9"
+    class="flex py-2 px-2.5 items-center cursor-pointer min-h-9"
     class:border-l-[4px]={!inSection}
     class:border-[var(--pd-global-nav-bg)]={!inSection}
     class:text-[color:var(--pd-global-nav-icon)]={!selected || !inSection}

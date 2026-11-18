@@ -14,29 +14,19 @@ interface NavRegistryEntryProps extends Omit<HTMLAnchorAttributes, 'href' | 'onc
   entry: NavigationRegistryEntry;
   meta: TinroRouteMeta;
   expanded: boolean;
-  reorderable?: boolean;
-  /** Position of the row in the navigation list, used by the sortable. */
-  index?: number;
+  /** Position of the entry in the navigation list. */
+  index: number;
 }
 
-let {
-  entry,
-  meta = $bindable(),
-  expanded = false,
-  reorderable = false,
-  index = 0,
-  ...props
-}: NavRegistryEntryProps = $props();
+let { entry, meta = $bindable(), expanded = false, index, ...props }: NavRegistryEntryProps = $props();
 
+// dnd-kit gives the dragged element role="button" unless it already has one, hence role="link" below.
 const sortable = createSortable({
   get id() {
     return entry.name;
   },
   get index() {
     return index;
-  },
-  get disabled() {
-    return !reorderable;
   },
 });
 </script>
@@ -49,7 +39,6 @@ const sortable = createSortable({
     ariaLabel={entry.name}
     bind:meta={meta}
     {expanded}
-    {reorderable}
     {...props}
     role="link"
     {@attach sortable.attach}>
